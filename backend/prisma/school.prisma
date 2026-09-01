@@ -1,0 +1,36 @@
+enum SchoolRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model SchoolRequest {
+  id              String              @id @default(cuid())
+
+  schoolName      String
+  schoolLogo      String?
+
+  subdomain       String              @unique
+
+  contactName     String
+
+  email           String
+
+  mobile          String
+
+  whatsapp        String
+
+  selectedPlan    String
+
+  status          SchoolRequestStatus @default(PENDING)
+
+  remarks         String?
+
+  approvedBy      String?
+
+  approvedAt      DateTime?
+
+  createdAt       DateTime            @default(now())
+
+  updatedAt       DateTime            @updatedAt
+}
