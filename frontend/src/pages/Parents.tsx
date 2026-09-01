@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
+import Modal, { ModalHeader } from '@/component/ui/Modal';
 
 export default function Parents() {
   const [parents, setParents] = useState<any[]>([]);
@@ -281,15 +282,13 @@ export default function Parents() {
       )}
 
       {/* Add Parent Account Modal */}
-      <AnimatePresence>
-        {showAdd && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card border border-border rounded-2xl p-6 w-full max-w-2xl shadow-2xl my-8">
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/60">
-                <h3 className="text-base font-black text-foreground flex items-center gap-1.5"><Users size={18} className="text-primary"/> Create Parent Profile</h3>
-                <button onClick={() => setShowAdd(false)} className="text-muted-foreground hover:text-foreground"><X size={20}/></button>
-              </div>
-              <form onSubmit={handleAdd} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      <Modal isOpen={showAdd} onClose={() => setShowAdd(false)} maxWidth="max-w-2xl">
+        <ModalHeader
+          icon={<Users size={18} className="text-primary"/>}
+          title="Create Parent Profile"
+          onClose={() => setShowAdd(false)}
+        />
+        <form onSubmit={handleAdd} className="space-y-4 p-6 text-xs">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-foreground">Guardian Name *</label>
@@ -364,17 +363,13 @@ export default function Parents() {
                     Register Parent
                   </button>
                 </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </form>
+      </Modal>
 
       {/* Parent Profile Detail Dialog */}
-      <AnimatePresence>
-        {selectedParent && !showMessageModal && !showLink && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card border border-border rounded-3xl p-6 w-full max-w-xl shadow-2xl h-[70vh] flex flex-col justify-between">
+      <Modal isOpen={!!(selectedParent && !showMessageModal && !showLink)} onClose={() => setSelectedParent(null)} maxWidth="max-w-xl">
+        {selectedParent && (
+          <div className="p-6 flex flex-col justify-between h-[70vh]">
               <div>
                 <div className="flex justify-between items-start mb-4 border-b border-border pb-3">
                   <div className="flex items-center gap-3">
@@ -439,21 +434,18 @@ export default function Parents() {
                   <Link size={13}/> Link Student
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Link Student Modal */}
-      <AnimatePresence>
-        {showLink && selectedParent && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/60">
-                <h3 className="text-sm font-black text-foreground flex items-center gap-1.5"><Link size={14} className="text-primary"/> Link Child to {selectedParent.name}</h3>
-                <button onClick={() => setShowLink(false)} className="text-muted-foreground hover:text-foreground"><X size={18}/></button>
-              </div>
-              <form onSubmit={handleLinkStudent} className="space-y-4">
+      <Modal isOpen={!!(showLink && selectedParent)} onClose={() => setShowLink(false)} maxWidth="max-w-md">
+        <ModalHeader
+          icon={<Link size={14} className="text-primary"/>}
+          title={`Link Child to ${selectedParent?.name || ''}`}
+          onClose={() => setShowLink(false)}
+        />
+        <form onSubmit={handleLinkStudent} className="space-y-4 p-6">
                 <div>
                   <label className="text-xs font-bold text-foreground">Select Student *</label>
                   <select value={linkStudentId} onChange={e => setLinkStudentId(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none">
@@ -463,26 +455,21 @@ export default function Parents() {
                     ))}
                   </select>
                 </div>
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 border-t border-border pt-2">
                   <button type="button" onClick={() => setShowLink(false)} className="px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent">Cancel</button>
                   <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95">Confirm Link</button>
                 </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </form>
+      </Modal>
 
       {/* Messages Composer Modal */}
-      <AnimatePresence>
-        {showMessageModal && selectedParent && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/60">
-                <h3 className="text-sm font-black text-foreground flex items-center gap-1.5"><MessageSquare size={14} className="text-primary"/> Send Message to {selectedParent.name}</h3>
-                <button onClick={() => setShowMessageModal(false)} className="text-muted-foreground hover:text-foreground"><X size={18}/></button>
-              </div>
-              <form onSubmit={handleSendMessage} className="space-y-4">
+      <Modal isOpen={!!(showMessageModal && selectedParent)} onClose={() => setShowMessageModal(false)} maxWidth="max-w-md">
+        <ModalHeader
+          icon={<MessageSquare size={14} className="text-primary"/>}
+          title={`Send Message to ${selectedParent?.name || ''}`}
+          onClose={() => setShowMessageModal(false)}
+        />
+        <form onSubmit={handleSendMessage} className="space-y-4 p-6">
                 <div>
                   <label className="text-xs font-bold text-foreground">Message Type</label>
                   <select value={messageForm.type} onChange={e => setMessageForm(p => ({ ...p, type: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none">
@@ -504,18 +491,15 @@ export default function Parents() {
                   <textarea value={messageForm.body} onChange={e => setMessageForm(p => ({ ...p, body: e.target.value }))} rows={4} placeholder="Type your notice body here..." required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none resize-none" />
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 border-t border-border pt-2">
                   <button type="button" onClick={() => setShowMessageModal(false)} className="px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent">Cancel</button>
                   <button type="submit" disabled={saving} className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95 disabled:opacity-75">
                     {saving ? <Loader2 size={13} className="animate-spin"/> : <Send size={13}/>}
                     Broadcast Message
                   </button>
                 </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </form>
+      </Modal>
     </div>
   );
 }

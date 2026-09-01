@@ -1,0 +1,7 @@
+- [ ] Refactor Student View States (`list`, `add`, `profile`)
+- [ ] Implement Integrated Profile View (`ProfileView` component within `Students.tsx`)
+    - [ ] Left Sidebar with identity and actions
+    - [ ] Right Tabbed content with professional cards
+    - [ ] Redesign Attendance/Fees/Results stats
+- [ ] Upgrade Student List Table (Glassmorphism & High-Density)
+- [ ] Final visual polish and navigation verification

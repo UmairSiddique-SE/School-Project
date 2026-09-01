@@ -42,7 +42,7 @@ export const AuthLayout: React.FC = () => {
             The Complete Enterprise ERP for Modern Multi-School Systems.
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-lg">
-            Manage multiple campuses, track academic excellence, optimize financial processes, and foster collaboration across students, teachers, and parents.
+            Manage multiple campuses, track academic excellence, optimize financial processes, and foster collaboration across teachers and parents.
           </p>
         </motion.div>
 

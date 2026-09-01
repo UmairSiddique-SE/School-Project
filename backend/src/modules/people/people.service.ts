@@ -27,7 +27,15 @@ export class PeopleService {
         ],
       },
     });
-    if (existingTeacher) throw new ConflictException('Teacher with this Employee No or Email already exists');
+    const existingStaff = await this.prisma.staff.findFirst({
+      where: {
+        OR: [
+          { employeeNo: data.employeeNo },
+          { email: data.email },
+        ],
+      },
+    });
+    if (existingTeacher || existingStaff) throw new ConflictException('Teacher with this Employee No or Email already exists');
 
     const passwordHash = await bcrypt.hash(data.password || 'teacher123', 12);
 
@@ -119,18 +127,48 @@ export class PeopleService {
   }
 
   async createStudent(schoolId: string, data: any) {
-    // Validate required fields
-    if (!data.admissionNo) {
-      throw new ConflictException('Admission number is required');
+    // 1. Auto-generate Admission Number if not provided
+    let admissionNo = data.admissionNo;
+    if (!admissionNo) {
+      const currentYear = new Date().getFullYear();
+      const lastStudent = await this.prisma.student.findFirst({
+        where: { schoolId, admissionNo: { startsWith: `ADM-${currentYear}` } },
+        orderBy: { admissionNo: 'desc' },
+      });
+
+      let nextNum = 1;
+      if (lastStudent) {
+        const parts = lastStudent.admissionNo.split('-');
+        const lastNum = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(lastNum)) nextNum = lastNum + 1;
+      }
+      admissionNo = `ADM-${currentYear}-${String(nextNum).padStart(4, '0')}`;
     }
+
+    // 2. Auto-generate Roll Number if not provided and sectionId is present
+    let rollNo = data.rollNo;
+    if (!rollNo && data.sectionId) {
+      const lastInSection = await this.prisma.student.findFirst({
+        where: { sectionId: data.sectionId, deletedAt: null },
+        orderBy: { rollNo: 'desc' },
+      });
+      let nextRoll = 1;
+      if (lastInSection && lastInSection.rollNo) {
+        const lastRoll = parseInt(lastInSection.rollNo, 10);
+        if (!isNaN(lastRoll)) nextRoll = lastRoll + 1;
+      }
+      rollNo = String(nextRoll);
+    }
+
+    // Validate required fields
     if (!data.name) {
       throw new ConflictException('Student name is required');
     }
 
-    const existing = await this.prisma.student.findUnique({ where: { admissionNo: data.admissionNo } });
+    const existing = await this.prisma.student.findUnique({ where: { admissionNo } });
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
-    const email = data.email || `${data.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
     const passwordHash = await bcrypt.hash(data.password || 'student123', 12);
 
     // Check if a User with this email already exists (e.g., from a previous soft-deleted record)
@@ -154,9 +192,9 @@ export class PeopleService {
 
         const student = await tx.student.create({
           data: {
-            admissionNo: data.admissionNo,
+            admissionNo,
             name: data.name,
-            rollNo: data.rollNo || null,
+            rollNo,
             email,
             phone: data.phone || data.studentMobile || null,
             address: data.address || null,
@@ -165,6 +203,22 @@ export class PeopleService {
             bloodGroup: data.bloodGroup || null,
             religion: data.religion || null,
             sectionId: data.sectionId || null,
+            status: data.status || 'ACTIVE',
+            session: data.session || null,
+            bFormNumber: data.bFormNumber || null,
+            currentAddress: data.currentAddress || null,
+            permanentAddress: data.permanentAddress || null,
+            emergencyContact: data.emergencyContact || null,
+            previousSchool: data.previousSchool || null,
+            previousClass: data.previousClass || null,
+            leavingCertificateUrl: data.leavingCertificateUrl || null,
+            admissionType: data.admissionType || 'NEW',
+            previousAcademicRecord: data.previousAcademicRecord || null,
+            medicalNotes: data.medicalNotes || null,
+            specialRequirements: data.specialRequirements || null,
+            transportRequired: data.transportRequired === true || data.transportRequired === 'true',
+            hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true',
+            remarks: data.remarks || null,
             schoolId,
           },
         });
@@ -172,7 +226,7 @@ export class PeopleService {
         // If parent details are provided
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
-          const parentEmail = data.parentEmail || `${data.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
+          const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
           const parentPasswordHash = await bcrypt.hash(data.parentPassword || 'parent123', 12);
 
           // Check if Parent user exists
@@ -198,10 +252,13 @@ export class PeopleService {
               fatherName: data.fatherName || null,
               fatherMobile1: data.fatherMobile1 || null,
               fatherMobile2: data.fatherMobile2 || null,
+              fatherWhatsapp: data.fatherWhatsapp || null,
               fatherCnic: data.fatherCnic || null,
               fatherOccupation: data.fatherOccupation || null,
               motherName: data.motherName || null,
               motherMobile: data.motherMobile || null,
+              motherCnic: data.motherCnic || null,
+              motherOccupation: data.motherOccupation || null,
               guardianName: data.guardianName || null,
               guardianRelation: data.guardianRelation || null,
               guardianMobile: data.guardianMobile || null,
@@ -245,7 +302,7 @@ export class PeopleService {
     const student = await this.prisma.student.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!student) throw new NotFoundException('Student not found');
 
-    return this.prisma.student.update({
+    const updatedStudent = await this.prisma.student.update({
       where: { id },
       data: {
         name: data.name ?? undefined,
@@ -258,8 +315,50 @@ export class PeopleService {
         religion: data.religion ?? undefined,
         sectionId: data.sectionId ?? undefined,
         isActive: data.isActive ?? undefined,
+        status: data.status ?? undefined,
+        session: data.session ?? undefined,
+        bFormNumber: data.bFormNumber ?? undefined,
+        currentAddress: data.currentAddress ?? undefined,
+        permanentAddress: data.permanentAddress ?? undefined,
+        emergencyContact: data.emergencyContact ?? undefined,
+        previousSchool: data.previousSchool ?? undefined,
+        previousClass: data.previousClass ?? undefined,
+        admissionType: data.admissionType ?? undefined,
+        transportRequired: data.transportRequired !== undefined ? (data.transportRequired === true || data.transportRequired === 'true') : undefined,
+        hostelRequired: data.hostelRequired !== undefined ? (data.hostelRequired === true || data.hostelRequired === 'true') : undefined,
+        remarks: data.remarks ?? undefined,
       },
     });
+
+    // Also update parent info if provided
+    if (data.fatherName || data.motherName || data.guardianName || data.fatherMobile1 || data.motherMobile || data.fatherWhatsapp) {
+      const studentParent = await this.prisma.studentParent.findFirst({
+        where: { studentId: id, isPrimary: true },
+      });
+
+      if (studentParent) {
+        await this.prisma.parent.update({
+          where: { id: studentParent.parentId },
+          data: {
+            fatherName: data.fatherName ?? undefined,
+            fatherMobile1: data.fatherMobile1 ?? undefined,
+            fatherMobile2: data.fatherMobile2 ?? undefined,
+            fatherWhatsapp: data.fatherWhatsapp ?? undefined,
+            fatherCnic: data.fatherCnic ?? undefined,
+            fatherOccupation: data.fatherOccupation ?? undefined,
+            motherName: data.motherName ?? undefined,
+            motherMobile: data.motherMobile ?? undefined,
+            motherCnic: data.motherCnic ?? undefined,
+            motherOccupation: data.motherOccupation ?? undefined,
+            guardianName: data.guardianName ?? undefined,
+            guardianMobile: data.guardianMobile ?? undefined,
+            addressLine: data.address ?? undefined,
+          },
+        });
+      }
+    }
+
+    return updatedStudent;
   }
 
   async deleteStudent(id: string, schoolId: string) {
@@ -334,24 +433,65 @@ export class PeopleService {
     });
   }
 
-  // ─── Staff ──────────────────────────────────────────────────────────────────
+  // ─── Staff (includes teachers — teachers are added here with designation "Teacher") ──
   async getStaff(schoolId: string) {
-    return this.prisma.staff.findMany({
-      where: { schoolId, deletedAt: null },
-      orderBy: { name: 'asc' },
-    });
+    const [staffMembers, teachers] = await Promise.all([
+      this.prisma.staff.findMany({
+        where: { schoolId, deletedAt: null },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.teacher.findMany({
+        where: { schoolId, deletedAt: null },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+
+    const teacherRows = teachers.map((t) => ({
+      id: t.id,
+      employeeNo: t.employeeNo,
+      name: t.name,
+      email: t.email,
+      phone: t.phone,
+      designation: 'Teacher',
+      department: 'Academics',
+      salary: t.salary,
+      qualification: t.qualification,
+      gender: t.gender,
+      experience: t.experience,
+      personType: 'teacher' as const,
+      joiningDate: t.joiningDate,
+      isActive: t.isActive,
+    }));
+
+    const staffRows = staffMembers.map((s) => ({
+      ...s,
+      personType: 'staff' as const,
+    }));
+
+    return [...teacherRows, ...staffRows].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async createStaff(schoolId: string, data: any) {
-    const existing = await this.prisma.staff.findFirst({
+    if (data.designation === 'Teacher') {
+      return this.createTeacher(schoolId, {
+        ...data,
+        password: data.password || 'teacher123',
+      });
+    }
+
+    const existingStaff = await this.prisma.staff.findFirst({
       where: {
-        OR: [
-          { employeeNo: data.employeeNo },
-          { email: data.email },
-        ],
+        OR: [{ employeeNo: data.employeeNo }, { email: data.email }],
       },
     });
-    if (existing) throw new ConflictException('Staff with this Employee No or Email already exists');
+    const existingTeacher = await this.prisma.teacher.findFirst({
+      where: {
+        OR: [{ employeeNo: data.employeeNo }, { email: data.email }],
+      },
+    });
+    if (existingStaff || existingTeacher) {
+      throw new ConflictException('Staff with this Employee No or Email already exists');
+    }
 
     const passwordHash = await bcrypt.hash(data.password || 'staff123', 12);
 
@@ -381,20 +521,75 @@ export class PeopleService {
     });
   }
 
+  async updateStaff(id: string, schoolId: string, data: any) {
+    const staff = await this.prisma.staff.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (staff) {
+      return this.prisma.$transaction(async (tx) => {
+        const updated = await tx.staff.update({
+          where: { id },
+          data: {
+            name: data.name ?? undefined,
+            phone: data.phone ?? undefined,
+            designation: data.designation ?? undefined,
+            department: data.department ?? undefined,
+            salary: data.salary !== undefined && data.salary !== '' ? parseFloat(data.salary) : undefined,
+            isActive: data.isActive ?? undefined,
+          },
+        });
+
+        if (data.name || data.isActive !== undefined) {
+          await tx.user.updateMany({
+            where: { email: staff.email, schoolId },
+            data: {
+              ...(data.name ? { name: data.name } : {}),
+              ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+            },
+          });
+        }
+
+        return updated;
+      });
+    }
+
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (teacher) {
+      const updated = await this.updateTeacher(id, schoolId, data);
+      if (data.name || data.isActive !== undefined) {
+        await this.prisma.user.updateMany({
+          where: { email: teacher.email, schoolId },
+          data: {
+            ...(data.name ? { name: data.name } : {}),
+            ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+          },
+        });
+      }
+      return updated;
+    }
+
+    throw new NotFoundException('Staff member not found');
+  }
+
   async deleteStaff(id: string, schoolId: string) {
     const staff = await this.prisma.staff.findFirst({ where: { id, schoolId } });
-    if (!staff) throw new NotFoundException('Staff not found');
+    if (staff) {
+      return this.prisma.$transaction(async (tx) => {
+        await tx.staff.update({
+          where: { id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+        await tx.user.updateMany({
+          where: { email: staff.email, schoolId },
+          data: { isActive: false, deletedAt: new Date() },
+        });
+      });
+    }
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.staff.update({
-        where: { id },
-        data: { deletedAt: new Date(), isActive: false },
-      });
-      await tx.user.updateMany({
-        where: { email: staff.email, schoolId },
-        data: { isActive: false, deletedAt: new Date() },
-      });
-    });
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId } });
+    if (teacher) {
+      return this.deleteTeacher(id, schoolId);
+    }
+
+    throw new NotFoundException('Staff member not found');
   }
 
   // ─── Dashboard Stats ────────────────────────────────────────────────────────

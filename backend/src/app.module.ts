@@ -14,6 +14,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SchoolRequestModule } from './modules/school-request/school-request.module';
 import { PublicModule } from './modules/public/public.module';
+import { BuildingModule } from './modules/building/building.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PublicModule } from './modules/public/public.module';
     AdminModule,
     SchoolRequestModule,
     PublicModule,
+    BuildingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

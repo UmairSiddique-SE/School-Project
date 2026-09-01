@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import type { UserRole } from '@/context/AuthContext';
 
 import {
-  LayoutDashboard, GraduationCap, UserCheck, Users, Briefcase,
+  LayoutDashboard, GraduationCap, Briefcase,
   BookOpen, FileText, ClipboardList, FileSpreadsheet,
   Calendar, CreditCard, Bell, BellRing, Bus, BarChart3,
   Settings, LogOut, Menu, X,
-  ChevronLeft, ChevronDown,
+  ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen,
   Search, Shield, Sparkles,
-  Activity, TrendingUp, Eye, EyeOff,
-  School,
+  School, Sun, Moon, Building2, ChevronDown, Eye, EyeOff
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -46,9 +46,7 @@ const sidebarGroups: SidebarGroup[] = [
     label: 'People',
     items: [
       { name: 'Students', path: '/students', icon: GraduationCap, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-      { name: 'Teachers', path: '/teachers', icon: UserCheck, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-      { name: 'Parents', path: '/parents', icon: Users, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'] },
-      { name: 'Staff', path: '/staff', icon: Briefcase, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'] },
+      { name: 'Staff', path: '/staff', icon: Briefcase, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
     ],
   },
   {
@@ -56,7 +54,7 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { name: 'Classes', path: '/classes', icon: BookOpen, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
       { name: 'Homework', path: '/homework', icon: FileText, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-      { name: 'Exams', path: '/exams', icon: ClipboardList, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
+      { name: 'Exams & Grades', path: '/exams', icon: ClipboardList, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
       { name: 'Timetable', path: '/timetable', icon: FileSpreadsheet, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
     ],
   },
@@ -64,17 +62,9 @@ const sidebarGroups: SidebarGroup[] = [
     label: 'Operations',
     items: [
       { name: 'Attendance', path: '/attendance', icon: Calendar, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-      { name: 'Mark Attendance', path: '/teacher/attendance', icon: Calendar, roles: ['TEACHER'] },
-      { name: 'Finance', path: '/finance', icon: CreditCard, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
+      { name: 'Finance & Fees', path: '/finance', icon: CreditCard, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
       { name: 'Notices', path: '/notices', icon: BellRing, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
       { name: 'Transport', path: '/transport', icon: Bus, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-    ],
-  },
-  {
-    label: 'Teaching',
-    items: [
-      { name: 'My Classes', path: '/teacher/classes', icon: BookOpen, roles: ['TEACHER', 'SCHOOL_ADMIN'] },
-      { name: 'Grades', path: '/teacher/grades', icon: FileSpreadsheet, roles: ['TEACHER', 'SCHOOL_ADMIN'] },
     ],
   },
   {
@@ -91,29 +81,19 @@ const sidebarGroups: SidebarGroup[] = [
   {
     label: 'Account',
     items: [
+      { name: 'Admin Panel', path: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
       { name: 'Subscription', path: '/subscription', icon: Sparkles, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
-      { name: 'Settings', path: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
     ],
   },
-];
-
-/* ===== Right Activity Panel Data ===== */
-const ACTIVITY_ITEMS = [
-  { id: 1, icon: GraduationCap, title: 'New student enrolled', subtitle: 'Aarav Sharma — Class 10-A', time: '2m ago', dot: 'bg-violet-500' },
-  { id: 2, icon: CreditCard, title: 'Fee payment received', subtitle: '₹15,000 — Priya Patel', time: '14m ago', dot: 'bg-emerald-500' },
-  { id: 3, icon: Calendar, title: 'Attendance marked', subtitle: 'Class 9-B — 94% present', time: '32m ago', dot: 'bg-blue-500' },
-  { id: 4, icon: ClipboardList, title: 'Exam results published', subtitle: 'Mathematics — Mid Term', time: '1h ago', dot: 'bg-amber-500' },
-  { id: 5, icon: BellRing, title: 'Notice posted', subtitle: 'Annual Sports Day — Dec 15', time: '2h ago', dot: 'bg-rose-500' },
-  { id: 6, icon: UserCheck, title: 'Teacher joined', subtitle: 'Ms. Anjali Verma — Science', time: '3h ago', dot: 'bg-cyan-500' },
 ];
 
 /* ===== Sidebar Nav Item ===== */
 const NavItem: React.FC<{
   item: SidebarItem;
   basePath: string;
-  collapsed: boolean;
+  isExpanded: boolean;
   onMobileClose: () => void;
-}> = ({ item, basePath, collapsed, onMobileClose }) => {
+}> = ({ item, basePath, isExpanded, onMobileClose }) => {
   const location = useLocation();
   const Icon = item.icon;
   const currentPath = item.path.startsWith('/') ? item.path : '/' + item.path;
@@ -127,30 +107,50 @@ const NavItem: React.FC<{
       to={targetPath}
       onClick={onMobileClose}
       className={({ isActive: navActive }) =>
-        `sidebar-nav-item relative ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'} ${
-          (isActive || navActive) ? 'active' : ''
+        `sidebar-nav-item relative group flex items-center transition-all duration-200 ${
+          isExpanded ? 'px-3 py-2.5 gap-3' : 'justify-center p-2.5 mx-auto w-10 h-10'
+        } ${
+          (isActive || navActive)
+            ? 'active bg-violet-600/15 text-violet-400 font-bold border border-violet-500/30 shadow-sm'
+            : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
         }`
       }
     >
-      <Icon size={16} className="shrink-0" strokeWidth={isActive ? 2.5 : 2} />
+      <div className={`shrink-0 flex items-center justify-center ${isActive ? 'text-violet-400' : ''}`}>
+        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+      </div>
 
-      {!collapsed && (
-        <span className="flex-1 text-[13px] font-medium truncate">{item.name}</span>
+      {isExpanded && (
+        <motion.span
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -6 }}
+          transition={{ duration: 0.15 }}
+          className="flex-1 text-[13px] font-medium truncate"
+        >
+          {item.name}
+        </motion.span>
       )}
 
-      {!collapsed && item.badge && (
-        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
-          item.badgeVariant === 'violet' ? 'badge-violet' :
-          item.badgeVariant === 'rose' ? 'badge-rose' :
-          item.badgeVariant === 'amber' ? 'badge-amber' : 'badge-emerald'
-        }`}>
+      {isExpanded && item.badge && (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
+            item.badgeVariant === 'violet' ? 'badge-violet' :
+            item.badgeVariant === 'rose' ? 'badge-rose' :
+            item.badgeVariant === 'amber' ? 'badge-amber' : 'badge-emerald'
+          }`}
+        >
           {item.badge}
-        </span>
+        </motion.span>
       )}
 
-      {/* Collapsed tooltip */}
-      {collapsed && (
-        <span className="sidebar-tooltip">{item.name}</span>
+      {/* Floating Tooltip when Collapsed */}
+      {!isExpanded && (
+        <span className="sidebar-tooltip shadow-2xl z-50">
+          {item.name}
+        </span>
       )}
     </NavLink>
   );
@@ -164,20 +164,37 @@ export const DashboardLayout: React.FC = () => {
   const { schoolSlug } = useParams();
   const basePath = schoolSlug ? `/${schoolSlug}` : '';
 
-  const [collapsed, setCollapsed] = useState(false);
+  const isDashboardRoute =
+    location.pathname.endsWith('/dashboard') ||
+    location.pathname === `/${schoolSlug}` ||
+    location.pathname === `/${schoolSlug}/` ||
+    location.pathname === '/';
+
+  // Manual Sidebar Size State (Chota / Bara)
+  // Default: True (Bara) on Dashboard, False (Chota) on other sections
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { theme, toggleTheme } = useTheme();
+
+  // On page change: Dashboard stays open (Bara), other sections start mini (Chota) unless user toggled
+  useEffect(() => {
+    setMobileOpen(false);
+    if (isDashboardRoute) {
+      setIsSidebarOpen(true);
+    } else {
+      setIsSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Expanded if user manually opened it (Bara) OR hovered with mouse
+  const isExpanded = isSidebarOpen || isHovered;
 
   const effectiveRole = previewRole ?? user?.role ?? 'SCHOOL_ADMIN';
   const isPreviewMode = !!previewRole;
-
-  // Close mobile sidebar on route change
-  useEffect(() => {
-    const close = () => setMobileOpen(false);
-    close();
-  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -195,14 +212,12 @@ export const DashboardLayout: React.FC = () => {
     ? user.name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'U';
 
-  /* ===== Page label from path ===== */
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const pageLabel = pathSegments[pathSegments.length - 1]
     ?.replace(/-/g, ' ')
     ?.replace(/\b\w/g, l => l.toUpperCase()) ?? 'Dashboard';
 
-  /* ===== Sidebar Width ===== */
-  const SIDEBAR_W = collapsed ? 72 : 260;
+  const SIDEBAR_W = isExpanded ? 260 : 72;
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
@@ -216,82 +231,98 @@ export const DashboardLayout: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm md:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* ===== SIDEBAR ===== */}
+      {/* ===== SIDEBAR WITH CHOTA / BARA TOGGLE & HOVER ANIMATION ===== */}
       <motion.aside
         animate={{ width: SIDEBAR_W }}
-        transition={{ type: 'spring' as const, damping: 28, stiffness: 260 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+        onMouseEnter={() => {
+          if (!isSidebarOpen) setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+        }}
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden
-          glass border-r border-white/[0.06]
-          md:static md:translate-x-0
+          glass border-r border-white/[0.06] shadow-xl
+          md:static md:translate-x-0 select-none
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
         style={{ willChange: 'width' }}
       >
 
-        {/* Sidebar — Logo */}
-        <div className="flex h-[60px] items-center justify-between px-4 border-b border-white/[0.05] shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {/* Logo mark */}
-            <div className="relative shrink-0">
-              <div className="h-8 w-8 rounded-xl gradient-bg-primary flex items-center justify-center shadow-lg glow-violet-sm">
-                <School size={16} className="text-white" strokeWidth={2.5} />
+        {/* Sidebar Header: Logo + Chota/Bara Toggle */}
+        <div className="flex h-[64px] items-center px-3 border-b border-white/[0.06] shrink-0">
+          <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center gap-3 overflow-hidden cursor-pointer"
+              onClick={() => navigate(`${basePath}/dashboard`)}
+            >
+              <div className="h-9 w-9 rounded-xl gradient-bg-primary flex items-center justify-center shadow-lg glow-violet-sm shrink-0">
+                <School size={18} className="text-white" strokeWidth={2.5} />
               </div>
-            </div>
-            <AnimatePresence mode="wait">
-              {!collapsed && (
+              {isExpanded && (
                 <motion.div
-                  key="logo-text"
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="overflow-hidden"
+                  className="overflow-hidden whitespace-nowrap"
                 >
                   <p className="text-[15px] font-black text-white tracking-tight leading-none">EduSphere</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5 font-medium">School ERP</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">School ERP</p>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </div>
+
+            {/* Desktop Chota / Bara Toggle Button */}
+            <div className="hidden md:flex items-center">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSidebarOpen(!isSidebarOpen);
+                }}
+                title={isSidebarOpen ? 'Chota Karein (Collapse Sidebar)' : 'Bara Karein (Expand Sidebar)'}
+                className="h-7 w-7 flex items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-white hover:bg-white/[0.1] hover:border-violet-500/40 transition-all cursor-pointer"
+              >
+                {isExpanded ? (
+                  <PanelLeftClose size={14} className="text-violet-400" />
+                ) : (
+                  <PanelLeftOpen size={14} className="text-slate-400" />
+                )}
+              </button>
+            </div>
+
+            {/* Mobile Close Button */}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="md:hidden h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06]"
+            >
+              <X size={18} />
+            </button>
           </div>
-
-          {/* Collapse toggle — desktop */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden md:flex h-6 w-6 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 transition-all shrink-0"
-          >
-            <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronLeft size={12} strokeWidth={2.5} />
-            </motion.div>
-          </button>
-
-          {/* Close — mobile */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="md:hidden h-8 w-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-all"
-          >
-            <X size={18} />
-          </button>
         </div>
 
-        {/* Sidebar — Nav Groups */}
-        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 scrollbar-thin">
+        {/* Sidebar Nav Items */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-3 scrollbar-thin">
           {filteredGroups.map((group, gi) => (
             <div key={gi}>
               {/* Group label */}
-              {!collapsed && group.label && (
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-600 px-3 mb-1.5">
+              {isExpanded ? (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[9.5px] font-black uppercase tracking-[0.14em] text-slate-500 px-3 mb-1"
+                >
                   {group.label}
-                </p>
-              )}
-              {collapsed && gi > 0 && (
-                <div className="h-px bg-white/[0.05] mx-2 mb-2" />
-              )}
+                </motion.p>
+              ) : gi > 0 ? (
+                <div className="h-px bg-white/[0.06] mx-2 mb-2" />
+              ) : null}
 
               <div className="space-y-0.5">
                 {group.items.map(item => (
@@ -299,7 +330,7 @@ export const DashboardLayout: React.FC = () => {
                     key={item.path}
                     item={item}
                     basePath={basePath}
-                    collapsed={collapsed}
+                    isExpanded={isExpanded}
                     onMobileClose={() => setMobileOpen(false)}
                   />
                 ))}
@@ -308,63 +339,54 @@ export const DashboardLayout: React.FC = () => {
           ))}
         </nav>
 
-        {/* Sidebar — Upgrade Banner */}
-        {!collapsed ? (
-          <div className="p-2 border-t border-white/[0.05] shrink-0">
-            <div className="gradient-border-card">
-              <div className="gradient-border-card-inner p-2.5">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles size={13} className="text-violet-400" />
-                  <span className="text-[11px] font-bold text-white">EduSphere Pro</span>
-                  <span className="ml-auto text-[8px] font-black px-1.5 py-0.5 rounded-full badge-violet">NEW</span>
-                </div>
-                <button
-                  onClick={() => navigate(`${basePath}/subscription`)}
-                  className="btn-primary w-full px-2.5 py-1.5 text-[10.5px] rounded-lg mt-1"
-                >
-                  Upgrade to Pro
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-2 border-t border-white/[0.05] shrink-0">
-            <button
-              onClick={() => navigate(`${basePath}/subscription`)}
-              title="Upgrade"
-              className="flex w-full items-center justify-center p-2 rounded-xl text-violet-400 hover:bg-violet-500/10 transition-all"
-            >
-              <Sparkles size={16} />
-            </button>
-          </div>
-        )}
+        {/* Chota / Bara Size Toggle Strip at Bottom */}
+        <div className="p-2 border-t border-white/[0.05] shrink-0">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={`w-full flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-semibold border transition-all ${
+              isExpanded
+                ? 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
+                : 'border-transparent text-slate-400 hover:text-white hover:bg-white/[0.06]'
+            }`}
+            title={isSidebarOpen ? 'Sidebar Chota Karein' : 'Sidebar Bara Karein'}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronLeft size={14} className="text-violet-400" />
+                <span className="text-[11px] font-medium">Collapse Sidebar</span>
+              </>
+            ) : (
+              <ChevronRight size={16} className="text-violet-400" />
+            )}
+          </button>
+        </div>
 
-        {/* Sidebar — User + Logout */}
-        <div className={`p-2.5 border-t border-white/[0.05] shrink-0 ${collapsed ? '' : 'px-3'}`}>
-          {!collapsed ? (
-            <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] transition-all">
-              <div className="h-8 w-8 rounded-xl gradient-bg-primary flex items-center justify-center font-bold text-white text-sm shadow-md shrink-0">
+        {/* Sidebar User Footer */}
+        <div className={`p-2 border-t border-white/[0.05] shrink-0 ${isExpanded ? 'px-3' : 'flex justify-center'}`}>
+          {isExpanded ? (
+            <div className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-white/[0.04] transition-all">
+              <div className="h-8 w-8 rounded-xl gradient-bg-primary flex items-center justify-center font-bold text-white text-xs shadow-md shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-bold text-white truncate">{user?.name}</p>
-                <p className="text-[10px] text-slate-500 truncate">{user?.role?.replace('_', ' ')}</p>
+                <p className="text-[10px] text-slate-400 truncate">{user?.role?.replace('_', ' ')}</p>
               </div>
               <button
                 onClick={handleLogout}
                 title="Sign out"
-                className="p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
               >
-                <LogOut size={14} />
+                <LogOut size={15} />
               </button>
             </div>
           ) : (
             <button
               onClick={handleLogout}
               title="Sign out"
-              className="flex w-full items-center justify-center p-2 rounded-xl text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+              className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
             >
-              <LogOut size={16} />
+              <LogOut size={18} />
             </button>
           )}
         </div>
@@ -373,13 +395,12 @@ export const DashboardLayout: React.FC = () => {
       {/* ===== MAIN AREA ===== */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
-        {/* ===== NAVBAR ===== */}
+        {/* Top Navbar */}
         <header className="glass border-b border-white/[0.05] shrink-0 z-30">
-          <div className="flex h-[60px] items-center justify-between px-5 gap-4">
+          <div className="flex h-[64px] items-center justify-between px-5 gap-4">
 
-            {/* Left: mobile hamburger + search */}
+            {/* Left: Mobile hamburger + Search */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* Mobile menu */}
               <button
                 onClick={() => setMobileOpen(true)}
                 className="md:hidden p-2 rounded-xl btn-ghost shrink-0"
@@ -387,7 +408,7 @@ export const DashboardLayout: React.FC = () => {
                 <Menu size={18} />
               </button>
 
-              {/* Smart search */}
+              {/* Smart Search */}
               <div className={`
                 hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-xl transition-all duration-200
                 border ${searchFocused
@@ -406,62 +427,49 @@ export const DashboardLayout: React.FC = () => {
                   className="bg-transparent border-none text-[13px] text-slate-300 outline-none flex-1 placeholder:text-slate-600"
                 />
                 {!searchFocused && !searchQuery && (
-                  <div className="flex items-center gap-0.5 shrink-0">
-                    <kbd className="text-[9px] font-mono text-slate-600 bg-white/[0.04] px-1.5 py-0.5 rounded-md border border-white/[0.06]">
-                      ⌘K
-                    </kbd>
-                  </div>
+                  <kbd className="text-[9px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded-md border border-white/[0.06]">
+                    ⌘K
+                  </kbd>
                 )}
               </div>
 
-              {/* Breadcrumb */}
-              <div className="hidden lg:flex items-center gap-2 text-[12px] text-slate-600">
-                <span className="text-slate-500">{greeting},</span>
+              {/* Breadcrumb Info */}
+              <div className="hidden lg:flex items-center gap-2 text-[12px] text-slate-500">
+                <span>{greeting},</span>
                 <span className="text-white font-semibold">{firstName}</span>
                 <span className="text-slate-700">·</span>
-                <span className="text-slate-500">{pageLabel}</span>
+                <span className="text-violet-400 font-medium">{pageLabel}</span>
               </div>
             </div>
 
-            {/* Right: controls */}
-            <div className="flex items-center gap-2 shrink-0">
-
-              {/* School pill */}
+            {/* Right Controls */}
+            <div className="flex items-center gap-2.5 shrink-0">
               {user?.schoolName && (
                 <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-[11px] font-semibold text-violet-400">
-                  <School size={11} />
-                  <span className="max-w-[120px] truncate">{user.schoolName}</span>
+                  <School size={12} />
+                  <span className="max-w-[140px] truncate">{user.schoolName}</span>
                 </div>
               )}
 
-              {/* Preview portal toggle */}
-              {user?.role === 'SCHOOL_ADMIN' && (
-                <button
-                  onClick={() => {
-                    setPreviewRole(isPreviewMode ? null : 'STUDENT');
-                    navigate(`${basePath}/dashboard`);
-                  }}
-                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all ${
-                    isPreviewMode
-                      ? 'border-amber-500/35 bg-amber-500/10 text-amber-400'
-                      : 'border-white/[0.07] bg-white/[0.03] text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]'
-                  }`}
-                >
-                  {isPreviewMode ? <EyeOff size={12} /> : <Eye size={12} />}
-                  {isPreviewMode ? 'Exit Preview' : 'Preview Portal'}
-                </button>
-              )}
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all cursor-pointer"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-violet-400" />}
+              </button>
 
               {/* Notifications */}
               <button
                 onClick={() => navigate(`${basePath}/notifications`)}
-                className="relative p-2 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-all"
+                className="relative p-2 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] text-slate-400 hover:text-white transition-all"
               >
-                <Bell size={16} strokeWidth={2} />
+                <Bell size={16} />
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-violet-500 pulse-dot" />
               </button>
 
-              {/* User avatar + dropdown */}
+              {/* Profile dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -470,66 +478,37 @@ export const DashboardLayout: React.FC = () => {
                   <div className="h-7 w-7 rounded-lg gradient-bg-primary flex items-center justify-center font-bold text-white text-[11px] shadow-md">
                     {initials}
                   </div>
-                  <ChevronDown
-                    size={12}
-                    className={`text-slate-600 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
-                  />
+                  <ChevronDown size={12} className={`text-slate-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
                   {userMenuOpen && (
                     <>
-                      <div
-                        className="fixed inset-0 z-30"
-                        onClick={() => setUserMenuOpen(false)}
-                      />
+                      <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
                       <motion.div
                         initial={{ opacity: 0, y: 8, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                        transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
                         className="glass-elevated absolute right-0 top-full mt-2 w-64 rounded-2xl border border-white/[0.08] shadow-2xl z-40 overflow-hidden"
                       >
-                        {/* User info */}
                         <div className="px-4 py-4 border-b border-white/[0.06]">
-                          <div className="flex items-center gap-3">
-                            <div className="h-11 w-11 rounded-2xl gradient-bg-primary flex items-center justify-center font-bold text-white text-base shadow-lg">
-                              {initials}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-bold text-white truncate">{user?.name}</p>
-                              <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
-                              <div className="flex items-center gap-1 mt-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                <span className="text-[10px] text-emerald-400 font-medium">{user?.role?.replace('_', ' ')}</span>
-                              </div>
-                            </div>
-                          </div>
+                          <p className="text-[13px] font-bold text-white truncate">{user?.name}</p>
+                          <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+                          <span className="inline-block mt-1 text-[10px] text-emerald-400 font-semibold">{user?.role?.replace('_', ' ')}</span>
                         </div>
-
-                        {/* Menu items */}
                         <div className="p-2">
                           <button
                             onClick={() => { setUserMenuOpen(false); navigate(`${basePath}/settings`); }}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[12px] text-slate-300 hover:bg-white/[0.05]"
                           >
-                            <Settings size={14} className="text-slate-500" />
-                            Account Settings
-                          </button>
-                          <button
-                            onClick={() => { setUserMenuOpen(false); navigate(`${basePath}/notifications`); }}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all"
-                          >
-                            <Bell size={14} className="text-slate-500" />
-                            Notifications
-                            <span className="ml-auto badge-violet text-[10px] font-bold px-1.5 py-0.5 rounded-full">4</span>
+                            <Settings size={14} className="text-slate-400" />
+                            Admin Panel
                           </button>
                         </div>
-
                         <div className="p-2 border-t border-white/[0.06]">
                           <button
                             onClick={handleLogout}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-rose-400 hover:bg-rose-500/10 transition-all"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[12px] text-rose-400 hover:bg-rose-500/10"
                           >
                             <LogOut size={14} />
                             Sign Out
@@ -543,57 +522,33 @@ export const DashboardLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Preview mode banner */}
+          {/* Read-only preview mode */}
           <AnimatePresence>
             {isPreviewMode && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
+                className="overflow-hidden bg-amber-500/10 border-t border-amber-500/20 px-5 py-2 flex items-center justify-between text-[11px] text-amber-400 font-semibold"
               >
-                <div className="flex items-center justify-between px-5 py-2 bg-amber-500/8 border-t border-amber-500/20">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold text-amber-400">
-                    <Eye size={12} />
-                    <span>Viewing as Student — Read-only preview mode</span>
-                  </div>
-                  <button
-                    onClick={() => setPreviewRole(null)}
-                    className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-                  >
-                    <EyeOff size={11} />
-                    Exit
-                  </button>
+                <div className="flex items-center gap-2">
+                  <Eye size={12} />
+                  <span>Viewing in Preview Mode</span>
                 </div>
+                <button onClick={() => setPreviewRole(null)} className="font-bold flex items-center gap-1 hover:underline">
+                  <EyeOff size={12} /> Exit
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
         </header>
 
-        {/* ===== CONTENT ===== */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Main scrollable content */}
-          <main className="flex-1 overflow-y-auto scrollbar-thin">
-            <div className="p-6 lg:p-8 animate-fade-in">
-              <Outlet />
-            </div>
-          </main>
-        </div>
-
-        {/* Footer */}
-        <footer className="h-9 border-t border-white/[0.04] flex items-center justify-between px-5 bg-white/[0.01] shrink-0">
-          <span className="text-[10.5px] text-slate-700">
-            © {new Date().getFullYear()} EduSphere ERP
-          </span>
-          <div className="flex items-center gap-3 text-[10.5px] text-slate-700">
-            <a href="#" className="hover:text-slate-400 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-slate-400 transition-colors">Terms</a>
-            <div className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-emerald-600 font-medium">All systems normal</span>
-            </div>
+        {/* Content Viewport */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin">
+          <div className="p-6 lg:p-8 animate-fade-in">
+            <Outlet />
           </div>
-        </footer>
+        </main>
       </div>
     </div>
   );

@@ -84,7 +84,7 @@
     --glow-amber: 37 91% 55%;
   }
 
-  /* Keep dark class for compatibility with ThemeContext, but CSS vars always use dark */
+  /* Dark theme variables */
   .dark {
     --background: 222 47% 4.5%;
     --foreground: 210 40% 96%;
@@ -106,6 +106,33 @@
     --input: 220 25% 12%;
     --ring: 258 90% 66%;
   }
+
+  /* Light theme variables */
+  .light {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 258 90% 60%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 94%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 258 90% 60%;
+
+    --surface-1: 0 0% 100%;
+    --surface-2: 210 40% 96%;
+    --surface-3: 214 32% 91%;
+  }
 }
 
 @layer base {
@@ -121,10 +148,11 @@
   }
 
   body {
-    background-color: hsl(222, 47%, 4.5%);
-    color: hsl(var(--foreground, 210 40% 98%));
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
@@ -139,11 +167,22 @@
   border: 1px solid rgba(255, 255, 255, 0.065);
 }
 
+.light .glass {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .glass-elevated {
   background: rgba(19, 25, 38, 0.85);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light .glass-elevated {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 .glass-card {
@@ -154,6 +193,17 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.light .stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .glass-hover {
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -162,6 +212,12 @@
   background: rgba(19, 25, 38, 0.9);
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.light .glass-hover:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* ========================================
@@ -197,7 +253,7 @@
    ======================================== */
 
 .gradient-text-primary {
-  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -218,7 +274,7 @@
 }
 
 .gradient-bg-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #4f46e5 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);
 }
 
 .gradient-bg-blue {
@@ -288,9 +344,9 @@
 }
 
 .sidebar-nav-item.active {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(79, 70, 229, 0.15));
-  color: #a78bfa;
-  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.15));
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
   box-shadow: 0 0 12px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -688,3 +744,257 @@
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+
+/* ========================================
+   PROFESSIONAL THEME REFINEMENTS
+   National-level standard — light & dark parity
+   ======================================== */
+
+/* ---- LIGHT: professional slate surfaces + subtle brand tint ---- */
+.light {
+  --background: 220 27% 97%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 214 32% 91%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 220 20% 95%;
+  --muted-foreground: 215 16% 43%;
+  --accent: 220 22% 93%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 220 15% 88%;
+  --input: 220 15% 88%;
+  --ring: 243 75% 59%;
+
+  --surface-1: 0 0% 100%;
+  --surface-2: 220 27% 96%;
+  --surface-3: 220 20% 92%;
+
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 100%, rgba(14, 165, 233, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* ---- DARK: refined indigo primary (consistent with light) ---- */
+.dark {
+  --primary: 243 75% 67%;
+  --ring: 243 75% 67%;
+}
+
+/* ---- Badges: readable text in light mode ---- */
+.light .badge-violet  { background: rgba(99, 102, 241, 0.10);  color: #4f46e5; border-color: rgba(99, 102, 241, 0.25); }
+.light .badge-emerald { background: rgba(16, 185, 129, 0.10);  color: #047857; border-color: rgba(16, 185, 129, 0.25); }
+.light .badge-rose    { background: rgba(239, 68, 68, 0.08);   color: #b91c1c; border-color: rgba(239, 68, 68, 0.22); }
+.light .badge-amber   { background: rgba(245, 158, 11, 0.12);  color: #92400e; border-color: rgba(245, 158, 11, 0.28); }
+.light .badge-blue    { background: rgba(59, 130, 246, 0.10);  color: #1d4ed8; border-color: rgba(59, 130, 246, 0.25); }
+.light .badge-cyan    { background: rgba(6, 182, 212, 0.10);   color: #0e7490; border-color: rgba(6, 182, 212, 0.25); }
+
+/* ---- Sidebar: theme-aware nav items ---- */
+.light .sidebar-nav-item { color: hsl(220, 16%, 42%); }
+.light .sidebar-nav-item:hover {
+  background: rgba(99, 102, 241, 0.06);
+  color: hsl(222, 47%, 18%);
+}
+.light .sidebar-nav-item.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(14, 165, 233, 0.08));
+  color: #4338ca;
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.12);
+}
+
+/* ---- Buttons ---- */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+.light .btn-primary {
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.28);
+}
+.light .btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.36);
+}
+.light .btn-ghost { color: hsl(220, 16%, 42%); }
+.light .btn-ghost:hover {
+  background: rgba(99, 102, 241, 0.07);
+  color: hsl(222, 47%, 18%);
+}
+
+/* ---- Tables ---- */
+.light .premium-table tbody tr { border-bottom: 1px solid rgba(15, 23, 42, 0.06); }
+.light .premium-table tbody tr:hover { background: rgba(99, 102, 241, 0.035); }
+
+/* ---- Stat card hover (light) ---- */
+.light .stat-card:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(99, 102, 241, 0.30);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(99, 102, 241, 0.12);
+}
+
+/* ---- Gradient border card ---- */
+.light .gradient-border-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(79, 70, 229, 0.15), rgba(14, 165, 233, 0.25));
+}
+.light .gradient-border-card-inner { background: hsl(0 0% 100%); }
+
+/* ---- Scrollbars ---- */
+.light ::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.16); }
+.light ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.4); }
+.light .scrollbar-thin { scrollbar-color: rgba(15, 23, 42, 0.16) transparent; }
+.light .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.16); }
+.light .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.4); }
+
+/* ---- Skeleton shimmer ---- */
+.light .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.05) 25%,
+    rgba(15, 23, 42, 0.09) 50%,
+    rgba(15, 23, 42, 0.05) 75%
+  );
+}
+
+/* ---- Recharts grid lines ---- */
+.light .recharts-cartesian-grid-horizontal line,
+.light .recharts-cartesian-grid-vertical line {
+  stroke: rgba(15, 23, 42, 0.07) !important;
+}
+
+/* ---- Sidebar tooltip ---- */
+.light .sidebar-tooltip {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  color: hsl(222, 47%, 20%);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+/* ---- Activity timeline ---- */
+.light .activity-item::before { background: rgba(15, 23, 42, 0.10); }
+
+/* ---- Noise overlay: subtler in light ---- */
+.light .noise-overlay { opacity: 0.015; }
+
+/* ---- Mesh backgrounds for light ---- */
+.light .mesh-bg-violet {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(79, 70, 229, 0.05) 0%, transparent 50%);
+}
+.light .mesh-bg-blue {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+}
+
+/* ---- Professional focus-visible everywhere ---- */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 0.7);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---- Respect reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   APPLICATION COLOUR SYSTEM
+   Keeps the dashboard legible where existing screens use utility colours.
+   ======================================== */
+
+.light main,
+.light header,
+.light aside,
+.light footer {
+  color: hsl(222 47% 16%);
+}
+
+/* Existing screens were authored dark-first. These semantic remaps give the
+   same hierarchy in daylight without changing every individual page. */
+.light main .text-white,
+.light header .text-white,
+.light aside .text-white,
+.light footer .text-white { color: hsl(222 47% 16%); }
+.light main .text-slate-200,
+.light main .text-slate-300,
+.light header .text-slate-300 { color: hsl(220 18% 30%); }
+.light main .text-slate-400,
+.light header .text-slate-400 { color: hsl(220 14% 40%); }
+.light main .text-slate-500,
+.light header .text-slate-500,
+.light aside .text-slate-500 { color: hsl(220 12% 46%); }
+.light main .text-slate-600,
+.light header .text-slate-600,
+.light aside .text-slate-600 { color: hsl(220 12% 40%); }
+.light main .text-slate-700,
+.light header .text-slate-700,
+.light aside .text-slate-700 { color: hsl(220 15% 34%); }
+
+.light main [class*="bg-white/"],
+.light header [class*="bg-white/"],
+.light aside [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.76);
+}
+.light main [class*="border-white/"],
+.light header [class*="border-white/"],
+.light aside [class*="border-white/"],
+.light footer [class*="border-white/"] {
+  border-color: rgba(15, 23, 42, 0.10);
+}
+
+/* Preserve deliberate white content over branded fills. */
+.light .gradient-bg-primary .text-white,
+.light .gradient-bg-blue .text-white,
+.light .gradient-bg-emerald .text-white,
+.light .gradient-bg-rose .text-white,
+.light .gradient-bg-amber .text-white,
+.light .gradient-bg-cyan .text-white,
+.light .btn-primary,
+.light .btn-primary .text-white { color: #fff; }
+
+.light .glass {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.light .glass-elevated,
+.light .glass-card,
+.light .stat-card {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.light input,
+.light select,
+.light textarea {
+  color: hsl(222 47% 16%);
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+.light input::placeholder,
+.light textarea::placeholder { color: hsl(220 10% 52%); }
+
+.dark {
+  background-image:
+    radial-gradient(ellipse at 5% 0%, rgba(99, 102, 241, 0.10) 0%, transparent 38%),
+    radial-gradient(ellipse at 95% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Small-screen guardrails used by every page inside DashboardLayout. */
+@media (max-width: 639px) {
+  main table { min-width: 620px; }
+  main .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+  main button { min-height: 2.5rem; }
+  main input, main select, main textarea { font-size: 16px; }
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, School, FileText, CreditCard, BarChart2,
-  Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight,
+  Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight, Building2,
 } from 'lucide-react';
 
 // Section Imports
@@ -17,11 +17,12 @@ import EmailTemplates from './sections/EmailTemplates';
 import SystemSettings from './sections/SystemSettings';
 import AuditLogs from './sections/AuditLogs';
 import Profile from './sections/Profile';
+import Buildings from './sections/Buildings';
 
 type SectionId =
   | 'overview' | 'school-requests' | 'schools' | 'plans'
   | 'payments' | 'reports' | 'notifications' | 'email-templates'
-  | 'system-settings' | 'audit-logs' | 'profile';
+  | 'system-settings' | 'audit-logs' | 'profile' | 'buildings';
 
 interface NavItem {
   id: SectionId;
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'school-requests', label: 'School Requests', icon: FileText, badge: 3 },
   { id: 'schools', label: 'Schools', icon: School },
+  { id: 'buildings', label: 'Buildings & Rooms', icon: Building2 },
   { id: 'plans', label: 'Plans', icon: Shield, dividerBefore: true },
   { id: 'payments', label: 'Payments', icon: CreditCard, badge: 3 },
   { id: 'reports', label: 'Reports', icon: BarChart2, dividerBefore: true },
@@ -49,6 +51,7 @@ const sectionComponents: Record<SectionId, React.ComponentType> = {
   'overview': Overview,
   'school-requests': SchoolRequests,
   'schools': Schools,
+  'buildings': Buildings,
   'plans': Plans,
   'payments': Payments,
   'reports': Reports,

@@ -49,6 +49,7 @@ model School {
   teachers       Teacher[]
   routes         TransportRoute[]
   users          User[]
+  buildings      Building[]
 
   @@index([slug])
   @@index([deletedAt])
@@ -233,7 +234,23 @@ model Student {
   avatarUrl           String?
   isActive            Boolean              @default(true)
   isAlumni            Boolean              @default(false)
+  status              String               @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED, LEFT
   admissionDate       DateTime             @default(now())
+  session             String?              // e.g., 2026-2027
+  bFormNumber         String?              // National ID / B-Form
+  currentAddress      String?
+  permanentAddress    String?
+  emergencyContact    String?
+  previousSchool      String?
+  previousClass       String?
+  leavingCertificateUrl String?
+  admissionType       String               @default("NEW") // NEW, TRANSFER
+  previousAcademicRecord String?
+  medicalNotes        String?
+  specialRequirements String?
+  transportRequired   Boolean              @default(false)
+  hostelRequired      Boolean              @default(false)
+  remarks             String?
   leavingDate         DateTime?
   rollNo              String?
   createdAt           DateTime             @default(now())
@@ -303,10 +320,13 @@ model Parent {
   fatherName       String?
   fatherMobile1    String?
   fatherMobile2    String?
+  fatherWhatsapp   String?
   fatherCnic       String?
   fatherOccupation String?
   motherName       String?
   motherMobile     String?
+  motherCnic       String?
+  motherOccupation String?
   guardianName     String?
   guardianRelation String?
   guardianMobile   String?
@@ -860,4 +880,57 @@ model SchoolRequest {
 
   @@index([status])
   @@index([createdAt])
+}
+
+// ─── Building Infrastructure ───────────────────────────────────────────────
+
+model Building {
+  id               String   @id @default(uuid())
+  name             String
+  buildingType     String   @default("OWNED") // OWNED, RENTED, LEASED
+  address          String?
+  city             String?
+  locationArea     String?
+  floors           Int      @default(1)
+  totalClassrooms  Int      @default(0)
+  totalRooms       Int      @default(0)
+  studentCapacity  Int      @default(0)
+  hasComputerLab   Boolean  @default(false)
+  hasScienceLab    Boolean  @default(false)
+  hasLibrary       Boolean  @default(false)
+  hasPlayground    Boolean  @default(false)
+  hasAuditorium    Boolean  @default(false)
+  hasCanteen       Boolean  @default(false)
+  hasPrayerArea    Boolean  @default(false)
+  hasParking       Boolean  @default(false)
+  hasCctv          Boolean  @default(false)
+  hasSecurityGuard Boolean  @default(false)
+  hasFireSafety    Boolean  @default(false)
+  hasFirstAid      Boolean  @default(false)
+  description      String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  schoolId         String
+  school           School   @relation(fields: [schoolId], references: [id])
+  rooms            Room[]
+
+  @@index([schoolId])
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  roomNo     String
+  name       String?
+  floor      Int      @default(1)
+  capacity   Int      @default(30)
+  type       String   @default("CLASSROOM")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  @@unique([roomNo, buildingId])
+  @@index([buildingId])
 }

@@ -9,6 +9,9 @@ import {
 } from "framer-motion";
 import apiClient from "@/api/apiClient";
 import { Link, useNavigate } from "react-router-dom";
+import SchoolSearchModal from "@/component/SchoolSearchModal";
+import { Search, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface NavItem {
@@ -433,7 +436,7 @@ function SectionSubtitle({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
-function Navbar() {
+function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
@@ -443,6 +446,8 @@ function Navbar() {
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <>
@@ -479,16 +484,30 @@ function Navbar() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* CTA & Theme Toggle */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Theme Toggle */}
             <button
-              onClick={() => navigate("/school-login")}
-              className="text-sm font-semibold text-white/70 hover:text-white transition-colors px-4 py-2"
+              onClick={toggleTheme}
+              className="p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all flex items-center justify-center cursor-pointer"
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              School Login
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-violet-400" />
+              )}
+            </button>
+
+            <button
+              onClick={onOpenSchoolSearch}
+              className="flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition-colors px-4 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10"
+            >
+              <Search className="w-4 h-4 text-violet-400" />
+              <span>School Login</span>
             </button>
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/school-login")}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/50 hover:scale-105 transition-all duration-200"
             >
               Register School
@@ -547,10 +566,38 @@ function Navbar() {
                 ))}
                 <button
                   onClick={() => {
-                    setMobileOpen(false);
-                    navigate("/register");
+                    toggleTheme();
                   }}
-                  className="mt-2 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold text-center"
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 text-white font-semibold text-sm hover:bg-white/10 transition-all border border-white/10"
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="w-4 h-4 text-amber-400" />
+                      <span>Switch to Light Theme</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-4 h-4 text-violet-400" />
+                      <span>Switch to Dark Theme</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    onOpenSchoolSearch();
+                  }}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-all"
+                >
+                  <Search className="w-4 h-4 text-violet-400" />
+                  <span>School Login</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    navigate("/school-login");
+                  }}
+                  className="mt-1 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold text-center"
                 >
                   Register School
                 </button>
@@ -564,7 +611,7 @@ function Navbar() {
 }
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
-function Hero() {
+function Hero({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
@@ -632,7 +679,7 @@ function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
         >
           <button
-            onClick={() => navigate("/login?demo=1")}
+            onClick={() => navigate("/demo-login")}
             className="group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/60 hover:scale-105 transition-all duration-300 overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-2">
@@ -642,6 +689,14 @@ function Hero() {
               </span>
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+
+          <button
+            onClick={onOpenSchoolSearch}
+            className="group px-7 py-4 rounded-2xl bg-white/[0.07] hover:bg-white/[0.12] border border-white/15 hover:border-violet-400/40 text-white font-bold text-lg backdrop-blur-xl transition-all duration-300 flex items-center gap-2.5 shadow-lg"
+          >
+            <Search className="w-5 h-5 text-violet-400 group-hover:scale-110 transition-transform" />
+            <span>Search School Login</span>
           </button>
         </motion.div>
 
@@ -1111,7 +1166,7 @@ function Pricing() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/school-login")}
                   className={`block w-full py-3.5 rounded-xl text-center font-bold text-sm transition-all duration-300 ${
                     plan.highlighted
                       ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg"
@@ -1510,12 +1565,14 @@ function Footer() {
 
 // ─── Landing Page Root ────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const [isSchoolSearchOpen, setIsSchoolSearchOpen] = useState(false);
+
   return (
     <>
       {/* SEO Meta — should be placed in index.html in production */}
       <div className="min-h-screen bg-[#030817] text-white font-sans overflow-x-hidden">
-        <Navbar />
-        <Hero />
+        <Navbar onOpenSchoolSearch={() => setIsSchoolSearchOpen(true)} />
+        <Hero onOpenSchoolSearch={() => setIsSchoolSearchOpen(true)} />
         <Features />
         <WhyUs />
         <Modules />
@@ -1526,6 +1583,12 @@ export default function LandingPage() {
         <Contact />
         <Footer />
       </div>
+
+      {/* VIP School Search Modal Dialog */}
+      <SchoolSearchModal
+        isOpen={isSchoolSearchOpen}
+        onClose={() => setIsSchoolSearchOpen(false)}
+      />
     </>
   );
 }

@@ -15,12 +15,12 @@ import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Classes from "@/pages/Classes";
-import Teachers from "@/pages/Teachers";
 import Students from "@/pages/Students";
 import Parents from "@/pages/Parents";
 import Finance from "@/pages/Finance";
 import Settings from "@/pages/Settings";
-import { MyClasses, Attendance, Grades } from "@/pages/TeacherPages";
+import { MyClasses, Attendance as TeacherAttendance, Grades } from "@/pages/TeacherPages";
+import Attendance from "@/pages/Attendance";
 
 // New Pages
 import Staff from "@/pages/Staff";
@@ -33,9 +33,11 @@ import Reports from "@/pages/Reports";
 import Subscription from "@/pages/Subscription";
 import AttendanceAdmin from "@/pages/AttendanceAdmin";
 import Notifications from "@/pages/Notifications";
+import BuildingManagement from "@/pages/BuildingManagement";
 
 import { useAuth } from "@/context/AuthContext";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import SchoolLogin from "@/pages/SchoolLogin";
 
 const NotFound = () => (
   <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6">
@@ -94,6 +96,7 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
 
             {/* Auth Routes */}
+            <Route path="/school-login" element={<SchoolLogin />} />
             <Route
               path="/demo-login"
               element={<Navigate to="/login?demo=1" replace />}
@@ -101,9 +104,7 @@ export default function App() {
             <Route path="/:schoolSlug/login" element={<AuthLayout />}>
               <Route index element={<LoginPage />} />
             </Route>
-            <Route path="/login" element={<AuthLayout />}>
-              <Route index element={<LoginPage />} />
-            </Route>
+            <Route path="/login" element={<Navigate to="/school-login" replace />} />
 
             {/* Direct Shortcut Routes (Redirect to tenant-namespaced paths) */}
             <Route
@@ -120,9 +121,9 @@ export default function App() {
             />
             <Route
               path="/teachers"
-              element={<TenantRedirect to="teachers" />}
+              element={<TenantRedirect to="staff" />}
             />
-            <Route path="/parents" element={<TenantRedirect to="parents" />} />
+            <Route path="/parents" element={<TenantRedirect to="students" />} />
             <Route path="/classes" element={<TenantRedirect to="classes" />} />
             <Route path="/staff" element={<TenantRedirect to="staff" />} />
             <Route
@@ -157,6 +158,10 @@ export default function App() {
               path="/settings"
               element={<TenantRedirect to="settings" />}
             />
+            <Route
+              path="/buildings"
+              element={<TenantRedirect to="buildings" />}
+            />
 
             {/* Protected Dashboard Routes with schoolSlug */}
             <Route
@@ -173,12 +178,13 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="super-admin" element={<SuperAdminDashboard />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="buildings" element={<BuildingManagement />} />
 
               {/* School Admin & Shared Portals */}
               <Route path="classes" element={<Classes />} />
-              <Route path="teachers" element={<Teachers />} />
+              <Route path="teachers" element={<Navigate to="staff" replace />} />
               <Route path="students" element={<Students />} />
-              <Route path="parents" element={<Parents />} />
+              <Route path="parents" element={<Navigate to="students" replace />} />
               <Route path="finance" element={<Finance />} />
               <Route path="staff" element={<Staff />} />
               <Route path="homework" element={<Homework />} />
@@ -189,11 +195,12 @@ export default function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="subscription" element={<Subscription />} />
               <Route path="attendance" element={<AttendanceAdmin />} />
+              <Route path="attendance/mark" element={<Attendance />} />
               <Route path="notifications" element={<Notifications />} />
 
               {/* Teacher */}
               <Route path="teacher/classes" element={<MyClasses />} />
-              <Route path="teacher/attendance" element={<Attendance />} />
+              <Route path="teacher/attendance" element={<TeacherAttendance />} />
               <Route path="teacher/grades" element={<Grades />} />
             </Route>
 

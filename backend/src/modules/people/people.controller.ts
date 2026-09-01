@@ -79,6 +79,11 @@ export class PeopleController {
     return this.peopleService.createStaff(user.schoolId, dto);
   }
 
+  @Patch('staff/:id')
+  updateStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    return this.peopleService.updateStaff(id, user.schoolId, dto);
+  }
+
   @Delete('staff/:id')
   deleteStaff(@CurrentUser() user: any, @Param('id') id: string) {
     return this.peopleService.deleteStaff(id, user.schoolId);
