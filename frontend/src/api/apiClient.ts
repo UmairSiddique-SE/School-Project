@@ -27,31 +27,11 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Response Interceptor: Handle Global Errors (like 401 Unauthorized)
+// Response Interceptor: Handle errors silently (auth is bypassed)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // Check if 401 Unauthorized and not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const token = localStorage.getItem("auth_token");
-
-      // If using demo token, don't force page reload to /login
-      if (token && token.startsWith("demo-token")) {
-        return Promise.reject(error);
-      }
-
-      try {
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
-        window.location.href = "/login";
-      } catch (refreshError) {
-        return Promise.reject(refreshError);
-      }
-    }
-
+    // Do NOT redirect to login — authentication is bypassed
     return Promise.reject(error);
   },
 );

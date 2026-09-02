@@ -10,7 +10,7 @@ import {
 import apiClient from "@/api/apiClient";
 import { Link, useNavigate } from "react-router-dom";
 import SchoolSearchModal from "@/component/SchoolSearchModal";
-import { Search, Sun, Moon } from "lucide-react";
+import { Search, Sun, Moon, ShieldCheck } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -499,15 +499,27 @@ function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
               )}
             </button>
 
+            {/* Super Admin Access Button */}
             <button
-              onClick={onOpenSchoolSearch}
+              onClick={() => navigate("/super-admin")}
+              className="flex items-center gap-2 text-xs font-bold text-rose-300 hover:text-rose-200 transition-all px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 shadow-md hover:scale-105"
+              title="Super Administrator Master Portal"
+            >
+              <ShieldCheck className="w-4 h-4 text-rose-400" />
+              <span>Super Admin</span>
+            </button>
+
+            {/* School Login Button */}
+            <button
+              onClick={() => navigate("/school-login")}
               className="flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition-colors px-4 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10"
             >
               <Search className="w-4 h-4 text-violet-400" />
               <span>School Login</span>
             </button>
+
             <button
-              onClick={() => navigate("/school-login")}
+              onClick={() => navigate("/register-school")}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/50 hover:scale-105 transition-all duration-200"
             >
               Register School
@@ -585,17 +597,27 @@ function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
                 <button
                   onClick={() => {
                     setMobileOpen(false);
-                    onOpenSchoolSearch();
+                    navigate("/super-admin");
                   }}
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-all"
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 font-bold text-sm hover:bg-rose-500/25 transition-all"
                 >
-                  <Search className="w-4 h-4 text-violet-400" />
-                  <span>School Login</span>
+                  <ShieldCheck className="w-4 h-4 text-rose-400" />
+                  <span>Super Admin Portal</span>
                 </button>
                 <button
                   onClick={() => {
                     setMobileOpen(false);
                     navigate("/school-login");
+                  }}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-md transition-all"
+                >
+                  <Search className="w-4 h-4 text-white" />
+                  <span>School Login</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    navigate("/register-school");
                   }}
                   className="mt-1 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold text-center"
                 >
@@ -676,14 +698,15 @@ function Hero({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65, duration: 0.8 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+          className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-16"
         >
+          {/* Register School Button */}
           <button
-            onClick={() => navigate("/demo-login")}
-            className="group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/60 hover:scale-105 transition-all duration-300 overflow-hidden"
+            onClick={() => navigate("/register-school")}
+            className="group relative px-9 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/60 hover:scale-105 transition-all duration-300 overflow-hidden"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              Start Free Demo{" "}
+            <span className="relative z-10 flex items-center gap-2.5">
+              Register School{" "}
               <span className="group-hover:translate-x-1 transition-transform">
                 →
               </span>
@@ -691,12 +714,13 @@ function Hero({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
             <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
 
+          {/* School Login Button */}
           <button
-            onClick={onOpenSchoolSearch}
-            className="group px-7 py-4 rounded-2xl bg-white/[0.07] hover:bg-white/[0.12] border border-white/15 hover:border-violet-400/40 text-white font-bold text-lg backdrop-blur-xl transition-all duration-300 flex items-center gap-2.5 shadow-lg"
+            onClick={() => navigate("/school-login")}
+            className="group px-8 py-4 rounded-2xl bg-white/[0.07] hover:bg-white/[0.12] border border-white/15 hover:border-violet-400/40 text-white font-bold text-lg backdrop-blur-xl transition-all duration-300 flex items-center gap-2.5 shadow-lg"
           >
             <Search className="w-5 h-5 text-violet-400 group-hover:scale-110 transition-transform" />
-            <span>Search School Login</span>
+            <span>School Login</span>
           </button>
         </motion.div>
 

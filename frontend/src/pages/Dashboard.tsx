@@ -228,81 +228,447 @@ export default function Dashboard() {
   const role = previewRole ?? user?.role ?? 'SCHOOL_ADMIN';
 
   /* ========================================
-     SUPER ADMIN DASHBOARD
+     TEACHER DASHBOARD
      ======================================== */
-  if (role === 'SUPER_ADMIN') {
+  if (role === 'TEACHER') {
+    const teacherClasses = [
+      { id: '1', name: 'Class 10-A', subject: 'Mathematics', students: 42, room: 'Room 204', nextClass: '08:00 AM' },
+      { id: '2', name: 'Class 9-B', subject: 'Mathematics', students: 38, room: 'Room 102', nextClass: '09:40 AM' },
+      { id: '3', name: 'Class 11-A', subject: 'Physics Lab', students: 35, room: 'Science Lab 2', nextClass: '10:45 AM' },
+      { id: '4', name: 'Class 10-B', subject: 'Mathematics', students: 40, room: 'Room 205', nextClass: '11:35 AM' },
+      { id: '5', name: 'Class 8-C', subject: 'General Science', students: 36, room: 'Room 108', nextClass: 'Tomorrow' },
+    ];
+
+    const todayTeacherPeriods = [
+      { period: 'Period 1', time: '08:00 - 08:45', class: 'Class 10-A', subject: 'Mathematics', room: 'Room 204', status: 'Completed' },
+      { period: 'Period 2', time: '09:40 - 10:25', class: 'Class 9-B', subject: 'Mathematics', room: 'Room 102', status: 'In Progress' },
+      { period: 'Period 3', time: '10:45 - 11:30', class: 'Class 11-A', subject: 'Physics Lab', room: 'Science Lab 2', status: 'Upcoming' },
+      { period: 'Period 4', time: '11:35 - 12:20', class: 'Class 10-B', subject: 'Mathematics', room: 'Room 205', status: 'Upcoming' },
+    ];
+
+    const pendingHomeworksList = [
+      { id: 'hw-1', title: 'Quadratic Equations Exercise 3.2', class: 'Class 10-A', due: 'Today, 05:00 PM', submitted: 38, total: 42 },
+      { id: 'hw-2', title: 'Thermodynamics Problem Set', class: 'Class 11-A', due: 'Tomorrow, 09:00 AM', submitted: 24, total: 35 },
+      { id: 'hw-3', title: 'Algebraic Formulas Practice', class: 'Class 9-B', due: 'Sep 05, 2026', submitted: 30, total: 38 },
+    ];
+
+    const teacherLeaves = [
+      { id: 'l1', type: 'Casual Leave', dates: 'Aug 18 - Aug 19, 2026', days: '2 Days', status: 'APPROVED', reason: 'Family Function' },
+      { id: 'l2', type: 'Medical Leave', dates: 'Sep 12, 2026', days: '1 Day', status: 'PENDING', reason: 'Doctor Appointment' },
+    ];
+
     return (
-      <div className="space-y-8 max-w-screen-2xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-violet-600/30 text-white font-black text-xl">
-                <Shield size={24} />
+      <div className="space-y-7 max-w-screen-2xl mx-auto pb-10">
+        {/* 1. Teacher Executive Welcome Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-violet-950/70 via-indigo-950/40 to-[#090e24] border border-violet-500/25 shadow-[0_0_50px_rgba(124,58,237,0.15)]"
+        >
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>👨‍🏫 Faculty Portal Active</span>
+                </span>
+                <span className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                  <Calendar size={13} className="text-violet-400" />
+                  <span>Session 2026-2027 · Term 2</span>
+                </span>
+                <span className="hidden sm:inline-block text-slate-600">•</span>
+                <span className="text-xs font-mono text-violet-300">
+                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-black text-white tracking-tight">Super Admin Platform Hub</h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                    Master Console
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">Multi-tenant management & platform governance</p>
-              </div>
+
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+                Welcome, {user?.name || 'Faculty Member'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-xl">
+                Here is your daily teaching schedule, attendance overview, and pending student tasks for today.
+              </p>
             </div>
-            <Link
-              to={`${basePath}/super-admin`}
-              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center gap-2"
-            >
-              <span>Launch Full Super Admin Suite</span>
-              <ArrowRight size={14} />
-            </Link>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                onClick={() => navigate(`${basePath}/attendance`)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-violet-600/25 hover:scale-105 transition-all flex items-center gap-2"
+              >
+                <CheckCircle2 size={15} />
+                <span>Mark Attendance</span>
+              </button>
+              <button
+                onClick={() => navigate(`${basePath}/homework`)}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 hover:scale-105 transition-all flex items-center gap-2"
+              >
+                <FileText size={15} />
+                <span>Create Homework</span>
+              </button>
+              <button
+                onClick={() => navigate(`${basePath}/exams`)}
+                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 hover:scale-105 transition-all flex items-center gap-2"
+              >
+                <Award size={15} />
+                <span>Enter Marks</span>
+              </button>
+              <button
+                onClick={() => setIsNoticeModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold text-xs hover:scale-105 transition-all flex items-center gap-2"
+              >
+                <Calendar size={15} className="text-amber-400" />
+                <span>Apply Leave</span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <Link to={`${basePath}/super-admin`}>
-            <GlassCard className="group cursor-pointer border-violet-500/20 hover:border-violet-500/40 transition-all">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-extrabold text-violet-400 uppercase tracking-wider">Schools & Subscriptions</p>
-                  <h3 className="text-xl font-black text-white mt-1">24 Active Institutions</h3>
-                  <p className="text-xs text-slate-400 mt-2">Manage licenses, tenant plans & billing</p>
-                </div>
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg text-white group-hover:scale-110 transition-transform">
-                  <School size={20} />
-                </div>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link to={`${basePath}/reports`}>
-            <GlassCard className="group cursor-pointer border-blue-500/20 hover:border-blue-500/40 transition-all" delay={0.1}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-extrabold text-blue-400 uppercase tracking-wider">Analytics Engine</p>
-                  <h3 className="text-xl font-black text-white mt-1">Platform Metrics</h3>
-                  <p className="text-xs text-slate-400 mt-2">System health, user activity & revenue trends</p>
-                </div>
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg text-white group-hover:scale-110 transition-transform">
-                  <BarChart3 size={20} />
-                </div>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link to={`${basePath}/settings`}>
-            <GlassCard className="group cursor-pointer border-emerald-500/20 hover:border-emerald-500/40 transition-all" delay={0.15}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">Security & Logs</p>
-                  <h3 className="text-xl font-black text-white mt-1">System Controls</h3>
-                  <p className="text-xs text-slate-400 mt-2">Roles, permissions, audit trails & API keys</p>
-                </div>
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg text-white group-hover:scale-110 transition-transform">
-                  <Zap size={20} />
-                </div>
-              </div>
-            </GlassCard>
-          </Link>
+        {/* 2. Top 4 Teacher Metric Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            icon={BookOpen}
+            label="Total Classes"
+            value={5}
+            trend="5 Assigned Sections"
+            trendDir="up"
+            subtitle="Class 8th to 11th"
+            gradient="gradient-bg-primary"
+            delay={0.05}
+            onClick={() => navigate(`${basePath}/classes`)}
+          />
+          <StatCard
+            icon={GraduationCap}
+            label="Total Students"
+            value={191}
+            trend="Under your supervision"
+            trendDir="up"
+            subtitle="96% Average Attendance"
+            gradient="gradient-bg-blue"
+            delay={0.1}
+            onClick={() => navigate(`${basePath}/students`)}
+          />
+          <StatCard
+            icon={Clock}
+            label="Today's Classes"
+            value={4}
+            trend="1 Completed, 1 Live"
+            trendDir="up"
+            subtitle="Next: Physics Lab (10:45 AM)"
+            gradient="gradient-bg-emerald"
+            delay={0.15}
+            onClick={() => navigate(`${basePath}/timetable`)}
+          />
+          <StatCard
+            icon={FileText}
+            label="Pending Homework"
+            value={12}
+            trend="To check & grade"
+            trendDir="down"
+            subtitle="3 Active Assignments"
+            gradient="gradient-bg-rose"
+            delay={0.2}
+            onClick={() => navigate(`${basePath}/homework`)}
+          />
         </div>
+
+        {/* 3. Today's Teaching Schedule & Assigned Subjects */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Today's Schedule (2 cols) */}
+          <div className="lg:col-span-2 bg-card border border-border/60 rounded-3xl p-6 shadow-xl">
+            <SectionHeader
+              icon={Clock}
+              title="Today's Teaching Schedule"
+              subtitle="Your daily timetable and live period tracker"
+              badge="Daily Timetable"
+              action="Full Timetable"
+              onAction={() => navigate(`${basePath}/timetable`)}
+            />
+
+            <div className="space-y-3 mt-4">
+              {todayTeacherPeriods.map((p, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    p.status === 'In Progress'
+                      ? 'bg-violet-500/10 border-violet-500/40 shadow-md shadow-violet-500/10 ring-1 ring-violet-500/30'
+                      : p.status === 'Completed'
+                      ? 'bg-muted/20 border-border/40 opacity-70'
+                      : 'bg-muted/30 border-border hover:bg-muted/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                      p.status === 'In Progress'
+                        ? 'bg-violet-600 text-white shadow-md'
+                        : p.status === 'Completed'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {p.period.split(' ')[1]}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-foreground text-sm">{p.subject}</p>
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold">
+                          {p.class}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                        <span>{p.time}</span>
+                        <span>•</span>
+                        <span>{p.room}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${
+                      p.status === 'In Progress'
+                        ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30 animate-pulse'
+                        : p.status === 'Completed'
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {p.status}
+                    </span>
+                    <button
+                      onClick={() => navigate(`${basePath}/attendance`)}
+                      className="text-xs font-bold px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
+                    >
+                      Attendance
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Teacher Leave & Quick Access (1 col) */}
+          <div className="space-y-6">
+            {/* Leave Tracker Card */}
+            <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+                    <Calendar size={16} />
+                  </div>
+                  <h3 className="font-bold text-foreground text-sm">Leave Applications</h3>
+                </div>
+                <button
+                  onClick={() => setIsNoticeModalOpen(true)}
+                  className="text-xs font-bold text-primary hover:underline"
+                >
+                  + Apply
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {teacherLeaves.map((l) => (
+                  <div key={l.id} className="p-3 rounded-xl bg-muted/30 border border-border flex items-center justify-between gap-2">
+                    <div>
+                      <p className="font-bold text-xs text-foreground">{l.type}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{l.dates} ({l.days})</p>
+                      <p className="text-[10px] text-muted-foreground/70 italic mt-0.5">Reason: {l.reason}</p>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                      l.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                    }`}>
+                      {l.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links for Teachers */}
+            <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-xl space-y-2.5">
+              <h3 className="font-bold text-foreground text-sm mb-3">Academic Shortcuts</h3>
+              <button
+                onClick={() => navigate(`${basePath}/classes`)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/10 hover:border-primary/30 border border-border text-left transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <BookOpen size={16} className="text-violet-400" />
+                  <span className="text-xs font-bold text-foreground group-hover:text-primary">My Classes & Sections</span>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => navigate(`${basePath}/exams`)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/10 hover:border-primary/30 border border-border text-left transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Award size={16} className="text-emerald-400" />
+                  <span className="text-xs font-bold text-foreground group-hover:text-primary">Exams & Enter Marks</span>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => navigate(`${basePath}/notices`)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/10 hover:border-primary/30 border border-border text-left transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Bell size={16} className="text-blue-400" />
+                  <span className="text-xs font-bold text-foreground group-hover:text-primary">School & Class Notices</span>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. My Classes & Subject Mapping Grid */}
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-xl">
+          <SectionHeader
+            icon={BookOpen}
+            title="My Assigned Classes & Subject Mapping"
+            subtitle="Manage students, attendance, homework, and marks for each class"
+            badge="5 Active Classes"
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-4">
+            {teacherClasses.map((c) => (
+              <div
+                key={c.id}
+                className="p-5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/70 hover:border-primary/30 transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-black px-2 py-0.5 rounded-md bg-primary/15 text-primary">
+                      {c.name}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">{c.room}</span>
+                  </div>
+                  <h4 className="font-bold text-foreground text-base mt-1">{c.subject}</h4>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <Users size={12} className="text-slate-400" />
+                    <span>{c.students} Students Enrolled</span>
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-3 border-t border-border/50 flex gap-1.5">
+                  <button
+                    onClick={() => navigate(`${basePath}/attendance`)}
+                    className="flex-1 py-1.5 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white text-[11px] font-bold transition-all text-center"
+                  >
+                    Attendance
+                  </button>
+                  <button
+                    onClick={() => navigate(`${basePath}/homework`)}
+                    className="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-foreground text-[11px] font-bold border border-border transition-all text-center"
+                  >
+                    Homework
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. Pending Homework Submissions to Check */}
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-xl">
+          <SectionHeader
+            icon={FileText}
+            title="Homework & Assignment Submissions"
+            subtitle="Review, grade, and provide feedback on student homework"
+            badge="Review Hub"
+            action="Create Assignment"
+            onAction={() => navigate(`${basePath}/homework`)}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {pendingHomeworksList.map((hw) => (
+              <div key={hw.id} className="p-4 rounded-2xl bg-muted/30 border border-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      {hw.class}
+                    </span>
+                    <span className="text-[11px] text-slate-400">{hw.due}</span>
+                  </div>
+                  <h4 className="font-bold text-foreground text-sm">{hw.title}</h4>
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Submissions</span>
+                      <span className="font-bold text-foreground">{hw.submitted} / {hw.total}</span>
+                    </div>
+                    <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-primary h-full rounded-full"
+                        style={{ width: `${(hw.submitted / hw.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate(`${basePath}/homework`)}
+                  className="mt-4 w-full py-2 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>Review Submissions</span>
+                  <ArrowRight size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Leave Modal */}
+        <AnimatePresence>
+          {isNoticeModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div initial={{ scale: 0.93 }} animate={{ scale: 1 }} exit={{ scale: 0.93 }}
+                className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-foreground text-lg">Apply for Leave</h3>
+                  <button onClick={() => setIsNoticeModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+                    <X size={18} />
+                  </button>
+                </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  toast.success('Leave application submitted to Principal for approval!');
+                  setIsNoticeModalOpen(false);
+                }} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-muted-foreground block mb-1">Leave Type</label>
+                    <select className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      <option>Casual Leave</option>
+                      <option>Medical / Sick Leave</option>
+                      <option>Emergency Leave</option>
+                      <option>Half Day Leave</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">From Date</label>
+                      <input type="date" required defaultValue={new Date().toISOString().split('T')[0]}
+                        className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">To Date</label>
+                      <input type="date" required defaultValue={new Date().toISOString().split('T')[0]}
+                        className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-muted-foreground block mb-1">Reason for Leave</label>
+                    <textarea required rows={3} placeholder="Please provide details for your leave request..."
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+                  </div>
+                  <button type="submit"
+                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                    Submit Leave Application
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

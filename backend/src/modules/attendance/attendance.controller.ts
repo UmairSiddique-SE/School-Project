@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query, UseGuards,
+  Controller, Get, Post, Body, Query, Param, UseGuards,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -21,9 +21,24 @@ export class AttendanceController {
     return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date);
   }
 
+  @Get('section/:sectionId')
+  getAttendanceBySection(
+    @CurrentUser() user: any,
+    @Param('sectionId') sectionId: string,
+    @Query('date') date: string,
+  ) {
+    return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date || new Date().toISOString().split('T')[0]);
+  }
+
   @Post()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendance(@CurrentUser() user: any, @Body() dto: any) {
+    return this.attendanceService.markAttendance(user.schoolId, dto);
+  }
+
+  @Post('mark')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  markAttendanceAlias(@CurrentUser() user: any, @Body() dto: any) {
     return this.attendanceService.markAttendance(user.schoolId, dto);
   }
 }

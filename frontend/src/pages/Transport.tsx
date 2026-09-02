@@ -379,7 +379,7 @@ export default function Transport() {
         studentCount: 0,
       };
       setRoutes([...routes, newRoute]);
-      toast.success('Transport route created successfully! (Demo mode)');
+      toast.success('Transport route created successfully!');
     } finally {
       setShowAddRoute(false);
       setRouteForm({ name: '', startPoint: '', endPoint: '', distance: '', description: '', stops: '', estimatedTime: '', fee: '' });
@@ -414,7 +414,7 @@ export default function Transport() {
         isMoving: false,
       };
       setVehicles([...vehicles, newVehicle]);
-      toast.success('Vehicle registered successfully! (Demo mode)');
+      toast.success('Vehicle registered successfully!');
     } finally {
       setShowAddVehicle(false);
       setVehicleForm({ vehicleNo: '', type: 'BUS', capacity: '', model: '', year: '', fuelType: 'DIESEL', routeId: '', driverName: '', driverPhone: '' });

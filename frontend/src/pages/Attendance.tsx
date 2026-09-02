@@ -166,9 +166,8 @@ export default function Attendance() {
         records,
       });
       toast.success('Attendance saved successfully!');
-    } catch (error) {
-      // Fallback to mock success
-      toast.success('Attendance saved successfully! (Demo mode)');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save attendance.');
     } finally {
       setSaving(false);
     }

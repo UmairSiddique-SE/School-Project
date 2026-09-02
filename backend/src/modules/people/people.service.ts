@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
@@ -37,7 +37,8 @@ export class PeopleService {
     });
     if (existingTeacher || existingStaff) throw new ConflictException('Teacher with this Employee No or Email already exists');
 
-    const passwordHash = await bcrypt.hash(data.password || 'teacher123', 12);
+    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     try {
       return await this.prisma.$transaction(async (tx) => {
@@ -169,7 +170,8 @@ export class PeopleService {
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
-    const passwordHash = await bcrypt.hash(data.password || 'student123', 12);
+    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     // Check if a User with this email already exists (e.g., from a previous soft-deleted record)
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
@@ -227,7 +229,8 @@ export class PeopleService {
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
           const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
-          const parentPasswordHash = await bcrypt.hash(data.parentPassword || 'parent123', 12);
+          if (!data.parentPassword || data.parentPassword.length < 12) throw new BadRequestException('A parent password of at least 12 characters is required');
+          const parentPasswordHash = await bcrypt.hash(data.parentPassword, 12);
 
           // Check if Parent user exists
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
@@ -394,7 +397,8 @@ export class PeopleService {
 
   async createParent(schoolId: string, data: any) {
     const email = data.email || `${data.phone}@parent.edu`;
-    const passwordHash = await bcrypt.hash(data.password || 'parent123', 12);
+    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     return this.prisma.$transaction(async (tx) => {
       // Create User
@@ -475,7 +479,7 @@ export class PeopleService {
     if (data.designation === 'Teacher') {
       return this.createTeacher(schoolId, {
         ...data,
-        password: data.password || 'teacher123',
+        password: data.password,
       });
     }
 
@@ -493,7 +497,8 @@ export class PeopleService {
       throw new ConflictException('Staff with this Employee No or Email already exists');
     }
 
-    const passwordHash = await bcrypt.hash(data.password || 'staff123', 12);
+    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     return this.prisma.$transaction(async (tx) => {
       await tx.user.create({
@@ -681,4 +686,3 @@ export class PeopleService {
     };
   }
 }
-

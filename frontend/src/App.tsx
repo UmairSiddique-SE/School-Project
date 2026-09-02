@@ -12,6 +12,7 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
+import PortalSelector from "@/pages/PortalSelector";
 import LoginPage from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Classes from "@/pages/Classes";
@@ -38,6 +39,7 @@ import BuildingManagement from "@/pages/BuildingManagement";
 import { useAuth } from "@/context/AuthContext";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import SchoolLogin from "@/pages/SchoolLogin";
+import RegisterSchool from "@/pages/RegisterSchool";
 
 const NotFound = () => (
   <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6">
@@ -79,10 +81,13 @@ const Unauthorized = () => (
   </div>
 );
 
-// Helper to redirect top-level direct URLs to tenant-namespaced routes
+import AdminLogin from "@/pages/AdminLogin";
+
+// Always redirect to super-admin or edusphere dashboard — no login needed
 const TenantRedirect = ({ to }: { to: string }) => {
   const { user } = useAuth();
-  const slug = user?.schoolSlug || "demo";
+  if (user?.role === 'SUPER_ADMIN') return <Navigate to="/super-admin" replace />;
+  const slug = user?.schoolSlug || 'edusphere';
   return <Navigate to={`/${slug}/${to}`} replace />;
 };
 
@@ -93,14 +98,16 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             {/* Public Landing Page */}
+            {/* Main entry — Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/portal" element={<PortalSelector />} />
 
             {/* Auth Routes */}
             <Route path="/school-login" element={<SchoolLogin />} />
-            <Route
-              path="/demo-login"
-              element={<Navigate to="/login?demo=1" replace />}
-            />
+            <Route path="/register-school" element={<RegisterSchool />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/:schoolSlug/login" element={<AuthLayout />}>
               <Route index element={<LoginPage />} />
             </Route>
@@ -113,7 +120,11 @@ export default function App() {
             />
             <Route
               path="/super-admin"
-              element={<TenantRedirect to="super-admin" />}
+              element={
+                <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/students"

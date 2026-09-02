@@ -284,10 +284,10 @@ export default function BuildingManagement() {
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-                School Building & Campus
+                School Infrastructure
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Manage physical campus blocks, classrooms, facilities checklist & safety compliance
+                Manage physical school blocks, classrooms, facilities checklist & safety compliance
               </p>
             </div>
           </div>
@@ -411,7 +411,7 @@ export default function BuildingManagement() {
       {loading ? (
         <div className="h-48 flex items-center justify-center text-muted-foreground gap-2">
           <RefreshCw size={18} className="animate-spin text-violet-500" />
-          <span className="text-xs">Loading campus buildings...</span>
+          <span className="text-xs">Loading school buildings...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-card border border-border border-dashed rounded-3xl p-12 text-center">
@@ -420,7 +420,7 @@ export default function BuildingManagement() {
           </div>
           <h3 className="text-base font-bold text-foreground">No Buildings Registered Yet</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
-            Add your main campus building, junior wing, high school block, or sports complex with complete facilities and safety records.
+            Add your main school building, junior wing, high school block, or sports complex with complete facilities and safety records.
           </p>
           <button
             onClick={openCreateModal}
@@ -513,7 +513,7 @@ export default function BuildingManagement() {
                   {/* Facilities Grid */}
                   <div className="space-y-1.5 mb-3">
                     <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                      <span>Campus Facilities ({activeFacilities.length}/8)</span>
+                      <span>Building Facilities ({activeFacilities.length}/8)</span>
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {FACILITY_ITEMS.map(f => {
@@ -777,7 +777,7 @@ export default function BuildingManagement() {
                           onChange={e => setFormData({ ...formData, buildingType: e.target.value })}
                           className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
                         >
-                          <option value="OWNED">Owned Campus Property</option>
+                          <option value="OWNED">Owned School Property</option>
                           <option value="RENTED">Rented / Leased Property</option>
                         </select>
                       </div>

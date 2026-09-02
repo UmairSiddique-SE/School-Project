@@ -350,12 +350,12 @@ export default function Timetable() {
     toast.success(`Standard 6-day timetable generated for ${currentSectionLabel}!`);
   };
 
-  // Reset to seed demo
-  const handleResetDemo = () => {
-    if (confirm('Reset entire timetable schedule to original demo state?')) {
+  // Reset to seed schedule
+  const handleResetSchedule = () => {
+    if (confirm('Reset entire timetable schedule to standard template?')) {
       setTimetables(DEFAULT_TIMETABLES);
       localStorage.setItem(storageKey, JSON.stringify(DEFAULT_TIMETABLES));
-      toast.success('Demo schedule restored successfully!');
+      toast.success('Standard schedule template restored successfully!');
     }
   };
 
@@ -410,9 +410,9 @@ export default function Timetable() {
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={handleResetDemo}
+            onClick={handleResetSchedule}
             className="p-2.5 rounded-xl border border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground text-xs font-bold transition-all shadow-sm"
-            title="Reset to Demo Schedule"
+            title="Reset to Standard Template"
           >
             <RefreshCw size={14} />
           </button>

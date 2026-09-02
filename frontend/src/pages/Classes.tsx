@@ -618,7 +618,7 @@ export default function Classes() {
   };
 
   const handleResetData = () => {
-    if (!confirm('Reset all classes and sections to clean default demo template?')) return;
+    if (!confirm('Reset all classes and sections to clean standard template?')) return;
     localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify(DEFAULT_CLASSES));
     setClasses(DEFAULT_CLASSES);
     toast.success('Reset to standard school template successfully!');

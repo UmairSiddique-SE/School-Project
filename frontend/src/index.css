@@ -135,6 +135,12 @@
   }
 }
 
+@layer components {
+  .register-card { @apply rounded-3xl border border-white/10 bg-[#0c1227]/80 p-5 md:p-7 shadow-xl shadow-black/10; }
+  .register-input { @apply w-full rounded-xl border border-white/10 bg-white/[.04] px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20; }
+  .input-icon { @apply absolute left-3 top-3 text-slate-500 pointer-events-none; }
+}
+
 @layer base {
   * {
     border-color: hsl(var(--border));

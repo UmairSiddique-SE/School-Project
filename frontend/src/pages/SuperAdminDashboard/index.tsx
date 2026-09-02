@@ -1,193 +1,393 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, School, FileText, CreditCard, BarChart2,
-  Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight, Building2,
-} from 'lucide-react';
+  LayoutDashboard,
+  School,
+  FileText,
+  CreditCard,
+  BarChart2,
+  Bell,
+  Mail,
+  Settings,
+  Shield,
+  User,
+  Menu,
+  X,
+  ChevronRight,
+  Building2,
+  LogOut,
+  Clock,
+  Zap,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 // Section Imports
-import Overview from './sections/Overview';
-import SchoolRequests from './sections/SchoolRequests';
-import Schools from './sections/Schools';
-import Plans from './sections/Plans';
-import Payments from './sections/Payments';
-import Reports from './sections/Reports';
-import Notifications from './sections/Notifications';
-import EmailTemplates from './sections/EmailTemplates';
-import SystemSettings from './sections/SystemSettings';
-import AuditLogs from './sections/AuditLogs';
-import Profile from './sections/Profile';
-import Buildings from './sections/Buildings';
+import Overview from "./sections/Overview";
+import SchoolRequests from "./sections/SchoolRequests";
+import Schools from "./sections/Schools";
+import Plans from "./sections/Plans";
+import Payments from "./sections/Payments";
+import Reports from "./sections/Reports";
+import Notifications from "./sections/Notifications";
+import EmailTemplates from "./sections/EmailTemplates";
+import SystemSettings from "./sections/SystemSettings";
+import AuditLogs from "./sections/AuditLogs";
+import Profile from "./sections/Profile";
+import Buildings from "./sections/Buildings";
 
 type SectionId =
-  | 'overview' | 'school-requests' | 'schools' | 'plans'
-  | 'payments' | 'reports' | 'notifications' | 'email-templates'
-  | 'system-settings' | 'audit-logs' | 'profile' | 'buildings';
+  | "overview"
+  | "school-requests"
+  | "schools"
+  | "plans"
+  | "payments"
+  | "reports"
+  | "notifications"
+  | "email-templates"
+  | "system-settings"
+  | "audit-logs"
+  | "profile";
 
 interface NavItem {
   id: SectionId;
   label: string;
   icon: React.ComponentType<any>;
   badge?: number | string;
-  dividerBefore?: boolean;
+  group?: string;
 }
 
-const navItems: NavItem[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'school-requests', label: 'School Requests', icon: FileText, badge: 3 },
-  { id: 'schools', label: 'Schools', icon: School },
-  { id: 'buildings', label: 'Buildings & Rooms', icon: Building2 },
-  { id: 'plans', label: 'Plans', icon: Shield, dividerBefore: true },
-  { id: 'payments', label: 'Payments', icon: CreditCard, badge: 3 },
-  { id: 'reports', label: 'Reports', icon: BarChart2, dividerBefore: true },
-  { id: 'notifications', label: 'Notifications', icon: Bell, badge: 4 },
-  { id: 'email-templates', label: 'Email Templates', icon: Mail, dividerBefore: true },
-  { id: 'system-settings', label: 'System Settings', icon: Settings },
-  { id: 'audit-logs', label: 'Audit Logs', icon: Shield },
-  { id: 'profile', label: 'Profile', icon: User, dividerBefore: true },
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: "Platform Core",
+    items: [{ id: "overview", label: "Command Center", icon: LayoutDashboard }],
+  },
+  {
+    label: "Institutional Governance",
+    items: [
+      {
+        id: "school-requests",
+        label: "Registration Queue",
+        icon: FileText,
+        badge: 3,
+      },
+      { id: "schools", label: "Institutions", icon: School },
+    ],
+  },
+  {
+    label: "Treasury & Finance",
+    items: [
+      { id: "plans", label: "Service Packages", icon: Shield },
+      { id: "payments", label: "Revenue Stream", icon: CreditCard, badge: 3 },
+      { id: "reports", label: "Business Intelligence", icon: BarChart2 },
+    ],
+  },
+  {
+    label: "Platform Comms",
+    items: [
+      { id: "notifications", label: "Global Alerts", icon: Bell, badge: 4 },
+      { id: "email-templates", label: "System Mailers", icon: Mail },
+    ],
+  },
+  {
+    label: "System Integrity",
+    items: [
+      { id: "system-settings", label: "Core Configuration", icon: Settings },
+      { id: "audit-logs", label: "Governance Logs", icon: Shield },
+      { id: "profile", label: "Admin Identity", icon: User },
+    ],
+  },
 ];
 
+// flat list for lookup
+const allNavItems = navGroups.flatMap((g) => g.items);
+
 const sectionComponents: Record<SectionId, React.ComponentType> = {
-  'overview': Overview,
-  'school-requests': SchoolRequests,
-  'schools': Schools,
-  'buildings': Buildings,
-  'plans': Plans,
-  'payments': Payments,
-  'reports': Reports,
-  'notifications': Notifications,
-  'email-templates': EmailTemplates,
-  'system-settings': SystemSettings,
-  'audit-logs': AuditLogs,
-  'profile': Profile,
+  overview: Overview,
+  "school-requests": SchoolRequests,
+  schools: Schools,
+  plans: Plans,
+  payments: Payments,
+  reports: Reports,
+  notifications: Notifications,
+  "email-templates": EmailTemplates,
+  "system-settings": SystemSettings,
+  "audit-logs": AuditLogs,
+  profile: Profile,
 };
 
+function LiveClock() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <span className="tabular-nums">
+      {time.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" })}
+    </span>
+  );
+}
+
 export default function SuperAdminDashboard() {
-  const [activeSection, setActiveSection] = useState<SectionId>('overview');
+  const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { logout } = useAuth() as any;
+  const navigate = useNavigate();
 
   const ActiveComponent = sectionComponents[activeSection];
-  const activeItem = navItems.find(n => n.id === activeSection);
+  const activeItem = allNavItems.find((n) => n.id === activeSection);
 
   const handleNav = (id: SectionId) => {
     setActiveSection(id);
     setMobileOpen(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+  };
+
+  const SidebarContent = () => (
+    <>
+      <div className="relative shrink-0 overflow-hidden px-5 py-5">
+        <div className="absolute -left-7 -top-7 h-28 w-28 rounded-full bg-violet-600/20 blur-3xl" />
+        <div className="absolute -right-4 bottom-0 h-20 w-20 rounded-full bg-cyan-500/10 blur-3xl" />
+
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/40">
+                <Shield size={16} className="text-white" />
+              </div>
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-400 shadow pulse-dot" />
+            </div>
+            <div>
+              <p className="text-sm font-black leading-none tracking-tight text-foreground">
+                EduSphere
+              </p>
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-400">
+                Super Admin
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-accent hover:text-foreground lg:hidden"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="mt-4 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      </div>
+
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-3 scrollbar-thin">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            <p className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground/50">
+              {group.label}
+            </p>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNav(item.id)}
+                    className={`group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                      isActive
+                        ? "text-white"
+                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active-bg"
+                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600/90 to-indigo-600/90 shadow-lg shadow-violet-500/30"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 32,
+                        }}
+                      />
+                    )}
+
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-accent"
+                        className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-white/60"
+                      />
+                    )}
+
+                    <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3">
+                      <Icon
+                        size={16}
+                        className={`shrink-0 transition-colors ${isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`}
+                      />
+                      <span className="flex-1 truncate text-left text-[13px] font-semibold">
+                        {item.label}
+                      </span>
+                    </div>
+
+                    {item.badge !== undefined && (
+                      <span
+                        className={`relative z-10 min-w-[18px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-black tabular-nums ${
+                          isActive
+                            ? "bg-white/25 text-white"
+                            : "bg-violet-500/15 text-violet-400"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+
+                    {isActive && (
+                      <ChevronRight
+                        size={12}
+                        className="relative z-10 shrink-0 text-white/60"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      <div className="shrink-0 px-3 py-3">
+        <div className="mb-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="group flex items-center gap-3 rounded-xl border border-violet-500/15 bg-gradient-to-r from-violet-500/8 to-indigo-500/5 px-3 py-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-black text-white shadow-md shadow-violet-500/30">
+            SA
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-bold leading-none text-foreground">
+              Super Admin
+            </p>
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              Platform Control
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-rose-500/10 hover:text-rose-400 group-hover:opacity-100"
+          >
+            <LogOut size={13} />
+          </button>
+        </div>
+
+        <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] font-medium text-muted-foreground/40">
+          <Zap size={9} />
+          EduSphere Platform v1.0
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="flex h-full w-full overflow-hidden rounded-2xl border border-border bg-background">
+    <div className="relative flex h-full w-full overflow-hidden rounded-[28px] border border-violet-500/15 bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.18),_transparent_30%),linear-gradient(135deg,#0b1020_0%,#111827_38%,#0f172a_100%)] shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02),transparent_25%,transparent_75%,rgba(255,255,255,0.02))]" />
       {/* Mobile Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-black lg:hidden"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Sub Sidebar */}
+      {/* ── Sidebar ── */}
       <motion.aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border w-64 shrink-0 lg:translate-x-0 transition-transform duration-300 ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-violet-500/10 bg-slate-950/80 backdrop-blur-xl lg:static lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } transition-transform duration-300`}
       >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <Shield size={15} className="text-white" />
-            </div>
-            <div>
-              <p className="text-xs font-black text-foreground leading-none">Super Admin</p>
-              <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Platform Control</p>
-            </div>
-          </div>
-          <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-muted-foreground hover:text-foreground">
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Nav Items */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {navItems.map(item => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            return (
-              <React.Fragment key={item.id}>
-                {item.dividerBefore && <div className="h-px bg-border my-2" />}
-                <button
-                  onClick={() => handleNav(item.id)}
-                  className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <Icon size={17} className="shrink-0" />
-                  <span className="flex-1 text-left truncate">{item.label}</span>
-                  {item.badge !== undefined && (
-                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'
-                    }`}>
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && <ChevronRight size={13} className="shrink-0 opacity-60" />}
-                </button>
-              </React.Fragment>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div className="px-3 py-4 border-t border-border shrink-0">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center text-white text-xs font-black shrink-0">
-              S
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-foreground truncate">EduSphere v1.0</p>
-              <p className="text-[10px] text-muted-foreground">Platform Edition</p>
-            </div>
-          </div>
-        </div>
+        <SidebarContent />
       </motion.aside>
 
-      {/* Main Content */}
+      {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Section Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-card/60 backdrop-blur-sm shrink-0">
+        {/* ── Top Header Bar ── */}
+        <header className="flex shrink-0 items-center gap-3 border-b border-violet-500/10 bg-slate-950/60 px-5 py-3 backdrop-blur-xl">
+          {/* Mobile menu */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-accent text-muted-foreground"
+            className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground transition-all"
           >
             <Menu size={18} />
           </button>
-          {activeItem && (
-            <>
-              <activeItem.icon size={18} className="text-primary shrink-0" />
-              <h1 className="text-base font-black text-foreground">{activeItem.label}</h1>
-            </>
-          )}
-        </div>
 
-        {/* Section Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+              <Shield size={13} className="text-violet-400 shrink-0" />
+              <span className="hidden sm:inline">Super Admin</span>
+              <ChevronRight size={12} className="hidden sm:inline opacity-40" />
+            </div>
+            {activeItem && (
+              <div className="flex items-center gap-2">
+                <activeItem.icon size={15} className="text-primary shrink-0" />
+                <h1 className="text-sm font-black text-foreground truncate">
+                  {activeItem.label}
+                </h1>
+              </div>
+            )}
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Live clock */}
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-xs text-muted-foreground font-medium">
+              <Clock size={12} className="text-violet-400" />
+              <LiveClock />
+            </div>
+
+            {/* Notifications */}
+            <button className="relative rounded-lg p-2 text-muted-foreground transition-all hover:bg-violet-500/10 hover:text-violet-200">
+              <Bell size={16} />
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-violet-500 ring-2 ring-slate-950" />
+            </button>
+
+            {/* Avatar */}
+            <div
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-black text-white shadow-md shadow-violet-500/30"
+              onClick={() => handleNav("profile")}
+              title="My Profile"
             >
-              <ActiveComponent />
-            </motion.div>
-          </AnimatePresence>
+              SA
+            </div>
+          </div>
+        </header>
+
+        {/* ── Section Content ── */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          <div className="mx-auto max-w-[1800px] p-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <ActiveComponent />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
-import { User, Moon, Sun, Shield, Mail, Tag, Sparkles, Sliders } from 'lucide-react';
+import { User, Moon, Sun, Shield, Mail, Tag, Sparkles, Sliders, Building2 } from 'lucide-react';
+import BuildingManagement from './BuildingManagement';
+import Subscription from './Subscription';
 
 export default function Settings() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<'profile' | 'appearance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'buildings' | 'subscription' | 'appearance'>('profile');
 
   return (
     <div className="space-y-6">
@@ -24,22 +26,46 @@ export default function Settings() {
         </div>
 
         {/* Tab Navigation Controls */}
-        <div className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-2xl w-fit overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'profile'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent'
             }`}
           >
             <User size={15} />
-            <span>Admin Profile</span>
+            <span>Profile</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('buildings')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'buildings'
+                ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+            }`}
+          >
+            <Building2 size={15} />
+            <span>Infrastructure</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('subscription')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'subscription'
+                ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+            }`}
+          >
+            <Sparkles size={15} />
+            <span>Subscription</span>
           </button>
 
           <button
             onClick={() => setActiveTab('appearance')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'appearance'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent'
@@ -56,7 +82,7 @@ export default function Settings() {
         <div className="space-y-6 max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-6">
             <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
-              <User size={16} className="text-primary" /> Administrator Profile
+              <User size={16} className="text-primary" /> Institutional Information
             </h2>
             <div className="flex items-center gap-4 mb-5">
               <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-2xl">
@@ -89,7 +115,21 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ─── TAB 2: APPEARANCE & PREFERENCES ─── */}
+      {/* ─── TAB 2: BUILDINGS & ROOMS ─── */}
+      {activeTab === 'buildings' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <BuildingManagement />
+        </motion.div>
+      )}
+
+      {/* ─── TAB 3: SUBSCRIPTION ─── */}
+      {activeTab === 'subscription' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Subscription />
+        </motion.div>
+      )}
+
+      {/* ─── TAB 4: APPEARANCE & PREFERENCES ─── */}
       {activeTab === 'appearance' && (
         <div className="space-y-6 max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-6">

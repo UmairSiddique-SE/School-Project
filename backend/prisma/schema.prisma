@@ -10,6 +10,7 @@ datasource db {
 model School {
   id             String           @id @default(uuid())
   name           String
+  type           String?
   slug           String           @unique
   domain         String?          @unique
   email          String?

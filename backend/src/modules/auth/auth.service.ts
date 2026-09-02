@@ -53,6 +53,12 @@ export class AuthService {
         data: {
           name: dto.schoolName,
           slug: dto.schoolSlug,
+          type: dto.schoolType,
+          logoUrl: dto.logoUrl,
+          phone: dto.schoolPhone || dto.adminPhone,
+          address: dto.schoolAddress,
+          country: dto.country,
+          city: dto.city,
           isActive: true,
         },
       });
@@ -64,6 +70,7 @@ export class AuthService {
           passwordHash,
           role: 'SCHOOL_ADMIN',
           schoolId: school.id,
+          phone: dto.adminPhone,
         },
       });
 
@@ -92,19 +99,17 @@ export class AuthService {
     };
   }
 
-  // ─── Login ────────────────────────────────────────────────────────────────
+  // ─── Login (Passwordless — Email Only) ─────────────────────────────────────
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: dto.email.trim().toLowerCase() },
       include: { school: { select: { name: true, slug: true } } },
     });
 
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    if (!user.isActive) throw new UnauthorizedException('Account is suspended');
+    if (!user) throw new UnauthorizedException('No account found for this email address');
+    if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
 
-    const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!passwordValid) throw new UnauthorizedException('Invalid credentials');
-
+    // Passwordless authentication — login directly with email only
     const tokens = await this.generateTokens(
       user.id,
       user.email,

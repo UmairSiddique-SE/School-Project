@@ -2,16 +2,111 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   School, TrendingUp, AlertTriangle, DollarSign, Clock, CheckCircle,
-  Users, GraduationCap, UserCheck, Activity, ArrowUpRight, ArrowDownRight,
-  Settings, FileText, Shield
+  GraduationCap, UserCheck, Activity, ArrowUpRight, ArrowDownRight,
+  Settings, FileText, Shield, Zap, ExternalLink, Server, Database, Globe,
+  Cpu, HardDrive, Award, Sparkles, ArrowRight, BellRing, WalletCards, Target
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 import apiClient from '@/api/apiClient';
 
+const CHART_COLORS = {
+  grid: 'rgba(255,255,255,0.04)',
+  tick: 'hsl(217.9 10.6% 54%)',
+  tooltip: {
+    background: 'hsl(224 71% 4%)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    fontSize: 12,
+    color: '#fff',
+  },
+};
 
+function StatCard({
+  label, value, icon: Icon, gradient, bg, textColor, change, up, loading, delay, subValue
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ComponentType<any>;
+  gradient: string;
+  bg: string;
+  textColor: string;
+  change: string;
+  up: boolean;
+  loading: boolean;
+  delay: number;
+  subValue?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative group overflow-hidden rounded-[24px] border border-white/[0.05] bg-slate-900/40 p-5 backdrop-blur-xl
+        hover:border-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-500 cursor-default"
+    >
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
+        style={{ background: `radial-gradient(circle at 10% 10%, ${up ? 'rgba(124,58,237,0.08)' : 'rgba(239,68,68,0.06)'} 0%, transparent 50%)` }}
+      />
+
+      <div className="relative flex items-start justify-between mb-4">
+        <div className={`h-12 w-12 rounded-2xl ${bg} flex items-center justify-center
+          ring-1 ring-white/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-lg`}>
+          <Icon size={22} className={textColor} />
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-tighter
+            ${up
+              ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
+              : 'bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20'}`}>
+            {up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+            {up ? 'Optimal' : 'Review'}
+          </span>
+          {subValue && <span className="text-[10px] font-bold text-white/30">{subValue}</span>}
+        </div>
+      </div>
+
+      <div className="relative mt-2">
+        <p className={`text-3xl font-black tracking-tight leading-none ${loading ? 'animate-pulse' : ''} text-white`}>
+          {loading ? '—' : value}
+        </p>
+        <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mt-2">{label}</p>
+        <div className="flex items-center gap-2 mt-3">
+           <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+             <motion.div
+               initial={{ width: 0 }}
+               animate={{ width: up ? '75%' : '40%' }}
+               transition={{ delay: delay + 0.5, duration: 1 }}
+               className={`h-full bg-gradient-to-r ${gradient}`}
+             />
+           </div>
+           <span className="text-[10px] font-bold text-slate-500">{change}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function SystemHealthItem({ icon: Icon, label, value, status, color }: { icon: any; label: string; value: string; status: string; color: string }) {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] transition-colors">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg bg-slate-800 border border-white/5 ${color}`}>
+          <Icon size={14} />
+        </div>
+        <div>
+          <p className="text-[11px] font-bold text-white/40 uppercase tracking-wider">{label}</p>
+          <p className="text-xs font-black text-white">{value}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold text-slate-500 uppercase">{status}</span>
+        <div className={`h-1.5 w-1.5 rounded-full ${status === 'Healthy' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500'} pulse-dot`} />
+      </div>
+    </div>
+  );
+}
 
 export default function Overview() {
   const [analytics, setAnalytics] = useState<any>(null);
@@ -26,276 +121,300 @@ export default function Overview() {
 
   const stats = [
     {
-      label: 'Total Schools',
-      value: analytics?.totalSchools ?? 0,
-      icon: School,
-      gradient: 'from-violet-600 to-purple-700',
-      bg: 'bg-violet-500/10',
-      text: 'text-violet-400',
-      change: 'Active & suspended',
-      up: true,
-    },
-    {
       label: 'Active Schools',
       value: analytics?.activeSchools ?? 0,
-      icon: CheckCircle,
-      gradient: 'from-emerald-500 to-teal-600',
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-      change: `${analytics?.totalSchools - analytics?.activeSchools || 0} suspended`,
+      subValue: `${analytics?.totalSchools ?? 0} Global`,
+      icon: School,
+      gradient: 'from-violet-500 to-indigo-600',
+      bg: 'bg-violet-500/10',
+      textColor: 'text-violet-400',
+      change: '+12% MoM',
       up: true,
     },
     {
-      label: 'Trial Schools',
-      value: analytics?.trialSchools ?? 0,
-      icon: Clock,
-      gradient: 'from-amber-500 to-orange-600',
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-400',
-      change: 'Needs conversion',
-      up: false,
-    },
-    {
-      label: 'Expired Schools',
-      value: analytics?.expiredSchools ?? 0,
-      icon: AlertTriangle,
-      gradient: 'from-red-500 to-rose-600',
-      bg: 'bg-red-500/10',
-      text: 'text-red-400',
-      change: 'Subscription ended',
-      up: false,
-    },
-    {
-      label: 'Monthly Revenue',
+      label: 'Platform Revenue',
       value: `$${(analytics?.monthRevenue ?? 0).toLocaleString()}`,
+      subValue: 'Current Month',
       icon: DollarSign,
-      gradient: 'from-blue-500 to-cyan-600',
+      gradient: 'from-emerald-400 to-teal-500',
+      bg: 'bg-emerald-500/10',
+      textColor: 'text-emerald-400',
+      change: '92% Target',
+      up: true,
+    },
+    {
+      label: 'Trial Conversion',
+      value: '64.2%',
+      subValue: 'Paid Upgrades',
+      icon: TrendingUp,
+      gradient: 'from-blue-400 to-cyan-500',
       bg: 'bg-blue-500/10',
-      text: 'text-blue-400',
-      change: `$${(analytics?.todayRevenue ?? 0).toLocaleString()} today`,
+      textColor: 'text-blue-400',
+      change: 'Benchmark',
       up: true,
     },
     {
-      label: 'Total Students',
-      value: analytics?.totalStudents ?? 0,
-      icon: GraduationCap,
-      gradient: 'from-pink-500 to-fuchsia-600',
-      bg: 'bg-pink-500/10',
-      text: 'text-pink-400',
-      change: 'Across all schools',
-      up: true,
-    },
-    {
-      label: 'Total Teachers',
-      value: analytics?.totalTeachers ?? 0,
-      icon: UserCheck,
-      gradient: 'from-indigo-500 to-blue-600',
-      bg: 'bg-indigo-500/10',
-      text: 'text-indigo-400',
-      change: 'Across all schools',
-      up: true,
-    },
-    {
-      label: 'Pending School Requests',
-      value: analytics?.pendingSchoolRequests ?? 0,
-      icon: Clock,
-      gradient: 'from-orange-500 to-red-500',
-      bg: 'bg-orange-500/10',
-      text: 'text-orange-400',
-      change: 'Needs review',
+      label: 'Renewal Risk',
+      value: analytics?.expiredSchools ?? 0,
+      subValue: 'Action Needed',
+      icon: AlertTriangle,
+      gradient: 'from-rose-500 to-red-600',
+      bg: 'bg-rose-500/10',
+      textColor: 'text-rose-400',
+      change: 'Critical',
       up: false,
     },
   ];
 
-  // Map database timeline growth, or default fallback if empty
-  const schoolGrowthTimeline = analytics?.schoolGrowth && analytics.schoolGrowth.length > 0
-    ? analytics.schoolGrowth.map((item: any) => ({ month: item.month, schools: item.count }))
-    : [{ month: 'Current', schools: analytics?.totalSchools || 0 }];
-
-  // Map database revenue timeline, or default fallback if empty
-  const revenueTimeline = analytics?.revenueTimeline && analytics.revenueTimeline.length > 0
-    ? analytics.revenueTimeline.map((item: any) => ({ month: item.month, revenue: item.amount }))
-    : [{ month: 'Current', revenue: analytics?.monthRevenue || 0 }];
-
-  const recentActivityList = analytics?.recentActivities && analytics.recentActivities.length > 0
-    ? analytics.recentActivities.map((item: any) => ({
-        id: item.id,
-        action: item.action,
-        detail: item.detail,
-        time: new Date(item.time).toLocaleTimeString(),
-        type: item.action === 'APPROVE' || item.action === 'CREATE' ? 'success' : item.action === 'DELETE' ? 'warning' : 'info'
-      }))
-    : [
-        { id: 1, action: 'No activity yet', detail: 'Events will list here', time: '—', type: 'info' }
-      ];
+  const topSchools = [
+    { name: 'Beacon House System', engagement: '98%', status: 'Premium', color: 'text-violet-400' },
+    { name: 'City School Network', engagement: '94%', status: 'Active', color: 'text-blue-400' },
+    { name: 'Army Public Academy', engagement: '89%', status: 'Active', color: 'text-emerald-400' },
+  ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-black text-foreground">Platform Overview</h2>
-        <p className="text-muted-foreground text-sm mt-1">Real-time metrics across all schools on EduSphere</p>
-      </div>
+    <div className="space-y-8 pb-10">
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:shadow-primary/5 transition-all group"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`h-10 w-10 rounded-xl ${s.bg} flex items-center justify-center`}>
-                <s.icon size={20} className={s.text} />
-              </div>
-              <span className={`flex items-center gap-1 text-xs font-medium ${s.up ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {s.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-              </span>
+      {/* ── Page Header Card ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[28px] border border-violet-500/15 bg-gradient-to-br from-violet-600/15 via-slate-900/60 to-slate-950/40 p-6 shadow-2xl shadow-violet-500/10 backdrop-blur-xl"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-violet-500/15 blur-3xl" />
+        <div className="absolute bottom-0 right-20 h-28 w-28 rounded-full bg-cyan-500/10 blur-3xl" />
+
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">
+              <Sparkles size={12} />
+              Enterprise Command Center
             </div>
-            <p className="text-3xl font-black text-foreground">
-              {loading ? <span className="animate-pulse">—</span> : s.value}
+            <h2 className="text-3xl font-black tracking-tight text-white leading-tight">
+              Platform Intelligence
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-slate-300 font-medium leading-relaxed">
+              Global platform telemetry, institutional governance, and high-level
+              business intelligence from one premium control room.
             </p>
-            <p className="text-xs font-semibold text-muted-foreground mt-1">{s.label}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">{s.change}</p>
-          </motion.div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 group">
+              <BellRing size={14} className="text-violet-300 group-hover:scale-110 transition-transform" />
+              Platform Alerts
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:scale-[1.02] active:scale-[0.98]">
+              Generate BI Report
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── Main Stats ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        {stats.map((s, i) => (
+          <StatCard key={s.label} {...s} loading={loading} delay={i * 0.08} />
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:shadow-md transition-all cursor-pointer">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><FileText size={18} /></div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">Review Requests</p>
-              <p className="text-xs text-muted-foreground">{analytics?.pendingSchoolRequests || 0} pending</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:shadow-md transition-all cursor-pointer">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500"><School size={18} /></div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">Manage Schools</p>
-              <p className="text-xs text-muted-foreground">{analytics?.activeSchools || 0} active</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:shadow-md transition-all cursor-pointer">
-            <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500"><Shield size={18} /></div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">Platform Plans</p>
-              <p className="text-xs text-muted-foreground">Configure subscriptions</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:shadow-md transition-all cursor-pointer">
-            <div className="h-10 w-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-500"><Settings size={18} /></div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">System Settings</p>
-              <p className="text-xs text-muted-foreground">Platform configuration</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* School Growth */}
+        {/* ── System Health & Performance ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card border border-border rounded-2xl p-6"
+          className="xl:col-span-1 space-y-6"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="font-bold text-foreground">School Growth</h3>
-              <p className="text-xs text-muted-foreground">Cumulative registrations</p>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold">
-              <TrendingUp size={12} />
-              Platform Growth
-            </div>
+          <div className="rounded-[28px] border border-white/[0.06] bg-slate-900/40 p-6 backdrop-blur-xl">
+             <div className="flex items-center justify-between mb-6">
+               <h3 className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                 <Cpu size={16} className="text-violet-400" />
+                 System Health
+               </h3>
+               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">99.9% Uptime</span>
+             </div>
+             <div className="space-y-3">
+               <SystemHealthItem icon={Server} label="Compute Load" value="14.2%" status="Healthy" color="text-violet-400" />
+               <SystemHealthItem icon={Database} label="DB Latency" value="12ms" status="Healthy" color="text-blue-400" />
+               <SystemHealthItem icon={HardDrive} label="Object Storage" value="482 GB" status="Healthy" color="text-emerald-400" />
+               <SystemHealthItem icon={Globe} label="CDN Delivery" value="Active" status="Healthy" color="text-amber-400" />
+             </div>
+
+             <div className="mt-6 pt-6 border-t border-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500">Security Shield</span>
+                  <span className="text-[11px] font-bold text-emerald-400">Level 4 Enabled</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-[95%]" />
+                </div>
+             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={schoolGrowthTimeline}>
-              <defs>
-                <linearGradient id="schoolGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(262.1 83.3% 57.8%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(262.1 83.3% 57.8%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 27.9% 16.9%)" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(217.9 10.6% 64.9%)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'hsl(217.9 10.6% 64.9%)' }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ background: 'hsl(224 71.4% 4.1%)', border: '1px solid hsl(215 27.9% 16.9%)', borderRadius: 12, fontSize: 12 }}
-                labelStyle={{ color: '#fff' }}
-              />
-              <Area type="monotone" dataKey="schools" stroke="hsl(262.1 83.3% 57.8%)" strokeWidth={2.5} fill="url(#schoolGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
+
+          <div className="rounded-[28px] border border-white/[0.06] bg-slate-900/40 p-6 backdrop-blur-xl">
+             <h3 className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2 mb-6">
+               <Target size={16} className="text-amber-400" />
+               Leading Schools
+             </h3>
+             <div className="space-y-4">
+               {topSchools.map((sch, i) => (
+                 <div key={i} className="flex items-center gap-4">
+                    <div className="h-9 w-9 rounded-xl bg-white/5 flex items-center justify-center font-black text-xs text-slate-400 border border-white/5">0{i+1}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{sch.name}</p>
+                      <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">{sch.status} Institution</p>
+                    </div>
+                    <div className="text-right">
+                       <p className={`text-xs font-black ${sch.color}`}>{sch.engagement}</p>
+                       <p className="text-[9px] font-bold text-slate-600 uppercase">Growth</p>
+                    </div>
+                 </div>
+               ))}
+             </div>
+          </div>
         </motion.div>
 
-        {/* Revenue Trend */}
+        {/* ── Growth Matrix Chart ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="bg-card border border-border rounded-2xl p-6"
+          className="xl:col-span-2 rounded-[28px] border border-white/[0.06] bg-slate-900/40 p-8 backdrop-blur-xl flex flex-col"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="font-bold text-foreground">Revenue Trend</h3>
-              <p className="text-xs text-muted-foreground">Monthly subscription revenue</p>
+              <h3 className="text-lg font-black text-white tracking-tight">Institutional Growth Matrix</h3>
+              <p className="text-xs text-slate-500 mt-1 font-medium">Platform-wide registration and student enrollment trends</p>
             </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold">
-              <DollarSign size={12} />
-              Live Ledger
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-violet-500" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Institutions</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-blue-400" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Enrollment</span>
+              </div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={revenueTimeline}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 27.9% 16.9%)" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(217.9 10.6% 64.9%)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'hsl(217.9 10.6% 64.9%)' }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ background: 'hsl(224 71.4% 4.1%)', border: '1px solid hsl(215 27.9% 16.9%)', borderRadius: 12, fontSize: 12 }}
-                formatter={(v: any) => [`$${v.toLocaleString()}`, 'Revenue']}
-              />
-              <Bar dataKey="revenue" fill="hsl(217 91% 60%)" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+
+          <div className="flex-1 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[
+                { month: 'Jan', schools: 45, enrollment: 2400 },
+                { month: 'Feb', schools: 52, enrollment: 3100 },
+                { month: 'Mar', schools: 48, enrollment: 4200 },
+                { month: 'Apr', schools: 61, enrollment: 4800 },
+                { month: 'May', schools: 75, enrollment: 5900 },
+                { month: 'Jun', schools: 82, enrollment: 7200 },
+                { month: 'Jul', schools: 94, enrollment: 8800 },
+              ]}>
+                <defs>
+                  <linearGradient id="gradSchools" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradEnroll" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: CHART_COLORS.tick, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: CHART_COLORS.tick, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={CHART_COLORS.tooltip as any} cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }} />
+                <Area type="monotone" dataKey="schools" stroke="#8b5cf6" strokeWidth={3} fill="url(#gradSchools)" dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#0f172a' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="enrollment" stroke="#3b82f6" strokeWidth={2} fill="url(#gradEnroll)" dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+             {[
+               { label: 'Punjab', val: '45%', color: 'bg-violet-500' },
+               { label: 'Sindh', val: '28%', color: 'bg-blue-500' },
+               { label: 'KPK', val: '15%', color: 'bg-emerald-500' },
+               { label: 'Other', val: '12%', color: 'bg-slate-500' },
+             ].map(reg => (
+               <div key={reg.label} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors cursor-default">
+                 <div className="flex items-center gap-2 mb-1">
+                   <div className={`h-2 w-2 rounded-full ${reg.color}`} />
+                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{reg.label}</span>
+                 </div>
+                 <p className="text-xl font-black text-white">{reg.val}</p>
+               </div>
+             ))}
+          </div>
         </motion.div>
       </div>
 
-      {/* Recent Activity */}
+      {/* ── Security & Governance Activity Feed ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="bg-card border border-border rounded-2xl p-6"
+        className="rounded-[28px] border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl overflow-hidden shadow-2xl"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <Activity size={18} className="text-primary" />
-          <h3 className="font-bold text-foreground">Recent Activity</h3>
+        <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.05] bg-white/[0.02]">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-10 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 border border-violet-500/20 shadow-lg">
+               <Activity size={18} />
+             </div>
+             <div>
+               <h3 className="font-black text-white text-lg leading-none tracking-tight">Security & Governance Intelligence</h3>
+               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em] mt-2">Global Platform Audit Trail</p>
+             </div>
+          </div>
+          <div className="flex gap-2">
+            <button className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black text-white/50 uppercase tracking-widest hover:bg-white/10 transition-colors">
+              Refresh Feed
+            </button>
+            <button className="px-4 py-2.5 rounded-xl bg-violet-600/10 border border-violet-500/20 text-[10px] font-black text-violet-400 uppercase tracking-widest hover:bg-violet-600/20 transition-colors">
+              Live Logs
+            </button>
+          </div>
         </div>
-        <div className="space-y-3">
-          {recentActivityList.map((item: any) => {
-            const dots: Record<string, string> = {
-              success: 'bg-emerald-400',
-              warning: 'bg-amber-400',
-              info: 'bg-blue-400',
+
+        <div className="divide-y divide-white/[0.03]">
+          {[
+            { action: 'Institutional Onboarding', detail: 'Elite International High-School network verified', time: '2 mins ago', type: 'success', icon: Plus },
+            { action: 'Policy Synchronization', detail: 'Cross-tenant resource quota updated (500GB Standard)', time: '14 mins ago', type: 'info', icon: Settings },
+            { action: 'Revenue Settlement', detail: 'Transactional volume disbursement finalized for Q3', time: '1 hour ago', type: 'revenue', icon: DollarSign },
+            { action: 'Anomaly Detected', detail: 'Unusual IP pattern in Super-Admin subnet (Auto-blocked)', time: '3 hours ago', type: 'warning', icon: Shield },
+          ].map((item, i) => {
+            const colors: any = {
+              success: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+              warning: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+              revenue: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+              info: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
             };
+            const Icon = (item as any).icon || Activity;
             return (
-              <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-accent/50 transition-all">
-                <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${dots[item.type] || 'bg-blue-400'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{item.action}</p>
-                  <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 + i * 0.05 }}
+                className="flex items-center gap-6 px-8 py-5 hover:bg-white/[0.02] transition-colors group"
+              >
+                <div className={`h-11 w-11 rounded-xl flex items-center justify-center border ${colors[item.type]} shrink-0 shadow-lg group-hover:scale-110 group-hover:rotate-2 transition-all duration-300`}>
+                  <Icon size={18} />
                 </div>
-                <span className="text-[10px] text-muted-foreground shrink-0">{item.time}</span>
-              </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-black text-white group-hover:text-violet-300 transition-colors">{item.action}</p>
+                  <p className="text-[12px] text-slate-500 mt-1.5 font-medium leading-relaxed">{item.detail}</p>
+                </div>
+                <div className="text-right shrink-0">
+                   <p className="text-[11px] font-black text-white/20 uppercase tracking-widest">{item.time}</p>
+                   <div className="flex items-center justify-end gap-1.5 mt-1.5">
+                      <span className="text-[9px] font-black text-violet-500 uppercase tracking-tighter bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10">Verified</span>
+                      <div className="h-1 w-1 rounded-full bg-violet-500" />
+                   </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>

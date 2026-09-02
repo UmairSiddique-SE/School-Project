@@ -31,8 +31,8 @@ export interface SchoolItem {
 
 const DEFAULT_SCHOOLS: SchoolItem[] = [
   {
-    name: "EduSphere Academy (Demo)",
-    slug: "demo",
+    name: "EduSphere International School",
+    slug: "edusphere-international",
     city: "Lahore",
     country: "Pakistan",
     studentsCount: "1,250+",
@@ -262,10 +262,10 @@ export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModal
                   <Sparkles className="w-3 h-3 text-amber-400" /> Quick:
                 </span>
                 <button
-                  onClick={() => handleSelectSchool("demo")}
+                  onClick={() => handleSelectSchool("edusphere-international")}
                   className="px-3 py-1 rounded-xl bg-gradient-to-r from-violet-600/30 to-indigo-600/30 hover:from-violet-600/50 hover:to-indigo-600/50 border border-violet-500/30 text-violet-300 font-semibold whitespace-nowrap transition-all flex items-center gap-1.5"
                 >
-                  🚀 Demo Campus
+                  🏫 EduSphere Central
                 </button>
                 <button
                   onClick={() => setSearch("Beaconhouse")}
@@ -292,7 +292,6 @@ export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModal
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-2.5 custom-scrollbar">
               {filteredSchools.length > 0 ? (
                 filteredSchools.map((school, index) => {
-                  const isDemo = school.slug === "demo";
                   return (
                     <motion.div
                       key={school.slug || index}
@@ -300,22 +299,12 @@ export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModal
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
                       onClick={() => handleSelectSchool(school.slug)}
-                      className={`group relative p-4 rounded-2xl cursor-pointer transition-all duration-200 border ${
-                        isDemo
-                          ? "bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border-violet-500/40 hover:border-violet-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.25)]"
-                          : "bg-white/[0.03] hover:bg-white/[0.08] border-white/10 hover:border-white/20"
-                      }`}
+                      className="group relative p-4 rounded-2xl cursor-pointer transition-all duration-200 border bg-white/[0.03] hover:bg-white/[0.08] border-white/10 hover:border-violet-500/40 hover:shadow-[0_0_20px_rgba(124,58,237,0.15)]"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3.5 min-w-0">
                           {/* Logo avatar */}
-                          <div
-                            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg transition-transform group-hover:scale-105 shadow-md ${
-                              isDemo
-                                ? "bg-gradient-to-tr from-violet-500 to-indigo-500 text-white shadow-violet-500/30"
-                                : "bg-gradient-to-tr from-slate-700 to-slate-800 text-slate-200 border border-white/10"
-                            }`}
-                          >
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg transition-transform group-hover:scale-105 shadow-md bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-violet-500/20">
                             {school.name.charAt(0)}
                           </div>
 
@@ -325,13 +314,8 @@ export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModal
                               <h3 className="text-white font-bold text-base group-hover:text-violet-300 transition-colors truncate">
                                 {school.name}
                               </h3>
-                              {isDemo && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-violet-500 text-white shadow-sm">
-                                  Live Demo
-                                </span>
-                              )}
                               {school.plan && (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white/10 text-white/70 border border-white/10 hidden sm:inline-block">
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20 hidden sm:inline-block">
                                   {school.plan}
                                 </span>
                               )}

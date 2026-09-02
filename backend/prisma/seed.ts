@@ -4,305 +4,477 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('🚀 Starting Full School ERP Database Seed...');
 
-  // Disable foreign keys for SQLite to clear database easily
-  await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+  // Disable SQLite foreign keys temporarily for clean reset
+  try {
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+  } catch (e) {
+    console.log('Note: PRAGMA foreign_keys command skipped');
+  }
 
-  // Clear existing data
-  await prisma.auditLog.deleteMany({});
-  await prisma.feePayment.deleteMany({});
-  await prisma.feeStructure.deleteMany({});
-  await prisma.examResult.deleteMany({});
-  await prisma.exam.deleteMany({});
-  await prisma.attendance.deleteMany({});
-  await prisma.studentParent.deleteMany({});
-  await prisma.parent.deleteMany({});
-  await prisma.teacher.deleteMany({});
-  await prisma.student.deleteMany({});
-  await prisma.classSubject.deleteMany({});
-  await prisma.subject.deleteMany({});
-  await prisma.section.deleteMany({});
-  await prisma.class.deleteMany({});
-  await prisma.academicYear.deleteMany({});
-  await prisma.refreshToken.deleteMany({});
-  await prisma.user.deleteMany({});
-  await prisma.subscription.deleteMany({});
-  await prisma.school.deleteMany({});
-  
-  // Clear newer models
-  try { await prisma.book.deleteMany({}); } catch(e){}
-  try { await prisma.bookIssue.deleteMany({}); } catch(e){}
-  try { await prisma["transportRoute"]?.deleteMany({}); } catch(e){}
-  try { await prisma["vehicle"]?.deleteMany({}); } catch(e){}
-  try { await prisma["transportAssignment"]?.deleteMany({}); } catch(e){}
-  try { await prisma["hostel"]?.deleteMany({}); } catch(e){}
-  try { await prisma["hostelRoom"]?.deleteMany({}); } catch(e){}
-  try { await prisma["hostelAllocation"]?.deleteMany({}); } catch(e){}
+  // Clear existing tables
+  try { await prisma.auditLog.deleteMany({}); } catch(e){}
+  try { await prisma.feePayment.deleteMany({}); } catch(e){}
+  try { await prisma.feeStructure.deleteMany({}); } catch(e){}
+  try { await prisma.examResult.deleteMany({}); } catch(e){}
+  try { await prisma.exam.deleteMany({}); } catch(e){}
+  try { await prisma.attendance.deleteMany({}); } catch(e){}
+  try { await prisma.studentParent.deleteMany({}); } catch(e){}
+  try { await prisma.parent.deleteMany({}); } catch(e){}
+  try { await prisma.student.deleteMany({}); } catch(e){}
+  try { await prisma.classSubject.deleteMany({}); } catch(e){}
+  try { await prisma.subject.deleteMany({}); } catch(e){}
+  try { await prisma.section.deleteMany({}); } catch(e){}
+  try { await prisma.class.deleteMany({}); } catch(e){}
+  try { await prisma.academicYear.deleteMany({}); } catch(e){}
+  try { await prisma.teacher.deleteMany({}); } catch(e){}
+  try { await prisma.staff.deleteMany({}); } catch(e){}
   try { await prisma.announcement.deleteMany({}); } catch(e){}
   try { await prisma.notification.deleteMany({}); } catch(e){}
-  try { await prisma["accountEntry"]?.deleteMany({}); } catch(e){}
-  try { await prisma.staff.deleteMany({}); } catch(e){}
-  try { await prisma["leaveRequest"]?.deleteMany({}); } catch(e){}
-  try { await prisma["payroll"]?.deleteMany({}); } catch(e){}
-  try { await prisma.homework.deleteMany({}); } catch(e){}
-  try { await prisma["homeworkSubmission"]?.deleteMany({}); } catch(e){}
-  try { await prisma["event"]?.deleteMany({}); } catch(e){}
-  try { await prisma["document"]?.deleteMany({}); } catch(e){}
+  try { await prisma.transportRoute.deleteMany({}); } catch(e){}
+  try { await prisma.building.deleteMany({}); } catch(e){}
+  try { await prisma.subscription.deleteMany({}); } catch(e){}
+  try { await prisma.refreshToken.deleteMany({}); } catch(e){}
+  try { await prisma.user.deleteMany({}); } catch(e){}
+  try { await prisma.school.deleteMany({}); } catch(e){}
 
-  // Enable foreign keys
-  await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
+  try {
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
+  } catch (e) {}
 
-  const passwordHash = await bcrypt.hash('admin123', 12);
+  const defaultHash = await bcrypt.hash('admin123', 12);
   const teacherHash = await bcrypt.hash('teacher123', 12);
   const studentHash = await bcrypt.hash('student123', 12);
   const parentHash = await bcrypt.hash('parent123', 12);
 
-  // 1. Create Super Admin (not linked to any specific school)
+  // 1. Super Admin User
   const superAdmin = await prisma.user.create({
     data: {
-      name: 'Super Admin',
+      name: 'Super Administrator',
       email: 'superadmin@edusphere.com',
-      passwordHash,
+      passwordHash: defaultHash,
       role: 'SUPER_ADMIN',
+      isActive: true,
+      emailVerified: true,
     },
   });
-  console.log('Super Admin user created:', superAdmin.email);
+  console.log(`✅ Super Admin created: ${superAdmin.email}`);
 
-  // 2. Create Demo School
+  // 2. Primary School
   const school = await prisma.school.create({
     data: {
-      name: 'EduSphere Demo School',
-      slug: 'demo',
-      email: 'info@demoschool.edu',
-      phone: '+1 555 123 4567',
-      address: '123 Learning Way, Science City',
-      city: 'Boston',
-      state: 'MA',
-      country: 'USA',
+      name: 'EduSphere International School',
+      slug: 'edusphere-international',
+      email: 'admin@edusphere.com',
+      phone: '+92 42 35889000',
+      address: 'Main Boulevard, Gulberg III',
+      city: 'Lahore',
+      state: 'Punjab',
+      country: 'Pakistan',
+      postalCode: '54000',
       isActive: true,
     },
   });
-  console.log('Demo School created:', school.name);
+  console.log(`✅ Main School created: ${school.name} (${school.slug})`);
 
-  // 3. Create Subscription for Demo School
+  // Create Subscription for the School
   await prisma.subscription.create({
     data: {
       schoolId: school.id,
-      plan: 'STARTER',
+      plan: 'ENTERPRISE',
       status: 'ACTIVE',
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      amount: 499,
+      currency: 'USD',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     },
   });
 
-  // 4. Create School Admin User
+  // 3. School Admin User
   const schoolAdmin = await prisma.user.create({
     data: {
-      name: 'John School Admin',
+      name: 'Prof. Tariq Mahmood',
       email: 'admin@edusphere.com',
-      passwordHash,
+      passwordHash: defaultHash,
       role: 'SCHOOL_ADMIN',
       schoolId: school.id,
+      isActive: true,
+      emailVerified: true,
     },
   });
-  console.log('School Admin user created:', schoolAdmin.email);
+  console.log(`✅ School Admin created: ${schoolAdmin.email}`);
 
-  // 5. Create Academic Year
+  // 4. Academic Year
   const academicYear = await prisma.academicYear.create({
     data: {
       name: '2026-2027',
-      startDate: new Date('2026-09-01'),
-      endDate: new Date('2027-06-30'),
+      startDate: new Date('2026-08-15'),
+      endDate: new Date('2027-06-15'),
       isCurrent: true,
       schoolId: school.id,
     },
   });
 
-  // 6. Create Classes
-  const grade5 = await prisma.class.create({
+  // 5. Teachers & Staff
+  const teacherSarah = await prisma.teacher.create({
     data: {
-      name: 'Grade 5',
-      numeric: 5,
-      schoolId: school.id,
-      academicYearId: academicYear.id,
-    },
-  });
-
-  // 7. Create Teacher
-  const teacher = await prisma.teacher.create({
-    data: {
-      employeeNo: 'TCH001',
-      name: 'Sarah Mitchell',
+      employeeNo: 'TCH-001',
+      name: 'Ms. Sarah Mitchell',
       email: 'teacher@edusphere.com',
-      phone: '+1 555 234 5678',
+      phone: '+92 300 1234567',
       gender: 'FEMALE',
-      qualification: 'M.Ed. in Mathematics',
-      experience: 8,
-      salary: 4500,
+      qualification: 'M.Sc. Mathematics, B.Ed',
+      experience: 7,
+      salary: 85000,
+      joiningDate: new Date('2022-08-01'),
       schoolId: school.id,
     },
   });
 
-  // Create User account for Teacher
   await prisma.user.create({
     data: {
-      name: teacher.name,
-      email: teacher.email,
+      name: teacherSarah.name,
+      email: teacherSarah.email,
       passwordHash: teacherHash,
       role: 'TEACHER',
       schoolId: school.id,
-    },
-  });
-  console.log('Teacher user created:', teacher.email);
-
-  // 8. Create Class Section
-  const sectionA = await prisma.section.create({
-    data: {
-      name: 'Section A',
-      classId: grade5.id,
-      teacherId: teacher.id,
-      capacity: 35,
+      isActive: true,
+      emailVerified: true,
     },
   });
 
-  // 9. Create Subject
-  const math = await prisma.subject.create({
+  const teacherAhmed = await prisma.teacher.create({
     data: {
-      name: 'Mathematics',
-      code: 'MATH5',
-      description: 'Elementary Mathematics Grade 5',
-      schoolId: school.id,
-    },
-  });
-
-  // Link class and subject with teacher
-  await prisma.classSubject.create({
-    data: {
-      classId: grade5.id,
-      subjectId: math.id,
-      teacherId: teacher.id,
-    },
-  });
-
-  // 10. Create Student
-  const student = await prisma.student.create({
-    data: {
-      admissionNo: 'STD001',
-      name: 'Alex Mercer',
-      email: 'student@edusphere.com',
-      rollNo: '1',
-      phone: '+1 555 345 6789',
-      address: '456 Student St, Boston',
+      employeeNo: 'TCH-002',
+      name: 'Dr. Ahmed Khan',
+      email: 'ahmed.khan@edusphere.com',
+      phone: '+92 301 9876543',
       gender: 'MALE',
-      dateOfBirth: new Date('2015-05-12'),
+      qualification: 'Ph.D. Physics',
+      experience: 12,
+      salary: 110000,
+      joiningDate: new Date('2020-01-15'),
       schoolId: school.id,
-      sectionId: sectionA.id,
     },
   });
 
-  // Create User account for Student
+  const teacherAyesha = await prisma.teacher.create({
+    data: {
+      employeeNo: 'TCH-003',
+      name: 'Ms. Ayesha Siddiqui',
+      email: 'ayesha.s@edusphere.com',
+      phone: '+92 321 4567890',
+      gender: 'FEMALE',
+      qualification: 'M.Phil English Literature',
+      experience: 5,
+      salary: 75000,
+      joiningDate: new Date('2023-08-01'),
+      schoolId: school.id,
+    },
+  });
+
+  // 6. Classes and Sections
+  const classNames = [
+    { name: 'Grade 1', num: 1 },
+    { name: 'Grade 2', num: 2 },
+    { name: 'Grade 3', num: 3 },
+    { name: 'Grade 4', num: 4 },
+    { name: 'Grade 5', num: 5 },
+    { name: 'Grade 6', num: 6 },
+    { name: 'Grade 7', num: 7 },
+    { name: 'Grade 8', num: 8 },
+    { name: 'Grade 9', num: 9 },
+    { name: 'Grade 10', num: 10 },
+  ];
+
+  const createdClasses: any[] = [];
+  const createdSections: any[] = [];
+
+  for (const c of classNames) {
+    const cls = await prisma.class.create({
+      data: {
+        name: c.name,
+        numeric: c.num,
+        schoolId: school.id,
+        academicYearId: academicYear.id,
+      },
+    });
+    createdClasses.push(cls);
+
+    const secA = await prisma.section.create({
+      data: {
+        name: 'Section A - Falcon',
+        classId: cls.id,
+        capacity: 35,
+        teacherId: c.num % 2 === 0 ? teacherAhmed.id : teacherSarah.id,
+      },
+    });
+    createdSections.push(secA);
+
+    const secB = await prisma.section.create({
+      data: {
+        name: 'Section B - Eagle',
+        classId: cls.id,
+        capacity: 35,
+        teacherId: teacherAyesha.id,
+      },
+    });
+    createdSections.push(secB);
+  }
+  console.log(`✅ Created ${createdClasses.length} Classes and ${createdSections.length} Sections`);
+
+  // 7. Core Subjects
+  const subjectsData = [
+    { name: 'Mathematics', code: 'MATH-101', desc: 'Core Mathematics & Geometry' },
+    { name: 'English Language & Lit', code: 'ENG-101', desc: 'Grammar, Reading & Composition' },
+    { name: 'General Science', code: 'SCI-101', desc: 'Physics, Chemistry & Biology Basics' },
+    { name: 'Computer Science', code: 'CS-101', desc: 'Coding, Algorithms & Information Tech' },
+    { name: 'Urdu & Literature', code: 'URD-101', desc: 'National Language & Literary Studies' },
+    { name: 'Islamic Studies / Ethics', code: 'ISL-101', desc: 'Moral & Religious Foundations' },
+    { name: 'Social Studies & History', code: 'SST-101', desc: 'World Geography & National History' },
+  ];
+
+  const createdSubjects: any[] = [];
+  for (const s of subjectsData) {
+    const sub = await prisma.subject.create({
+      data: {
+        name: s.name,
+        code: s.code,
+        description: s.desc,
+        schoolId: school.id,
+      },
+    });
+    createdSubjects.push(sub);
+
+    // Link subject to Grade 9 & 10
+    if (createdClasses[8]) {
+      await prisma.classSubject.create({
+        data: {
+          classId: createdClasses[8].id,
+          subjectId: sub.id,
+          teacherId: teacherSarah.id,
+        },
+      });
+    }
+  }
+
+  // 8. Students & Parents
+  const parent1 = await prisma.parent.create({
+    data: {
+      name: 'Mohammad Usman',
+      email: 'parent@edusphere.com',
+      phone: '+92 300 5551234',
+      occupation: 'Senior Software Architect',
+      relation: 'FATHER',
+      address: 'House 42, Block D, Model Town, Lahore',
+      schoolId: school.id,
+    },
+  });
+
   await prisma.user.create({
     data: {
-      name: student.name,
-      email: student.email!,
+      name: parent1.name,
+      email: parent1.email!,
+      passwordHash: parentHash,
+      role: 'PARENT',
+      schoolId: school.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+
+  const student1 = await prisma.student.create({
+    data: {
+      admissionNo: 'STD-2026-001',
+      name: 'Hamza Usman',
+      rollNo: '01',
+      gender: 'MALE',
+      dateOfBirth: new Date('2011-04-14'),
+      email: 'student@edusphere.com',
+      phone: '+92 300 5551234',
+      address: 'House 42, Block D, Model Town, Lahore',
+      bloodGroup: 'B+',
+      religion: 'Islam',
+      nationality: 'Pakistani',
+      session: '2026-2027',
+      bFormNumber: '35201-1234567-1',
+      admissionType: 'NEW',
+      status: 'ACTIVE',
+      isActive: true,
+      schoolId: school.id,
+      sectionId: createdSections[createdSections.length - 2].id, // Grade 10 Section A
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      name: student1.name,
+      email: student1.email!,
       passwordHash: studentHash,
       role: 'STUDENT',
       schoolId: school.id,
-    },
-  });
-  console.log('Student user created:', student.email);
-
-  // 11. Create Parent
-  const parent = await prisma.parent.create({
-    data: {
-      name: 'Robert Mercer',
-      email: 'parent@edusphere.com',
-      phone: '+1 555 456 7890',
-      relation: 'FATHER',
-      schoolId: school.id,
+      isActive: true,
+      emailVerified: true,
     },
   });
 
-  // Link Parent to Student
+  // Link Parent & Student
   await prisma.studentParent.create({
     data: {
-      parentId: parent.id,
-      studentId: student.id,
+      parentId: parent1.id,
+      studentId: student1.id,
       isPrimary: true,
     },
   });
 
-  // Create User account for Parent
-  await prisma.user.create({
-    data: {
-      name: parent.name,
-      email: parent.email!,
-      passwordHash: parentHash,
-      role: 'PARENT',
-      schoolId: school.id,
-    },
-  });
-  console.log('Parent user created:', parent.email);
+  // Add more realistic students
+  const sampleStudents = [
+    { name: 'Zainab Fatima', roll: '02', gender: 'FEMALE', blood: 'O+' },
+    { name: 'Bilal Ahmed', roll: '03', gender: 'MALE', blood: 'A+' },
+    { name: 'Areeba Tariq', roll: '04', gender: 'FEMALE', blood: 'AB+' },
+    { name: 'Daniyal Hassan', roll: '05', gender: 'MALE', blood: 'B+' },
+    { name: 'Maryam Noor', roll: '06', gender: 'FEMALE', blood: 'A-' },
+  ];
 
-  // 12. Create Exam
-  const midterm = await prisma.exam.create({
-    data: {
-      name: 'Midterm Exam 2026',
-      type: 'MIDTERM',
-      startDate: new Date('2026-10-15'),
-      endDate: new Date('2026-10-25'),
-      totalMarks: 100,
-      passingMarks: 33,
-      schoolId: school.id,
-      academicYearId: academicYear.id,
-      sectionId: sectionA.id,
-    },
-  });
+  for (let i = 0; i < sampleStudents.length; i++) {
+    const s = sampleStudents[i];
+    await prisma.student.create({
+      data: {
+        admissionNo: `STD-2026-00${i + 2}`,
+        name: s.name,
+        rollNo: s.roll,
+        gender: s.gender,
+        bloodGroup: s.blood,
+        dateOfBirth: new Date('2011-06-20'),
+        address: 'Gulberg III, Lahore',
+        session: '2026-2027',
+        status: 'ACTIVE',
+        isActive: true,
+        schoolId: school.id,
+        sectionId: createdSections[createdSections.length - 2].id,
+      },
+    });
+  }
+  console.log(`✅ Seeded Students, Parents and User Credentials`);
 
-  // Create Exam Result
-  await prisma.examResult.create({
-    data: {
-      marksObtained: 85,
-      grade: 'A',
-      examId: midterm.id,
-      studentId: student.id,
-      subjectId: math.id,
-    },
-  });
-
-  // 13. Create Fee Structure
+  // 9. Fee Structures & Payments
   const feeStructure = await prisma.feeStructure.create({
     data: {
-      name: 'First Term Tuition Fee',
-      amount: 150,
-      frequency: 'ONE_TIME',
+      name: 'Monthly Tuition & Laboratory Fee',
+      amount: 12500,
+      frequency: 'MONTHLY',
       schoolId: school.id,
-      classId: grade5.id,
+      classId: createdClasses[8].id,
     },
   });
 
-  // Create Fee Payment
   await prisma.feePayment.create({
     data: {
-      amount: 150,
-      discount: 10,
+      amount: 12500,
+      discount: 500,
       fine: 0,
-      totalPaid: 140,
+      totalPaid: 12000,
       status: 'PAID',
       method: 'ONLINE',
       paidDate: new Date(),
       schoolId: school.id,
-      studentId: student.id,
+      studentId: student1.id,
       feeStructureId: feeStructure.id,
     },
   });
 
-  console.log('Database seeding completed successfully!');
+  // 10. Exams & Exam Results
+  const midTermExam = await prisma.exam.create({
+    data: {
+      name: 'First Term Examination 2026',
+      type: 'MIDTERM',
+      startDate: new Date('2026-10-10'),
+      endDate: new Date('2026-10-22'),
+      totalMarks: 100,
+      passingMarks: 40,
+      schoolId: school.id,
+      academicYearId: academicYear.id,
+      sectionId: createdSections[createdSections.length - 2].id,
+    },
+  });
+
+  await prisma.examResult.create({
+    data: {
+      marksObtained: 92,
+      grade: 'A+',
+      remarks: 'Outstanding analytical and problem-solving skills.',
+      examId: midTermExam.id,
+      studentId: student1.id,
+      subjectId: createdSubjects[0].id, // Mathematics
+    },
+  });
+
+  // 11. Buildings & Infrastructure
+  const mainBuilding = await prisma.building.create({
+    data: {
+      name: 'Ibn-e-Sina Academic Complex',
+      buildingType: 'OWNED',
+      address: 'Main Boulevard, Gulberg III',
+      city: 'Lahore',
+      floors: 4,
+      totalClassrooms: 24,
+      totalRooms: 32,
+      studentCapacity: 800,
+      hasComputerLab: true,
+      hasScienceLab: true,
+      hasLibrary: true,
+      schoolId: school.id,
+      description: 'Senior academic block equipped with high-tech science and computer laboratories.',
+    },
+  });
+
+  // 12. Transport Routes & Vehicles
+  const routeGulberg = await prisma.transportRoute.create({
+    data: {
+      name: 'Route 1: DHA Phase 5 to Main Campus',
+      startPoint: 'DHA Phase 5 Commercial',
+      endPoint: 'Main School Campus, Gulberg',
+      stops: JSON.stringify(['Phase 5', 'LUMS Gate', 'Cavalry Ground', 'Main Market', 'Campus']),
+      distance: 14.5,
+      schoolId: school.id,
+    },
+  });
+
+  // 13. Official Announcements
+  await prisma.announcement.create({
+    data: {
+      title: 'Welcome to Academic Session 2026-2027',
+      content: 'We warmly welcome all new and returning students to EduSphere International. Orientation week begins on Monday.',
+      targetRoles: 'ALL',
+      publishedAt: new Date(),
+      schoolId: school.id,
+    },
+  });
+
+  await prisma.announcement.create({
+    data: {
+      title: 'Parent-Teacher Conference Schedule',
+      content: 'First term PTC meetings will be conducted on Saturday from 9:00 AM to 1:00 PM. Book your slots via the parent portal.',
+      targetRoles: 'PARENT',
+      publishedAt: new Date(),
+      schoolId: school.id,
+    },
+  });
+
+  console.log('\n✨ Database seeding completed successfully!');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('👑 Super Admin : superadmin@edusphere.com | admin123');
+  console.log('🏫 School Admin: admin@edusphere.com      | admin123');
+  console.log('👩‍🏫 Teacher     : teacher@edusphere.com    | teacher123');
+  console.log('🎓 Student     : student@edusphere.com    | student123');
+  console.log('👨‍👩‍👦 Parent      : parent@edusphere.com     | parent123');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('Error during database seed:', e);
     process.exit(1);
   })
   .finally(async () => {

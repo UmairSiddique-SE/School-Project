@@ -8,6 +8,7 @@ import {
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 import Modal, { ModalHeader } from '@/component/ui/Modal';
+import { useAuth } from '@/context/AuthContext';
 
 // ── Format helpers ────────────────────────────────────────────────────────────
 function formatCNIC(raw: string): string {
@@ -242,6 +243,10 @@ function compressImageToMax100KB(file: File): Promise<string> {
 }
 
 export default function Students() {
+  const { user, previewRole } = useAuth();
+  const role = previewRole ?? user?.role;
+  const isTeacher = role === 'TEACHER';
+
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1084,11 +1089,20 @@ export default function Students() {
       {/* Refined Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Student Registry</h1>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">{students.length} Total Enrolled</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Student Registry</h1>
+            {isTeacher && (
+              <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                👨‍🏫 Teacher Access
+              </span>
+            )}
+          </div>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
+            {students.length} Total Enrolled Students
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {selectedIds.length > 0 && (
+          {!isTeacher && selectedIds.length > 0 && (
             <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 mr-2">
               <span className="text-[9px] font-black text-primary uppercase">{selectedIds.length} SELECTED:</span>
               <button onClick={() => setShowPromote(true)} className="text-[9px] bg-primary text-white font-black px-2 py-1 rounded-lg">Promote</button>
@@ -1096,20 +1110,34 @@ export default function Students() {
               <button onClick={printSelectedCards} className="text-[9px] bg-cyan-600 text-white font-black px-2 py-1 rounded-lg flex items-center gap-1"><Printer size={10} /> ID Card</button>
             </div>
           )}
-          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
-            <Upload size={12} /> Import
-          </button>
+          {!isTeacher && (
+            <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
+              <Upload size={12} /> Import
+            </button>
+          )}
           <button onClick={exportExcel} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
             <FileSpreadsheet size={12} /> Excel
           </button>
           <button onClick={exportPdf} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
             <FileDown size={12} /> PDF
           </button>
-          <button onClick={() => setView('add')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20">
-            <Plus size={14} /> Add Student
-          </button>
+          {!isTeacher && (
+            <button onClick={() => setView('add')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20">
+              <Plus size={14} /> Add Student
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Teacher Mode Notice Banner */}
+      {isTeacher && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-purple-950/40 border border-violet-500/25 flex items-center gap-3 text-xs text-violet-200">
+          <GraduationCap className="w-5 h-5 text-violet-400 shrink-0" />
+          <span>
+            <strong>Teacher Mode:</strong> You have read-only access to your assigned students. New student admissions, enrollment forms, and batch promotions are managed by the School Administrator.
+          </span>
+        </div>
+      )}
 
       {/* Quick Statistics Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

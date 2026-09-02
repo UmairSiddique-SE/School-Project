@@ -1,12 +1,12 @@
-import { IsEmail, IsString, MinLength, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsNotEmpty, IsOptional, IsIn } from 'class-validator';
 
 export class LoginDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  password: string;
+  password?: string;
 }
 
 export class RegisterSchoolDto {
@@ -20,10 +20,26 @@ export class RegisterSchoolDto {
   schoolSlug: string;
 
   @IsString()
+  @IsIn(['SCHOOL', 'COLLEGE', 'ACADEMY'])
+  schoolType: string;
+
+  @IsString()
+  @IsNotEmpty()
+  logoUrl: string;
+
+  @IsString()
   schoolAddress: string;
 
   @IsString()
   schoolPhone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  country: string;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
 
   // Admin User Info
   @IsString()
@@ -34,7 +50,11 @@ export class RegisterSchoolDto {
   adminEmail: string;
 
   @IsString()
-  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @IsNotEmpty()
+  adminPhone: string;
+
+  @IsString()
+  @MinLength(12, { message: 'Password must be at least 12 characters' })
   adminPassword: string;
 }
 

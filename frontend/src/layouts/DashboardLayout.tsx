@@ -31,12 +31,6 @@ interface SidebarGroup {
 
 const sidebarGroups: SidebarGroup[] = [
   {
-    label: 'Platform',
-    items: [
-      { name: 'Super Admin', path: '/super-admin', icon: Shield, roles: ['SUPER_ADMIN'] },
-    ],
-  },
-  {
     label: 'Overview',
     items: [
       { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
@@ -79,10 +73,9 @@ const sidebarGroups: SidebarGroup[] = [
     ],
   },
   {
-    label: 'Account',
+    label: 'Administration',
     items: [
       { name: 'Admin Panel', path: '/settings', icon: Settings, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
-      { name: 'Subscription', path: '/subscription', icon: Sparkles, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
     ],
   },
 ];
@@ -108,7 +101,7 @@ const NavItem: React.FC<{
       onClick={onMobileClose}
       className={({ isActive: navActive }) =>
         `sidebar-nav-item relative group flex items-center transition-all duration-200 ${
-          isExpanded ? 'px-3 py-2.5 gap-3' : 'justify-center p-2.5 mx-auto w-10 h-10'
+          isExpanded ? 'px-3 py-2 gap-2.5' : 'justify-center p-2 mx-auto w-9 h-9'
         } ${
           (isActive || navActive)
             ? 'active bg-violet-600/15 text-violet-400 font-bold border border-violet-500/30 shadow-sm'

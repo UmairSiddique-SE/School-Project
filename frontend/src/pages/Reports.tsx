@@ -489,7 +489,7 @@ export default function Reports() {
           >
             <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
               <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
-                <TrendingUp size={18} className="text-blue-500" /> Daily Campus Attendance Trend (Last 7 Days)
+                <TrendingUp size={18} className="text-blue-500" /> Daily School Attendance Trend (Last 7 Days)
               </h3>
               <p className="text-xs text-muted-foreground mb-6">Percentage of active students present in morning assembly</p>
               <div className="h-80 w-full text-xs">
