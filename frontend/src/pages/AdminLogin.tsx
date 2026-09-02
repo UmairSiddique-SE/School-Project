@@ -8,21 +8,23 @@ import {
   ArrowRight,
   Server,
   ArrowLeft,
+  LockKeyhole,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("superadmin@gmail.com");
+  const [password, setPassword] = useState("12345678");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      toast.error("Please enter your Super Admin email.");
+    if (!email.trim() || !password) {
+      toast.error("Please enter your Super Admin email and password.");
       return;
     }
     setLoading(true);
@@ -30,6 +32,7 @@ export default function AdminLogin() {
     try {
       const res = await apiClient.post("/auth/login", {
         email: email.trim().toLowerCase(),
+        password,
       });
 
       const { user, accessToken } = res.data;
@@ -46,7 +49,9 @@ export default function AdminLogin() {
       if (user.role === "SUPER_ADMIN") {
         navigate("/super-admin", { replace: true });
       } else {
-        navigate(`/${user.schoolSlug || "edusphere"}/dashboard`, { replace: true });
+        navigate(`/${user.schoolSlug || "edusphere"}/dashboard`, {
+          replace: true,
+        });
       }
     } catch (err: any) {
       const errorMsg =
@@ -103,11 +108,12 @@ export default function AdminLogin() {
                 <ShieldCheck size={26} />
               </div>
             </div>
+
             <h1 className="text-2xl font-black text-white tracking-tight">
               Master Admin <span className="text-rose-400">Portal</span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Super Administrator & System Governance Console — Email only access
+              Super Administrator & System Governance Console — Secure access
             </p>
           </div>
 
@@ -133,6 +139,25 @@ export default function AdminLogin() {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <LockKeyhole size={16} />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.04] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -143,7 +168,9 @@ export default function AdminLogin() {
               ) : (
                 <ArrowRight size={18} />
               )}
-              <span>{loading ? "Signing in..." : "Enter Super Admin Panel"}</span>
+              <span>
+                {loading ? "Signing in..." : "Enter Super Admin Panel"}
+              </span>
             </button>
           </form>
 

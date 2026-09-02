@@ -29,6 +29,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import apiClient from "@/api/apiClient";
+import { useAuth } from "@/context/AuthContext";
 
 /* ── Pakistan Location Hierarchy ── */
 const PAKISTAN_LOCATIONS: Record<string, Record<string, string[]>> = {
@@ -273,11 +274,13 @@ export default function RegisterSchool() {
   >("form");
   const [otpValue, setOtpValue] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("123456");
+  const [verificationUserId, setVerificationUserId] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("JazzCash");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [approvalRef, setApprovalRef] = useState("");
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const districts = form.province
     ? Object.keys(PAKISTAN_LOCATIONS[form.province] || {})
@@ -351,23 +354,46 @@ export default function RegisterSchool() {
     return true;
   };
 
-  const sendOtp = () => {
+  const sendOtp = async () => {
     if (!validateForm()) return;
-    const code = "123456";
-    setGeneratedOtp(code);
-    setFlowStep("otp");
-    toast.success(
-      `Verification code sent to ${form.adminEmail}. Demo OTP: ${code}`,
-    );
+    try {
+      const response = await apiClient.post("/auth/register-school", {
+        schoolName: form.schoolName,
+        schoolSlug: form.schoolSlug,
+        schoolType: "SCHOOL",
+        logoUrl: form.logoUrl,
+        country: "Pakistan",
+        city: form.district || form.province,
+        schoolAddress: [form.address, `Tehsil ${form.tehsil}`, `District ${form.district}`, form.province].filter(Boolean).join(", "),
+        schoolPhone: form.adminPhone,
+        adminName: form.adminName,
+        adminEmail: form.adminEmail,
+        adminPhone: form.adminPhone,
+        adminPassword: form.adminPassword,
+        requestedPlan: "FREE_TRIAL",
+      });
+      setVerificationUserId(response.data.verificationUserId);
+      setGeneratedOtp("123456");
+      setFlowStep("otp");
+      toast.success(`Verification code sent to ${form.adminEmail}. Demo OTP: 123456`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Unable to start registration.");
+    }
   };
 
-  const handleOtpSubmit = () => {
+  const handleOtpSubmit = async () => {
     if (otpValue.trim() !== generatedOtp) {
       toast.error("Incorrect OTP. Please enter the correct 6-digit code.");
       return;
     }
-    setFlowStep("payment");
-    toast.success("Gmail verified successfully. Choose your payment method.");
+    try {
+      const response = await apiClient.post("/auth/verify-email", { userId: verificationUserId, otp: otpValue.trim() });
+      login(response.data.accessToken, response.data.user);
+      toast.success("Gmail verified successfully. You can now access your dashboard.");
+      navigate(`/${response.data.user.schoolSlug}/dashboard`, { replace: true });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Email verification failed.");
+    }
   };
 
   const handlePayment = async () => {
@@ -379,36 +405,14 @@ export default function RegisterSchool() {
     setApprovalRef(ref);
 
     try {
-      const fullAddress = [
-        form.address,
-        `Tehsil ${form.tehsil}`,
-        `District ${form.district}`,
-        form.province,
-      ]
-        .filter(Boolean)
-        .join(", ");
-
-      const payload = {
-        schoolName: form.schoolName,
-        schoolSlug: form.schoolSlug,
-        schoolType: "SCHOOL",
-        logoUrl: form.logoUrl,
-        country: "Pakistan",
-        city: form.district || form.province,
-        schoolAddress: fullAddress,
-        schoolPhone: form.adminPhone,
-        adminName: form.adminName,
-        adminEmail: form.adminEmail,
-        adminPhone: form.adminPhone,
-        adminPassword: form.adminPassword,
-        paymentMethod: selectedPayment,
-        paymentReference: ref,
-      };
-
-      await apiClient.post("/auth/register-school", payload);
-      toast.success(
-        "Payment successful. Your school request is now pending approval.",
-      );
+      const schoolId = JSON.parse(localStorage.getItem("auth_user") || "{}").schoolId;
+      await apiClient.post("/auth/onboarding-payment", {
+        schoolId,
+        plan: "FREE_TRIAL",
+        method: selectedPayment,
+        reference: ref,
+      });
+      toast.success("Payment submitted. Your school is pending admin approval.");
     } catch (error: any) {
       toast.warning(
         error?.response?.data?.message ||
@@ -424,7 +428,7 @@ export default function RegisterSchool() {
     setSaving(true);
     try {
       await Promise.resolve();
-      sendOtp();
+      await sendOtp();
     } finally {
       setSaving(false);
     }
@@ -479,9 +483,9 @@ export default function RegisterSchool() {
             `${selectedPayment} payment completed and recorded.`,
             true,
           ],
-        ].map(([title, desc, done]) => (
+        ].map(([title, desc, done], index) => (
           <div
-            key={title}
+            key={`feature-${index}`}
             className={`rounded-2xl border p-4 ${done ? "border-emerald-500/20 bg-emerald-500/5" : "border-white/10 bg-white/[0.02]"}`}
           >
             <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">

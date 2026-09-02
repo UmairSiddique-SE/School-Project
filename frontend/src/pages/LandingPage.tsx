@@ -10,7 +10,16 @@ import {
 import apiClient from "@/api/apiClient";
 import { Link, useNavigate } from "react-router-dom";
 import SchoolSearchModal from "@/component/SchoolSearchModal";
-import { Search, Sun, Moon, ShieldCheck } from "lucide-react";
+import {
+  Search,
+  Sun,
+  Moon,
+  ShieldCheck,
+  Crown,
+  Star,
+  CheckCircle2,
+  Zap,
+} from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -182,55 +191,52 @@ const modules: Module[] = [
 
 const pricingPlans: PricingPlan[] = [
   {
-    name: "Starter",
-    price: 49,
-    period: "month",
+    name: "Free Trial",
+    price: 0,
+    period: "1 Day Free",
     badge: undefined,
     highlighted: false,
-    description: "Perfect for small single-campus institutions.",
+    description: "Experience the core power of EduSphere instantly.",
     features: [
-      "1 School / Campus",
-      "Up to 500 Students",
-      "5 Admin Users",
-      "Core Academic Modules",
-      "Basic Analytics",
-      "Email Support",
+      "50 Students",
+      "10 Staff",
+      "Core Modules",
+      "Attendance",
+      "Fees & Exams",
+      "Results",
     ],
   },
   {
     name: "Professional",
-    price: 149,
+    price: 3000,
     period: "month",
     badge: "Most Popular",
     highlighted: true,
-    description: "Built for growing multi-campus institutions.",
+    description: "Perfect for growing schools.",
     features: [
-      "Up to 10 Schools",
-      "Up to 5,000 Students",
-      "Unlimited Admin Users",
-      "All 8 Core Modules",
-      "Advanced Analytics",
-      "Priority Support",
-      "API Access",
+      "500 Students",
+      "Unlimited Staff",
+      "All Modules",
+      "Advanced Reports",
+      "School Website",
       "Custom Branding",
     ],
   },
   {
-    name: "Enterprise",
-    price: 0,
-    period: "custom",
-    badge: undefined,
+    name: "Premium",
+    price: 5000,
+    period: "month",
+    badge: "Best Value",
     highlighted: false,
-    description: "For large district-wide or chain school networks.",
+    description: "Complete solution for large schools.",
     features: [
-      "Unlimited Schools",
       "Unlimited Students",
-      "Dedicated Infrastructure",
-      "Custom Module Development",
-      "SLA Guarantee",
-      "24/7 Dedicated Support",
-      "On-premise Option",
-      "White-label Available",
+      "Unlimited Staff",
+      "All Modules",
+      "Advanced Reports",
+      "School Website",
+      "Custom Branding",
+      "Custom Domain",
     ],
   },
 ];
@@ -490,7 +496,11 @@ function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all flex items-center justify-center cursor-pointer"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              title={
+                theme === "dark"
+                  ? "Switch to Light Mode"
+                  : "Switch to Dark Mode"
+              }
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -501,7 +511,7 @@ function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
 
             {/* Super Admin Access Button */}
             <button
-              onClick={() => navigate("/super-admin")}
+              onClick={() => navigate("/admin/login")}
               className="flex items-center gap-2 text-xs font-bold text-rose-300 hover:text-rose-200 transition-all px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 shadow-md hover:scale-105"
               title="Super Administrator Master Portal"
             >
@@ -597,7 +607,7 @@ function Navbar({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
                 <button
                   onClick={() => {
                     setMobileOpen(false);
-                    navigate("/super-admin");
+                    navigate("/admin/login");
                   }}
                   className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 font-bold text-sm hover:bg-rose-500/25 transition-all"
                 >
@@ -721,6 +731,15 @@ function Hero({ onOpenSchoolSearch }: { onOpenSchoolSearch: () => void }) {
           >
             <Search className="w-5 h-5 text-violet-400 group-hover:scale-110 transition-transform" />
             <span>School Login</span>
+          </button>
+
+          {/* Master Portal shortcut for dev/admin */}
+          <button
+            onClick={() => navigate("/admin/login")}
+            className="group px-6 py-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-400 font-bold text-sm backdrop-blur-xl transition-all duration-300 flex items-center gap-2.5 shadow-lg shadow-rose-500/5"
+          >
+            <ShieldCheck size={18} />
+            <span>Master Admin</span>
           </button>
         </motion.div>
 
@@ -1060,147 +1079,175 @@ function Pricing() {
   const navigate = useNavigate();
   const { ref, controls } = useScrollInView();
   const [isAnnual, setIsAnnual] = useState(false);
-  // Dynamic plans from API, fallback to static list
-  const [plans, setPlans] = useState<PricingPlan[]>(pricingPlans);
-  useEffect(() => {
-    apiClient
-      .get("/public/plans")
-      .then((r) => {
-        if (r.data && r.data.length > 0) {
-          setPlans(
-            r.data.map((p: any) => ({
-              name: p.name,
-              price: p.price,
-              period: p.period || "month",
-              description: p.description || "",
-              features: Array.isArray(p.features)
-                ? p.features
-                : JSON.parse(p.features || "[]"),
-              highlighted: p.planKey === "STANDARD",
-              badge: p.planKey === "STANDARD" ? "Most Popular" : undefined,
-            })),
-          );
-        }
-      })
-      .catch(() => {
-        /* use static fallback */
-      });
-  }, []);
+
+  // Use the static plans defined above for the high-fidelity look
+  const plans = pricingPlans;
+
   return (
-    <Section id="pricing">
-      <div className="max-w-6xl mx-auto px-6">
+    <Section id="pricing" className="bg-slate-950/20">
+      <div className="max-w-7xl mx-auto px-6">
         <motion.div
           ref={ref}
           animate={controls}
           initial="hidden"
           variants={stagger}
         >
-          <SectionLabel text="Pricing" />
+          <SectionLabel text="Pricing Architecture" />
           <SectionHeading>
             Simple,{" "}
             <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
-              Transparent Pricing
+              Flexible Engineering
             </span>
           </SectionHeading>
           <SectionSubtitle>
-            Start free. Scale without surprises. Cancel anytime.
+            Choose the plan that fits your school's current scale.
           </SectionSubtitle>
 
-          {/* Toggle */}
-          <motion.div variants={fadeUp} className="flex justify-center mb-12">
-            <div className="flex items-center gap-4 p-1.5 rounded-2xl bg-white/5 border border-white/10">
-              <button
-                onClick={() => setIsAnnual(false)}
-                className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isAnnual ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30" : "text-white/50 hover:text-white"}`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setIsAnnual(true)}
-                className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${isAnnual ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30" : "text-white/50 hover:text-white"}`}
-              >
-                Annual{" "}
-                <span className="ml-1.5 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
-                  -20%
-                </span>
-              </button>
-            </div>
-          </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            {plans.map((plan, i) => {
+              const isPro = plan.name === "Professional";
+              const isPremium = plan.name === "Premium";
+              const isFree = plan.name === "Free Trial";
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            {plans.map((plan, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                whileHover={{ y: -8 }}
-                className={`relative p-8 rounded-2xl border transition-all duration-500 ${
-                  plan.highlighted
-                    ? "border-violet-500/60 bg-gradient-to-b from-violet-500/10 to-indigo-500/5 shadow-2xl shadow-violet-500/20 scale-105"
-                    : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                }`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-violet-500/30">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-1">
-                    {plan.name}
-                  </h3>
-                  <p className="text-sm text-white/40">{plan.description}</p>
-                </div>
-                <div className="mb-8">
-                  {plan.price === 0 ? (
-                    <div className="text-4xl font-black text-white">Custom</div>
-                  ) : (
-                    <div className="flex items-end gap-1">
-                      <span className="text-5xl font-black text-white">
-                        ${isAnnual ? Math.round(plan.price * 0.8) : plan.price}
-                      </span>
-                      <span className="text-white/40 mb-2">/mo</span>
-                    </div>
-                  )}
-                </div>
-                <ul className="space-y-3.5 mb-8">
-                  {plan.features.map((f, j) => (
-                    <li
-                      key={j}
-                      className="flex items-center gap-3 text-sm text-white/70"
-                    >
-                      <span className="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/40 flex items-center justify-center shrink-0">
-                        <svg
-                          className="w-3 h-3 text-violet-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => navigate("/school-login")}
-                  className={`block w-full py-3.5 rounded-xl text-center font-bold text-sm transition-all duration-300 ${
-                    plan.highlighted
-                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg"
-                      : "border border-white/20 text-white hover:bg-white/10"
+              return (
+                <motion.div
+                  key={i}
+                  variants={scaleIn}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className={`relative flex flex-col p-8 rounded-[32px] border transition-all duration-500 overflow-hidden backdrop-blur-md ${
+                    isPro
+                      ? "border-violet-500/50 bg-violet-500/[0.04] shadow-[0_0_40px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/20"
+                      : isPremium
+                        ? "border-amber-500/40 bg-amber-500/[0.03] shadow-[0_0_40px_rgba(245,158,11,0.1)]"
+                        : "border-white/10 bg-white/[0.02]"
                   }`}
                 >
-                  {plan.price === 0 ? "Contact Sales" : "Get Started"}
-                </button>
-              </motion.div>
-            ))}
+                  {/* Decorative Gradient Glows */}
+                  {isPro && (
+                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-violet-600/20 rounded-full blur-[80px]" />
+                  )}
+                  {isPremium && (
+                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-600/15 rounded-full blur-[80px]" />
+                  )}
+
+                  {/* Header */}
+                  <div className="relative z-10 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <div
+                        className={`p-3 rounded-2xl ${
+                          isPro
+                            ? "bg-violet-500/10 text-violet-400"
+                            : isPremium
+                              ? "bg-amber-500/10 text-amber-400"
+                              : "bg-white/5 text-slate-400"
+                        }`}
+                      >
+                        {isPremium ? (
+                          <Crown size={24} />
+                        ) : isPro ? (
+                          <Star size={24} />
+                        ) : (
+                          <Zap size={24} />
+                        )}
+                      </div>
+                      {plan.badge && (
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            isPro
+                              ? "bg-violet-500 text-white"
+                              : "bg-amber-500 text-black"
+                          }`}
+                        >
+                          {plan.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight uppercase">
+                      {plan.name}
+                    </h3>
+                    <p className="text-white/40 text-xs font-medium leading-relaxed">
+                      {plan.description}
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="relative z-10 mb-10">
+                    <div className="flex items-baseline gap-1">
+                      {plan.price === 0 ? (
+                        <span className="text-5xl font-black text-white">
+                          Free
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-2xl font-bold text-white/50">
+                            $
+                          </span>
+                          <span className="text-5xl font-black text-white tracking-tighter">
+                            {plan.price}
+                          </span>
+                          <span className="text-white/30 text-sm font-bold">
+                            /mo
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest mt-2">
+                      {plan.period}
+                    </p>
+                  </div>
+
+                  {/* Features */}
+                  <ul className="relative z-10 space-y-4 mb-10 flex-1">
+                    {plan.features.map((f, j) => (
+                      <li
+                        key={j}
+                        className="flex items-center gap-3 text-[13px] text-white/70 font-semibold group/item"
+                      >
+                        <div
+                          className={`shrink-0 h-5 w-5 rounded-full flex items-center justify-center border ${
+                            isPro
+                              ? "border-violet-500/30 bg-violet-500/10"
+                              : isPremium
+                                ? "border-amber-500/30 bg-amber-500/10"
+                                : "border-white/10 bg-white/5"
+                          }`}
+                        >
+                          <CheckCircle2
+                            size={12}
+                            className={
+                              isPro
+                                ? "text-violet-400"
+                                : isPremium
+                                  ? "text-amber-400"
+                                  : "text-white/40"
+                            }
+                          />
+                        </div>
+                        <span className="group-hover/item:text-white transition-colors">
+                          {f}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={() =>
+                      navigate(isFree ? "/register-school" : "/school-login")
+                    }
+                    className={`relative z-10 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 ${
+                      isPro
+                        ? "bg-violet-600 text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 hover:shadow-violet-600/50 hover:scale-[1.03]"
+                        : isPremium
+                          ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20 hover:bg-amber-400 hover:scale-[1.03]"
+                          : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    {isFree ? "Start Free" : "Choose Plan"}
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
@@ -1574,9 +1621,17 @@ function Footer() {
           ))}
         </div>
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/30">
-          <span>
-            © {new Date().getFullYear()} EduSphere ERP. All rights reserved.
-          </span>
+          <div className="flex items-center gap-4">
+            <span>
+              © {new Date().getFullYear()} EduSphere ERP. All rights reserved.
+            </span>
+            <Link
+              to="/admin-login"
+              className="hover:text-violet-400 transition-colors"
+            >
+              Admin Portal
+            </Link>
+          </div>
           <span className="flex items-center gap-1.5">
             Made with <span className="text-red-400">♥</span> for educators
             worldwide

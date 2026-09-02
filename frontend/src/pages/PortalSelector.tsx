@@ -103,6 +103,14 @@ export default function PortalSelector() {
         </motion.button>
       </div>
 
+      <button
+        onClick={enterSuperAdmin}
+        className="mt-8 px-5 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-xs font-black text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center gap-2 shadow-lg shadow-rose-500/10"
+      >
+        <ShieldCheck size={16} />
+        COMMAND CENTER ACCESS (SYSTEM ADMIN)
+      </button>
+
 
 
       <motion.p

@@ -129,4 +129,44 @@ export class AdminController {
     res.setHeader('Content-Disposition', `attachment; filename=${id}-${Date.now()}.csv`);
     return res.send(csv);
   }
+
+  // ─── Platform Users ────────────────────────────────────────────────────────
+  @Get('users')
+  getUsers(
+    @Query('search') search?: string,
+    @Query('role') role?: string,
+  ) {
+    return this.adminService.getPlatformUsers(search, role);
+  }
+
+  @Patch('users/:id/toggle-status')
+  toggleUserStatus(@Param('id') id: string) {
+    return this.adminService.toggleUserActive(id);
+  }
+
+  // ─── Support Tickets ───────────────────────────────────────────────────────
+  @Get('support')
+  getSupportTickets() {
+    return this.adminService.getSupportTickets();
+  }
+
+  @Patch('support/:id')
+  updateSupportTicket(
+    @Param('id') id: string,
+    @Body() dto: { status: string; reply?: string },
+  ) {
+    return this.adminService.updateSupportTicket(id, dto.status, dto.reply);
+  }
+
+  // ─── Announcements ─────────────────────────────────────────────────────────
+  @Get('announcements')
+  getAnnouncements() {
+    return this.adminService.getAnnouncements();
+  }
+
+  @Post('announcements')
+  createAnnouncement(@Body() dto: { title: string; message: string; target?: string; priority?: string }) {
+    return this.adminService.createAnnouncement(dto);
+  }
 }
+

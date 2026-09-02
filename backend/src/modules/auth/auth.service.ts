@@ -14,9 +14,13 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   VerifyEmailDto,
+  OnboardingPaymentDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
 } from './dto/auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
+import { JwtPayload } from './strategies/jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -46,6 +50,7 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
+    const otp = '123456';
 
     // Transaction: create school + admin user atomically
     const result = await this.prisma.$transaction(async (tx) => {
@@ -59,7 +64,7 @@ export class AuthService {
           address: dto.schoolAddress,
           country: dto.country,
           city: dto.city,
-          isActive: true,
+          isActive: false,
         },
       });
 
@@ -74,18 +79,37 @@ export class AuthService {
         },
       });
 
+      await tx.subscription.create({
+        data: {
+          schoolId: school.id,
+          plan: dto.requestedPlan || 'FREE_TRIAL',
+          status: 'PENDING',
+          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          amount: 0,
+        },
+      });
+
+      await tx.emailVerification.create({
+        data: {
+          userId: user.id,
+          otp,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      });
+
       return { school, user };
     });
 
-    const tokens = await this.generateTokens(
-      result.user.id,
-      result.user.email,
-      result.user.role,
-      result.user.schoolId ?? undefined,
-    );
+    this.mailService
+      .sendEmailVerification(result.user.email, otp)
+      .catch((error) => {
+        console.error('Failed to send verification email:', error);
+      });
 
     return {
-      message: 'School registered successfully',
+      message: 'School registered. Verify your email to continue.',
+      verificationRequired: true,
+      verificationUserId: result.user.id,
       user: {
         id: result.user.id,
         name: result.user.name,
@@ -95,7 +119,6 @@ export class AuthService {
         schoolName: result.school.name,
         schoolSlug: result.school.slug,
       },
-      ...tokens,
     };
   }
 
@@ -103,11 +126,31 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.trim().toLowerCase() },
-      include: { school: { select: { name: true, slug: true } } },
+      include: {
+        school: {
+          select: {
+            name: true,
+            slug: true,
+            isActive: true,
+            subscription: { select: { plan: true, status: true } },
+          },
+        },
+      },
     });
 
-    if (!user) throw new UnauthorizedException('No account found for this email address');
-    if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
+    if (!user)
+      throw new UnauthorizedException(
+        'No account found for this email address',
+      );
+    if (!user.isActive)
+      throw new UnauthorizedException('This account has been suspended');
+    if (!(await bcrypt.compare(dto.password, user.passwordHash))) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    if (!user.emailVerified)
+      throw new UnauthorizedException(
+        'Please verify your email before signing in',
+      );
 
     // Passwordless authentication — login directly with email only
     const tokens = await this.generateTokens(
@@ -126,6 +169,8 @@ export class AuthService {
         schoolId: user.schoolId,
         schoolName: user.school?.name,
         schoolSlug: user.school?.slug,
+        activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING',
+        plan: user.school?.subscription?.plan,
       },
       ...tokens,
     };
@@ -235,7 +280,98 @@ export class AuthService {
       }),
     ]);
 
-    return { message: 'Email verified successfully' };
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.userId },
+      include: {
+        school: {
+          select: {
+            name: true,
+            slug: true,
+            isActive: true,
+            subscription: { select: { plan: true, status: true } },
+          },
+        },
+      },
+    });
+    if (!user) throw new BadRequestException('User account not found');
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      user.schoolId ?? undefined,
+    );
+    return {
+      message: 'Email verified successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        schoolId: user.schoolId,
+        schoolName: user.school?.name,
+        schoolSlug: user.school?.slug,
+        activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING',
+        plan: user.school?.subscription?.plan,
+      },
+      ...tokens,
+    };
+  }
+
+  async submitOnboardingPayment(
+    dto: OnboardingPaymentDto,
+    user: Pick<JwtPayload, 'schoolId' | 'role'>,
+  ) {
+    if (user.schoolId !== dto.schoolId || user.role !== 'SCHOOL_ADMIN') {
+      throw new UnauthorizedException(
+        'You can only submit payment for your school',
+      );
+    }
+    const school = await this.prisma.school.findUnique({
+      where: { id: dto.schoolId },
+    });
+    if (!school) throw new BadRequestException('School account not found');
+    return this.prisma.onboardingPayment.create({
+      data: {
+        schoolId: dto.schoolId,
+        plan: dto.plan,
+        method: dto.method,
+        reference: dto.reference,
+      },
+    });
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { name: dto.name.trim(), phone: dto.phone?.trim() || null },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        schoolId: true,
+      },
+    });
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (
+      !user ||
+      !(await bcrypt.compare(dto.currentPassword, user.passwordHash))
+    ) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await bcrypt.hash(dto.newPassword, 12) },
+    });
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return { message: 'Password changed successfully. Please sign in again.' };
   }
 
   // ─── Token Generation ─────────────────────────────────────────────────────

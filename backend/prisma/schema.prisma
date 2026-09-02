@@ -51,6 +51,7 @@ model School {
   routes         TransportRoute[]
   users          User[]
   buildings      Building[]
+  onboardingPayments OnboardingPayment[]
 
   @@index([slug])
   @@index([deletedAt])
@@ -68,6 +69,66 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   school    School   @relation(fields: [schoolId], references: [id])
+}
+
+model OnboardingPayment {
+  id          String    @id @default(uuid())
+  schoolId    String
+  plan        String
+  amount      Float     @default(0)
+  method      String
+  reference   String?
+  status      String    @default("PENDING")
+  submittedAt DateTime  @default(now())
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+  @@index([status])
+}
+
+model SupportTicket {
+  id          String        @id @default(uuid())
+  ticketNo    String        @unique
+  schoolName  String
+  schoolSlug  String
+  senderName  String
+  senderEmail String
+  subject     String
+  message     String
+  category    String        @default("GENERAL")
+  priority    String        @default("MEDIUM")
+  status      String        @default("OPEN")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  replies     TicketReply[]
+}
+
+model TicketReply {
+  id        String        @id @default(uuid())
+  ticketId  String
+  sender    String
+  message   String
+  createdAt DateTime      @default(now())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+model PlatformAnnouncement {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  target    String   @default("ALL")
+  priority  String   @default("NORMAL")
+  isActive  Boolean  @default(true)
+  author    String   @default("Super Admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([target, isActive])
 }
 
 model User {

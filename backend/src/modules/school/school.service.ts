@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -90,8 +94,29 @@ export class SchoolService {
       where: { id },
       include: {
         subscription: true,
+        users: {
+          where: { role: 'SCHOOL_ADMIN' },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            isActive: true,
+          },
+          take: 1,
+        },
+        onboardingPayments: {
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        },
         _count: {
-          select: { users: true, students: true, teachers: true },
+          select: {
+            users: true,
+            students: true,
+            teachers: true,
+            staff: true,
+            classes: true,
+          },
         },
       },
     });
@@ -104,18 +129,20 @@ export class SchoolService {
       throw new ConflictException('School name and slug are required');
     }
 
-    const cleanSlug = data.slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-');
+    const cleanSlug = data.slug
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9-]/g, '-');
 
     const existing = await this.prisma.school.findFirst({
       where: {
-        OR: [
-          { slug: cleanSlug },
-          { name: data.name },
-        ],
+        OR: [{ slug: cleanSlug }, { name: data.name }],
       },
     });
     if (existing) {
-      throw new ConflictException('School with this name or slug already exists');
+      throw new ConflictException(
+        'School with this name or slug already exists',
+      );
     }
 
     try {
@@ -158,7 +185,9 @@ export class SchoolService {
       });
     } catch (error: any) {
       if (error?.code === 'P2002') {
-        throw new ConflictException('A school with this slug or email already exists');
+        throw new ConflictException(
+          'A school with this slug or email already exists',
+        );
       }
       if (error?.status) throw error;
       console.error('Error creating school:', error);
@@ -170,11 +199,17 @@ export class SchoolService {
     await this.findOne(id);
 
     if (data.slug) {
-      const cleanSlug = data.slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-');
+      const cleanSlug = data.slug
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9-]/g, '-');
       const existing = await this.prisma.school.findFirst({
         where: { slug: cleanSlug, id: { not: id } },
       });
-      if (existing) throw new ConflictException('Another school with this slug already exists');
+      if (existing)
+        throw new ConflictException(
+          'Another school with this slug already exists',
+        );
       data.slug = cleanSlug;
     }
 
@@ -195,7 +230,9 @@ export class SchoolService {
       });
     } catch (error: any) {
       if (error?.code === 'P2002') {
-        throw new ConflictException('A school with this slug or email already exists');
+        throw new ConflictException(
+          'A school with this slug or email already exists',
+        );
       }
       if (error?.status) throw error;
       console.error('Error updating school:', error);
@@ -229,7 +266,9 @@ export class SchoolService {
 
   async extendExpiry(id: string, days: number) {
     await this.findOne(id);
-    const sub = await this.prisma.subscription.findUnique({ where: { schoolId: id } });
+    const sub = await this.prisma.subscription.findUnique({
+      where: { schoolId: id },
+    });
     if (!sub) throw new NotFoundException('Subscription not found');
 
     const base = sub.endDate > new Date() ? sub.endDate : new Date();
@@ -259,26 +298,31 @@ export class SchoolService {
     const now = new Date();
     const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    const [
-      totalSchools,
-      activeSchools,
-      totalStudents,
-      totalTeachers,
-    ] = await Promise.all([
-      this.prisma.school.count({ where: { deletedAt: null } }),
-      this.prisma.school.count({ where: { deletedAt: null, isActive: true } }),
-      this.prisma.student.count({ where: { deletedAt: null } }),
-      this.prisma.teacher.count({ where: { deletedAt: null } }),
-    ]);
+    const [totalSchools, activeSchools, totalStudents, totalTeachers] =
+      await Promise.all([
+        this.prisma.school.count({ where: { deletedAt: null } }),
+        this.prisma.school.count({
+          where: { deletedAt: null, isActive: true },
+        }),
+        this.prisma.student.count({ where: { deletedAt: null } }),
+        this.prisma.teacher.count({ where: { deletedAt: null } }),
+      ]);
 
     const allSubs = await this.prisma.subscription.findMany({
       select: { plan: true, status: true, endDate: true, amount: true },
     });
 
-    const activeSubscriptions = allSubs.filter(s => s.status === 'ACTIVE').length;
-    const trialSchools = allSubs.filter(s => s.plan === 'FREE_TRIAL' && s.status === 'ACTIVE').length;
+    const activeSubscriptions = allSubs.filter(
+      (s) => s.status === 'ACTIVE',
+    ).length;
+    const trialSchools = allSubs.filter(
+      (s) => s.plan === 'FREE_TRIAL' && s.status === 'ACTIVE',
+    ).length;
     const expiringPlans = allSubs.filter(
-      s => s.endDate <= thirtyDaysLater && s.endDate >= now && s.status === 'ACTIVE'
+      (s) =>
+        s.endDate <= thirtyDaysLater &&
+        s.endDate >= now &&
+        s.status === 'ACTIVE',
     ).length;
     const totalRevenue = allSubs.reduce((sum, s) => sum + (s.amount || 0), 0);
     const inactiveSchools = totalSchools - activeSchools;

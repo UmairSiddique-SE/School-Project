@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 interface SchoolItem {
   id?: string;
@@ -102,7 +103,9 @@ const DEFAULT_SCHOOLS: SchoolItem[] = [
 export default function SchoolLogin() {
   const [search, setSearch] = useState("");
   const [schools, setSchools] = useState<SchoolItem[]>(DEFAULT_SCHOOLS);
-  const [selectedRole, setSelectedRole] = useState<"ADMIN" | "TEACHER" | "STUDENT" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<
+    "ADMIN" | "TEACHER" | "STUDENT" | null
+  >(null);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -135,31 +138,33 @@ export default function SchoolLogin() {
     (s) =>
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.slug.toLowerCase().includes(search.toLowerCase()) ||
-      (s.city && s.city.toLowerCase().includes(search.toLowerCase()))
+      (s.city && s.city.toLowerCase().includes(search.toLowerCase())),
   );
 
   const handleSelectSchool = (slug: string) => {
     navigate(`/${slug}/login`);
   };
 
-  const handleRoleQuickLogin = (role: "ADMIN" | "TEACHER" | "STUDENT") => {
-    const roleUser = {
-      id: `${role.toLowerCase()}-demo-1`,
-      name:
-        role === "ADMIN"
-          ? "School Administrator"
-          : role === "TEACHER"
-          ? "Senior Teacher"
-          : "Student User",
-      email: `${role.toLowerCase()}@edusphere.com`,
-      role: role === "ADMIN" ? "SCHOOL_ADMIN" : role === "TEACHER" ? "TEACHER" : "STUDENT",
-      schoolId: "school-1",
-      schoolName: "EduSphere Academy",
-      schoolSlug: "edusphere",
-    };
-
-    login(`bypass-${role.toLowerCase()}`, roleUser);
-    navigate(`/edusphere/dashboard`, { replace: true });
+  const handleRoleQuickLogin = async (
+    role: "ADMIN" | "TEACHER" | "STUDENT",
+  ) => {
+    const credentials = {
+      ADMIN: { email: "schooladmin@gmail.com", password: "12345678" },
+      TEACHER: { email: "teacher@gmail.com", password: "teacher123" },
+      STUDENT: { email: "student@gmail.com", password: "student123" },
+    }[role];
+    try {
+      const response = await apiClient.post("/auth/login", credentials);
+      login(response.data.accessToken, response.data.user);
+      navigate(`/${response.data.user.schoolSlug}/dashboard`, {
+        replace: true,
+      });
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Demo account is unavailable. Run the database seed first.",
+      );
+    }
   };
 
   const roles = [
@@ -167,7 +172,8 @@ export default function SchoolLogin() {
       id: "ADMIN" as const,
       title: "School Admin",
       subtitle: "Principal & Management",
-      description: "Full control over institution academics, staff, fee collection, admissions, and settings.",
+      description:
+        "Full control over institution academics, staff, fee collection, admissions, and settings.",
       icon: Building2,
       badge: "Administration",
       gradient: "from-violet-600 to-indigo-700",
@@ -180,7 +186,8 @@ export default function SchoolLogin() {
       id: "TEACHER" as const,
       title: "Teacher Portal",
       subtitle: "Faculty & Instructors",
-      description: "Take attendance, grade assignments & exams, share homework, and manage class schedules.",
+      description:
+        "Take attendance, grade assignments & exams, share homework, and manage class schedules.",
       icon: BookOpen,
       badge: "Academics",
       gradient: "from-blue-600 to-cyan-700",
@@ -193,7 +200,8 @@ export default function SchoolLogin() {
       id: "STUDENT" as const,
       title: "Student & Parent",
       subtitle: "Learners & Guardians",
-      description: "Access homework, track attendance record, view exam results, notices, and fee vouchers.",
+      description:
+        "Access homework, track attendance record, view exam results, notices, and fee vouchers.",
       icon: GraduationCap,
       badge: "Student Life",
       gradient: "from-emerald-600 to-teal-700",
@@ -254,10 +262,14 @@ export default function SchoolLogin() {
             School Login Portal
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-3">
-            Select Your <span className="bg-gradient-to-r from-violet-400 via-indigo-300 to-fuchsia-400 bg-clip-text text-transparent">Login Portal</span>
+            Select Your{" "}
+            <span className="bg-gradient-to-r from-violet-400 via-indigo-300 to-fuchsia-400 bg-clip-text text-transparent">
+              Login Portal
+            </span>
           </h1>
           <p className="text-white/60 text-sm sm:text-base max-w-lg mx-auto">
-            Choose your role below to log in directly, or search your specific school campus.
+            Choose your role below to log in directly, or search your specific
+            school campus.
           </p>
         </motion.div>
 
@@ -281,10 +293,14 @@ export default function SchoolLogin() {
                 <div>
                   {/* Top Bar: Icon & Badge */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${r.gradient} flex items-center justify-center shadow-lg shadow-black/40 group-hover:scale-110 transition-transform duration-300`}>
+                    <div
+                      className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${r.gradient} flex items-center justify-center shadow-lg shadow-black/40 group-hover:scale-110 transition-transform duration-300`}
+                    >
                       <Icon className="w-7 h-7 text-white" />
                     </div>
-                    <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${r.tagColor}`}>
+                    <span
+                      className={`text-[11px] font-bold px-3 py-1 rounded-full border ${r.tagColor}`}
+                    >
                       {r.badge}
                     </span>
                   </div>
@@ -293,7 +309,9 @@ export default function SchoolLogin() {
                   <h2 className="text-2xl font-black text-white mb-1 tracking-tight group-hover:text-violet-300 transition-colors">
                     {r.title}
                   </h2>
-                  <p className="text-xs font-semibold text-violet-400/80 mb-3">{r.subtitle}</p>
+                  <p className="text-xs font-semibold text-violet-400/80 mb-3">
+                    {r.subtitle}
+                  </p>
 
                   {/* Description */}
                   <p className="text-sm text-slate-400 leading-relaxed mb-6">
@@ -328,7 +346,8 @@ export default function SchoolLogin() {
                 <span>Search Your Specific Campus</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Type your school name or campus location to open its dedicated login screen.
+                Type your school name or campus location to open its dedicated
+                login screen.
               </p>
             </div>
 

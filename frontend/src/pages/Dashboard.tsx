@@ -7,7 +7,7 @@ import {
   Briefcase, CreditCard, BellRing, LayoutDashboard, Shield, Users,
   Bus, Sparkles, CheckCircle2, MessageSquare, Phone, Send,
   Plus, Download, RefreshCw, Filter, Search, School, Check,
-  AlertTriangle, ArrowUpRight, ArrowDownRight, Layers, Eye
+  AlertTriangle, ArrowUpRight, ArrowDownRight, Layers, Eye, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/api/apiClient';

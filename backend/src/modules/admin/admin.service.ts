@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { OverviewDto } from './dto/overview.dto';
 import * as bcrypt from 'bcryptjs';
@@ -17,51 +21,134 @@ function addDays(d: Date, days: number): Date {
 // Default platform plans seed data
 const DEFAULT_PLANS = [
   {
-    planKey: 'FREE_TRIAL', name: 'Free Trial', price: 0, period: '14 days',
-    maxStudents: 50, maxTeachers: 3, storageMb: 1024, supportTier: 'Email',
-    features: JSON.stringify(['Up to 50 students', '3 teachers', '1 GB storage', 'Basic reports', 'Email support']),
+    planKey: 'FREE_TRIAL',
+    name: 'Free Trial',
+    price: 0,
+    period: '14 days',
+    maxStudents: 50,
+    maxTeachers: 3,
+    storageMb: 1024,
+    supportTier: 'Email',
+    features: JSON.stringify([
+      'Up to 50 students',
+      '3 teachers',
+      '1 GB storage',
+      'Basic reports',
+      'Email support',
+    ]),
   },
   {
-    planKey: 'BASIC', name: 'Basic', price: 49, period: 'per month',
-    maxStudents: 200, maxTeachers: 15, storageMb: 10240, supportTier: 'Email + Chat',
-    features: JSON.stringify(['Up to 200 students', '15 teachers', '10 GB storage', 'Full reports', 'Email + Chat support', 'Fee management']),
+    planKey: 'BASIC',
+    name: 'Basic',
+    price: 49,
+    period: 'per month',
+    maxStudents: 200,
+    maxTeachers: 15,
+    storageMb: 10240,
+    supportTier: 'Email + Chat',
+    features: JSON.stringify([
+      'Up to 200 students',
+      '15 teachers',
+      '10 GB storage',
+      'Full reports',
+      'Email + Chat support',
+      'Fee management',
+    ]),
   },
   {
-    planKey: 'STANDARD', name: 'Standard', price: 99, period: 'per month',
-    maxStudents: 1000, maxTeachers: 50, storageMb: 51200, supportTier: 'Priority',
-    features: JSON.stringify(['Up to 1,000 students', '50 teachers', '50 GB storage', 'Advanced analytics', 'Priority support', 'Fee management', 'Attendance & grades', 'Parent portal']),
+    planKey: 'STANDARD',
+    name: 'Standard',
+    price: 99,
+    period: 'per month',
+    maxStudents: 1000,
+    maxTeachers: 50,
+    storageMb: 51200,
+    supportTier: 'Priority',
+    features: JSON.stringify([
+      'Up to 1,000 students',
+      '50 teachers',
+      '50 GB storage',
+      'Advanced analytics',
+      'Priority support',
+      'Fee management',
+      'Attendance & grades',
+      'Parent portal',
+    ]),
   },
   {
-    planKey: 'PREMIUM', name: 'Premium', price: 199, period: 'per month',
-    maxStudents: 999999, maxTeachers: 999999, storageMb: 512000, supportTier: 'Dedicated',
-    features: JSON.stringify(['Unlimited students', 'Unlimited teachers', '500 GB storage', 'Custom domain', 'Dedicated support', 'All Standard features', 'Transport Management', 'Multi-campus', 'API access', 'White-label']),
+    planKey: 'PREMIUM',
+    name: 'Premium',
+    price: 199,
+    period: 'per month',
+    maxStudents: 999999,
+    maxTeachers: 999999,
+    storageMb: 512000,
+    supportTier: 'Dedicated',
+    features: JSON.stringify([
+      'Unlimited students',
+      'Unlimited teachers',
+      '500 GB storage',
+      'Custom domain',
+      'Dedicated support',
+      'All Standard features',
+      'Transport Management',
+      'Multi-campus',
+      'API access',
+      'White-label',
+    ]),
   },
 ];
 
 // Default email templates seed data
 const DEFAULT_TEMPLATES = [
   {
-    name: 'Welcome Email', subject: 'Welcome to EduSphere!', category: 'Onboarding',
+    name: 'Welcome Email',
+    subject: 'Welcome to EduSphere!',
+    category: 'Onboarding',
     body: `Dear {schoolName},\n\nWelcome to EduSphere ERP! Your account has been successfully created.\n\nYour login details:\n- URL: https://{slug}.edusphere.app\n- Email: {adminEmail}\n- Temporary Password: {tempPassword}\n\nPlease change your password on first login.\n\nBest regards,\nEduSphere Team`,
-    variables: JSON.stringify(['{schoolName}', '{slug}', '{adminEmail}', '{tempPassword}']),
+    variables: JSON.stringify([
+      '{schoolName}',
+      '{slug}',
+      '{adminEmail}',
+      '{tempPassword}',
+    ]),
   },
   {
-    name: 'Plan Expiry Reminder', subject: 'Your plan expires in {days} days', category: 'Billing',
+    name: 'Plan Expiry Reminder',
+    subject: 'Your plan expires in {days} days',
+    category: 'Billing',
     body: `Dear {schoolName},\n\nThis is a reminder that your {plan} plan will expire on {expiryDate}.\n\nTo continue uninterrupted service, please renew your subscription.\n\nRenew now: https://edusphere.app/renew\n\nBest regards,\nEduSphere Team`,
-    variables: JSON.stringify(['{schoolName}', '{plan}', '{expiryDate}', '{days}']),
+    variables: JSON.stringify([
+      '{schoolName}',
+      '{plan}',
+      '{expiryDate}',
+      '{days}',
+    ]),
   },
   {
-    name: 'Payment Confirmation', subject: 'Payment received — Thank you!', category: 'Billing',
+    name: 'Payment Confirmation',
+    subject: 'Payment received — Thank you!',
+    category: 'Billing',
     body: `Dear {schoolName},\n\nWe have received your payment of {amount} for the {plan} plan.\n\nReceipt No: {receiptNo}\nValid Until: {expiryDate}\n\nThank you for choosing EduSphere!\n\nBest regards,\nEduSphere Team`,
-    variables: JSON.stringify(['{schoolName}', '{amount}', '{plan}', '{receiptNo}', '{expiryDate}']),
+    variables: JSON.stringify([
+      '{schoolName}',
+      '{amount}',
+      '{plan}',
+      '{receiptNo}',
+      '{expiryDate}',
+    ]),
   },
   {
-    name: 'Account Suspended', subject: 'Your EduSphere account has been suspended', category: 'Account',
+    name: 'Account Suspended',
+    subject: 'Your EduSphere account has been suspended',
+    category: 'Account',
     body: `Dear {schoolName},\n\nYour EduSphere account has been temporarily suspended due to {reason}.\n\nTo reactivate your account, please contact support at support@edusphere.app or renew your subscription.\n\nBest regards,\nEduSphere Team`,
     variables: JSON.stringify(['{schoolName}', '{reason}']),
   },
   {
-    name: 'Password Reset', subject: 'Reset your EduSphere password', category: 'Security',
+    name: 'Password Reset',
+    subject: 'Reset your EduSphere password',
+    category: 'Security',
     body: `Dear {name},\n\nWe received a request to reset your password.\n\nClick the link below to reset it (expires in 1 hour):\n{resetLink}\n\nIf you didn't request this, please ignore this email.\n\nBest regards,\nEduSphere Team`,
     variables: JSON.stringify(['{name}', '{resetLink}']),
   },
@@ -69,26 +156,168 @@ const DEFAULT_TEMPLATES = [
 
 // Default platform settings seed data
 const DEFAULT_SETTINGS = [
-  { key: 'platform.registrations', value: 'true', type: 'toggle', label: 'Allow New Registrations', description: 'Allow new schools to register on the platform.', category: 'platform' },
-  { key: 'platform.maintenance', value: 'false', type: 'toggle', label: 'Maintenance Mode', description: 'Put the platform in maintenance mode. All school dashboards will show a maintenance notice.', category: 'platform' },
-  { key: 'platform.name', value: 'EduSphere ERP', type: 'text', label: 'Platform Name', description: 'The name displayed across the platform.', category: 'platform' },
-  { key: 'platform.supportEmail', value: 'support@edusphere.app', type: 'text', label: 'Support Email', description: 'Email address shown to users for support.', category: 'platform' },
-  { key: 'subscription.defaultPlan', value: 'FREE_TRIAL', type: 'select', label: 'Default Plan', description: 'The plan assigned to new schools upon registration.', category: 'subscription' },
-  { key: 'subscription.trialDays', value: '14', type: 'number', label: 'Free Trial Duration (days)', description: 'How many days the free trial lasts before expiry.', category: 'subscription' },
-  { key: 'subscription.expiryWarningDays', value: '7', type: 'number', label: 'Expiry Warning (days before)', description: 'Send warning notifications this many days before expiry.', category: 'subscription' },
-  { key: 'subscription.autoSuspend', value: 'false', type: 'toggle', label: 'Auto-Suspend on Expiry', description: 'Automatically suspend school accounts when their plan expires.', category: 'subscription' },
-  { key: 'email.smtpHost', value: 'smtp.gmail.com', type: 'text', label: 'SMTP Host', description: 'Your mail server hostname.', category: 'email' },
-  { key: 'email.smtpPort', value: '587', type: 'number', label: 'SMTP Port', description: 'SMTP connection port.', category: 'email' },
-  { key: 'email.smtpUser', value: 'noreply@edusphere.app', type: 'text', label: 'SMTP Username', description: 'Authentication username for SMTP.', category: 'email' },
-  { key: 'email.fromName', value: 'EduSphere Platform', type: 'text', label: 'From Name', description: 'The name shown as the email sender.', category: 'email' },
-  { key: 'notifications.emailOnRegister', value: 'true', type: 'toggle', label: 'Email on School Registration', description: 'Send a welcome email when a new school registers.', category: 'notifications' },
-  { key: 'notifications.emailOnExpiry', value: 'true', type: 'toggle', label: 'Email on Plan Expiry', description: 'Send expiry reminder emails to school admins.', category: 'notifications' },
-  { key: 'notifications.emailOnPayment', value: 'true', type: 'toggle', label: 'Email on Payment', description: 'Send payment confirmation emails.', category: 'notifications' },
-  { key: 'notifications.adminAlerts', value: 'true', type: 'toggle', label: 'Super Admin Alerts', description: 'Receive platform alerts in the super admin dashboard.', category: 'notifications' },
-  { key: 'server.maxFileSize', value: '10', type: 'number', label: 'Max File Upload (MB)', description: 'Maximum file size for uploads across all schools.', category: 'server' },
-  { key: 'server.sessionTimeout', value: '60', type: 'number', label: 'Session Timeout (minutes)', description: 'Auto-logout users after this many minutes of inactivity.', category: 'server' },
-  { key: 'server.twoFactor', value: 'false', type: 'toggle', label: 'Require 2FA for Super Admins', description: 'Enforce two-factor authentication for all super admins.', category: 'server' },
-  { key: 'server.ipWhitelist', value: 'false', type: 'toggle', label: 'IP Whitelist Mode', description: 'Restrict super admin access to whitelisted IPs only.', category: 'server' },
+  {
+    key: 'platform.registrations',
+    value: 'true',
+    type: 'toggle',
+    label: 'Allow New Registrations',
+    description: 'Allow new schools to register on the platform.',
+    category: 'platform',
+  },
+  {
+    key: 'platform.maintenance',
+    value: 'false',
+    type: 'toggle',
+    label: 'Maintenance Mode',
+    description:
+      'Put the platform in maintenance mode. All school dashboards will show a maintenance notice.',
+    category: 'platform',
+  },
+  {
+    key: 'platform.name',
+    value: 'EduSphere ERP',
+    type: 'text',
+    label: 'Platform Name',
+    description: 'The name displayed across the platform.',
+    category: 'platform',
+  },
+  {
+    key: 'platform.supportEmail',
+    value: 'support@edusphere.app',
+    type: 'text',
+    label: 'Support Email',
+    description: 'Email address shown to users for support.',
+    category: 'platform',
+  },
+  {
+    key: 'subscription.defaultPlan',
+    value: 'FREE_TRIAL',
+    type: 'select',
+    label: 'Default Plan',
+    description: 'The plan assigned to new schools upon registration.',
+    category: 'subscription',
+  },
+  {
+    key: 'subscription.trialDays',
+    value: '14',
+    type: 'number',
+    label: 'Free Trial Duration (days)',
+    description: 'How many days the free trial lasts before expiry.',
+    category: 'subscription',
+  },
+  {
+    key: 'subscription.expiryWarningDays',
+    value: '7',
+    type: 'number',
+    label: 'Expiry Warning (days before)',
+    description: 'Send warning notifications this many days before expiry.',
+    category: 'subscription',
+  },
+  {
+    key: 'subscription.autoSuspend',
+    value: 'false',
+    type: 'toggle',
+    label: 'Auto-Suspend on Expiry',
+    description:
+      'Automatically suspend school accounts when their plan expires.',
+    category: 'subscription',
+  },
+  {
+    key: 'email.smtpHost',
+    value: 'smtp.gmail.com',
+    type: 'text',
+    label: 'SMTP Host',
+    description: 'Your mail server hostname.',
+    category: 'email',
+  },
+  {
+    key: 'email.smtpPort',
+    value: '587',
+    type: 'number',
+    label: 'SMTP Port',
+    description: 'SMTP connection port.',
+    category: 'email',
+  },
+  {
+    key: 'email.smtpUser',
+    value: 'noreply@edusphere.app',
+    type: 'text',
+    label: 'SMTP Username',
+    description: 'Authentication username for SMTP.',
+    category: 'email',
+  },
+  {
+    key: 'email.fromName',
+    value: 'EduSphere Platform',
+    type: 'text',
+    label: 'From Name',
+    description: 'The name shown as the email sender.',
+    category: 'email',
+  },
+  {
+    key: 'notifications.emailOnRegister',
+    value: 'true',
+    type: 'toggle',
+    label: 'Email on School Registration',
+    description: 'Send a welcome email when a new school registers.',
+    category: 'notifications',
+  },
+  {
+    key: 'notifications.emailOnExpiry',
+    value: 'true',
+    type: 'toggle',
+    label: 'Email on Plan Expiry',
+    description: 'Send expiry reminder emails to school admins.',
+    category: 'notifications',
+  },
+  {
+    key: 'notifications.emailOnPayment',
+    value: 'true',
+    type: 'toggle',
+    label: 'Email on Payment',
+    description: 'Send payment confirmation emails.',
+    category: 'notifications',
+  },
+  {
+    key: 'notifications.adminAlerts',
+    value: 'true',
+    type: 'toggle',
+    label: 'Super Admin Alerts',
+    description: 'Receive platform alerts in the super admin dashboard.',
+    category: 'notifications',
+  },
+  {
+    key: 'server.maxFileSize',
+    value: '10',
+    type: 'number',
+    label: 'Max File Upload (MB)',
+    description: 'Maximum file size for uploads across all schools.',
+    category: 'server',
+  },
+  {
+    key: 'server.sessionTimeout',
+    value: '60',
+    type: 'number',
+    label: 'Session Timeout (minutes)',
+    description: 'Auto-logout users after this many minutes of inactivity.',
+    category: 'server',
+  },
+  {
+    key: 'server.twoFactor',
+    value: 'false',
+    type: 'toggle',
+    label: 'Require 2FA for Super Admins',
+    description: 'Enforce two-factor authentication for all super admins.',
+    category: 'server',
+  },
+  {
+    key: 'server.ipWhitelist',
+    value: 'false',
+    type: 'toggle',
+    label: 'IP Whitelist Mode',
+    description: 'Restrict super admin access to whitelisted IPs only.',
+    category: 'server',
+  },
 ];
 
 @Injectable()
@@ -129,30 +358,39 @@ export class AdminService {
     await this.seedDefaults();
     const now = new Date();
 
-    const [totalSchools, activeSchools, trialSchools, expiredSchools] = await Promise.all([
-      this.prisma.school.count({ where: { deletedAt: null } }),
-      this.prisma.school.count({ where: { isActive: true, deletedAt: null } }),
-      this.prisma.school.count({
-        where: { subscription: { plan: { in: ['TRIAL', 'FREE_TRIAL'] } }, deletedAt: null },
-      }),
-      this.prisma.school.count({
-        where: { subscription: { endDate: { lt: now } }, deletedAt: null },
-      }),
-    ]);
+    const [totalSchools, activeSchools, trialSchools, expiredSchools] =
+      await Promise.all([
+        this.prisma.school.count({ where: { deletedAt: null } }),
+        this.prisma.school.count({
+          where: { isActive: true, deletedAt: null },
+        }),
+        this.prisma.school.count({
+          where: {
+            subscription: { plan: { in: ['TRIAL', 'FREE_TRIAL'] } },
+            deletedAt: null,
+          },
+        }),
+        this.prisma.school.count({
+          where: { subscription: { endDate: { lt: now } }, deletedAt: null },
+        }),
+      ]);
 
-    const [pendingPayments, monthRevenueAgg, todayRevenueAgg] = await Promise.all([
-      this.prisma.feePayment.count({ where: { status: 'PENDING' } }),
-      this.prisma.feePayment.aggregate({
-        _sum: { totalPaid: true },
-        where: { paidDate: { gte: startOfMonth(now) } },
-      }),
-      this.prisma.feePayment.aggregate({
-        _sum: { totalPaid: true },
-        where: { paidDate: { gte: startOfDay(now) } },
-      }),
-    ]);
+    const [pendingPayments, monthRevenueAgg, todayRevenueAgg] =
+      await Promise.all([
+        this.prisma.feePayment.count({ where: { status: 'PENDING' } }),
+        this.prisma.feePayment.aggregate({
+          _sum: { totalPaid: true },
+          where: { paidDate: { gte: startOfMonth(now) } },
+        }),
+        this.prisma.feePayment.aggregate({
+          _sum: { totalPaid: true },
+          where: { paidDate: { gte: startOfDay(now) } },
+        }),
+      ]);
 
-    const pendingSchoolRequests = await this.prisma.schoolRequest.count({ where: { status: 'PENDING' } });
+    const pendingSchoolRequests = await this.prisma.schoolRequest.count({
+      where: { status: 'PENDING' },
+    });
 
     const recentSchools = await this.prisma.school.findMany({
       where: { deletedAt: null },
@@ -165,18 +403,37 @@ export class AdminService {
       where: { status: 'PENDING' },
       orderBy: { createdAt: 'desc' },
       take: 10,
-      select: { id: true, amount: true, status: true, createdAt: true, school: { select: { name: true } } },
+      select: {
+        id: true,
+        amount: true,
+        status: true,
+        createdAt: true,
+        school: { select: { name: true } },
+      },
     });
 
     const recentActivities = await this.prisma.auditLog.findMany({
       orderBy: { createdAt: 'desc' },
       take: 10,
-      select: { id: true, action: true, entity: true, createdAt: true, user: { select: { name: true } } },
+      select: {
+        id: true,
+        action: true,
+        entity: true,
+        createdAt: true,
+        user: { select: { name: true } },
+      },
     });
 
     const expiringSchools = await this.prisma.school.findMany({
-      where: { subscription: { endDate: { gte: now, lte: addDays(now, 30) } }, deletedAt: null },
-      select: { id: true, name: true, subscription: { select: { endDate: true } } },
+      where: {
+        subscription: { endDate: { gte: now, lte: addDays(now, 30) } },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        subscription: { select: { endDate: true } },
+      },
     });
 
     const schoolsForGrowth = await this.prisma.school.findMany({
@@ -207,40 +464,75 @@ export class AdminService {
       .map(([month, amount]) => ({ month, amount }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    const subs = await this.prisma.subscription.findMany({ select: { plan: true } });
+    const subs = await this.prisma.subscription.findMany({
+      select: { plan: true },
+    });
     const planMap: Record<string, number> = {};
-    subs.forEach((s) => { planMap[s.plan] = (planMap[s.plan] || 0) + 1; });
-    const planDistribution = Object.entries(planMap).map(([plan, count]) => ({ plan, count }));
+    subs.forEach((s) => {
+      planMap[s.plan] = (planMap[s.plan] || 0) + 1;
+    });
+    const planDistribution = Object.entries(planMap).map(([plan, count]) => ({
+      plan,
+      count,
+    }));
 
-    const schoolStatusList = await this.prisma.school.findMany({ where: { deletedAt: null }, select: { isActive: true } });
+    const schoolStatusList = await this.prisma.school.findMany({
+      where: { deletedAt: null },
+      select: { isActive: true },
+    });
     const statusMap: Record<string, number> = { Active: 0, Inactive: 0 };
-    schoolStatusList.forEach((s) => { const key = s.isActive ? 'Active' : 'Inactive'; statusMap[key] = (statusMap[key] || 0) + 1; });
-    const statusDistribution = Object.entries(statusMap).map(([status, count]) => ({ status, count }));
+    schoolStatusList.forEach((s) => {
+      const key = s.isActive ? 'Active' : 'Inactive';
+      statusMap[key] = (statusMap[key] || 0) + 1;
+    });
+    const statusDistribution = Object.entries(statusMap).map(
+      ([status, count]) => ({ status, count }),
+    );
 
-    const [totalStudents, totalTeachers, activeSubscriptions] = await Promise.all([
-      this.prisma.student.count({ where: { deletedAt: null } }),
-      this.prisma.teacher.count({ where: { deletedAt: null } }),
-      this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
-    ]);
+    const [totalStudents, totalTeachers, activeSubscriptions] =
+      await Promise.all([
+        this.prisma.student.count({ where: { deletedAt: null } }),
+        this.prisma.teacher.count({ where: { deletedAt: null } }),
+        this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      ]);
 
     return {
-      totalSchools, activeSchools, trialSchools, expiredSchools,
+      totalSchools,
+      activeSchools,
+      trialSchools,
+      expiredSchools,
       pendingSchoolRequests,
       pendingPayments,
       monthRevenue: monthRevenueAgg._sum.totalPaid || 0,
       todayRevenue: todayRevenueAgg._sum.totalPaid || 0,
-      totalStudents, totalTeachers, activeSubscriptions,
-      schoolGrowth, revenueTimeline, planDistribution, statusDistribution,
+      totalStudents,
+      totalTeachers,
+      activeSubscriptions,
+      schoolGrowth,
+      revenueTimeline,
+      planDistribution,
+      statusDistribution,
       recentSchools,
       recentPayments: recentPayments.map((p) => ({
-        id: p.id, schoolName: p.school?.name ?? '', amount: p.amount, status: p.status, createdAt: p.createdAt,
+        id: p.id,
+        schoolName: p.school?.name ?? '',
+        amount: p.amount,
+        status: p.status,
+        createdAt: p.createdAt,
       })),
       recentActivities: recentActivities.map((a) => ({
-        id: a.id, action: a.action, detail: `${a.action} on ${a.entity}`, time: a.createdAt, user: a.user?.name ?? 'System',
+        id: a.id,
+        action: a.action,
+        detail: `${a.action} on ${a.entity}`,
+        time: a.createdAt,
+        user: a.user?.name ?? 'System',
       })),
       expiringSchools: expiringSchools.map((s) => {
         const expiryDate = s.subscription?.endDate ?? now;
-        const daysLeft = Math.ceil((new Date(expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = Math.ceil(
+          (new Date(expiryDate).getTime() - now.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
         return { id: s.id, name: s.name, expiryDate, daysLeft };
       }),
     };
@@ -249,24 +541,34 @@ export class AdminService {
   // ─── Platform Plans ────────────────────────────────────────────────────────
   async getPlans() {
     await this.seedDefaults();
-    const plans = await this.prisma.platformPlan.findMany({ orderBy: { price: 'asc' } });
-    return plans.map(p => ({ ...p, features: JSON.parse(p.features || '[]') }));
+    const plans = await this.prisma.platformPlan.findMany({
+      orderBy: { price: 'asc' },
+    });
+    return plans.map((p) => ({
+      ...p,
+      features: JSON.parse(p.features || '[]'),
+    }));
   }
 
   async updatePlan(id: string, data: any) {
     const updateData: any = {};
     if (data.price !== undefined) updateData.price = parseFloat(data.price);
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.maxStudents !== undefined) updateData.maxStudents = parseInt(data.maxStudents);
-    if (data.maxTeachers !== undefined) updateData.maxTeachers = parseInt(data.maxTeachers);
-    if (data.features !== undefined) updateData.features = JSON.stringify(data.features);
+    if (data.maxStudents !== undefined)
+      updateData.maxStudents = parseInt(data.maxStudents);
+    if (data.maxTeachers !== undefined)
+      updateData.maxTeachers = parseInt(data.maxTeachers);
+    if (data.features !== undefined)
+      updateData.features = JSON.stringify(data.features);
     return this.prisma.platformPlan.update({ where: { id }, data: updateData });
   }
 
   // ─── Platform Settings ─────────────────────────────────────────────────────
   async getSettings() {
     await this.seedDefaults();
-    const settings = await this.prisma.platformSetting.findMany({ orderBy: [{ category: 'asc' }, { key: 'asc' }] });
+    const settings = await this.prisma.platformSetting.findMany({
+      orderBy: [{ category: 'asc' }, { key: 'asc' }],
+    });
     return settings;
   }
 
@@ -382,16 +684,23 @@ export class AdminService {
       where: { email: request.email },
     });
     if (existingUser) {
-      throw new ConflictException('The contact email is already registered to an existing user');
+      throw new ConflictException(
+        'The contact email is already registered to an existing user',
+      );
     }
 
     // Generate unique slug
-    let baseSlug = request.schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let baseSlug = request.schoolName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
     if (!baseSlug) baseSlug = 'school';
     let slug = baseSlug;
     let index = 1;
     while (true) {
-      const existingSchool = await this.prisma.school.findUnique({ where: { slug } });
+      const existingSchool = await this.prisma.school.findUnique({
+        where: { slug },
+      });
       if (!existingSchool) break;
       slug = `${baseSlug}-${index++}`;
     }
@@ -485,21 +794,28 @@ export class AdminService {
     });
 
     // Send onboarding email notification in the background
-    this.mailService.sendSchoolOnboarding(result.user.email, {
-      schoolName: result.school.name,
-      schoolSlug: result.school.slug,
-      adminName: result.user.name,
-      temporaryPassword: tempPassword,
-      plan: result.subscription.plan,
-    }).catch(err => {
-      console.error('Failed to send onboarding email:', err);
-    });
+    this.mailService
+      .sendSchoolOnboarding(result.user.email, {
+        schoolName: result.school.name,
+        schoolSlug: result.school.slug,
+        adminName: result.user.name,
+        temporaryPassword: tempPassword,
+        plan: result.subscription.plan,
+      })
+      .catch((err) => {
+        console.error('Failed to send onboarding email:', err);
+      });
 
     return result.updatedRequest;
   }
 
   // ─── Audit Logs ────────────────────────────────────────────────────────────
-  async getAuditLogs(action?: string, search?: string, page?: number, limit?: number) {
+  async getAuditLogs(
+    action?: string,
+    search?: string,
+    page?: number,
+    limit?: number,
+  ) {
     const where: any = {};
     if (action && action !== 'ALL') where.action = action;
     if (search) {
@@ -527,7 +843,7 @@ export class AdminService {
       ]);
 
       return {
-        data: data.map(log => ({
+        data: data.map((log) => ({
           id: log.id,
           action: log.action,
           entity: log.entity,
@@ -557,7 +873,7 @@ export class AdminService {
         school: { select: { name: true } },
       },
     });
-    return logs.map(log => ({
+    return logs.map((log) => ({
       id: log.id,
       action: log.action,
       entity: log.entity,
@@ -573,32 +889,50 @@ export class AdminService {
 
   // ─── Global Payments (Subscriptions) ──────────────────────────────────────
   async getPayments() {
-    const payments = await this.prisma.feePayment.findMany({
+    const payments = await this.prisma.onboardingPayment.findMany({
       orderBy: { createdAt: 'desc' },
       take: 100,
-      include: {
-        school: { select: { name: true, slug: true } },
-        student: { select: { name: true } },
-      },
+      include: { school: { select: { name: true, slug: true } } },
     });
     return payments;
   }
 
   async approvePayment(id: string) {
-    const payment = await this.prisma.feePayment.findUnique({ where: { id } });
-    if (!payment) throw new NotFoundException('Payment not found');
-    return this.prisma.feePayment.update({
+    const payment = await this.prisma.onboardingPayment.findUnique({
       where: { id },
-      data: { status: 'PAID', paidDate: new Date() },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    return this.prisma.$transaction(async (tx) => {
+      const approved = await tx.onboardingPayment.update({
+        where: { id },
+        data: { status: 'APPROVED', reviewedAt: new Date() },
+      });
+      await tx.school.update({
+        where: { id: payment.schoolId },
+        data: { isActive: true },
+      });
+      await tx.subscription.update({
+        where: { schoolId: payment.schoolId },
+        data: {
+          plan: payment.plan,
+          status: 'ACTIVE',
+          startDate: new Date(),
+          endDate: addDays(new Date(), 365),
+          amount: payment.amount,
+        },
+      });
+      return approved;
     });
   }
 
   async rejectPayment(id: string) {
-    const payment = await this.prisma.feePayment.findUnique({ where: { id } });
-    if (!payment) throw new NotFoundException('Payment not found');
-    return this.prisma.feePayment.update({
+    const payment = await this.prisma.onboardingPayment.findUnique({
       where: { id },
-      data: { status: 'REJECTED' },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    return this.prisma.onboardingPayment.update({
+      where: { id },
+      data: { status: 'REJECTED', reviewedAt: new Date() },
     });
   }
 
@@ -676,5 +1010,141 @@ export class AdminService {
       return csv;
     }
     throw new NotFoundException('Report type not found');
+  }
+
+  // ─── Platform Users (School Owners, Admins, Staff) ─────────────────────────
+  async getPlatformUsers(search?: string, role?: string) {
+    const where: any = { deletedAt: null };
+    if (role && role !== 'ALL') {
+      where.role = role;
+    }
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { email: { contains: search } },
+        { school: { name: { contains: search } } },
+      ];
+    }
+    return this.prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        school: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  }
+
+  async toggleUserActive(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive: !user.isActive },
+    });
+  }
+
+  async getSupportTickets() {
+    const tickets = await this.prisma.supportTicket.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { replies: { orderBy: { createdAt: 'asc' } } },
+    });
+    return tickets.map((ticket) => ({
+      ...ticket,
+      replies: ticket.replies.map((reply) => ({
+        sender: reply.sender,
+        message: reply.message,
+        time: reply.createdAt.toISOString(),
+      })),
+    }));
+  }
+
+  async updateSupportTicket(id: string, status: string, replyMessage?: string) {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+    });
+    if (!ticket) throw new NotFoundException('Ticket not found');
+    await this.prisma.$transaction(async (tx) => {
+      await tx.supportTicket.update({ where: { id }, data: { status } });
+      if (replyMessage) {
+        await tx.ticketReply.create({
+          data: { ticketId: id, sender: 'Super Admin', message: replyMessage },
+        });
+      }
+    });
+    const updated = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: { replies: { orderBy: { createdAt: 'asc' } } },
+    });
+    return updated
+      ? {
+          ...updated,
+          replies: updated.replies.map((reply) => ({
+            sender: reply.sender,
+            message: reply.message,
+            time: reply.createdAt.toISOString(),
+          })),
+        }
+      : updated;
+  }
+
+  async getAnnouncements() {
+    return this.prisma.platformAnnouncement.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createAnnouncement(data: {
+    title: string;
+    message: string;
+    target?: string;
+    priority?: string;
+  }) {
+    const target = data.target || 'ALL';
+    return this.prisma.$transaction(async (tx) => {
+      const announcement = await tx.platformAnnouncement.create({
+        data: {
+          title: data.title.trim(),
+          message: data.message.trim(),
+          target,
+          priority: data.priority || 'NORMAL',
+        },
+      });
+      const schools = await tx.school.findMany({
+        where: {
+          isActive: true,
+          ...(target === 'PAID'
+            ? { subscription: { plan: { not: 'FREE_TRIAL' } } }
+            : {}),
+        },
+        select: {
+          id: true,
+          users: { where: { isActive: true }, select: { id: true } },
+        },
+      });
+      const notifications = schools.flatMap((school) =>
+        school.users.map((user) => ({
+          type: 'ANNOUNCEMENT',
+          title: announcement.title,
+          message: announcement.message,
+          schoolId: school.id,
+          userId: user.id,
+        })),
+      );
+      if (notifications.length) {
+        await tx.notification.createMany({ data: notifications });
+      }
+      return announcement;
+    });
   }
 }

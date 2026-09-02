@@ -1,38 +1,79 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard, CheckCircle2, ShieldCheck, DollarSign, Calendar, Star } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  CreditCard,
+  CheckCircle2,
+  ShieldCheck,
+  Calendar,
+  Star,
+} from "lucide-react";
+import { toast } from "sonner";
+import apiClient from "@/api/apiClient";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Subscription() {
-  const [activePlan, setActivePlan] = useState('Starter');
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const { user } = useAuth();
+  const [activePlan, setActivePlan] = useState(user?.plan || "FREE_TRIAL");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    "monthly",
+  );
 
   const plans = [
     {
-      name: 'Starter',
-      price: billingCycle === 'monthly' ? 49 : 39,
-      features: ['Up to 500 Students', '1 Campus / School', 'Core Academics', 'Email Support'],
-      color: 'border-border',
+      name: "Starter",
+      price: billingCycle === "monthly" ? 49 : 39,
+      features: [
+        "Up to 500 Students",
+        "1 Campus / School",
+        "Core Academics",
+        "Email Support",
+      ],
+      color: "border-border",
     },
     {
-      name: 'Professional',
-      price: billingCycle === 'monthly' ? 149 : 119,
-      features: ['Up to 5,000 Students', '10 Campuses / Schools', 'All Academics & HR modules', 'Priority Support', 'Custom Domain branding'],
-      color: 'border-primary shadow-lg shadow-primary/5',
-      badge: 'Most Popular',
+      name: "Professional",
+      price: billingCycle === "monthly" ? 149 : 119,
+      features: [
+        "Up to 5,000 Students",
+        "10 Campuses / Schools",
+        "All Academics & HR modules",
+        "Priority Support",
+        "Custom Domain branding",
+      ],
+      color: "border-primary shadow-lg shadow-primary/5",
+      badge: "Most Popular",
       star: true,
     },
     {
-      name: 'Enterprise',
-      price: 'Custom',
-      features: ['Unlimited Students', 'Unlimited Campuses', 'Dedicated SLA Uptime', '24/7 Phone Support', 'API Access & Webhooks'],
-      color: 'border-border',
-    }
+      name: "Enterprise",
+      price: "Custom",
+      features: [
+        "Unlimited Students",
+        "Unlimited Campuses",
+        "Dedicated SLA Uptime",
+        "24/7 Phone Support",
+        "API Access & Webhooks",
+      ],
+      color: "border-border",
+    },
   ];
 
-  const handleUpgrade = (planName: string) => {
-    if (planName === activePlan) return;
-    toast.success(`Successfully upgraded to ${planName} Plan (mock checkout success)`);
+  const handleUpgrade = async (planName: string) => {
+    if (planName === activePlan && user?.activationStatus === "ACTIVE") return;
+    if (user?.role === "SCHOOL_ADMIN" && user.schoolId) {
+      await apiClient.post("/auth/onboarding-payment", {
+        schoolId: user.schoolId,
+        plan: planName.toUpperCase(),
+        method: "Bank Transfer",
+        reference: `EDU-${Date.now().toString().slice(-8)}`,
+      });
+      toast.success(
+        "Payment submitted. Super admin approval will activate this plan.",
+      );
+      setActivePlan(planName);
+      return;
+    }
+    toast.success(`Selected ${planName} plan`);
     setActivePlan(planName);
   };
 
@@ -40,8 +81,12 @@ export default function Subscription() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-foreground">SaaS Subscription & Billing</h1>
-        <p className="text-muted-foreground text-sm mt-1">Upgrade your tenant plan, check invoices, and update payment details</p>
+        <h1 className="text-3xl font-black text-foreground">
+          SaaS Subscription & Billing
+        </h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Upgrade your tenant plan, check invoices, and update payment details
+        </p>
       </div>
 
       {/* Active plan card */}
@@ -49,35 +94,51 @@ export default function Subscription() {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white uppercase tracking-widest">
-              Active Plan
+              {user?.activationStatus === "PAYMENT_PENDING"
+                ? "Pending Activation"
+                : "Active Plan"}
             </span>
             <ShieldCheck size={18} />
           </div>
           <h2 className="text-3xl font-black">{activePlan} Plan</h2>
-          <p className="text-white/70 text-sm">Next renewal date: Oct 12, 2026</p>
+          <p className="text-white/70 text-sm">
+            Next renewal date: Oct 12, 2026
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <Calendar size={18} className="text-white/60" />
-          <span className="font-bold text-sm">Billing Cycle: {billingCycle}</span>
+          <span className="font-bold text-sm">
+            Billing Cycle: {billingCycle}
+          </span>
         </div>
       </div>
 
       {/* Pricing comparison */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-xl font-extrabold text-foreground">Available Upgrade Packages</h3>
+          <h3 className="text-xl font-extrabold text-foreground">
+            Available Upgrade Packages
+          </h3>
           {/* Toggle */}
           <div className="flex bg-card p-1 rounded-xl border border-border self-start">
-            <button onClick={() => setBillingCycle('monthly')}
+            <button
+              onClick={() => setBillingCycle("monthly")}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                billingCycle === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-              }`}>
+                billingCycle === "monthly"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
               Monthly
             </button>
-            <button onClick={() => setBillingCycle('yearly')}
+            <button
+              onClick={() => setBillingCycle("yearly")}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                billingCycle === 'yearly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-              }`}>
+                billingCycle === "yearly"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
               Yearly (Save 20%)
             </button>
           </div>
@@ -100,22 +161,29 @@ export default function Subscription() {
 
               <div>
                 <h4 className="font-extrabold text-lg text-foreground mb-1 flex items-center gap-1.5">
-                  {p.star && <Star size={16} className="text-amber-500 fill-amber-500" />}
+                  {p.star && (
+                    <Star size={16} className="text-amber-500 fill-amber-500" />
+                  )}
                   {p.name}
                 </h4>
                 <div className="my-4 flex items-baseline gap-1">
                   <span className="text-3xl font-black text-foreground">
-                    {typeof p.price === 'number' ? `$${p.price}` : p.price}
+                    {typeof p.price === "number" ? `$${p.price}` : p.price}
                   </span>
-                  {typeof p.price === 'number' && (
-                    <span className="text-xs text-muted-foreground">/ month</span>
+                  {typeof p.price === "number" && (
+                    <span className="text-xs text-muted-foreground">
+                      / month
+                    </span>
                   )}
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-muted-foreground my-6">
-                  {p.features.map(f => (
+                  {p.features.map((f) => (
                     <li key={f} className="flex items-center gap-2">
-                      <CheckCircle2 size={13} className="text-primary shrink-0" />
+                      <CheckCircle2
+                        size={13}
+                        className="text-primary shrink-0"
+                      />
                       <span>{f}</span>
                     </li>
                   ))}
@@ -125,12 +193,14 @@ export default function Subscription() {
               <button
                 onClick={() => handleUpgrade(p.name)}
                 className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-                  p.name === activePlan 
-                    ? 'bg-accent text-accent-foreground cursor-default' 
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow shadow-primary/10'
+                  p.name === activePlan
+                    ? "bg-accent text-accent-foreground cursor-default"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow shadow-primary/10"
                 }`}
               >
-                {p.name === activePlan ? 'Current Active Plan' : 'Select Package'}
+                {p.name === activePlan
+                  ? "Current Active Plan"
+                  : "Select Package"}
               </button>
             </motion.div>
           ))}
@@ -139,7 +209,9 @@ export default function Subscription() {
 
       {/* Invoices */}
       <div className="space-y-4">
-        <h3 className="text-xl font-extrabold text-foreground">Recent Invoices</h3>
+        <h3 className="text-xl font-extrabold text-foreground">
+          Recent Invoices
+        </h3>
         <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-semibold">
@@ -158,18 +230,26 @@ export default function Subscription() {
                   <td className="px-5 py-3">Jul 01, 2026</td>
                   <td className="px-5 py-3">$49.00</td>
                   <td className="px-5 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500">Paid</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500">
+                      Paid
+                    </span>
                   </td>
-                  <td className="px-5 py-3 flex items-center gap-1"><CreditCard size={13} /> Stripe</td>
+                  <td className="px-5 py-3 flex items-center gap-1">
+                    <CreditCard size={13} /> Stripe
+                  </td>
                 </tr>
                 <tr className="hover:bg-accent/10 transition-colors">
                   <td className="px-5 py-3 font-bold">INV-0143</td>
                   <td className="px-5 py-3">Jun 01, 2026</td>
                   <td className="px-5 py-3">$49.00</td>
                   <td className="px-5 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500">Paid</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500">
+                      Paid
+                    </span>
                   </td>
-                  <td className="px-5 py-3 flex items-center gap-1"><CreditCard size={13} /> Stripe</td>
+                  <td className="px-5 py-3 flex items-center gap-1">
+                    <CreditCard size={13} /> Stripe
+                  </td>
                 </tr>
               </tbody>
             </table>

@@ -25,10 +25,14 @@ export interface BuildingData {
   hasScienceLab: boolean;
   hasLibrary: boolean;
   hasPlayground: boolean;
+  hasSportsField: boolean;
   hasAuditorium: boolean;
   hasCanteen: boolean;
   hasPrayerArea: boolean;
   hasParking: boolean;
+  hasMusicRoom: boolean;
+  hasArtRoom: boolean;
+  hasGymnasium: boolean;
   hasCctv: boolean;
   hasSecurityGuard: boolean;
   hasFireSafety: boolean;
@@ -56,11 +60,15 @@ const FACILITY_ITEMS = [
   { key: 'hasComputerLab', label: 'Computer Lab', icon: Monitor, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' },
   { key: 'hasScienceLab', label: 'Science Lab', icon: Microscope, color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' },
   { key: 'hasLibrary', label: 'Library', icon: BookOpen, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-  { key: 'hasPlayground', label: 'Playground', icon: Trophy, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  { key: 'hasPlayground', label: 'Playground / Ground', icon: Trophy, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  { key: 'hasSportsField', label: 'Sports Field', icon: Trophy, color: 'text-green-400 bg-green-500/10 border-green-500/20' },
   { key: 'hasAuditorium', label: 'Auditorium / Hall', icon: Theater, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-  { key: 'hasCanteen', label: 'Canteen', icon: Utensils, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+  { key: 'hasCanteen', label: 'Canteen / Cafeteria', icon: Utensils, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
   { key: 'hasPrayerArea', label: 'Prayer Area', icon: Footprints, color: 'text-teal-400 bg-teal-500/10 border-teal-500/20' },
   { key: 'hasParking', label: 'Parking Area', icon: Car, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  { key: 'hasMusicRoom', label: 'Music Room', icon: Theater, color: 'text-pink-400 bg-pink-500/10 border-pink-500/20' },
+  { key: 'hasArtRoom', label: 'Art Room', icon: BookOpen, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+  { key: 'hasGymnasium', label: 'Gymnasium', icon: Trophy, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
 ] as const;
 
 const SAFETY_ITEMS = [
@@ -84,10 +92,14 @@ const INITIAL_FORM: Omit<BuildingData, 'id' | 'createdAt' | 'school' | '_count' 
   hasScienceLab: false,
   hasLibrary: false,
   hasPlayground: false,
+  hasSportsField: false,
   hasAuditorium: false,
   hasCanteen: false,
   hasPrayerArea: false,
   hasParking: false,
+  hasMusicRoom: false,
+  hasArtRoom: false,
+  hasGymnasium: false,
   hasCctv: false,
   hasSecurityGuard: false,
   hasFireSafety: false,
@@ -168,10 +180,14 @@ export default function BuildingManagement() {
       hasScienceLab: !!b.hasScienceLab,
       hasLibrary: !!b.hasLibrary,
       hasPlayground: !!b.hasPlayground,
+      hasSportsField: !!b.hasSportsField,
       hasAuditorium: !!b.hasAuditorium,
       hasCanteen: !!b.hasCanteen,
       hasPrayerArea: !!b.hasPrayerArea,
       hasParking: !!b.hasParking,
+      hasMusicRoom: !!b.hasMusicRoom,
+      hasArtRoom: !!b.hasArtRoom,
+      hasGymnasium: !!b.hasGymnasium,
       hasCctv: !!b.hasCctv,
       hasSecurityGuard: !!b.hasSecurityGuard,
       hasFireSafety: !!b.hasFireSafety,
@@ -284,10 +300,10 @@ export default function BuildingManagement() {
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-                School Infrastructure
+                School Buildings & Infrastructure
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Manage physical school blocks, classrooms, facilities checklist & safety compliance
+                Manage school buildings, classrooms, staff rooms, grounds, and facilities
               </p>
             </div>
           </div>
@@ -420,7 +436,7 @@ export default function BuildingManagement() {
           </div>
           <h3 className="text-base font-bold text-foreground">No Buildings Registered Yet</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
-            Add your main school building, junior wing, high school block, or sports complex with complete facilities and safety records.
+            Add your school buildings including classrooms, staff rooms, playgrounds, and other facilities with complete infrastructure details.
           </p>
           <button
             onClick={openCreateModal}
@@ -513,7 +529,7 @@ export default function BuildingManagement() {
                   {/* Facilities Grid */}
                   <div className="space-y-1.5 mb-3">
                     <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                      <span>Building Facilities ({activeFacilities.length}/8)</span>
+                      <span>Building Facilities ({activeFacilities.length}/12)</span>
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {FACILITY_ITEMS.map(f => {
@@ -614,7 +630,7 @@ export default function BuildingManagement() {
                   <h3 className="text-xl font-bold text-foreground">{selectedBuilding.name} — Room Directory</h3>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Catalog individual classrooms, laboratories, administrative rooms, and capacities.
+                  Catalog classrooms, staff rooms, playgrounds, laboratories, and other facilities.
                 </p>
               </div>
 
@@ -638,12 +654,12 @@ export default function BuildingManagement() {
             {(!selectedBuilding.rooms || selectedBuilding.rooms.length === 0) ? (
               <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-2xl">
                 <DoorOpen size={24} className="mx-auto text-muted-foreground mb-2" />
-                <p className="text-xs font-medium">No individual rooms added yet for this building.</p>
+                <p className="text-xs font-medium">No rooms added yet for this building.</p>
                 <button
                   onClick={() => setIsRoomModalOpen(true)}
                   className="mt-2 text-xs font-bold text-violet-400 hover:underline"
                 >
-                  + Add Room / Classroom
+                  + Add Classroom, Staff Room, or Facility
                 </button>
               </div>
             ) : (
@@ -709,7 +725,7 @@ export default function BuildingManagement() {
                     {modalMode === 'create' ? 'Add School Building' : 'Edit Building Details'}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Configure basic information, floor count, capacity, facilities, and safety equipment
+                    Configure building details including classrooms, staff rooms, facilities, and safety equipment
                   </p>
                 </div>
                 <button
@@ -1096,7 +1112,7 @@ export default function BuildingManagement() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. 101, B-12"
+                      placeholder="e.g. 101, G-01, P-01"
                       value={roomFormData.roomNo}
                       onChange={e => setRoomFormData({ ...roomFormData, roomNo: e.target.value })}
                       className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
@@ -1123,7 +1139,7 @@ export default function BuildingManagement() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Grade 10-A, Physics Lab, Staff Office"
+                    placeholder="e.g. Grade 10-A, Senior Staff Room, Main Playground"
                     value={roomFormData.name}
                     onChange={e => setRoomFormData({ ...roomFormData, name: e.target.value })}
                     className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
@@ -1141,12 +1157,21 @@ export default function BuildingManagement() {
                       className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
                     >
                       <option value="CLASSROOM">Classroom</option>
+                      <option value="STAFF_ROOM">Staff Room</option>
                       <option value="SCIENCE_LAB">Science Lab</option>
                       <option value="COMPUTER_LAB">Computer Lab</option>
-                      <option value="LIBRARY">Library Room</option>
-                      <option value="STAFF_ROOM">Staff Room</option>
-                      <option value="PRINCIPAL_OFFICE">Admin / Office</option>
+                      <option value="LIBRARY">Library</option>
+                      <option value="PRINCIPAL_OFFICE">Principal Office</option>
+                      <option value="ADMIN_OFFICE">Admin Office</option>
+                      <option value="PLAYGROUND">Playground / Ground</option>
+                      <option value="SPORTS_FIELD">Sports Field</option>
+                      <option value="GYMNASIUM">Gymnasium</option>
                       <option value="AUDITORIUM">Auditorium / Hall</option>
+                      <option value="CANTEEN">Canteen / Cafeteria</option>
+                      <option value="MUSIC_ROOM">Music Room</option>
+                      <option value="ART_ROOM">Art Room</option>
+                      <option value="STORE_ROOM">Store Room</option>
+                      <option value="WASHROOM">Washroom / Restroom</option>
                       <option value="OTHER">Other Facility</option>
                     </select>
                   </div>

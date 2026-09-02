@@ -1,29 +1,27 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Mail,
-  Loader2,
-  ArrowRight,
-} from "lucide-react";
+import { Mail, LockKeyhole, Loader2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const { schoolSlug: urlSchoolSlug } = useParams();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("schooladmin@gmail.com");
+  const [password, setPassword] = useState("12345678");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !password) return;
     setLoading(true);
     try {
       const res = await apiClient.post("/auth/login", {
         email: email.trim().toLowerCase(),
+        password,
       });
       const { user, accessToken } = res.data;
       login(accessToken, user);
@@ -36,7 +34,7 @@ export default function LoginPage() {
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
-          "No account found for this email address."
+          "No account found for this email address.",
       );
     } finally {
       setLoading(false);
@@ -105,6 +103,25 @@ export default function LoginPage() {
                   autoFocus
                   className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all"
                   placeholder="name@school.edu"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <LockKeyhole size={16} />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all"
+                  placeholder="Enter your password"
                 />
               </div>
             </div>

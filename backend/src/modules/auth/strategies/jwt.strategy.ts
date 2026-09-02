@@ -35,7 +35,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         isActive: true,
         schoolId: true,
-        school: { select: { name: true, slug: true } },
+        school: {
+          select: {
+            name: true,
+            slug: true,
+            isActive: true,
+            subscription: { select: { plan: true, status: true } },
+          },
+        },
       },
     });
 
@@ -43,6 +50,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or inactive');
     }
 
-    return user;
+    return {
+      ...user,
+      activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING',
+      plan: user.school?.subscription?.plan,
+    };
   }
 }

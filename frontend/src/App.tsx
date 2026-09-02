@@ -108,6 +108,17 @@ export default function App() {
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* Super Admin Command Center (Priority Route) */}
+            <Route
+              path="/super-admin"
+              element={
+                <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/:schoolSlug/login" element={<AuthLayout />}>
               <Route index element={<LoginPage />} />
             </Route>
@@ -183,11 +194,9 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              {/* Default redirect to dashboard */}
               <Route index element={<Navigate to="dashboard" replace />} />
 
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="super-admin" element={<SuperAdminDashboard />} />
               <Route path="settings" element={<Settings />} />
               <Route path="buildings" element={<BuildingManagement />} />
 

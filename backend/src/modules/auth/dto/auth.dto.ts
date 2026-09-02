@@ -1,12 +1,19 @@
-import { IsEmail, IsString, MinLength, IsNotEmpty, IsOptional, IsIn } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsNotEmpty,
+  IsOptional,
+  IsIn,
+} from 'class-validator';
 
 export class LoginDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email: string;
 
-  @IsOptional()
   @IsString()
-  password?: string;
+  @MinLength(8)
+  password: string;
 }
 
 export class RegisterSchoolDto {
@@ -56,6 +63,10 @@ export class RegisterSchoolDto {
   @IsString()
   @MinLength(12, { message: 'Password must be at least 12 characters' })
   adminPassword: string;
+
+  @IsOptional()
+  @IsString()
+  requestedPlan?: string;
 }
 
 export class ForgotPasswordDto {
@@ -83,8 +94,46 @@ export class VerifyEmailDto {
   otp: string;
 }
 
+export class OnboardingPaymentDto {
+  @IsString()
+  @IsNotEmpty()
+  schoolId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  plan: string;
+
+  @IsString()
+  @IsNotEmpty()
+  method: string;
+
+  @IsOptional()
+  @IsString()
+  reference?: string;
+}
+
 export class RefreshTokenDto {
   @IsString()
   @IsNotEmpty()
   refreshToken: string;
+}
+
+export class UpdateProfileDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}
+
+export class ChangePasswordDto {
+  @IsString()
+  @MinLength(8)
+  currentPassword: string;
+
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
 }

@@ -1,11 +1,26 @@
 import {
-  Controller, Post, Body, Get, UseGuards, Req, HttpCode, HttpStatus,
+  Controller,
+  Post,
+  Body,
+  Get,
+  Patch,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import {
-  LoginDto, RegisterSchoolDto, ForgotPasswordDto,
-  ResetPasswordDto, VerifyEmailDto, RefreshTokenDto,
+  LoginDto,
+  RegisterSchoolDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  VerifyEmailDto,
+  RefreshTokenDto,
+  OnboardingPaymentDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -63,11 +78,36 @@ export class AuthController {
     return this.authService.verifyEmail(dto);
   }
 
+  @Post('onboarding-payment')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  submitOnboardingPayment(
+    @Body() dto: OnboardingPaymentDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.authService.submitOnboardingPayment(dto, user);
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
   me(@CurrentUser() user: any) {
     return { user };
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  updateProfile(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(user.id, dto);
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.id, dto);
   }
 }

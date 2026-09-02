@@ -189,7 +189,9 @@ export default function Timetable() {
           const firstSec = parsed[0]?.sections?.[0]?.id;
           if (firstSec && !selectedSection) setSelectedSection(firstSec);
         }
-      } catch (_) {}
+      } catch {
+        // Ignore malformed cached class data.
+      }
     }
   }, [schoolSlug]);
 

@@ -14,13 +14,15 @@ import {
   Menu,
   X,
   ChevronRight,
-  Building2,
   LogOut,
   Clock,
   Zap,
+  LifeBuoy,
+  Megaphone,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import apiClient from "@/api/apiClient";
 
 // Section Imports
 import Overview from "./sections/Overview";
@@ -34,14 +36,21 @@ import EmailTemplates from "./sections/EmailTemplates";
 import SystemSettings from "./sections/SystemSettings";
 import AuditLogs from "./sections/AuditLogs";
 import Profile from "./sections/Profile";
-import Buildings from "./sections/Buildings";
+import Subscriptions from "./sections/Subscriptions";
+import Users from "./sections/Users";
+import Support from "./sections/Support";
+import Announcements from "./sections/Announcements";
 
 type SectionId =
   | "overview"
   | "school-requests"
   | "schools"
   | "plans"
+  | "subscriptions"
   | "payments"
+  | "users"
+  | "support"
+  | "announcements"
   | "reports"
   | "notifications"
   | "email-templates"
@@ -53,8 +62,7 @@ interface NavItem {
   id: SectionId;
   label: string;
   icon: React.ComponentType<any>;
-  badge?: number | string;
-  group?: string;
+  badgeKey?: "pendingSchoolRequests" | "pendingPayments";
 }
 
 interface NavGroup {
@@ -65,46 +73,63 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     label: "Platform Core",
-    items: [{ id: "overview", label: "Command Center", icon: LayoutDashboard }],
+    items: [{ id: "overview", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Institutional Governance",
     items: [
       {
         id: "school-requests",
-        label: "Registration Queue",
+        label: "School Requests",
         icon: FileText,
-        badge: 3,
+        badgeKey: "pendingSchoolRequests",
       },
-      { id: "schools", label: "Institutions", icon: School },
+      {
+        id: "schools",
+        label: "Schools",
+        icon: School,
+      },
     ],
   },
   {
-    label: "Treasury & Finance",
+    label: "Treasury & License",
     items: [
-      { id: "plans", label: "Service Packages", icon: Shield },
-      { id: "payments", label: "Revenue Stream", icon: CreditCard, badge: 3 },
-      { id: "reports", label: "Business Intelligence", icon: BarChart2 },
+      { id: "subscriptions", label: "Subscriptions", icon: Shield },
+      { id: "plans", label: "Plans & Pricing", icon: Zap },
+      {
+        id: "payments",
+        label: "Payments",
+        icon: CreditCard,
+        badgeKey: "pendingPayments",
+      },
     ],
   },
   {
-    label: "Platform Comms",
+    label: "Operations & Users",
     items: [
-      { id: "notifications", label: "Global Alerts", icon: Bell, badge: 4 },
-      { id: "email-templates", label: "System Mailers", icon: Mail },
+      { id: "users", label: "User Management", icon: User },
+      { id: "support", label: "Support / Tickets", icon: LifeBuoy },
     ],
   },
   {
-    label: "System Integrity",
+    label: "Communication",
     items: [
-      { id: "system-settings", label: "Core Configuration", icon: Settings },
-      { id: "audit-logs", label: "Governance Logs", icon: Shield },
-      { id: "profile", label: "Admin Identity", icon: User },
+      { id: "announcements", label: "Announcements", icon: Megaphone },
+      { id: "notifications", label: "System Alerts", icon: Bell },
+      { id: "email-templates", label: "Email Templates", icon: Mail },
+    ],
+  },
+  {
+    label: "Insights & Settings",
+    items: [
+      { id: "reports", label: "Reports", icon: BarChart2 },
+      { id: "audit-logs", label: "Activity Logs", icon: Shield },
+      { id: "system-settings", label: "System Settings", icon: Settings },
+      { id: "profile", label: "My Profile", icon: User },
     ],
   },
 ];
 
-// flat list for lookup
 const allNavItems = navGroups.flatMap((g) => g.items);
 
 const sectionComponents: Record<SectionId, React.ComponentType> = {
@@ -112,7 +137,11 @@ const sectionComponents: Record<SectionId, React.ComponentType> = {
   "school-requests": SchoolRequests,
   schools: Schools,
   plans: Plans,
+  subscriptions: Subscriptions,
   payments: Payments,
+  users: Users,
+  support: Support,
+  announcements: Announcements,
   reports: Reports,
   notifications: Notifications,
   "email-templates": EmailTemplates,
@@ -137,8 +166,27 @@ function LiveClock() {
 export default function SuperAdminDashboard() {
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<{
+    pendingSchoolRequests: number;
+    pendingPayments: number;
+  }>({
+    pendingSchoolRequests: 0,
+    pendingPayments: 0,
+  });
   const { logout } = useAuth() as any;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    apiClient
+      .get("/admin/overview")
+      .then((r) => {
+        setBadgeCounts({
+          pendingSchoolRequests: r.data?.pendingSchoolRequests ?? 0,
+          pendingPayments: r.data?.pendingPayments ?? 0,
+        });
+      })
+      .catch(() => {});
+  }, [activeSection]);
 
   const ActiveComponent = sectionComponents[activeSection];
   const activeItem = allNavItems.find((n) => n.id === activeSection);
@@ -172,7 +220,7 @@ export default function SuperAdminDashboard() {
                 EduSphere
               </p>
               <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-400">
-                Super Admin
+                Multi-Tenant SaaS
               </p>
             </div>
           </div>
@@ -197,6 +245,10 @@ export default function SuperAdminDashboard() {
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeSection === item.id;
+                const badge = item.badgeKey
+                  ? badgeCounts[item.badgeKey]
+                  : undefined;
+
                 return (
                   <button
                     key={item.id}
@@ -229,14 +281,18 @@ export default function SuperAdminDashboard() {
                     <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3">
                       <Icon
                         size={16}
-                        className={`shrink-0 transition-colors ${isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`}
+                        className={`shrink-0 transition-colors ${
+                          isActive
+                            ? "text-white"
+                            : "text-muted-foreground group-hover:text-foreground"
+                        }`}
                       />
                       <span className="flex-1 truncate text-left text-[13px] font-semibold">
                         {item.label}
                       </span>
                     </div>
 
-                    {item.badge !== undefined && (
+                    {badge !== undefined && badge > 0 && (
                       <span
                         className={`relative z-10 min-w-[18px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-black tabular-nums ${
                           isActive
@@ -244,7 +300,7 @@ export default function SuperAdminDashboard() {
                             : "bg-violet-500/15 text-violet-400"
                         }`}
                       >
-                        {item.badge}
+                        {badge}
                       </span>
                     )}
 
@@ -274,7 +330,7 @@ export default function SuperAdminDashboard() {
             </p>
             <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Platform Control
+              Root Governance
             </p>
           </div>
           <button
@@ -288,7 +344,7 @@ export default function SuperAdminDashboard() {
 
         <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] font-medium text-muted-foreground/40">
           <Zap size={9} />
-          EduSphere Platform v1.0
+          EduSphere Multi-Tenant SaaS
         </div>
       </div>
     </>
@@ -297,6 +353,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="relative flex h-full w-full overflow-hidden rounded-[28px] border border-violet-500/15 bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.18),_transparent_30%),linear-gradient(135deg,#0b1020_0%,#111827_38%,#0f172a_100%)] shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02),transparent_25%,transparent_75%,rgba(255,255,255,0.02))]" />
+
       {/* Mobile Overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -316,14 +373,13 @@ export default function SuperAdminDashboard() {
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } transition-transform duration-300`}
       >
-        <SidebarContent />
+        {SidebarContent()}
       </motion.aside>
 
-      {/* ── Main Content ── */}
+      {/* ── Main Content Area ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* ── Top Header Bar ── */}
         <header className="flex shrink-0 items-center gap-3 border-b border-violet-500/10 bg-slate-950/60 px-5 py-3 backdrop-blur-xl">
-          {/* Mobile menu */}
           <button
             onClick={() => setMobileOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground transition-all"
@@ -335,7 +391,7 @@ export default function SuperAdminDashboard() {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
               <Shield size={13} className="text-violet-400 shrink-0" />
-              <span className="hidden sm:inline">Super Admin</span>
+              <span className="hidden sm:inline">Super Admin Console</span>
               <ChevronRight size={12} className="hidden sm:inline opacity-40" />
             </div>
             {activeItem && (
@@ -350,19 +406,19 @@ export default function SuperAdminDashboard() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Live clock */}
             <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-xs text-muted-foreground font-medium">
               <Clock size={12} className="text-violet-400" />
               <LiveClock />
             </div>
 
-            {/* Notifications */}
-            <button className="relative rounded-lg p-2 text-muted-foreground transition-all hover:bg-violet-500/10 hover:text-violet-200">
+            <button
+              onClick={() => handleNav("notifications")}
+              className="relative rounded-lg p-2 text-muted-foreground transition-all hover:bg-violet-500/10 hover:text-violet-200"
+            >
               <Bell size={16} />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-violet-500 ring-2 ring-slate-950" />
             </button>
 
-            {/* Avatar */}
             <div
               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-black text-white shadow-md shadow-violet-500/30"
               onClick={() => handleNav("profile")}

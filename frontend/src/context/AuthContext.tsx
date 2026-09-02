@@ -15,13 +15,15 @@ export interface User {
   schoolId?: string;
   schoolName?: string;
   schoolSlug?: string;
+  activationStatus?: "ACTIVE" | "PAYMENT_PENDING";
+  plan?: string;
 }
 
 export const DEMO_USERS: Record<string, User> = {
   SUPER_ADMIN: {
     id: "demo-super-admin",
     name: "Super Administrator",
-    email: "superadmin@demo.com",
+    email: "superadmin@gmail.com",
     role: "SUPER_ADMIN",
     schoolName: "EduSphere",
     schoolSlug: "edusphere",
@@ -29,29 +31,29 @@ export const DEMO_USERS: Record<string, User> = {
   SCHOOL_ADMIN: {
     id: "demo-school-admin",
     name: "School Admin",
-    email: "schooladmin@demo.com",
+    email: "schooladmin@gmail.com",
     role: "SCHOOL_ADMIN",
     schoolId: "school-demo-1",
     schoolName: "Demo School",
-    schoolSlug: "demo",
+    schoolSlug: "edusphere-international",
   },
   TEACHER: {
     id: "demo-teacher",
     name: "Teacher Demo",
-    email: "teacher@demo.com",
+    email: "teacher@gmail.com",
     role: "TEACHER",
     schoolId: "school-demo-1",
     schoolName: "Demo School",
-    schoolSlug: "demo",
+    schoolSlug: "edusphere-international",
   },
   STUDENT: {
     id: "demo-student",
     name: "Student Demo",
-    email: "student@demo.com",
+    email: "student@gmail.com",
     role: "STUDENT",
     schoolId: "school-demo-1",
     schoolName: "Demo School",
-    schoolSlug: "demo",
+    schoolSlug: "edusphere-international",
   },
 };
 
@@ -60,22 +62,22 @@ export const DEMO_CREDENTIALS: Record<
   { email: string; password: string; user: User }
 > = {
   SUPER_ADMIN: {
-    email: "superadmin@demo.com",
-    password: "admin123",
+    email: "superadmin@gmail.com",
+    password: "12345678",
     user: DEMO_USERS.SUPER_ADMIN,
   },
   SCHOOL_ADMIN: {
-    email: "schooladmin@demo.com",
-    password: "admin123",
+    email: "schooladmin@gmail.com",
+    password: "12345678",
     user: DEMO_USERS.SCHOOL_ADMIN,
   },
   TEACHER: {
-    email: "teacher@demo.com",
+    email: "teacher@gmail.com",
     password: "teacher123",
     user: DEMO_USERS.TEACHER,
   },
   STUDENT: {
-    email: "student@demo.com",
+    email: "student@gmail.com",
     password: "student123",
     user: DEMO_USERS.STUDENT,
   },
@@ -90,9 +92,6 @@ export const getDemoCredentials = (email: string, password: string) => {
 
   return found ? found.user : null;
 };
-
-const BYPASS_USER: User = DEMO_USERS.SUPER_ADMIN;
-const BYPASS_TOKEN = "demo-token";
 
 interface AuthContextType {
   user: User | null;
@@ -110,36 +109,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(BYPASS_USER);
-  const [token, setToken] = useState<string | null>(BYPASS_TOKEN);
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [previewRole, setPreviewRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
-    localStorage.setItem("auth_token", BYPASS_TOKEN);
-    localStorage.setItem("auth_user", JSON.stringify(BYPASS_USER));
+    const storedToken = localStorage.getItem("auth_token");
+    const storedUser = localStorage.getItem("auth_user");
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
     setIsLoading(false);
   }, []);
 
   const login = (newToken: string, newUser: User) => {
-    const safeToken = newToken || BYPASS_TOKEN;
-    const safeUser = newUser || BYPASS_USER;
-    setToken(safeToken);
-    setUser(safeUser);
+    setToken(newToken);
+    setUser(newUser);
     setPreviewRole(null);
-    localStorage.setItem("auth_token", safeToken);
-    localStorage.setItem("auth_user", JSON.stringify(safeUser));
+    localStorage.setItem("auth_token", newToken);
+    localStorage.setItem("auth_user", JSON.stringify(newUser));
   };
 
   const logout = () => {
-    setToken(BYPASS_TOKEN);
-    setUser(BYPASS_USER);
+    setToken(null);
+    setUser(null);
     setPreviewRole(null);
-    localStorage.setItem("auth_token", BYPASS_TOKEN);
-    localStorage.setItem("auth_user", JSON.stringify(BYPASS_USER));
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
   };
 
-  const isAuthenticated = true;
+  const isAuthenticated = !!user && !!token;
 
   return (
     <AuthContext.Provider
