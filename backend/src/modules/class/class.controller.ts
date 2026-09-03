@@ -14,7 +14,7 @@ export class ClassController {
 
   @Get()
   findAll(@CurrentUser() user: any) {
-    return this.classService.findAll(user.schoolId);
+    return this.classService.findAll(user.schoolId, user.role, user.email);
   }
 
   @Post()
