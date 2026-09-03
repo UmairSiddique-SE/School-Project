@@ -937,7 +937,7 @@ export default function Students() {
                     </button>
 
                     <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-3">
-                      <p className="text-[10px] text-slate-500 leading-relaxed text-center">Auto-generated password for the <strong>Parent Portal</strong>:</p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed text-center">Auto-generated password for the <strong>Guardian Information</strong>:</p>
                       <div className="px-4 py-2 rounded-xl bg-slate-900/80 border border-white/[0.1] flex flex-col items-center justify-center">
                         <span className="text-xl font-mono font-black text-amber-500 tracking-wider">{parentPassword}</span>
                       </div>
@@ -1739,7 +1739,7 @@ export default function Students() {
                               <div className="absolute top-0 right-0 h-40 w-40 bg-amber-500/5 rounded-full blur-[60px] -mr-20 -mt-20"/>
                               <div className="flex items-center gap-4">
                                  <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20"><Users size={24}/></div>
-                                 <h4 className="text-base font-black text-white uppercase tracking-widest">Parent Portal</h4>
+                                 <h4 className="text-base font-black text-white uppercase tracking-widest">Guardian Information</h4>
                               </div>
                               <div className="space-y-6">
                                  <div className="space-y-1">
@@ -1855,7 +1855,7 @@ export default function Students() {
                 {/* Details */}
                 <div className="space-y-1 mb-4">
                   <h4 className="text-sm font-black">{selectedStudent ? selectedStudent.name : '—'}</h4>
-                  <p className="text-[10px] text-primary/80 font-bold">{selectedStudent?.section ? `${selectedStudent.section.class?.name} - ${selectedStudent.section.name}` : 'Grade 5 - A'}</p>
+                  <p className="text-[10px] text-primary/80 font-bold">{selectedStudent?.section ? `${selectedStudent.section.class?.name} - ${selectedStudent.section.name}` : '—'}</p>
                 </div>
 
                 {/* Badges metadata table */}

@@ -136,9 +136,9 @@ export default function Finance() {
       setStructures(Array.isArray(sRes.data) ? sRes.data : []);
       setStudents(Array.isArray(stRes.data) ? stRes.data : []);
     }).catch(() => {
-      setPayments();
-      setStructures();
-      setStudents();
+      setPayments([]);
+      setStructures([]);
+      setStudents([]);
     }).finally(() => setLoading(false));
   };
 
