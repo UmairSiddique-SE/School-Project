@@ -1,6 +1,4 @@
-import {
-  Controller, Get, Post, Body, Query, Param, UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -13,32 +11,24 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Get()
-  getAttendance(
-    @CurrentUser() user: any,
-    @Query('sectionId') sectionId: string,
-    @Query('date') date: string,
-  ) {
+  getAttendance(@CurrentUser() user: any, @Query('sectionId') sectionId: string, @Query('date') date: string) {
     return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date);
   }
 
   @Get('section/:sectionId')
-  getAttendanceBySection(
-    @CurrentUser() user: any,
-    @Param('sectionId') sectionId: string,
-    @Query('date') date: string,
-  ) {
+  getAttendanceBySection(@CurrentUser() user: any, @Param('sectionId') sectionId: string, @Query('date') date: string) {
     return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date || new Date().toISOString().split('T')[0]);
   }
 
   @Post()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendance(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user.role === 'TEACHER' ? user.email : undefined);
   }
 
   @Post('mark')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendanceAlias(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user.role === 'TEACHER' ? user.email : undefined);
   }
 }
