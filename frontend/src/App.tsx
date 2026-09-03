@@ -3,14 +3,10 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 
-// Layouts
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
-
-// Routes
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 
-// Pages
 import LandingPage from "@/pages/LandingPage";
 import PortalSelector from "@/pages/PortalSelector";
 import LoginPage from "@/pages/Login";
@@ -22,8 +18,6 @@ import Finance from "@/pages/Finance";
 import Settings from "@/pages/Settings";
 import { MyClasses, Attendance as TeacherAttendance, Grades } from "@/pages/TeacherPages";
 import Attendance from "@/pages/Attendance";
-
-// New Pages
 import Staff from "@/pages/Staff";
 import Homework from "@/pages/Homework";
 import Exams from "@/pages/Exams";
@@ -36,7 +30,6 @@ import AttendanceAdmin from "@/pages/AttendanceAdmin";
 import Notifications from "@/pages/Notifications";
 import BuildingManagement from "@/pages/BuildingManagement";
 import StudentPortal from "@/pages/StudentPortal";
-
 import { useAuth } from "@/context/AuthContext";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import SchoolLogin from "@/pages/SchoolLogin";
@@ -65,7 +58,6 @@ const Unauthorized = () => (
   </div>
 );
 
-// Always redirect to super-admin or the authenticated tenant dashboard.
 const TenantRedirect = ({ to }: { to: string }) => {
   const { user } = useAuth();
   if (user?.role === "SUPER_ADMIN") return <Navigate to="/super-admin" replace />;
@@ -73,40 +65,36 @@ const TenantRedirect = ({ to }: { to: string }) => {
   return <Navigate to={`/${slug}/${to}`} replace />;
 };
 
+const TenantRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => (
+  <ProtectedRoute allowedRoles={allowedRoles}>{children}</ProtectedRoute>
+);
+
+const SCHOOL_ROLES = ["SCHOOL_ADMIN", "TEACHER", "STUDENT", "PARENT"];
+const ADMIN_TEACHER = ["SCHOOL_ADMIN", "TEACHER"];
+const ADMIN_ONLY = ["SCHOOL_ADMIN"];
+const STUDENT_ONLY = ["STUDENT"];
+const STUDENT_PARENT = ["SCHOOL_ADMIN", "STUDENT", "PARENT"];
+const ACADEMIC_READ = ["SCHOOL_ADMIN", "TEACHER", "STUDENT", "PARENT"];
+
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/portal" element={<PortalSelector />} />
-
-            {/* Auth */}
             <Route path="/school-login" element={<SchoolLogin />} />
             <Route path="/register-school" element={<RegisterSchool />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* Super Admin */}
-            <Route
-              path="/super-admin"
-              element={
-                <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                  <SuperAdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/super-admin" element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]}><SuperAdminDashboard /></ProtectedRoute>} />
 
-            {/* School authentication */}
-            <Route path="/:schoolSlug/login" element={<AuthLayout />}>
-              <Route index element={<LoginPage />} />
-            </Route>
+            <Route path="/:schoolSlug/login" element={<AuthLayout />}><Route index element={<LoginPage />} /></Route>
             <Route path="/login" element={<Navigate to="/school-login" replace />} />
 
-            {/* Direct shortcuts */}
             <Route path="/dashboard" element={<TenantRedirect to="dashboard" />} />
             <Route path="/students" element={<TenantRedirect to="students" />} />
             <Route path="/teachers" element={<TenantRedirect to="staff" />} />
@@ -127,72 +115,39 @@ export default function App() {
             <Route path="/buildings" element={<TenantRedirect to="buildings" />} />
             <Route path="/student-portal" element={<TenantRedirect to="student-portal" />} />
 
-            {/* Protected tenant application */}
-            <Route
-              path="/:schoolSlug"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
+            <Route path="/:schoolSlug" element={<ProtectedRoute allowedRoles={SCHOOL_ROLES}><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="buildings" element={<BuildingManagement />} />
-
-              {/* School Admin & shared modules */}
-              <Route path="classes" element={<Classes />} />
+              <Route path="dashboard" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Dashboard /></TenantRoute>} />
+              <Route path="settings" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Settings /></TenantRoute>} />
+              <Route path="buildings" element={<TenantRoute allowedRoles={ADMIN_ONLY}><BuildingManagement /></TenantRoute>} />
+              <Route path="classes" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Classes /></TenantRoute>} />
               <Route path="teachers" element={<Navigate to="staff" replace />} />
-              <Route path="students" element={<Students />} />
-              <Route path="parents" element={<Parents />} />
-              <Route path="finance" element={<Finance />} />
-              <Route path="staff" element={<Staff />} />
-              <Route path="homework" element={<Homework />} />
-              <Route path="exams" element={<Exams />} />
-              <Route path="timetable" element={<Timetable />} />
-              <Route path="notices" element={<NoticeBoard />} />
-              <Route path="transport" element={<Transport />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="subscription" element={<Subscription />} />
-              <Route path="attendance" element={<AttendanceAdmin />} />
-              <Route path="attendance/mark" element={<Attendance />} />
-              <Route path="notifications" element={<Notifications />} />
-
-              {/* Student portal */}
-              <Route
-                path="student-portal"
-                element={
-                  <ProtectedRoute allowedRoles={["STUDENT"]}>
-                    <StudentPortal />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Teacher portal */}
-              <Route path="teacher/classes" element={<MyClasses />} />
-              <Route path="teacher/attendance" element={<TeacherAttendance />} />
-              <Route path="teacher/grades" element={<Grades />} />
+              <Route path="students" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Students /></TenantRoute>} />
+              <Route path="parents" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Parents /></TenantRoute>} />
+              <Route path="finance" element={<TenantRoute allowedRoles={STUDENT_PARENT}><Finance /></TenantRoute>} />
+              <Route path="staff" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Staff /></TenantRoute>} />
+              <Route path="homework" element={<TenantRoute allowedRoles={ACADEMIC_READ}><Homework /></TenantRoute>} />
+              <Route path="exams" element={<TenantRoute allowedRoles={ACADEMIC_READ}><Exams /></TenantRoute>} />
+              <Route path="timetable" element={<TenantRoute allowedRoles={ACADEMIC_READ}><Timetable /></TenantRoute>} />
+              <Route path="notices" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><NoticeBoard /></TenantRoute>} />
+              <Route path="transport" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Transport /></TenantRoute>} />
+              <Route path="reports" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Reports /></TenantRoute>} />
+              <Route path="subscription" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Subscription /></TenantRoute>} />
+              <Route path="attendance" element={<TenantRoute allowedRoles={ACADEMIC_READ}><AttendanceAdmin /></TenantRoute>} />
+              <Route path="attendance/mark" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Attendance /></TenantRoute>} />
+              <Route path="notifications" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Notifications /></TenantRoute>} />
+              <Route path="student-portal" element={<TenantRoute allowedRoles={STUDENT_ONLY}><StudentPortal /></TenantRoute>} />
+              <Route path="teacher/classes" element={<TenantRoute allowedRoles={["TEACHER"]}><MyClasses /></TenantRoute>} />
+              <Route path="teacher/attendance" element={<TenantRoute allowedRoles={["TEACHER"]}><TeacherAttendance /></TenantRoute>} />
+              <Route path="teacher/grades" element={<TenantRoute allowedRoles={["TEACHER"]}><Grades /></TenantRoute>} />
             </Route>
 
-            {/* Error pages */}
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </BrowserRouter>
-
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "hsl(224 71.4% 4.1%)",
-              border: "1px solid hsl(215 27.9% 16.9%)",
-              color: "#fff",
-            },
-          }}
-          richColors
-        />
+        <Toaster position="top-right" toastOptions={{ background: "hsl(224 71.4% 4.1%)", border: "1px solid hsl(215 27.9% 16.9%)", color: "#fff" }} richColors />
       </AuthProvider>
     </ThemeProvider>
   );
