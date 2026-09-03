@@ -5,14 +5,34 @@ import { PrismaService } from '../database/prisma.service';
 export class ClassService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(schoolId: string) {
+  async findAll(schoolId: string, role?: string, teacherEmail?: string) {
+    const isTeacher = role === 'TEACHER' && Boolean(teacherEmail);
     return this.prisma.class.findMany({
-      where: { schoolId, deletedAt: null },
+      where: {
+        schoolId,
+        deletedAt: null,
+        ...(isTeacher
+          ? {
+              OR: [
+                { sections: { some: { deletedAt: null, teacher: { email: teacherEmail, deletedAt: null } } } },
+                { classSubjects: { some: { teacher: { email: teacherEmail, deletedAt: null } } } },
+              ],
+            }
+          : {}),
+      },
       include: {
         sections: {
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(isTeacher ? { teacher: { email: teacherEmail, deletedAt: null } } : {}),
+          },
+          include: { teacher: { select: { id: true, name: true, email: true } } },
+        },
+        classSubjects: {
+          ...(isTeacher ? { where: { teacher: { email: teacherEmail, deletedAt: null } } } : {}),
           include: {
-            teacher: { select: { id: true, name: true } },
+            subject: { select: { id: true, name: true, code: true } },
+            teacher: { select: { id: true, name: true, email: true } },
           },
         },
       },
@@ -22,17 +42,12 @@ export class ClassService {
   async createClass(schoolId: string, data: any) {
     if (!data.name?.trim()) throw new BadRequestException('Class name is required');
 
-    // Only allow an academic year that belongs to the same school.
     let academicYearId = data.academicYearId;
     if (academicYearId) {
-      const academicYear = await this.prisma.academicYear.findFirst({
-        where: { id: academicYearId, schoolId },
-      });
+      const academicYear = await this.prisma.academicYear.findFirst({ where: { id: academicYearId, schoolId } });
       if (!academicYear) throw new NotFoundException('Academic year not found');
     } else {
-      const currentYear = await this.prisma.academicYear.findFirst({
-        where: { schoolId, isCurrent: true },
-      });
+      const currentYear = await this.prisma.academicYear.findFirst({ where: { schoolId, isCurrent: true } });
       academicYearId = currentYear?.id;
     }
 
@@ -47,29 +62,18 @@ export class ClassService {
   }
 
   async deleteClass(id: string, schoolId: string) {
-    const schoolClass = await this.prisma.class.findFirst({
-      where: { id, schoolId, deletedAt: null },
-    });
+    const schoolClass = await this.prisma.class.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!schoolClass) throw new NotFoundException('Class not found');
-
-    return this.prisma.class.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    return this.prisma.class.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async createSection(schoolId: string, data: any) {
     if (!data.name?.trim()) throw new BadRequestException('Section name is required');
-
-    const parentClass = await this.prisma.class.findFirst({
-      where: { id: data.classId, schoolId, deletedAt: null },
-    });
+    const parentClass = await this.prisma.class.findFirst({ where: { id: data.classId, schoolId, deletedAt: null } });
     if (!parentClass) throw new NotFoundException('Class not found');
 
     if (data.teacherId) {
-      const teacher = await this.prisma.teacher.findFirst({
-        where: { id: data.teacherId, schoolId, deletedAt: null },
-      });
+      const teacher = await this.prisma.teacher.findFirst({ where: { id: data.teacherId, schoolId, deletedAt: null } });
       if (!teacher) throw new NotFoundException('Teacher not found');
     }
 
@@ -84,26 +88,17 @@ export class ClassService {
   }
 
   async deleteSection(id: string, schoolId: string) {
-    const section = await this.prisma.section.findFirst({
-      where: { id, class: { schoolId }, deletedAt: null },
-    });
+    const section = await this.prisma.section.findFirst({ where: { id, class: { schoolId }, deletedAt: null } });
     if (!section) throw new NotFoundException('Section not found');
-
-    return this.prisma.section.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    return this.prisma.section.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async getSubjects(schoolId: string) {
-    return this.prisma.subject.findMany({
-      where: { schoolId, deletedAt: null },
-    });
+    return this.prisma.subject.findMany({ where: { schoolId, deletedAt: null } });
   }
 
   async createSubject(schoolId: string, data: any) {
     if (!data.name?.trim()) throw new BadRequestException('Subject name is required');
-
     return this.prisma.subject.create({
       data: {
         name: data.name.trim(),
