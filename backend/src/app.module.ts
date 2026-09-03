@@ -15,6 +15,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { SchoolRequestModule } from './modules/school-request/school-request.module';
 import { PublicModule } from './modules/public/public.module';
 import { BuildingModule } from './modules/building/building.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -32,9 +33,9 @@ import { BuildingModule } from './modules/building/building.module';
     SchoolRequestModule,
     PublicModule,
     BuildingModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
