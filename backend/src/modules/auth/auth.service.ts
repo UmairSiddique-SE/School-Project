@@ -33,10 +33,12 @@ export class AuthService {
 
   // ─── Register School + Admin ────────────────────────────────────────────────
   async registerSchool(dto: RegisterSchoolDto) {
-    // Check slug uniqueness
-    const existingSchool = await this.prisma.school.findUnique({
-      where: { slug: dto.schoolSlug },
-    });
+    console.log('Registering school:', dto.schoolName, dto.schoolSlug);
+    try {
+      // Check slug uniqueness
+      const existingSchool = await this.prisma.school.findUnique({
+        where: { slug: dto.schoolSlug },
+      });
     if (existingSchool) {
       throw new ConflictException('A school with this slug already exists');
     }
@@ -120,6 +122,11 @@ export class AuthService {
         schoolSlug: result.school.slug,
       },
     };
+    } catch (error: any) {
+      console.error('Error in registerSchool:', error);
+      if (error instanceof ConflictException) throw error;
+      throw new BadRequestException(error?.message || 'Failed to register school');
+    }
   }
 
   // ─── Login (Passwordless — Email Only) ─────────────────────────────────────

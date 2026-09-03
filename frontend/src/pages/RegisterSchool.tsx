@@ -395,7 +395,8 @@ export default function RegisterSchool() {
       } else if (error?.message === "Network Error") {
         toast.error("Network Error: Could not connect to server. Check your connection.");
       } else {
-        toast.error(`Error (${error?.response?.status || "Unknown"}): Unable to start registration.`);
+        const status = error?.response?.status || "Unknown";
+        toast.error(`Registration Error [Status: ${status}]: Please check the console or try again.`);
       }
     }
   };
@@ -1068,7 +1069,7 @@ export default function RegisterSchool() {
             <div className="flex flex-col-reverse items-center justify-between gap-3 p-1 pt-2 sm:flex-row">
               <p className="text-center text-xs text-slate-500 sm:text-left">
                 By registering, you agree to create and manage your workspace
-                responsibly.
+                responsibly. <span className="text-[9px] opacity-30">v1.1-debug</span>
               </p>
               <button
                 type="submit"
