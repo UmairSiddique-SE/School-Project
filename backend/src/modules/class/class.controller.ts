@@ -14,41 +14,30 @@ export class ClassController {
 
   @Get()
   findAll(@CurrentUser() user: any) {
+    if (user.role === 'TEACHER') return this.classService.findAllForTeacher(user.schoolId, user.email);
     return this.classService.findAll(user.schoolId);
   }
 
   @Post()
   @Roles('SCHOOL_ADMIN')
-  createClass(@CurrentUser() user: any, @Body() dto: any) {
-    return this.classService.createClass(user.schoolId, dto);
-  }
+  createClass(@CurrentUser() user: any, @Body() dto: any) { return this.classService.createClass(user.schoolId, dto); }
 
   @Delete(':id')
   @Roles('SCHOOL_ADMIN')
-  deleteClass(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.classService.deleteClass(id, user.schoolId);
-  }
+  deleteClass(@CurrentUser() user: any, @Param('id') id: string) { return this.classService.deleteClass(id, user.schoolId); }
 
   @Post('sections')
   @Roles('SCHOOL_ADMIN')
-  createSection(@CurrentUser() user: any, @Body() dto: any) {
-    return this.classService.createSection(user.schoolId, dto);
-  }
+  createSection(@CurrentUser() user: any, @Body() dto: any) { return this.classService.createSection(user.schoolId, dto); }
 
   @Delete('sections/:id')
   @Roles('SCHOOL_ADMIN')
-  deleteSection(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.classService.deleteSection(id, user.schoolId);
-  }
+  deleteSection(@CurrentUser() user: any, @Param('id') id: string) { return this.classService.deleteSection(id, user.schoolId); }
 
   @Get('subjects')
-  getSubjects(@CurrentUser() user: any) {
-    return this.classService.getSubjects(user.schoolId);
-  }
+  getSubjects(@CurrentUser() user: any) { return this.classService.getSubjects(user.schoolId); }
 
   @Post('subjects')
   @Roles('SCHOOL_ADMIN')
-  createSubject(@CurrentUser() user: any, @Body() dto: any) {
-    return this.classService.createSubject(user.schoolId, dto);
-  }
+  createSubject(@CurrentUser() user: any, @Body() dto: any) { return this.classService.createSubject(user.schoolId, dto); }
 }
