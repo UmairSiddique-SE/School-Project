@@ -72,112 +72,7 @@ const FACULTY_LIST: TeacherProfile[] = [
   { id: 't-6', name: 'Mr. Zahid Bashir', subject: 'History & Pak Studies', department: 'Social Sciences', phone: '+92 311 8899001', avatarColor: 'from-purple-600 to-violet-600' },
 ];
 
-const DEFAULT_SUBJECTS = [
-  'Mathematics',
-  'Physics',
-  'Chemistry',
-  'Biology',
-  'Computer Science',
-  'English Literature',
-  'Urdu Language',
-  'Islamic Studies',
-  'Pakistan Studies',
-  'General Science',
-];
 
-const DEFAULT_HOMEWORK_LIST: HomeworkItem[] = [
-  {
-    id: 'hw-1',
-    title: 'Quadratic Equations & Polynomials Problem Set 4.2',
-    description: 'Solve exercises 4.1 to 4.5 from textbook. Complete all derivation steps for quadratic formula in class notebook. Verify discriminant for all 10 problems.',
-    subject: 'Mathematics',
-    className: 'Class 10',
-    sectionName: 'Section A (Alpha)',
-    assignedDate: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    assignedTime: '09:30 AM',
-    dueDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-    dueTime: '08:00 PM',
-    totalMarks: 20,
-    passingMarks: 8,
-    submissionMode: 'NOTEBOOK',
-    teacherId: 't-1',
-    teacherName: 'Dr. Ananya Roy',
-    teacherSubject: 'Physics & Applied Math',
-    teacherDepartment: 'Senior Science Faculty',
-    type: 'DAILY_PRACTICE',
-    difficulty: 'MODERATE',
-    status: 'ACTIVE',
-    notifyParents: true,
-    estimatedMinutes: 45,
-    submissions: [
-      { studentId: 'st-1', rollNo: '01', studentName: 'Aarav Sharma', parentPhone: '+92 300 1234567', status: 'EVALUATED', submittedAt: 'Yesterday, 4:15 PM', marksObtained: 19, totalMarks: 20, feedback: 'Excellent step-by-step solutions!' },
-      { studentId: 'st-2', rollNo: '02', studentName: 'Ayesha Siddiqui', parentPhone: '+92 321 7654321', status: 'SUBMITTED', submittedAt: 'Today, 9:30 AM', totalMarks: 20 },
-      { studentId: 'st-3', rollNo: '03', studentName: 'Bilal Hussain', parentPhone: '+92 333 9988112', status: 'PENDING', totalMarks: 20 },
-      { studentId: 'st-4', rollNo: '04', studentName: 'Fatima Noor', parentPhone: '+92 345 5566778', status: 'EVALUATED', submittedAt: 'Yesterday, 6:00 PM', marksObtained: 20, totalMarks: 20, feedback: 'Full marks, very neat presentation.' },
-      { studentId: 'st-5', rollNo: '05', studentName: 'Hamza Tariq', parentPhone: '+92 301 4433221', status: 'PENDING', totalMarks: 20 },
-      { studentId: 'st-6', rollNo: '06', studentName: 'Zoya Khan', parentPhone: '+92 312 8877665', status: 'SUBMITTED', submittedAt: 'Today, 11:20 AM', totalMarks: 20 },
-    ],
-  },
-  {
-    id: 'hw-2',
-    title: 'Chemical Reactions & Balancing Redox Equations',
-    description: 'Balance 15 oxidation-reduction reactions provided in the attached sheet. Identify limiting reagents and write physical state notation (s, l, g, aq).',
-    subject: 'Chemistry',
-    className: 'Class 9',
-    sectionName: 'Section A',
-    assignedDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    assignedTime: '11:15 AM',
-    dueDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
-    dueTime: '10:00 PM',
-    totalMarks: 25,
-    passingMarks: 10,
-    submissionMode: 'ONLINE_UPLOAD',
-    teacherId: 't-2',
-    teacherName: 'Dr. Farhana Siddiqui',
-    teacherSubject: 'Chemistry & Biology',
-    teacherDepartment: 'Department Head (Sciences)',
-    type: 'WORKSHEET',
-    difficulty: 'CHALLENGING',
-    status: 'ACTIVE',
-    notifyParents: true,
-    estimatedMinutes: 60,
-    submissions: [
-      { studentId: 'st-11', rollNo: '01', studentName: 'Daniyal Khan', parentPhone: '+92 300 2233445', status: 'SUBMITTED', submittedAt: 'Today, 8:00 AM', totalMarks: 25 },
-      { studentId: 'st-12', rollNo: '02', studentName: 'Maham Ali', parentPhone: '+92 321 4455667', status: 'SUBMITTED', submittedAt: 'Today, 10:15 AM', totalMarks: 25 },
-      { studentId: 'st-13', rollNo: '03', studentName: 'Usman Farooq', parentPhone: '+92 333 7788990', status: 'PENDING', totalMarks: 25 },
-      { studentId: 'st-14', rollNo: '04', studentName: 'Sana Malik', parentPhone: '+92 345 1122334', status: 'PENDING', totalMarks: 25 },
-    ],
-  },
-  {
-    id: 'hw-3',
-    title: 'Argumentative Essay: Artificial Intelligence in Modern Education',
-    description: 'Write a comprehensive 500–600 word argumentative essay discussing the advantages and ethical considerations of AI tutors in modern school classrooms.',
-    subject: 'English Literature',
-    className: 'Class 10',
-    sectionName: 'Section B (Beta)',
-    assignedDate: new Date(Date.now() - 86400000 * 4).toISOString().split('T')[0],
-    assignedTime: '01:00 PM',
-    dueDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    dueTime: '06:00 PM',
-    totalMarks: 15,
-    passingMarks: 6,
-    submissionMode: 'NOTEBOOK',
-    teacherId: 't-4',
-    teacherName: 'Mrs. Sabeen Shah',
-    teacherSubject: 'English Literature',
-    teacherDepartment: 'Language & Arts Faculty',
-    type: 'PROJECT',
-    difficulty: 'EASY',
-    status: 'ACTIVE',
-    notifyParents: false,
-    estimatedMinutes: 50,
-    submissions: [
-      { studentId: 'st-21', rollNo: '01', studentName: 'Rohan Mehmood', parentPhone: '+92 301 5566778', status: 'EVALUATED', submittedAt: '2 days ago', marksObtained: 14, totalMarks: 15, feedback: 'Well structured essay with strong thesis.' },
-      { studentId: 'st-22', rollNo: '02', studentName: 'Sara Qasim', parentPhone: '+92 322 8899001', status: 'LATE', submittedAt: 'Yesterday, 9:00 PM', totalMarks: 15 },
-      { studentId: 'st-23', rollNo: '03', studentName: 'Zainab Bibi', parentPhone: '+92 334 2233114', status: 'PENDING', totalMarks: 15 },
-    ],
-  },
-];
 
 const STORAGE_KEY = (slug: string) => `edusphere_homework_${slug}`;
 
@@ -189,13 +84,13 @@ function getStoredHomework(schoolSlug: string): HomeworkItem[] {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (_) {}
-  localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify(DEFAULT_HOMEWORK_LIST));
-  return DEFAULT_HOMEWORK_LIST;
+  localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify([]));
+  return [];
 }
 
 export default function Homework() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
 
   const [homeworks, setHomeworks] = useState<HomeworkItem[]>(() => getStoredHomework(schoolSlug));
   const [loading, setLoading] = useState(false);
@@ -538,7 +433,7 @@ export default function Homework() {
               className="px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary shadow-sm"
             >
               <option value="ALL">📚 All Subjects</option>
-              {DEFAULT_SUBJECTS.map(s => (
+              {[].map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -771,7 +666,7 @@ export default function Homework() {
                         onChange={e => setForm({ ...form, subject: e.target.value })}
                         className="w-full px-2 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary"
                       >
-                        {DEFAULT_SUBJECTS.map(sub => (
+                        {[].map(sub => (
                           <option key={sub} value={sub}>{sub}</option>
                         ))}
                       </select>
