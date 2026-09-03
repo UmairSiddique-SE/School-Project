@@ -77,7 +77,7 @@ export default function App() {
             <Route path="/dashboard" element={<TenantRedirect to="dashboard" />} />
             <Route path="/students" element={<TenantRedirect to="students" />} />
             <Route path="/teachers" element={<TenantRedirect to="staff" />} />
-            <Route path="/parents" element={<TenantRedirect to="students" />} />
+            <Route path="/parents" element={<TenantRedirect to="parents" />} />
             <Route path="/classes" element={<TenantRedirect to="classes" />} />
             <Route path="/staff" element={<TenantRedirect to="staff" />} />
             <Route path="/homework" element={<TenantRedirect to="homework" />} />
@@ -101,7 +101,7 @@ export default function App() {
               <Route path="classes" element={<Classes />} />
               <Route path="teachers" element={<Navigate to="staff" replace />} />
               <Route path="students" element={<Students />} />
-              <Route path="parents" element={<Navigate to="students" replace />} />
+              <Route path="parents" element={<Parents />} />
               <Route path="finance" element={<Finance />} />
               <Route path="staff" element={<Staff />} />
               <Route path="homework" element={<Homework />} />
