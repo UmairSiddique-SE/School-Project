@@ -33,8 +33,7 @@ jobs:
               if new != old: p.write_text(new, encoding='utf-8')
 
           def between(t, start, end):
-              pattern = re.escape(start) + r'.*?' + re.escape(end)
-              return re.sub(pattern, end, t, count=1, flags=re.S)
+              return re.sub(re.escape(start) + r'.*?' + re.escape(end), end, t, count=1, flags=re.S)
 
           def attendance(t):
               t = between(t, 'const MOCK_CLASSES:', '// ─── Main Component')
@@ -47,14 +46,16 @@ jobs:
 
           def finance(t):
               t = between(t, '// ─── Mock Data', '// ─── Main Component')
-              t = re.sub(r'MOCK_[A-Z0-9_]+', '', t)
-              t = t.replace("setPayments(Array.isArray(pRes.data) ? pRes.data : );", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);")
-              t = t.replace("setStructures(Array.isArray(sRes.data) ? sRes.data : );", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);")
-              t = t.replace("setStudents(Array.isArray(stRes.data) ? stRes.data : );", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);")
+              t = t.replace("setPayments(Array.isArray(pRes.data) ? pRes.data : MOCK_PAYMENTS);", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);")
+              t = t.replace("setStructures(Array.isArray(sRes.data) ? sRes.data : MOCK_STRUCTURES);", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);")
+              t = t.replace("setStudents(Array.isArray(stRes.data) ? stRes.data : MOCK_STUDENTS);", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);")
+              t = t.replace("setPayments(MOCK_PAYMENTS);", "setPayments([]);").replace("setStructures(MOCK_STRUCTURES);", "setStructures([]);").replace("setStudents(MOCK_STUDENTS);", "setStudents([]);")
+              t = t.replace("toast.error('Using demo data');", "toast.error('Unable to load finance data. Please try again.');")
               return t
 
           def transport(t):
               t = between(t, 'const MOCK_ROUTES:', 'export default function Transport')
+              t = re.sub(r'MOCK_ASSIGNMENTS', '[]', t)
               t = re.sub(r'useState<TransportRoute\[\]>\(MOCK_[A-Z0-9_]+\)', 'useState<TransportRoute[]>([])', t)
               t = re.sub(r'useState<Vehicle\[\]>\(MOCK_[A-Z0-9_]+\)', 'useState<Vehicle[]>([])', t)
               t = re.sub(r'setRoutes\(MOCK_[A-Z0-9_]+\)', 'setRoutes([])', t)
@@ -64,38 +65,29 @@ jobs:
           def notices(t):
               t = between(t, 'const MOCK_NOTICES:', 'export default function NoticeBoard')
               t = re.sub(r'MOCK_[A-Z0-9_]+', '[]', t)
+              t = t.replace("toast.error('Using demo data');", "toast.error('Unable to load notices. Please try again.');")
               return t
 
           def students(t):
               t = between(t, '  const MOCK_STUDENTS = [', '  const fetchAll = () => {')
-              t = t.replace("setStudents(MOCK_STUDENTS);", "setStudents([]);")
-              t = t.replace("setClasses(MOCK_CLASSES);", "setClasses([]);")
+              t = t.replace("setStudents(MOCK_STUDENTS);", "setStudents([]);").replace("setClasses(MOCK_CLASSES);", "setClasses([]);")
               t = t.replace("toast.success('Mock Excel parsed successfully: 12 students imported!');", "toast.error('Bulk import is not available until the import API is connected.');")
-              t = t.replace("students.filter(s => s.gender === 'MALE').length || Math.floor(students.length * 0.52)", "students.filter(s => s.gender === 'MALE').length")
-              t = t.replace("students.filter(s => s.gender === 'FEMALE').length || Math.floor(students.length * 0.48)", "students.filter(s => s.gender === 'FEMALE').length")
-              t = t.replace("{s.section?.class?.name || 'Class 10'}", "{s.section?.class?.name || '—'}")
-              t = t.replace("{s.section?.name || 'Alpha'}", "{s.section?.name || '—'}")
-              t = t.replace("{s.status || 'Active Record'}", "{s.status || '—'}")
               t = t.replace("selectedStudent.religion || 'Islam'", "selectedStudent.religion || '—'")
               t = t.replace("selectedStudent.section?.class?.numeric || '10'", "selectedStudent.section?.class?.numeric || '—'")
               t = t.replace("selectedStudent.section?.class?.name || 'Class 10'", "selectedStudent.section?.class?.name || '—'")
               t = t.replace("selectedStudent.section?.name || 'A'", "selectedStudent.section?.name || '—'")
               t = t.replace("selectedStudent.section?.name || 'Alpha'", "selectedStudent.section?.name || '—'")
-              t = t.replace("selectedStudent.rollNo || '01'", "selectedStudent.rollNo || '—'")
-              t = t.replace("selectedStudent.rollNo || '00'", "selectedStudent.rollNo || '—'")
+              t = t.replace("selectedStudent.rollNo || '01'", "selectedStudent.rollNo || '—'").replace("selectedStudent.rollNo || '00'", "selectedStudent.rollNo || '—'")
               t = t.replace("selectedStudent.session || '2026-2027'", "selectedStudent.session || '—'")
-              t = t.replace("selectedStudent.fatherName || 'Robert Mercer'", "selectedStudent.fatherName || '—'")
-              t = t.replace("selectedStudent.motherName || 'Emma Mercer'", "selectedStudent.motherName || '—'")
-              t = t.replace("selectedStudent.fatherOccupation || 'Service'", "selectedStudent.fatherOccupation || '—'")
-              t = t.replace("selectedStudent.motherOccupation || 'Housewife'", "selectedStudent.motherOccupation || '—'")
+              t = t.replace("selectedStudent.fatherName || 'Robert Mercer'", "selectedStudent.fatherName || '—'").replace("selectedStudent.motherName || 'Emma Mercer'", "selectedStudent.motherName || '—'")
+              t = t.replace("selectedStudent.fatherOccupation || 'Service'", "selectedStudent.fatherOccupation || '—'").replace("selectedStudent.motherOccupation || 'Housewife'", "selectedStudent.motherOccupation || '—'")
               t = t.replace("selectedStudent.email || `${selectedStudent.admissionNo.toLowerCase()}@school.edu`", "selectedStudent.email || '—'")
-              t = t.replace("{selectedStudent.admissionNo.toLowerCase()}_parent@school.edu", "—")
-              t = t.replace("parent123", "—")
-              t = t.replace("selectedStudent?.bloodGroup || 'O+'", "selectedStudent?.bloodGroup || '—'")
-              t = t.replace("selectedStudent?.phone || '+1 555 456 7890'", "selectedStudent?.phone || '—'")
+              t = t.replace("{selectedStudent.admissionNo.toLowerCase()}_parent@school.edu", "—").replace("parent123", "—")
+              t = t.replace("selectedStudent?.bloodGroup || 'O+'", "selectedStudent?.bloodGroup || '—'").replace("selectedStudent?.phone || '+1 555 456 7890'", "selectedStudent?.phone || '—'")
               t = t.replace("selectedStudent ? selectedStudent.name : 'Alex Mercer'", "selectedStudent ? selectedStudent.name : '—'")
               t = t.replace("selectedStudent ? selectedStudent.admissionNo : 'STD001'", "selectedStudent ? selectedStudent.admissionNo : '—'")
               t = t.replace("selectedStudent ? selectedStudent.rollNo : '01'", "selectedStudent ? selectedStudent.rollNo : '—'")
+              t = t.replace("parentPassword: parentPassword || 'parent123'", "parentPassword: parentPassword || ''")
               return t
 
           edit('frontend/src/pages/Attendance.tsx', attendance)
@@ -104,21 +96,17 @@ jobs:
           edit('frontend/src/pages/NoticeBoard.tsx', notices)
           edit('frontend/src/pages/Students.tsx', students)
 
-          parent = Path('frontend/src/pages/Parents.tsx')
-          if parent.exists(): parent.unlink()
-
-          forbidden = []
           for p in Path('frontend/src/pages').glob('*.tsx'):
               text = p.read_text(encoding='utf-8')
-              for token in ('MOCK_STUDENTS','MOCK_PAYMENTS','MOCK_STRUCTURES','MOCK_CLASSES','MOCK_ROUTES','MOCK_VEHICLES','MOCK_NOTICES'):
-                  if token in text: forbidden.append(f'{p}:{token}')
-          if forbidden: raise SystemExit('Remaining demo constants: ' + ', '.join(forbidden))
+              for token in ('MOCK_STUDENTS','MOCK_PAYMENTS','MOCK_STRUCTURES','MOCK_CLASSES','MOCK_ROUTES','MOCK_VEHICLES','MOCK_NOTICES','MOCK_ASSIGNMENTS'):
+                  if token in text: raise SystemExit(f'Remaining demo constant: {p}:{token}')
 
       - name: Commit cleanup to PR branch
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .cleanup-trigger .cleanup-trigger-2 2>/dev/null || true
           git add frontend/src/pages
           if git diff --cached --quiet; then echo "No cleanup changes detected"; exit 0; fi
           git commit -m "Remove frontend demo and mock data"
