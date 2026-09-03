@@ -50,6 +50,7 @@ jobs:
               t = t.replace("setStructures(Array.isArray(sRes.data) ? sRes.data : MOCK_STRUCTURES);", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);")
               t = t.replace("setStudents(Array.isArray(stRes.data) ? stRes.data : MOCK_STUDENTS);", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);")
               t = t.replace("setPayments(MOCK_PAYMENTS);", "setPayments([]);").replace("setStructures(MOCK_STRUCTURES);", "setStructures([]);").replace("setStudents(MOCK_STUDENTS);", "setStudents([]);")
+              t = t.replace("setPayments();", "setPayments([]);").replace("setStructures();", "setStructures([]);").replace("setStudents();", "setStudents([]);")
               t = t.replace("toast.error('Using demo data');", "toast.error('Unable to load finance data. Please try again.');")
               return t
 
@@ -88,6 +89,8 @@ jobs:
               t = t.replace("selectedStudent ? selectedStudent.admissionNo : 'STD001'", "selectedStudent ? selectedStudent.admissionNo : '—'")
               t = t.replace("selectedStudent ? selectedStudent.rollNo : '01'", "selectedStudent ? selectedStudent.rollNo : '—'")
               t = t.replace("parentPassword: parentPassword || 'parent123'", "parentPassword: parentPassword || ''")
+              t = t.replace("Parent Portal", "Guardian Information")
+              t = t.replace("Grade 5 - A", "—")
               return t
 
           edit('frontend/src/pages/Attendance.tsx', attendance)
