@@ -9,7 +9,7 @@ import { CreateSchoolRequestDto } from './dto/create-school-request.dto';
 
 @Injectable()
 export class SchoolRequestService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateSchoolRequestDto) {
     return this.prisma.schoolRequest.create({
@@ -23,7 +23,7 @@ export class SchoolRequestService {
         address: dto.address,
         expectedStudents: dto.expectedStudents,
         subdomain: dto.subdomain,
-        requestedPlan: dto.plan,
+        requestedPlan: dto.requestedPlan || dto.plan,
         notes: dto.notes,
         status: 'PENDING',
       },
@@ -32,23 +32,22 @@ export class SchoolRequestService {
 
   async findAll() {
     return this.prisma.schoolRequest.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string) {
     const request = await this.prisma.schoolRequest.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
-
-    if (!request) {
-      throw new NotFoundException('School request not found');
-    }
-
+    if (!request) throw new NotFoundException('School request not found');
     return request;
+  }
+
+  async findLatestByEmail(email: string) {
+    return this.prisma.schoolRequest.findFirst({
+      where: { email: email.trim().toLowerCase() },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }
