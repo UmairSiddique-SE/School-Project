@@ -94,7 +94,7 @@ export default function NoticeBoard() {
       .then(res => setNotices(Array.isArray(res.data) ? res.data : []))
       .catch(() => {
         setNotices([]);
-        toast.error('Using demo data');
+        toast.error('Unable to load notices. Please try again.');
       })
       .finally(() => setLoading(false));
   };

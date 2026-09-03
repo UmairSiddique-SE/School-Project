@@ -105,7 +105,7 @@ const VEHICLE_STATUS = {
 export default function Transport() {
   const [routes, setRoutes] = useState<TransportRoute[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [assignments, setAssignments] = useState<StudentAssignment[]>(MOCK_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'overview' | 'routes' | 'vehicles' | 'assignments'>('overview');
   
