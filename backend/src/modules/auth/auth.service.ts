@@ -33,59 +33,68 @@ export class AuthService {
 
   // ─── Register School + Admin ────────────────────────────────────────────────
   async registerSchool(dto: RegisterSchoolDto) {
-    // Check slug uniqueness
+    const normalizedEmail = dto.adminEmail.trim().toLowerCase();
+    const normalizedSlug = dto.schoolSlug.trim().toLowerCase();
+
     const existingSchool = await this.prisma.school.findUnique({
-      where: { slug: dto.schoolSlug },
+      where: { slug: normalizedSlug },
     });
     if (existingSchool) {
       throw new ConflictException('A school with this slug already exists');
     }
 
-    // Check email uniqueness
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.adminEmail },
+      where: { email: normalizedEmail },
     });
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
 
-    const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
-    const otp = '123456';
+    const requestedPlan = dto.requestedPlan?.trim().toUpperCase() || 'FREE_TRIAL';
+    const plan = await this.prisma.platformPlan.findUnique({
+      where: { planKey: requestedPlan },
+    });
+    if (!plan || !plan.isActive) {
+      throw new BadRequestException('Selected subscription plan is unavailable');
+    }
 
-    // Transaction: create school + admin user atomically
+    const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+
     const result = await this.prisma.$transaction(async (tx) => {
       const school = await tx.school.create({
         data: {
-          name: dto.schoolName,
-          slug: dto.schoolSlug,
+          name: dto.schoolName.trim(),
+          slug: normalizedSlug,
           type: dto.schoolType,
           logoUrl: dto.logoUrl,
-          phone: dto.schoolPhone || dto.adminPhone,
-          address: dto.schoolAddress,
-          country: dto.country,
-          city: dto.city,
+          phone: dto.schoolPhone?.trim() || dto.adminPhone.trim(),
+          address: dto.schoolAddress?.trim(),
+          country: dto.country.trim(),
+          city: dto.city.trim(),
           isActive: false,
         },
       });
 
       const user = await tx.user.create({
         data: {
-          name: dto.adminName,
-          email: dto.adminEmail,
+          name: dto.adminName.trim(),
+          email: normalizedEmail,
           passwordHash,
           role: 'SCHOOL_ADMIN',
           schoolId: school.id,
-          phone: dto.adminPhone,
+          phone: dto.adminPhone.trim(),
         },
       });
 
       await tx.subscription.create({
         data: {
           schoolId: school.id,
-          plan: dto.requestedPlan || 'FREE_TRIAL',
+          plan: plan.planKey,
           status: 'PENDING',
           endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          amount: 0,
+          amount: Number(plan.price),
+          currency: plan.currency,
         },
       });
 
@@ -122,7 +131,7 @@ export class AuthService {
     };
   }
 
-  // ─── Login (Passwordless — Email Only) ─────────────────────────────────────
+  // ─── Login ──────────────────────────────────────────────────────────────────
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.trim().toLowerCase() },
@@ -138,26 +147,26 @@ export class AuthService {
       },
     });
 
-    if (!user)
-      throw new UnauthorizedException(
-        'No account found for this email address',
-      );
-    if (!user.isActive)
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    if (!user.isActive) {
       throw new UnauthorizedException('This account has been suspended');
+    }
     if (user.school && !user.school.isActive) {
       throw new UnauthorizedException(
-        'This school account is suspended or awaiting payment approval',
+        'This school account is suspended or awaiting activation',
       );
     }
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    if (!user.emailVerified)
+    if (!user.emailVerified) {
       throw new UnauthorizedException(
         'Please verify your email before signing in',
       );
+    }
 
-    // Passwordless authentication — login directly with email only
     const tokens = await this.generateTokens(
       user.id,
       user.email,
@@ -181,7 +190,7 @@ export class AuthService {
     };
   }
 
-  // ─── Refresh Token ────────────────────────────────────────────────────────
+  // ─── Refresh Token ──────────────────────────────────────────────────────────
   async refreshToken(token: string) {
     const stored = await this.prisma.refreshToken.findUnique({
       where: { token },
@@ -192,23 +201,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    // Revoke the old token (rotation)
     await this.prisma.refreshToken.update({
       where: { id: stored.id },
       data: { revokedAt: new Date() },
     });
 
-    const tokens = await this.generateTokens(
+    return this.generateTokens(
       stored.user.id,
       stored.user.email,
       stored.user.role,
       stored.user.schoolId ?? undefined,
     );
-
-    return tokens;
   }
 
-  // ─── Logout ──────────────────────────────────────────────────────────────
+  // ─── Logout ─────────────────────────────────────────────────────────────────
   async logout(token: string) {
     await this.prisma.refreshToken.updateMany({
       where: { token, revokedAt: null },
@@ -217,28 +223,27 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  // ─── Forgot Password ──────────────────────────────────────────────────────
+  // ─── Forgot Password ────────────────────────────────────────────────────────
   async forgotPassword(dto: ForgotPasswordDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: dto.email.trim().toLowerCase() },
     });
-    // Always return success to prevent user enumeration
-    if (!user)
+    if (!user) {
       return { message: 'If that email exists, a reset link has been sent' };
+    }
 
     const token = uuidv4();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await this.prisma.passwordResetToken.create({
       data: { userId: user.id, token, expiresAt },
     });
 
     await this.mailService.sendPasswordReset(user.email, token);
-
     return { message: 'If that email exists, a reset link has been sent' };
   }
 
-  // ─── Reset Password ──────────────────────────────────────────────────────
+  // ─── Reset Password ─────────────────────────────────────────────────────────
   async resetPassword(dto: ResetPasswordDto) {
     const record = await this.prisma.passwordResetToken.findUnique({
       where: { token: dto.token },
@@ -259,15 +264,19 @@ export class AuthService {
         where: { id: record.id },
         data: { usedAt: new Date() },
       }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
     ]);
 
     return { message: 'Password reset successfully' };
   }
 
-  // ─── Verify Email ─────────────────────────────────────────────────────────
+  // ─── Verify Email ───────────────────────────────────────────────────────────
   async verifyEmail(dto: VerifyEmailDto) {
     const record = await this.prisma.emailVerification.findFirst({
-      where: { userId: dto.userId, otp: dto.otp, usedAt: null },
+      where: { userId: dto.userId, otp: dto.otp.trim(), usedAt: null },
     });
 
     if (!record || record.expiresAt < new Date()) {
@@ -298,13 +307,16 @@ export class AuthService {
         },
       },
     });
+
     if (!user) throw new BadRequestException('User account not found');
+
     const tokens = await this.generateTokens(
       user.id,
       user.email,
       user.role,
       user.schoolId ?? undefined,
     );
+
     return {
       message: 'Email verified successfully',
       user: {
@@ -322,6 +334,7 @@ export class AuthService {
     };
   }
 
+  // ─── Onboarding Payment ─────────────────────────────────────────────────────
   async submitOnboardingPayment(
     dto: OnboardingPaymentDto,
     user: Pick<JwtPayload, 'schoolId' | 'role'>,
@@ -331,47 +344,56 @@ export class AuthService {
         'You can only submit payment for your school',
       );
     }
+
     const school = await this.prisma.school.findUnique({
       where: { id: dto.schoolId },
     });
     if (!school) throw new BadRequestException('School account not found');
+
     const plan = await this.prisma.platformPlan.findUnique({
-      where: { planKey: dto.plan },
+      where: { planKey: dto.plan.trim().toUpperCase() },
     });
     if (!plan || !plan.isActive) {
       throw new BadRequestException(
         'Selected subscription plan is unavailable',
       );
     }
-    const amount = Number(dto.amount ?? plan.price);
+
+    const amount = Number(plan.price);
     if (!Number.isFinite(amount) || amount < 0) {
-      throw new BadRequestException('A valid payment amount is required');
+      throw new BadRequestException('Invalid subscription plan price');
+    }
+    if (plan.planKey !== 'FREE_TRIAL' && !dto.screenshotUrl) {
+      throw new BadRequestException('Payment screenshot is required');
     }
     if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) {
       throw new BadRequestException(
         'Payment screenshot must be 2 MB or smaller',
       );
     }
+
     return this.prisma.$transaction(async (tx) => {
       const payment = await tx.onboardingPayment.create({
         data: {
           schoolId: dto.schoolId,
-          plan: dto.plan,
+          plan: plan.planKey,
           amount,
           method: dto.method,
-          reference: dto.reference,
+          reference: dto.reference?.trim(),
           screenshotUrl: dto.screenshotUrl || null,
         },
       });
+
       await tx.subscription.update({
         where: { schoolId: dto.schoolId },
         data: {
-          plan: dto.plan,
+          plan: plan.planKey,
           amount,
           currency: plan.currency,
           status: 'PENDING',
         },
       });
+
       return payment;
     });
   }
@@ -410,7 +432,7 @@ export class AuthService {
     return { message: 'Password changed successfully. Please sign in again.' };
   }
 
-  // ─── Token Generation ─────────────────────────────────────────────────────
+  // ─── Token Generation ───────────────────────────────────────────────────────
   private async generateTokens(
     userId: string,
     email: string,
@@ -424,7 +446,7 @@ export class AuthService {
     });
 
     const refreshToken = uuidv4();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await this.prisma.refreshToken.create({
       data: { token: refreshToken, userId, expiresAt },
