@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
+import { SchoolRequestModule } from '../school-request/school-request.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MailModule } from '../mail/mail.module';
       }),
     }),
     MailModule,
+    SchoolRequestModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
