@@ -106,48 +106,68 @@ export class AttendanceService {
       })),
     );
 
-    // Attendance is a single source of truth: persist an in-app notification for
-    // the affected student, linked parents, and school admins. No fake/local fallback.
+    // Attendance is the source of truth. After a successful save, notify the
+    // affected student, their linked parents, and active school admins.
     const admins = await this.prisma.user.findMany({
       where: { schoolId, role: 'SCHOOL_ADMIN', isActive: true, deletedAt: null },
       select: { id: true },
     });
-    const studentEmails = students.map(s => s.email).filter((email): email is string => Boolean(email));
-    const parentEmails = students.flatMap(s => s.parents.map(p => p.parent.email)).filter((email): email is string => Boolean(email));
+
+    const intendedEmails = [...new Set(
+      students.flatMap((student) => [
+        ...(student.email ? [student.email] : []),
+        ...student.parents.map((parent) => parent.parent.email).filter(Boolean),
+      ]),
+    )];
+
     const recipients = await this.prisma.user.findMany({
       where: {
         schoolId,
         isActive: true,
         deletedAt: null,
-        email: { in: [...new Set([...studentEmails, ...parentEmails])] },
+        email: { in: intendedEmails },
       },
       select: { id: true, email: true },
     });
 
-    const userIds = [
-      ...admins.map(a => a.id),
-      ...recipients.map(r => r.id),
-    ];
-    if (data.notifyParents !== false) {
-      const byEmail = new Map(recipients.map(r => [r.email.toLowerCase(), r.id]));
-      const intendedEmails = [...new Set([...studentEmails, ...parentEmails])];
-      const intendedIds = intendedEmails.map(email => byEmail.get(email.toLowerCase())).filter((id): id is string => Boolean(id));
-      await this.notificationService.createForUsers(
-        [...new Set([...admins.map(a => a.id), ...intendedIds])],
-        schoolId,
-        {
-          type: 'ATTENDANCE',
-          title: 'Attendance Updated',
-          message: `Attendance for ${students.length} student(s) in Section ${section.name} was updated for ${data.date}.`,
-          link: '/attendance',
-        },
-      );
-    } else {
-      await this.notificationService.createForUsers(userIds.filter(id => admins.some(a => a.id === id)), schoolId, {
+    const byEmail = new Map(recipients.map((recipient) => [recipient.email.toLowerCase(), recipient.id]));
+    const notificationJobs = data.records.flatMap((record: any) => {
+      const student = students.find((item) => item.id === record.studentId);
+      if (!student) return [];
+
+      const statusLabel = String(record.status || 'PRESENT').replace(/_/g, ' ');
+      const emails = [
+        ...(student.email ? [student.email] : []),
+        ...student.parents.map((parent) => parent.parent.email).filter(Boolean),
+      ];
+      const userIds = emails
+        .map((email) => byEmail.get(email.toLowerCase()))
+        .filter((id): id is string => Boolean(id));
+
+      return userIds.length
+        ? [{
+            userIds: [...new Set(userIds)],
+            title: 'Attendance Updated',
+            message: `${student.name}'s attendance was marked ${statusLabel} for ${data.date}.`,
+          }]
+        : [];
+    });
+
+    for (const job of notificationJobs) {
+      await this.notificationService.createForUsers(job.userIds, schoolId, {
         type: 'ATTENDANCE',
-        title: 'Attendance Updated',
+        title: job.title,
+        message: job.message,
+        link: '/notifications',
+      });
+    }
+
+    if (admins.length) {
+      await this.notificationService.createForUsers(admins.map((admin) => admin.id), schoolId, {
+        type: 'ATTENDANCE',
+        title: 'Attendance Published',
         message: `Attendance for ${students.length} student(s) in Section ${section.name} was updated for ${data.date}.`,
-        link: '/attendance',
+        link: '/notifications',
       });
     }
 
