@@ -7,20 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.set('trust proxy', 1);
   app.use(helmet());
-
-  const allowedOrigins = (process.env.CORS_ORIGINS || '')
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(Boolean);
-
-  app.enableCors({
-    origin: allowedOrigins.length ? allowedOrigins : false,
-    credentials: true,
-  });
-
-  app.setGlobalPrefix('api');
+  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(origin => origin.trim()).filter(Boolean);
+  app.enableCors({ origin: allowedOrigins, credentials: true });
+  app.setGlobalPrefix(process.env.API_PREFIX || 'api');
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: false }));
-
   const port = Number(process.env.PORT || 3000);
   await app.listen(port);
   console.log(`Application started on port ${port}`);
