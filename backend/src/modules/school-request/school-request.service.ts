@@ -8,6 +8,20 @@ export class SchoolRequestService {
 
   async create(dto: CreateSchoolRequestDto) {
     const email = dto.email.trim().toLowerCase();
+    const requestedPlan = dto.requestedPlan || dto.plan || 'FREE_TRIAL';
+
+    // Idempotency: registration and UI confirmation can safely call this endpoint
+    // more than once without creating duplicate approval cards.
+    const existing = await this.prisma.schoolRequest.findFirst({
+      where: {
+        email,
+        schoolName: dto.schoolName.trim(),
+        status: 'PENDING',
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existing) return existing;
+
     const request = await this.prisma.schoolRequest.create({
       data: {
         schoolName: dto.schoolName.trim(),
@@ -19,14 +33,13 @@ export class SchoolRequestService {
         address: dto.address,
         expectedStudents: dto.expectedStudents,
         subdomain: dto.subdomain,
-        requestedPlan: dto.requestedPlan || dto.plan || 'FREE_TRIAL',
+        requestedPlan,
         notes: dto.notes,
         status: 'PENDING',
       },
     });
 
-    // Auth registration already creates the school/admin pair. Keep the school
-    // record linked to the request email so Super Admin approval can activate it.
+    // Link the approval request to the already-created school/admin pair.
     const owner = await this.prisma.user.findUnique({
       where: { email },
       select: { schoolId: true },
@@ -48,9 +61,7 @@ export class SchoolRequestService {
   }
 
   async findOne(id: string) {
-    const request = await this.prisma.schoolRequest.findUnique({
-      where: { id },
-    });
+    const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
     if (!request) throw new NotFoundException('School request not found');
     return request;
   }
