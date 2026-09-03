@@ -12,7 +12,6 @@ import { Roles } from '../../common/decorators/roles.decorator';
 export class AcademicsController {
   constructor(private readonly academicsService: AcademicsService) {}
 
-  // Homework
   @Get('homework')
   getHomework(@CurrentUser() user: any) {
     return this.academicsService.getHomework(user.schoolId);
@@ -30,7 +29,6 @@ export class AcademicsController {
     return this.academicsService.deleteHomework(id, user.schoolId);
   }
 
-  // Timetables
   @Get('timetables')
   getTimetables(@CurrentUser() user: any) {
     return this.academicsService.getTimetables(user.schoolId);
@@ -38,17 +36,16 @@ export class AcademicsController {
 
   @Post('timetables')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
-  createTimetable(@Body() dto: any) {
-    return this.academicsService.createTimetable(dto);
+  createTimetable(@CurrentUser() user: any, @Body() dto: any) {
+    return this.academicsService.createTimetable(user.schoolId, dto);
   }
 
   @Delete('timetables/:id')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
-  deleteTimetable(@Param('id') id: string) {
-    return this.academicsService.deleteTimetable(id);
+  deleteTimetable(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.academicsService.deleteTimetable(id, user.schoolId);
   }
 
-  // Notice Board (Announcements)
   @Get('announcements')
   getAnnouncements(@CurrentUser() user: any) {
     return this.academicsService.getAnnouncements(user.schoolId);
@@ -66,7 +63,6 @@ export class AcademicsController {
     return this.academicsService.deleteAnnouncement(id, user.schoolId);
   }
 
-  // Transport Routes
   @Get('routes')
   getRoutes(@CurrentUser() user: any) {
     return this.academicsService.getRoutes(user.schoolId);
@@ -84,7 +80,6 @@ export class AcademicsController {
     return this.academicsService.deleteRoute(id, user.schoolId);
   }
 
-  // Vehicles
   @Get('vehicles')
   getVehicles(@CurrentUser() user: any) {
     return this.academicsService.getVehicles(user.schoolId);
@@ -92,13 +87,13 @@ export class AcademicsController {
 
   @Post('vehicles')
   @Roles('SCHOOL_ADMIN')
-  createVehicle(@Body() dto: any) {
-    return this.academicsService.createVehicle(dto);
+  createVehicle(@CurrentUser() user: any, @Body() dto: any) {
+    return this.academicsService.createVehicle(user.schoolId, dto);
   }
 
   @Delete('vehicles/:id')
   @Roles('SCHOOL_ADMIN')
-  deleteVehicle(@Param('id') id: string) {
-    return this.academicsService.deleteVehicle(id);
+  deleteVehicle(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.academicsService.deleteVehicle(id, user.schoolId);
   }
 }
