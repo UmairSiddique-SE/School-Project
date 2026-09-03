@@ -39,17 +39,6 @@ interface PeriodConfig {
 
 // ─── Defaults & Seed Data ──────────────────────────────────────────────────────
 
-const DEFAULT_PERIODS: PeriodConfig[] = [
-  { periodNumber: 1, label: 'Period 1', startTime: '08:00', endTime: '08:45' },
-  { periodNumber: 2, label: 'Period 2', startTime: '08:45', endTime: '09:30' },
-  { periodNumber: 3, label: 'Period 3', startTime: '09:30', endTime: '10:15' },
-  { periodNumber: 4, label: 'Break / Recess', startTime: '10:15', endTime: '10:45', isBreak: true },
-  { periodNumber: 5, label: 'Period 4', startTime: '10:45', endTime: '11:30' },
-  { periodNumber: 6, label: 'Period 5', startTime: '11:30', endTime: '12:15' },
-  { periodNumber: 7, label: 'Period 6', startTime: '12:15', endTime: '01:00' },
-  { periodNumber: 8, label: 'Period 7', startTime: '01:00', endTime: '01:45' },
-];
-
 const DAYS_MAP = [
   { num: 1, name: 'Monday', short: 'Mon' },
   { num: 2, name: 'Tuesday', short: 'Tue' },
@@ -71,44 +60,6 @@ const SUBJECT_COLORS: Record<string, { bg: string; text: string; border: string;
   'Islamic Studies': { bg: 'bg-lime-500/10', text: 'text-lime-400', border: 'border-lime-500/30', badge: 'bg-lime-500/20 text-lime-300' },
   'General Science': { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30', badge: 'bg-indigo-500/20 text-indigo-300' },
 };
-
-const DEFAULT_TIMETABLES: TimetableSlot[] = [
-  // Monday Class 10 Alpha
-  { id: 'tt-1', dayOfWeek: 1, periodNumber: 1, startTime: '08:00', endTime: '08:45', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-math', subjectName: 'Mathematics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-2', dayOfWeek: 1, periodNumber: 2, startTime: '08:45', endTime: '09:30', room: 'Physics Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-phy', subjectName: 'Physics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-3', dayOfWeek: 1, periodNumber: 3, startTime: '09:30', endTime: '10:15', room: 'Chem Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-chem', subjectName: 'Chemistry', teacherId: 't-2', teacherName: 'Dr. Farhana Siddiqui' },
-  { id: 'tt-4', dayOfWeek: 1, periodNumber: 5, startTime: '10:45', endTime: '11:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-eng', subjectName: 'English Literature', teacherId: 't-4', teacherName: 'Mrs. Sabeen Shah' },
-  { id: 'tt-5', dayOfWeek: 1, periodNumber: 6, startTime: '11:30', endTime: '12:15', room: 'CS Lab 2', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-cs', subjectName: 'Computer Science', teacherId: 't-5', teacherName: 'Mr. Asad Ali' },
-  { id: 'tt-6', dayOfWeek: 1, periodNumber: 7, startTime: '12:15', endTime: '01:00', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-pak', subjectName: 'Pakistan Studies', teacherId: 't-6', teacherName: 'Mr. Zahid Bashir' },
-  
-  // Tuesday Class 10 Alpha
-  { id: 'tt-7', dayOfWeek: 2, periodNumber: 1, startTime: '08:00', endTime: '08:45', room: 'CS Lab 2', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-cs', subjectName: 'Computer Science', teacherId: 't-5', teacherName: 'Mr. Asad Ali' },
-  { id: 'tt-8', dayOfWeek: 2, periodNumber: 2, startTime: '08:45', endTime: '09:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-math', subjectName: 'Mathematics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-9', dayOfWeek: 2, periodNumber: 3, startTime: '09:30', endTime: '10:15', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-eng', subjectName: 'English Literature', teacherId: 't-4', teacherName: 'Mrs. Sabeen Shah' },
-  { id: 'tt-10', dayOfWeek: 2, periodNumber: 5, startTime: '10:45', endTime: '11:30', room: 'Physics Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-phy', subjectName: 'Physics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-11', dayOfWeek: 2, periodNumber: 6, startTime: '11:30', endTime: '12:15', room: 'Bio Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-bio', subjectName: 'Biology', teacherId: 't-2', teacherName: 'Dr. Farhana Siddiqui' },
-  { id: 'tt-12', dayOfWeek: 2, periodNumber: 7, startTime: '12:15', endTime: '01:00', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-isl', subjectName: 'Islamic Studies', teacherId: 't-6', teacherName: 'Mr. Zahid Bashir' },
-
-  // Wednesday Class 10 Alpha
-  { id: 'tt-13', dayOfWeek: 3, periodNumber: 1, startTime: '08:00', endTime: '08:45', room: 'Chem Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-chem', subjectName: 'Chemistry', teacherId: 't-2', teacherName: 'Dr. Farhana Siddiqui' },
-  { id: 'tt-14', dayOfWeek: 3, periodNumber: 2, startTime: '08:45', endTime: '09:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-math', subjectName: 'Mathematics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-15', dayOfWeek: 3, periodNumber: 3, startTime: '09:30', endTime: '10:15', room: 'Physics Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-phy', subjectName: 'Physics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-16', dayOfWeek: 3, periodNumber: 5, startTime: '10:45', endTime: '11:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-urdu', subjectName: 'Urdu Language', teacherId: 't-4', teacherName: 'Mrs. Sabeen Shah' },
-  { id: 'tt-17', dayOfWeek: 3, periodNumber: 6, startTime: '11:30', endTime: '12:15', room: 'CS Lab 2', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-cs', subjectName: 'Computer Science', teacherId: 't-5', teacherName: 'Mr. Asad Ali' },
-  
-  // Thursday Class 10 Alpha
-  { id: 'tt-18', dayOfWeek: 4, periodNumber: 1, startTime: '08:00', endTime: '08:45', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-math', subjectName: 'Mathematics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-19', dayOfWeek: 4, periodNumber: 2, startTime: '08:45', endTime: '09:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-eng', subjectName: 'English Literature', teacherId: 't-4', teacherName: 'Mrs. Sabeen Shah' },
-  { id: 'tt-20', dayOfWeek: 4, periodNumber: 3, startTime: '09:30', endTime: '10:15', room: 'Chem Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-chem', subjectName: 'Chemistry', teacherId: 't-2', teacherName: 'Dr. Farhana Siddiqui' },
-  { id: 'tt-21', dayOfWeek: 4, periodNumber: 5, startTime: '10:45', endTime: '11:30', room: 'Physics Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-phy', subjectName: 'Physics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-22', dayOfWeek: 4, periodNumber: 6, startTime: '11:30', endTime: '12:15', room: 'Bio Lab', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-bio', subjectName: 'Biology', teacherId: 't-2', teacherName: 'Dr. Farhana Siddiqui' },
-
-  // Friday Class 10 Alpha
-  { id: 'tt-23', dayOfWeek: 5, periodNumber: 1, startTime: '08:00', endTime: '08:45', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-isl', subjectName: 'Islamic Studies', teacherId: 't-6', teacherName: 'Mr. Zahid Bashir' },
-  { id: 'tt-24', dayOfWeek: 5, periodNumber: 2, startTime: '08:45', endTime: '09:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-math', subjectName: 'Mathematics', teacherId: 't-1', teacherName: 'Dr. Ananya Roy' },
-  { id: 'tt-25', dayOfWeek: 5, periodNumber: 3, startTime: '09:30', endTime: '10:15', room: 'CS Lab 2', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-cs', subjectName: 'Computer Science', teacherId: 't-5', teacherName: 'Mr. Asad Ali' },
-  { id: 'tt-26', dayOfWeek: 5, periodNumber: 5, startTime: '10:45', endTime: '11:30', room: 'Room 101', sectionId: 'sec-1', className: 'Class 10', sectionName: 'Section A (Alpha)', subjectId: 'sub-eng', subjectName: 'English Literature', teacherId: 't-4', teacherName: 'Mrs. Sabeen Shah' },
-];
 
 const TEACHERS_LIST = [
   { id: 't-1', name: 'Dr. Ananya Roy', subject: 'Mathematics / Physics' },
@@ -142,10 +93,7 @@ export default function Timetable() {
   const storageKey = `edusphere_timetables_${schoolSlug}`;
 
   // State
-  const [timetables, setTimetables] = useState<TimetableSlot[]>(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : DEFAULT_TIMETABLES;
-  });
+  const [timetables, setTimetables] = useState<TimetableSlot[]>([]);
 
   const [classesList, setClassesList] = useState<any[]>([
     { id: 'cls-10', name: 'Class 10', sections: [{ id: 'sec-1', name: 'Section A (Alpha)' }, { id: 'sec-2', name: 'Section B (Beta)' }] },
@@ -259,7 +207,7 @@ export default function Timetable() {
 
     const secObj = allSections.find(s => s.id === form.sectionId);
     const teacherObj = TEACHERS_LIST.find(t => t.id === form.teacherId);
-    const periodObj = DEFAULT_PERIODS.find(p => p.periodNumber === Number(form.periodNumber));
+    const periodObj = [].find(p => p.periodNumber === Number(form.periodNumber));
 
     const newSlot: TimetableSlot = {
       id: `tt-${Date.now()}`,
@@ -324,7 +272,7 @@ export default function Timetable() {
     const generated: TimetableSlot[] = [];
 
     DAYS_MAP.forEach((day, dIdx) => {
-      DEFAULT_PERIODS.filter(p => !p.isBreak).forEach((period, pIdx) => {
+      [].filter(p => !p.isBreak).forEach((period, pIdx) => {
         const itemIdx = (dIdx * 3 + pIdx) % subjectsCycle.length;
         const item = subjectsCycle[itemIdx];
 
@@ -355,8 +303,8 @@ export default function Timetable() {
   // Reset to seed schedule
   const handleResetSchedule = () => {
     if (confirm('Reset entire timetable schedule to standard template?')) {
-      setTimetables(DEFAULT_TIMETABLES);
-      localStorage.setItem(storageKey, JSON.stringify(DEFAULT_TIMETABLES));
+      setTimetables([]);
+      localStorage.setItem(storageKey, JSON.stringify([]));
       toast.success('Standard schedule template restored successfully!');
     }
   };
@@ -649,7 +597,7 @@ export default function Timetable() {
 
               {/* Rows: Periods */}
               <tbody className="divide-y divide-border">
-                {DEFAULT_PERIODS.map(period => {
+                {[].map(period => {
                   if (period.isBreak) {
                     return (
                       <tr key={period.periodNumber} className="bg-amber-500/5 border-y-2 border-amber-500/20">
@@ -834,7 +782,7 @@ export default function Timetable() {
                       value={form.periodNumber}
                       onChange={e => {
                         const pNum = Number(e.target.value);
-                        const cfg = DEFAULT_PERIODS.find(p => p.periodNumber === pNum);
+                        const cfg = [].find(p => p.periodNumber === pNum);
                         setForm({
                           ...form,
                           periodNumber: pNum,
@@ -844,7 +792,7 @@ export default function Timetable() {
                       }}
                       className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary"
                     >
-                      {DEFAULT_PERIODS.filter(p => !p.isBreak).map(p => (
+                      {[].filter(p => !p.isBreak).map(p => (
                         <option key={p.periodNumber} value={p.periodNumber}>
                           {p.label} ({p.startTime} - {p.endTime})
                         </option>
@@ -984,7 +932,7 @@ export default function Timetable() {
                     </tr>
                   </thead>
                   <tbody>
-                    {DEFAULT_PERIODS.map(period => {
+                    {[].map(period => {
                       if (period.isBreak) {
                         return (
                           <tr key={period.periodNumber} className="bg-slate-200 font-bold">

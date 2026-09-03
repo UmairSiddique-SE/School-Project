@@ -56,198 +56,6 @@ interface Student {
 
 // ─── Default Realistic Seed Data ───────────────────────────────────────────────
 
-const DEFAULT_CLASSES: ClassItem[] = [
-  {
-    id: 'cls-10',
-    name: 'Class 10',
-    wing: 'SENIOR',
-    code: 'GRD-10',
-    monthlyFee: 'Rs 8,500',
-    coordinator: 'Prof. Tariq Mehmood',
-    createdAt: '2026-01-15',
-    sections: [
-      {
-        id: 'sec-10a',
-        name: 'Section A (Alpha)',
-        roomNo: 'Room 204',
-        floor: '2nd Floor, Block B',
-        capacity: 40,
-        enrolledCount: 38,
-        boysCount: 20,
-        girlsCount: 18,
-        classTeacher: 'Dr. Ananya Roy',
-        teacherSubject: 'Physics & Applied Math',
-        teacherPhone: '+92 301 5544332',
-        stream: 'Pre-Medical & Engineering',
-        attendanceRate: '96.8%',
-        hasSmartBoard: true,
-        hasAC: true,
-      },
-      {
-        id: 'sec-10b',
-        name: 'Section B (Beta)',
-        roomNo: 'Room 205',
-        floor: '2nd Floor, Block B',
-        capacity: 40,
-        enrolledCount: 36,
-        boysCount: 19,
-        girlsCount: 17,
-        classTeacher: 'Mr. Asad Ali',
-        teacherSubject: 'Computer Science',
-        teacherPhone: '+92 322 9988771',
-        stream: 'ICS & Software Tech',
-        attendanceRate: '94.2%',
-        hasSmartBoard: true,
-        hasAC: true,
-      },
-      {
-        id: 'sec-10c',
-        name: 'Section C (Gamma)',
-        roomNo: 'Room 206',
-        floor: '2nd Floor, Block B',
-        capacity: 35,
-        enrolledCount: 32,
-        boysCount: 15,
-        girlsCount: 17,
-        classTeacher: 'Mrs. Sabeen Shah',
-        teacherSubject: 'English Literature',
-        teacherPhone: '+92 333 4455667',
-        stream: 'Humanities & Commerce',
-        attendanceRate: '93.5%',
-        hasSmartBoard: false,
-        hasAC: true,
-      },
-    ],
-  },
-  {
-    id: 'cls-9',
-    name: 'Class 9',
-    wing: 'SENIOR',
-    code: 'GRD-09',
-    monthlyFee: 'Rs 8,000',
-    coordinator: 'Dr. Farhana Siddiqui',
-    createdAt: '2026-01-15',
-    sections: [
-      {
-        id: 'sec-9a',
-        name: 'Section A',
-        roomNo: 'Room 102',
-        floor: '1st Floor, Block A',
-        capacity: 38,
-        enrolledCount: 35,
-        boysCount: 18,
-        girlsCount: 17,
-        classTeacher: 'Dr. Farhana Siddiqui',
-        teacherSubject: 'Chemistry & Biology',
-        teacherPhone: '+92 300 1239874',
-        stream: 'Bio-Science Focus',
-        attendanceRate: '95.5%',
-        hasSmartBoard: true,
-        hasAC: true,
-      },
-      {
-        id: 'sec-9b',
-        name: 'Section B',
-        roomNo: 'Room 103',
-        floor: '1st Floor, Block A',
-        capacity: 38,
-        enrolledCount: 34,
-        boysCount: 17,
-        girlsCount: 17,
-        classTeacher: 'Mr. Kamran Javed',
-        teacherSubject: 'Mathematics',
-        teacherPhone: '+92 321 4567890',
-        stream: 'General Science & IT',
-        attendanceRate: '92.8%',
-        hasSmartBoard: true,
-        hasAC: false,
-      },
-    ],
-  },
-  {
-    id: 'cls-8',
-    name: 'Class 8',
-    wing: 'MIDDLE',
-    code: 'GRD-08',
-    monthlyFee: 'Rs 7,500',
-    coordinator: 'Mrs. Aisha Malik',
-    createdAt: '2026-01-15',
-    sections: [
-      {
-        id: 'sec-8a',
-        name: 'Section A',
-        roomNo: 'Room 108',
-        floor: '1st Floor, Block C',
-        capacity: 35,
-        enrolledCount: 33,
-        boysCount: 17,
-        girlsCount: 16,
-        classTeacher: 'Mrs. Aisha Malik',
-        teacherSubject: 'General Science',
-        teacherPhone: '+92 345 6789012',
-        stream: 'Middle Foundation Core',
-        attendanceRate: '96.0%',
-        hasSmartBoard: true,
-        hasAC: true,
-      },
-      {
-        id: 'sec-8b',
-        name: 'Section B',
-        roomNo: 'Room 109',
-        floor: '1st Floor, Block C',
-        capacity: 35,
-        enrolledCount: 31,
-        boysCount: 16,
-        girlsCount: 15,
-        classTeacher: 'Mr. Zahid Bashir',
-        teacherSubject: 'History & Pak Studies',
-        teacherPhone: '+92 311 8899001',
-        stream: 'Middle Foundation Core',
-        attendanceRate: '94.5%',
-        hasSmartBoard: false,
-        hasAC: true,
-      },
-    ],
-  },
-  {
-    id: 'cls-7',
-    name: 'Class 7',
-    wing: 'MIDDLE',
-    code: 'GRD-07',
-    monthlyFee: 'Rs 7,000',
-    coordinator: 'Mr. Bilal Qureshi',
-    createdAt: '2026-01-15',
-    sections: [
-      {
-        id: 'sec-7a',
-        name: 'Section A',
-        roomNo: 'Room G-04',
-        floor: 'Ground Floor, Block C',
-        capacity: 35,
-        enrolledCount: 32,
-        boysCount: 16,
-        girlsCount: 16,
-        classTeacher: 'Mr. Bilal Qureshi',
-        teacherSubject: 'Mathematics & Logic',
-        teacherPhone: '+92 334 1122334',
-        stream: 'Junior Middle Core',
-        attendanceRate: '95.1%',
-        hasSmartBoard: true,
-        hasAC: false,
-      },
-    ],
-  },
-];
-
-const DEFAULT_SECTION_STUDENTS: Student[] = [
-  { id: 'st-01', rollNo: '01', name: 'Aarav Sharma', gender: 'MALE', fatherName: 'Rajesh Sharma', phone: '+92 300 1234567', feeStatus: 'PAID', attendanceRate: '98.5%', enrolledAt: '2026-01-10' },
-  { id: 'st-02', rollNo: '02', name: 'Ayesha Siddiqui', gender: 'FEMALE', fatherName: 'Kamran Siddiqui', phone: '+92 321 7654321', feeStatus: 'PAID', attendanceRate: '96.2%', enrolledAt: '2026-01-10' },
-  { id: 'st-03', rollNo: '03', name: 'Bilal Hussain', gender: 'MALE', fatherName: 'Hussain Ahmed', phone: '+92 333 9988112', feeStatus: 'PAID', attendanceRate: '94.0%', enrolledAt: '2026-01-12' },
-  { id: 'st-04', rollNo: '04', name: 'Fatima Noor', gender: 'FEMALE', fatherName: 'Noor Muhammad', phone: '+92 345 5566778', feeStatus: 'PAID', attendanceRate: '99.0%', enrolledAt: '2026-01-12' },
-  { id: 'st-05', rollNo: '05', name: 'Hamza Tariq', gender: 'MALE', fatherName: 'Tariq Javed', phone: '+92 301 4433221', feeStatus: 'PENDING', attendanceRate: '88.5%', enrolledAt: '2026-01-15' },
-  { id: 'st-06', rollNo: '06', name: 'Zoya Khan', gender: 'FEMALE', fatherName: 'Asif Khan', phone: '+92 312 8877665', feeStatus: 'PAID', attendanceRate: '95.5%', enrolledAt: '2026-01-15' },
-];
-
 // ─── Storage Helpers ──────────────────────────────────────────────────────────
 
 const STORAGE_KEY = (schoolSlug: string) => `edusphere_classes_${schoolSlug}`;
@@ -261,8 +69,8 @@ function getStoredClasses(schoolSlug: string): ClassItem[] {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (_) {}
-  localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify(DEFAULT_CLASSES));
-  return DEFAULT_CLASSES;
+  localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify([]));
+  return [];
 }
 
 function saveClassesToStorage(schoolSlug: string, data: ClassItem[]) {
@@ -277,8 +85,8 @@ function getStoredStudents(schoolSlug: string, sectionId: string): Student[] {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (_) {}
-  localStorage.setItem(STUDENTS_KEY(schoolSlug, sectionId), JSON.stringify(DEFAULT_SECTION_STUDENTS));
-  return DEFAULT_SECTION_STUDENTS;
+  localStorage.setItem(STUDENTS_KEY(schoolSlug, sectionId), JSON.stringify([]));
+  return [];
 }
 
 function saveStudentsToStorage(schoolSlug: string, sectionId: string, students: Student[]) {
@@ -619,8 +427,8 @@ export default function Classes() {
 
   const handleResetData = () => {
     if (!confirm('Reset all classes and sections to clean standard template?')) return;
-    localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify(DEFAULT_CLASSES));
-    setClasses(DEFAULT_CLASSES);
+    localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify([]));
+    setClasses([]);
     toast.success('Reset to standard school template successfully!');
   };
 

@@ -29,69 +29,6 @@ export interface SchoolItem {
   isPopular?: boolean;
 }
 
-const DEFAULT_SCHOOLS: SchoolItem[] = [
-  {
-    name: "EduSphere International School",
-    slug: "edusphere-international",
-    city: "Lahore",
-    country: "Pakistan",
-    studentsCount: "1,250+",
-    teachersCount: "85",
-    plan: "PREMIUM",
-    isPopular: true,
-  },
-  {
-    name: "Beaconhouse Grammar School",
-    slug: "beacon-house",
-    city: "Karachi",
-    country: "Pakistan",
-    studentsCount: "820+",
-    teachersCount: "42",
-    plan: "PROFESSIONAL",
-    isPopular: true,
-  },
-  {
-    name: "City School Campus",
-    slug: "city-school",
-    city: "Islamabad",
-    country: "Pakistan",
-    studentsCount: "650+",
-    teachersCount: "38",
-    plan: "PROFESSIONAL",
-    isPopular: true,
-  },
-  {
-    name: "Green Valley International",
-    slug: "green-valley",
-    city: "Rawalpindi",
-    country: "Pakistan",
-    studentsCount: "430+",
-    teachersCount: "26",
-    plan: "PROFESSIONAL",
-    isPopular: false,
-  },
-  {
-    name: "Apex Model High School",
-    slug: "apex-model",
-    city: "Faisalabad",
-    country: "Pakistan",
-    studentsCount: "520+",
-    teachersCount: "30",
-    plan: "PROFESSIONAL",
-    isPopular: false,
-  },
-  {
-    name: "Roots Millennium Campus",
-    slug: "roots-millennium",
-    city: "Peshawar",
-    country: "Pakistan",
-    studentsCount: "780+",
-    teachersCount: "48",
-    plan: "PREMIUM",
-    isPopular: false,
-  },
-];
-
 interface SchoolSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -99,7 +36,7 @@ interface SchoolSearchModalProps {
 
 export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModalProps) {
   const [search, setSearch] = useState("");
-  const [schools, setSchools] = useState<SchoolItem[]>(DEFAULT_SCHOOLS);
+  const [schools, setSchools] = useState<SchoolItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [customSlug, setCustomSlug] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
@@ -129,8 +66,8 @@ export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModal
           }
         })
         .catch(() => {
-          // fallback to DEFAULT_SCHOOLS
-          setSchools(DEFAULT_SCHOOLS);
+          // fallback to []
+          setSchools([]);
         });
     }
   }, [isOpen]);

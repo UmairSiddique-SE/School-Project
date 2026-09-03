@@ -36,84 +36,12 @@ const typeConfig: Record<NotificationType, { icon: any; color: string; bg: strin
   system: { icon: AlertCircle, color: 'text-rose-500', bg: 'bg-rose-500/10 border-rose-500/20', badge: 'System Security' },
 };
 
-const DEFAULT_NOTIFICATIONS: Notification[] = [
-  {
-    id: 'notif-1',
-    type: 'fee',
-    title: 'Tuition Fee Settlement Confirmed',
-    message: 'Aarav Sharma (Class 10-A) settled Rs 15,000 for Q2 tuition fee via Online JazzCash Transfer.',
-    time: '5 minutes ago',
-    read: false,
-    priority: 'NORMAL',
-    channel: 'IN_APP',
-    targetAudience: 'Accounts Dept',
-  },
-  {
-    id: 'notif-2',
-    type: 'attendance',
-    title: 'Low Class Attendance Alert (<80%)',
-    message: 'Class 5-B recorded only 72% attendance today (9 students absent without prior leave notice).',
-    time: '25 minutes ago',
-    read: false,
-    priority: 'URGENT',
-    channel: 'SMS',
-    targetAudience: 'Class 5 Incharge',
-  },
-  {
-    id: 'notif-3',
-    type: 'exam',
-    title: 'Midterm Date Sheet Approved & Published',
-    message: 'Official date sheet for Fall 2026 Examination has been dispatched to all 165 enrolled students and parent portals.',
-    time: '1 hour ago',
-    read: false,
-    priority: 'NORMAL',
-    channel: 'WHATSAPP',
-    targetAudience: 'All Parents & Students',
-  },
-  {
-    id: 'notif-4',
-    type: 'homework',
-    title: 'Physics Homework Submissions Due Tomorrow',
-    message: 'Class 10-A assignment "Kinematics & Newton Laws" is due at 09:00 AM. 6 students have pending submissions.',
-    time: '3 hours ago',
-    read: false,
-    priority: 'NORMAL',
-    channel: 'IN_APP',
-    targetAudience: 'Class 10-A',
-  },
-  {
-    id: 'notif-5',
-    type: 'announcement',
-    title: 'Annual Sports Day & Parent Orientation Gala',
-    message: 'Official circular: The annual sports fest will take place on October 24. Teachers are requested to finalize athlete lists.',
-    time: '5 hours ago',
-    read: true,
-    priority: 'NORMAL',
-    channel: 'EMAIL',
-    targetAudience: 'All Faculty & Staff',
-  },
-  {
-    id: 'notif-6',
-    type: 'system',
-    title: 'Automated Cloud Database Backup Succeeded',
-    message: 'Daily snapshot of student marks, financial ledgers, and staff logs completed with 100% integrity.',
-    time: 'Yesterday at 11:59 PM',
-    read: true,
-    priority: 'NORMAL',
-    channel: 'IN_APP',
-    targetAudience: 'System Administrator',
-  },
-];
-
 export default function Notifications() {
   const { user } = useAuth();
   const schoolSlug = user?.schoolSlug || '';
   const storageKey = `edusphere_notifications_${schoolSlug}`;
 
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : DEFAULT_NOTIFICATIONS;
-  });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [filter, setFilter] = useState<'all' | 'unread' | 'urgent' | NotificationType>('all');
   const [search, setSearch] = useState('');
