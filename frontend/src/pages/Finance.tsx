@@ -83,77 +83,6 @@ const PAYMENT_METHODS = [
   { value: 'CARD', label: 'Card' },
 ];
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────────
-
-const MOCK_PAYMENTS: FeePayment[] = [
-  {
-    id: 'p1',
-    amount: 15000,
-    discount: 0,
-    fine: 0,
-    totalPaid: 15000,
-    method: 'ONLINE',
-    status: 'PAID',
-    dueDate: '2026-07-30',
-    paidDate: '2026-07-25',
-    student: { id: 'st1', name: 'Aarav Sharma', admissionNo: 'STD001', class: 'Class 10' },
-    feeStructure: { id: 'fs1', name: 'Q2 Tuition Fee' },
-  },
-  {
-    id: 'p2',
-    amount: 15000,
-    discount: 1000,
-    fine: 0,
-    totalPaid: 10000,
-    method: 'CASH',
-    status: 'PARTIAL',
-    dueDate: '2026-07-30',
-    paidDate: '2026-07-24',
-    student: { id: 'st2', name: 'Priya Patel', admissionNo: 'STD002', class: 'Class 10' },
-    feeStructure: { id: 'fs1', name: 'Q2 Tuition Fee' },
-  },
-  {
-    id: 'p3',
-    amount: 5000,
-    discount: 0,
-    fine: 0,
-    totalPaid: 0,
-    method: 'CASH',
-    status: 'PENDING',
-    dueDate: '2026-08-15',
-    paidDate: '2026-07-20',
-    student: { id: 'st3', name: 'Rohan Mehta', admissionNo: 'STD003', class: 'Class 9' },
-    feeStructure: { id: 'fs2', name: 'Annual Lab Fee' },
-  },
-  {
-    id: 'p4',
-    amount: 3000,
-    discount: 0,
-    fine: 500,
-    totalPaid: 0,
-    method: 'ONLINE',
-    status: 'OVERDUE',
-    dueDate: '2026-07-10',
-    paidDate: '2026-07-10',
-    student: { id: 'st4', name: 'Sneha Gupta', admissionNo: 'STD004', class: 'Class 8' },
-    feeStructure: { id: 'fs3', name: 'Library Security' },
-  },
-];
-
-const MOCK_STRUCTURES: FeeStructure[] = [
-  { id: 'fs1', name: 'Monthly Tuition Fee', amount: 5000, frequency: 'MONTHLY', description: 'Regular monthly tuition fee for all classes', createdAt: '2026-01-01' },
-  { id: 'fs2', name: 'Annual Lab Fee', amount: 5000, frequency: 'ANNUAL', description: 'Science laboratory maintenance fee', createdAt: '2026-01-01' },
-  { id: 'fs3', name: 'Library Security', amount: 3000, frequency: 'ONE_TIME', description: 'Refundable library security deposit', createdAt: '2026-01-01' },
-  { id: 'fs4', name: 'Sports Fee', amount: 2000, frequency: 'QUARTERLY', description: 'Sports equipment and facilities fee', createdAt: '2026-01-01' },
-];
-
-const MOCK_STUDENTS: Student[] = [
-  { id: 'st1', name: 'Aarav Sharma', admissionNo: 'STD001', class: 'Class 10' },
-  { id: 'st2', name: 'Priya Patel', admissionNo: 'STD002', class: 'Class 10' },
-  { id: 'st3', name: 'Rohan Mehta', admissionNo: 'STD003', class: 'Class 9' },
-  { id: 'st4', name: 'Sneha Gupta', admissionNo: 'STD004', class: 'Class 8' },
-];
-
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function Finance() {
@@ -203,13 +132,13 @@ export default function Finance() {
       apiClient.get('/finance/structures'),
       apiClient.get('/people/students'),
     ]).then(([pRes, sRes, stRes]) => {
-      setPayments(Array.isArray(pRes.data) ? pRes.data : MOCK_PAYMENTS);
-      setStructures(Array.isArray(sRes.data) ? sRes.data : MOCK_STRUCTURES);
-      setStudents(Array.isArray(stRes.data) ? stRes.data : MOCK_STUDENTS);
+      setPayments(Array.isArray(pRes.data) ? pRes.data : []);
+      setStructures(Array.isArray(sRes.data) ? sRes.data : []);
+      setStudents(Array.isArray(stRes.data) ? stRes.data : []);
     }).catch(() => {
-      setPayments(MOCK_PAYMENTS);
-      setStructures(MOCK_STRUCTURES);
-      setStudents(MOCK_STUDENTS);
+      setPayments();
+      setStructures();
+      setStudents();
     }).finally(() => setLoading(false));
   };
 

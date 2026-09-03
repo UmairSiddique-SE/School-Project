@@ -61,76 +61,6 @@ const TARGET_ROLES = [
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 
-const MOCK_NOTICES: Notice[] = [
-  {
-    id: 'n1',
-    title: 'Mid-Term Examination Schedule - Fall 2026',
-    content: 'Mid-term examinations for Fall 2026 semester will commence from October 15th, 2026. Detailed schedule has been uploaded to the student portal. Students are advised to prepare accordingly and contact subject teachers for any clarifications.',
-    category: 'EXAM',
-    priority: 'HIGH',
-    targetRoles: 'STUDENT',
-    isPinned: true,
-    publishedAt: '2026-09-01T10:00:00Z',
-    expiresAt: '2026-10-20T23:59:59Z',
-    publishedBy: { id: 'u1', name: 'Dr. Ananya Roy', role: 'SCHOOL_ADMIN' },
-    viewCount: 245,
-  },
-  {
-    id: 'n2',
-    title: 'Eid-ul-Fitr Holidays Announcement',
-    content: 'School will remain closed from October 12th to October 16th, 2026 on account of Eid-ul-Fitr. Classes will resume on October 17th, 2026. Staff and students are requested to note the schedule.',
-    category: 'HOLIDAY',
-    priority: 'HIGH',
-    targetRoles: 'ALL',
-    isPinned: true,
-    publishedAt: '2026-09-01T09:30:00Z',
-    expiresAt: '2026-10-17T23:59:59Z',
-    publishedBy: { id: 'u1', name: 'Dr. Ananya Roy', role: 'SCHOOL_ADMIN' },
-    viewCount: 389,
-  },
-  {
-    id: 'n3',
-    title: 'Annual Sports Day - Registration Open',
-    content: 'Registration for Annual Sports Day 2026 is now open. Students can register for various events including athletics, football, basketball, and cricket. Last date for registration is September 30th, 2026. Contact sports department for details.',
-    category: 'SPORTS',
-    priority: 'MEDIUM',
-    targetRoles: 'STUDENT',
-    isPinned: false,
-    publishedAt: '2026-08-28T14:00:00Z',
-    expiresAt: '2026-09-30T23:59:59Z',
-    publishedBy: { id: 'u2', name: 'Mr. Kamran Javed', role: 'TEACHER' },
-    viewCount: 156,
-  },
-  {
-    id: 'n4',
-    title: 'Parent-Teacher Meeting Schedule',
-    content: 'Parent-Teacher meetings for all classes will be held on September 15th, 2026. Parents are requested to attend between 9:00 AM to 12:00 PM to discuss their child\'s academic progress. Individual appointment slots can be booked through the parent portal.',
-    category: 'ACADEMIC',
-    priority: 'MEDIUM',
-    targetRoles: 'PARENT',
-    isPinned: false,
-    publishedAt: '2026-08-25T11:00:00Z',
-    expiresAt: '2026-09-16T23:59:59Z',
-    publishedBy: { id: 'u1', name: 'Dr. Ananya Roy', role: 'SCHOOL_ADMIN' },
-    viewCount: 98,
-  },
-  {
-    id: 'n5',
-    title: 'Science Fair 2026 - Call for Projects',
-    content: 'Annual Science Fair will be held on November 20th, 2026. Students from Class 6-10 are encouraged to submit innovative science projects. Best projects will be awarded certificates and prizes. Submit project proposals by October 15th.',
-    category: 'EVENT',
-    priority: 'LOW',
-    targetRoles: 'STUDENT',
-    isPinned: false,
-    publishedAt: '2026-08-20T10:00:00Z',
-    expiresAt: '2026-10-15T23:59:59Z',
-    publishedBy: { id: 'u3', name: 'Dr. Farhana Siddiqui', role: 'TEACHER' },
-    viewCount: 73,
-  },
-];
-
-// ─── Main Component ────────────────────────────────────────────────────────────
-
 export default function NoticeBoard() {
   const { user } = useAuth();
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -161,9 +91,9 @@ export default function NoticeBoard() {
   const fetchNotices = () => {
     setLoading(true);
     apiClient.get('/academics/announcements')
-      .then(res => setNotices(Array.isArray(res.data) ? res.data : MOCK_NOTICES))
+      .then(res => setNotices(Array.isArray(res.data) ? res.data : []))
       .catch(() => {
-        setNotices(MOCK_NOTICES);
+        setNotices([]);
         toast.error('Using demo data');
       })
       .finally(() => setLoading(false));

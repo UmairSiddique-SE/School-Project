@@ -349,79 +349,6 @@ export default function Students() {
 
   const [step, setStep] = useState(1);
 
-  const MOCK_STUDENTS = [
-    {
-      id: 's1',
-      name: 'Aarav Sharma',
-      email: 'aarav.s@edusphere.com',
-      admissionNo: 'STD001',
-      rollNo: '15',
-      gender: 'MALE',
-      dateOfBirth: '2010-05-14',
-      session: '2026-2027',
-      status: 'ACTIVE',
-      fatherName: 'Rajesh Sharma',
-      fatherMobile1: '0300-1234567',
-      fatherCnic: '35202-1234567-1',
-      city: 'Lahore',
-      section: { name: 'A', class: { name: 'Class 10' } }
-    },
-    {
-      id: 's2',
-      name: 'Priya Patel',
-      email: 'priya.p@edusphere.com',
-      admissionNo: 'STD002',
-      rollNo: '22',
-      gender: 'FEMALE',
-      dateOfBirth: '2011-08-20',
-      session: '2026-2027',
-      status: 'ACTIVE',
-      fatherName: 'Suresh Patel',
-      fatherMobile1: '0301-7654321',
-      fatherCnic: '35202-7654321-2',
-      city: 'Karachi',
-      section: { name: 'B', class: { name: 'Class 9' } }
-    },
-    {
-      id: 's3',
-      name: 'Rohan Mehta',
-      email: 'rohan.m@edusphere.com',
-      admissionNo: 'STD003',
-      rollNo: '08',
-      gender: 'MALE',
-      dateOfBirth: '2009-11-02',
-      session: '2026-2027',
-      status: 'ACTIVE',
-      fatherName: 'Vikram Mehta',
-      fatherMobile1: '0302-9876543',
-      fatherCnic: '35202-9876543-3',
-      city: 'Islamabad',
-      section: { name: 'A', class: { name: 'Class 11' } }
-    },
-    {
-      id: 's4',
-      name: 'Sneha Gupta',
-      email: 'sneha.g@edusphere.com',
-      admissionNo: 'STD004',
-      rollNo: '31',
-      gender: 'FEMALE',
-      dateOfBirth: '2012-03-18',
-      session: '2026-2027',
-      status: 'ACTIVE',
-      fatherName: 'Anil Gupta',
-      fatherMobile1: '0303-1122334',
-      fatherCnic: '35202-1122334-4',
-      city: 'Rawalpindi',
-      section: { name: 'C', class: { name: 'Class 8' } }
-    }
-  ];
-
-  const MOCK_CLASSES = [
-    { id: 'c1', name: 'Class 10', sections: [{ id: 'sec1', name: 'A' }, { id: 'sec2', name: 'B' }] },
-    { id: 'c2', name: 'Class 9', sections: [{ id: 'sec3', name: 'A' }, { id: 'sec4', name: 'B' }] },
-    { id: 'c3', name: 'Class 8', sections: [{ id: 'sec5', name: 'A' }, { id: 'sec6', name: 'C' }] }
-  ];
-
   const fetchAll = () => {
     setLoading(true);
     Promise.all([apiClient.get('/people/students'), apiClient.get('/classes')])
@@ -432,8 +359,8 @@ export default function Students() {
         setClasses(cData);
       })
       .catch(() => {
-        setStudents(MOCK_STUDENTS);
-        setClasses(MOCK_CLASSES);
+        setStudents([]);
+        setClasses([]);
       })
       .finally(() => setLoading(false));
   };
@@ -475,7 +402,7 @@ export default function Students() {
         addressLine: form.currentAddress,
         address: form.currentAddress,
         password: 'student123',
-        parentPassword: parentPassword || 'parent123'
+        parentPassword: parentPassword || '—'
       });
       toast.success('Student added successfully along with Parent registration!');
       setView('list');
@@ -522,7 +449,7 @@ export default function Students() {
       setImporting(false);
       setShowImport(false);
       setImportFile(null);
-      toast.success('Mock Excel parsed successfully: 12 students imported!');
+      toast.error('Bulk import is not available until the import API is connected.');
       fetchAll();
     }, 1500);
   };
@@ -1151,14 +1078,14 @@ export default function Students() {
         <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-cyan-400/30 transition-all duration-300">
           <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Male Cohort</p>
           <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-cyan-400">{students.filter(s => s.gender === 'MALE').length || Math.floor(students.length * 0.52)}</h4>
+            <h4 className="text-2xl font-black text-cyan-400">{students.filter(s => s.gender === 'MALE').length}</h4>
             <div className="h-8 w-8 rounded-lg bg-cyan-400/10 flex items-center justify-center text-cyan-400 border border-cyan-400/20"><User size={16}/></div>
           </div>
         </div>
         <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-rose-400/30 transition-all duration-300">
           <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Female Cohort</p>
           <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-rose-400">{students.filter(s => s.gender === 'FEMALE').length || Math.floor(students.length * 0.48)}</h4>
+            <h4 className="text-2xl font-black text-rose-400">{students.filter(s => s.gender === 'FEMALE').length}</h4>
             <div className="h-8 w-8 rounded-lg bg-rose-400/10 flex items-center justify-center text-rose-400 border border-rose-400/20"><User size={16}/></div>
           </div>
         </div>
@@ -1313,9 +1240,9 @@ export default function Students() {
                         </td>
                         <td className="px-8 py-6 hidden lg:table-cell">
                           <div className="flex flex-col gap-1">
-                            <span className="text-white font-black text-sm tracking-tight">{s.section?.class?.name || 'Class 10'}</span>
+                            <span className="text-white font-black text-sm tracking-tight">{s.section?.class?.name || '—'}</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                               <div className="h-1 w-1 rounded-full bg-slate-500"/> Section {s.section?.name || 'Alpha'}
+                               <div className="h-1 w-1 rounded-full bg-slate-500"/> Section {s.section?.name || '—'}
                             </span>
                           </div>
                         </td>
@@ -1323,7 +1250,7 @@ export default function Students() {
                           <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] rounded-full border shadow-lg transition-all ${
                             s.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                           }`}>
-                            {s.status || 'Active Record'}
+                            {s.status || '—'}
                           </span>
                         </td>
                         <td className="px-8 py-6" onClick={e => e.stopPropagation()}>
@@ -1466,7 +1393,7 @@ export default function Students() {
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Biological Sex</span><span className="text-lg font-bold text-white block">{selectedStudent.gender || 'MALE'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Chronological Age</span><span className="text-lg font-bold text-white block">{selectedStudent.dateOfBirth ? new Date(selectedStudent.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'NOT RECORDED'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Hematology Group</span><span className="text-2xl font-black text-rose-500 block">{selectedStudent.bloodGroup || '—'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Religious Affiliation</span><span className="text-lg font-bold text-white block">{selectedStudent.religion || 'Islam'}</span></div>
+                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Religious Affiliation</span><span className="text-lg font-bold text-white block">{selectedStudent.religion || '—'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Registry Number (B-Form)</span><span className="text-lg font-bold text-white font-mono tracking-wider block">{selectedStudent.bFormNumber || 'PENDING'}</span></div>
                           <div className="md:col-span-2 lg:col-span-3 p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] flex items-start gap-6">
                              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin size={24}/></div>
@@ -1565,9 +1492,9 @@ export default function Students() {
                           <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Class Designation</p>
                              <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-xl border border-emerald-500/20">{selectedStudent.section?.class?.numeric || '10'}</div>
+                                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-xl border border-emerald-500/20">{selectedStudent.section?.class?.numeric || '—'}</div>
                                 <div>
-                                   <p className="text-lg font-bold text-white leading-tight">{selectedStudent.section?.class?.name || 'Class 10'}</p>
+                                   <p className="text-lg font-bold text-white leading-tight">{selectedStudent.section?.class?.name || '—'}</p>
                                    <p className="text-xs text-slate-500 font-medium">Standard Academic Level</p>
                                 </div>
                              </div>
@@ -1576,9 +1503,9 @@ export default function Students() {
                           <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Section / Wing</p>
                              <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20">{selectedStudent.section?.name || 'A'}</div>
+                                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20">{selectedStudent.section?.name || '—'}</div>
                                 <div>
-                                   <p className="text-lg font-bold text-white leading-tight">Section {selectedStudent.section?.name || 'Alpha'}</p>
+                                   <p className="text-lg font-bold text-white leading-tight">Section {selectedStudent.section?.name || '—'}</p>
                                    <p className="text-xs text-slate-500 font-medium">Cohort Identifier</p>
                                 </div>
                              </div>
@@ -1587,16 +1514,16 @@ export default function Students() {
                           <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Registry ID</p>
                              <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black text-xl border border-amber-500/20">{selectedStudent.rollNo || '01'}</div>
+                                <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black text-xl border border-amber-500/20">{selectedStudent.rollNo || '—'}</div>
                                 <div>
-                                   <p className="text-lg font-bold text-white leading-tight">Roll No {selectedStudent.rollNo || '00'}</p>
+                                   <p className="text-lg font-bold text-white leading-tight">Roll No {selectedStudent.rollNo || '—'}</p>
                                    <p className="text-xs text-slate-500 font-medium">Sequence Marker</p>
                                 </div>
                              </div>
                           </div>
 
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Enrollment Date</span><span className="text-lg font-bold text-white block">{selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString(undefined, { dateStyle: 'long' }) : '—'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Active Session</span><span className="text-lg font-bold text-white block">{selectedStudent.session || '2026-2027'}</span></div>
+                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Active Session</span><span className="text-lg font-bold text-white block">{selectedStudent.session || '—'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">System Status</span><span className="inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Authorized Active</span></div>
                         </div>
                       </motion.div>
@@ -1617,10 +1544,10 @@ export default function Students() {
                                   <h4 className="text-lg font-black text-white uppercase tracking-widest">Father's Profile</h4>
                                </div>
                                <div className="grid grid-cols-2 gap-y-8">
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.fatherName || 'Robert Mercer'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.fatherName || '—'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-primary font-mono tracking-wider">{selectedStudent.fatherMobile1 || 'N/A'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.fatherCnic || '—'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.fatherOccupation || 'Service'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.fatherOccupation || '—'}</span></div>
                                </div>
                             </div>
                           </div>
@@ -1634,10 +1561,10 @@ export default function Students() {
                                   <h4 className="text-lg font-black text-white uppercase tracking-widest">Mother's Profile</h4>
                                </div>
                                <div className="grid grid-cols-2 gap-y-8">
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.motherName || 'Emma Mercer'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.motherName || '—'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-rose-400 font-mono tracking-wider">{selectedStudent.motherMobile || '—'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.motherCnic || '—'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.motherOccupation || 'Housewife'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.motherOccupation || '—'}</span></div>
                                </div>
                             </div>
                           </div>
@@ -1797,7 +1724,7 @@ export default function Students() {
                                  <div className="space-y-1">
                                     <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Access Username</span>
                                     <div className="px-5 py-3 rounded-2xl bg-slate-900 border border-white/5 font-mono text-white text-sm font-bold flex items-center justify-between group-hover:border-primary/30 transition-all">
-                                       {selectedStudent.email || `${selectedStudent.admissionNo.toLowerCase()}@school.edu`}
+                                       {selectedStudent.email || '—'}
                                        <CheckCircle size={16} className="text-emerald-500 opacity-50"/>
                                     </div>
                                  </div>
@@ -1818,13 +1745,13 @@ export default function Students() {
                                  <div className="space-y-1">
                                     <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Access Username</span>
                                     <div className="px-5 py-3 rounded-2xl bg-slate-900 border border-white/5 font-mono text-white text-sm font-bold flex items-center justify-between group-hover:border-amber-500/30 transition-all">
-                                       {selectedStudent.admissionNo.toLowerCase()}_parent@school.edu
+                                       —
                                        <CheckCircle size={16} className="text-emerald-500 opacity-50"/>
                                     </div>
                                  </div>
                                  <div className="space-y-1">
                                     <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Default Credential</span>
-                                    <div className="px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 font-mono text-amber-500 text-sm font-bold tracking-widest">parent123</div>
+                                    <div className="px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 font-mono text-amber-500 text-sm font-bold tracking-widest">—</div>
                                  </div>
                               </div>
                            </div>
@@ -1927,16 +1854,16 @@ export default function Students() {
 
                 {/* Details */}
                 <div className="space-y-1 mb-4">
-                  <h4 className="text-sm font-black">{selectedStudent ? selectedStudent.name : 'Alex Mercer'}</h4>
+                  <h4 className="text-sm font-black">{selectedStudent ? selectedStudent.name : '—'}</h4>
                   <p className="text-[10px] text-primary/80 font-bold">{selectedStudent?.section ? `${selectedStudent.section.class?.name} - ${selectedStudent.section.name}` : 'Grade 5 - A'}</p>
                 </div>
 
                 {/* Badges metadata table */}
                 <div className="grid grid-cols-2 gap-1.5 text-[9px] text-left border-y border-primary/20 py-2.5 mb-4 bg-accent/5 px-2 rounded-lg">
-                  <div><span className="text-muted-foreground block">Admission No:</span><span className="font-mono font-bold">{selectedStudent ? selectedStudent.admissionNo : 'STD001'}</span></div>
-                  <div><span className="text-muted-foreground block">Roll Number:</span><span className="font-mono font-bold">{selectedStudent ? selectedStudent.rollNo : '01'}</span></div>
-                  <div><span className="text-muted-foreground block">Blood Group:</span><span className="font-bold text-red-400">{selectedStudent?.bloodGroup || 'O+'}</span></div>
-                  <div><span className="text-muted-foreground block">Guardian Phone:</span><span className="font-mono font-bold">{selectedStudent?.phone || '+1 555 456 7890'}</span></div>
+                  <div><span className="text-muted-foreground block">Admission No:</span><span className="font-mono font-bold">{selectedStudent ? selectedStudent.admissionNo : '—'}</span></div>
+                  <div><span className="text-muted-foreground block">Roll Number:</span><span className="font-mono font-bold">{selectedStudent ? selectedStudent.rollNo : '—'}</span></div>
+                  <div><span className="text-muted-foreground block">Blood Group:</span><span className="font-bold text-red-400">{selectedStudent?.bloodGroup || '—'}</span></div>
+                  <div><span className="text-muted-foreground block">Guardian Phone:</span><span className="font-mono font-bold">{selectedStudent?.phone || '—'}</span></div>
                 </div>
 
                 {/* Barcode Mockup */}

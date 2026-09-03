@@ -46,46 +46,23 @@ const STATUS_OPTIONS = [
   { value: 'LEAVE', label: 'Leave', icon: Timer, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20' },
 ];
 
-const MOCK_CLASSES: ClassSection[] = [
-  { id: 'sec-1', name: 'Section A (Alpha)', classId: 'cls-10', className: 'Class 10', totalStudents: 45 },
-  { id: 'sec-2', name: 'Section B (Beta)', classId: 'cls-10', className: 'Class 10', totalStudents: 42 },
-  { id: 'sec-3', name: 'Section C (Gamma)', classId: 'cls-10', className: 'Class 10', totalStudents: 40 },
-  { id: 'sec-4', name: 'Section A (Alpha)', classId: 'cls-9', className: 'Class 9', totalStudents: 38 },
-  { id: 'sec-5', name: 'Section B (Beta)', classId: 'cls-9', className: 'Class 9', totalStudents: 36 },
-];
-
-const MOCK_STUDENTS: Student[] = [
-  { id: 'st-1', name: 'Aarav Sharma', rollNo: '01', admissionNo: 'STD001', sectionId: 'sec-1' },
-  { id: 'st-2', name: 'Ayesha Siddiqui', rollNo: '02', admissionNo: 'STD002', sectionId: 'sec-1' },
-  { id: 'st-3', name: 'Bilal Hussain', rollNo: '03', admissionNo: 'STD003', sectionId: 'sec-1' },
-  { id: 'st-4', name: 'Fatima Noor', rollNo: '04', admissionNo: 'STD004', sectionId: 'sec-1' },
-  { id: 'st-5', name: 'Hamza Tariq', rollNo: '05', admissionNo: 'STD005', sectionId: 'sec-1' },
-  { id: 'st-6', name: 'Zoya Khan', rollNo: '06', admissionNo: 'STD006', sectionId: 'sec-1' },
-  { id: 'st-7', name: 'Daniyal Khan', rollNo: '07', admissionNo: 'STD007', sectionId: 'sec-1' },
-  { id: 'st-8', name: 'Maham Ali', rollNo: '08', admissionNo: 'STD008', sectionId: 'sec-1' },
-  { id: 'st-9', name: 'Usman Farooq', rollNo: '09', admissionNo: 'STD009', sectionId: 'sec-1' },
-  { id: 'st-10', name: 'Sana Malik', rollNo: '10', admissionNo: 'STD010', sectionId: 'sec-1' },
-  { id: 'st-11', name: 'Rohan Mehmood', rollNo: '11', admissionNo: 'STD011', sectionId: 'sec-1' },
-  { id: 'st-12', name: 'Sara Qasim', rollNo: '12', admissionNo: 'STD012', sectionId: 'sec-1' },
-];
-
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function Attendance() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sectionIdParam = searchParams.get('sectionId');
 
-  const [classes, setClasses] = useState<ClassSection[]>(MOCK_CLASSES);
+  const [classes, setClasses] = useState<ClassSection[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Selection
-  const [selectedClass, setSelectedClass] = useState<string>(sectionIdParam || 'sec-1');
+  const [selectedClass, setSelectedClass] = useState<string>(sectionIdParam || '');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -103,7 +80,7 @@ export default function Attendance() {
     setLoading(true);
     try {
       const res = await apiClient.get(`/attendance/section/${sectionId}?date=${selectedDate}`);
-      const studentsData = Array.isArray(res.data?.students) ? res.data.students : MOCK_STUDENTS.filter(s => s.sectionId === sectionId);
+      const studentsData = Array.isArray(res.data?.students) ? res.data.students : [];
       setStudents(studentsData);
 
       // Initialize attendance records
@@ -117,18 +94,9 @@ export default function Attendance() {
       });
       setAttendance(initialAttendance);
     } catch (error) {
-      // Use mock data
-      const mockStudents = MOCK_STUDENTS.filter(s => s.sectionId === sectionId);
-      setStudents(mockStudents);
-      const initialAttendance: Record<string, AttendanceRecord> = {};
-      mockStudents.forEach(student => {
-        initialAttendance[student.id] = {
-          studentId: student.id,
-          status: 'PRESENT',
-          remarks: '',
-        };
-      });
-      setAttendance(initialAttendance);
+      setStudents([]);
+      setAttendance({});
+      toast.error('Unable to load attendance data. Please try again.');
     } finally {
       setLoading(false);
     }
