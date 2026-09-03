@@ -110,6 +110,11 @@ export class SchoolService {
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
+        auditLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true, action: true, after: true, createdAt: true },
+        },
         _count: {
           select: {
             users: true,
@@ -166,8 +171,7 @@ export class SchoolService {
         const plan = data.plan || 'FREE_TRIAL';
         const daysMap: Record<string, number> = {
           FREE_TRIAL: 14,
-          BASIC: 365,
-          STANDARD: 365,
+          PROFESSIONAL: 365,
           PREMIUM: 365,
         };
         const days = daysMap[plan] ?? 365;

@@ -6,8 +6,7 @@ import apiClient from '@/api/apiClient';
 
 const planMeta: Record<string, { color: string; gradient: string; icon: React.ComponentType<any>; badge?: string }> = {
   FREE_TRIAL: { color: 'text-slate-400', gradient: 'from-slate-600 to-slate-700', icon: Zap },
-  BASIC: { color: 'text-blue-400', gradient: 'from-blue-600 to-cyan-600', icon: Star },
-  STANDARD: { color: 'text-violet-400', gradient: 'from-violet-600 to-purple-600', icon: Award, badge: 'Popular' },
+  PROFESSIONAL: { color: 'text-violet-400', gradient: 'from-violet-600 to-purple-600', icon: Award, badge: 'Popular' },
   PREMIUM: { color: 'text-amber-400', gradient: 'from-amber-500 to-orange-600', icon: Sparkles, badge: 'Enterprise' },
 };
 
@@ -82,7 +81,7 @@ export default function Plans() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {plans.map((plan, i) => {
-          const meta = planMeta[plan.planKey] || planMeta['BASIC'];
+          const meta = planMeta[plan.planKey] || planMeta['PROFESSIONAL'];
           const Icon = meta.icon;
           return (
             <motion.div

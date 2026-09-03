@@ -64,12 +64,11 @@ const PAKISTAN_LOCATIONS: Record<string, Record<string, string[]>> = {
 };
 
 const PROVINCES = Object.keys(PAKISTAN_LOCATIONS);
-const PLANS = ["FREE_TRIAL", "BASIC", "STANDARD", "PREMIUM"];
+const PLANS = ["FREE_TRIAL", "PROFESSIONAL", "PREMIUM"];
 
 const planColors: Record<string, string> = {
   FREE_TRIAL: "bg-slate-500/10 text-slate-400 border border-slate-500/20",
-  BASIC: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-  STANDARD: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
+  PROFESSIONAL: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
   PREMIUM: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
 };
 
@@ -99,7 +98,7 @@ export default function Schools() {
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [extendDays, setExtendDays] = useState(30);
-  const [newPlan, setNewPlan] = useState("BASIC");
+  const [newPlan, setNewPlan] = useState("PROFESSIONAL");
   const [newPlanAmount, setNewPlanAmount] = useState("49");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -155,7 +154,7 @@ export default function Schools() {
         adminPhone: school.phone || "",
         adminEmail: school.email || "",
         adminPassword: "",
-        plan: school.subscription?.plan || "BASIC",
+        plan: school.subscription?.plan || "PROFESSIONAL",
         amount: school.subscription?.amount?.toString() || "0",
       });
     } else if (type === "create") {
@@ -163,7 +162,7 @@ export default function Schools() {
     } else if (type === "extend" && school) {
       setExtendDays(30);
     } else if (type === "plan" && school) {
-      setNewPlan(school.subscription?.plan || "BASIC");
+      setNewPlan(school.subscription?.plan || "PROFESSIONAL");
       setNewPlanAmount("99");
     }
     setModal(type);
@@ -410,7 +409,7 @@ export default function Schools() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((s, i) => {
             const isSuspended = !s.isActive;
-            const currentPlan = s.subscription?.plan || "BASIC";
+            const currentPlan = s.subscription?.plan || "PROFESSIONAL";
             const expiryDate = s.subscription?.endDate
               ? new Date(s.subscription.endDate).toLocaleDateString("en-PK")
               : "N/A";
@@ -515,7 +514,7 @@ export default function Schools() {
                 {/* Footer Controls */}
                 <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2">
                   <span
-                    className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight ${planColors[currentPlan] || planColors.BASIC}`}
+            className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight ${planColors[currentPlan] || planColors.PROFESSIONAL}`}
                   >
                     {currentPlan.replace("_", " ")}
                   </span>
@@ -1044,7 +1043,7 @@ export default function Schools() {
                               {selected._count?.students ?? 0}
                            </p>
                            <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-tighter">
-                              Limit: {selected.subscription?.plan === 'PREMIUM' ? 'Unlimited' : (selected.subscription?.plan === 'STANDARD' ? '1,000' : '200')}
+                              Limit: {selected.subscription?.plan === 'PREMIUM' ? 'Unlimited' : (selected.subscription?.plan === 'PROFESSIONAL' ? '1,000' : '50')}
                            </p>
                         </div>
                         <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
@@ -1056,7 +1055,7 @@ export default function Schools() {
                               {selected._count?.teachers ?? 0}
                            </p>
                            <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-tighter">
-                              Limit: {selected.subscription?.plan === 'PREMIUM' ? 'Unlimited' : (selected.subscription?.plan === 'STANDARD' ? '50' : '15')}
+                              Limit: {selected.subscription?.plan === 'PREMIUM' ? 'Unlimited' : (selected.subscription?.plan === 'PROFESSIONAL' ? '50' : '3')}
                            </p>
                         </div>
                      </div>
@@ -1101,8 +1100,8 @@ export default function Schools() {
                           <Shield size={60} />
                        </div>
                        <div className="relative z-10">
-                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight ${planColors[selected.subscription?.plan] || planColors.BASIC}`}>
-                             {selected.subscription?.plan || 'BASIC'} Tier
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight ${planColors[selected.subscription?.plan] || planColors.PROFESSIONAL}`}>
+                             {selected.subscription?.plan || 'PROFESSIONAL'} Tier
                           </span>
                           <div className="mt-4 flex items-baseline gap-1.5">
                              <p className="text-3xl font-black text-white">PKR {selected.subscription?.amount?.toLocaleString() || '0'}</p>
@@ -1129,19 +1128,15 @@ export default function Schools() {
                   <div>
                      <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-3">Activity Stream</h4>
                      <div className="space-y-2.5">
-                        {[
-                          { icon: CheckCircle, text: 'Plan verified and activated', time: 'Aug 24' },
-                          { icon: CreditCard, text: 'Payment confirmed via JazzCash', time: 'Aug 24' },
-                          { icon: Activity, text: 'Institutional record created', time: 'Aug 22' },
-                        ].map((act, i) => (
-                           <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                        {(selected.auditLogs || []).length ? selected.auditLogs.map((act: any) => (
+                           <div key={act.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                               <div className="flex items-center gap-3">
-                                 <act.icon size={13} className="text-slate-500" />
-                                 <span className="text-xs text-slate-300 font-medium">{act.text}</span>
+                                 <Activity size={13} className="text-slate-500" />
+                                 <span className="text-xs text-slate-300 font-medium">{act.after || act.action}</span>
                               </div>
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{act.time}</span>
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{new Date(act.createdAt).toLocaleDateString('en-PK')}</span>
                            </div>
-                        ))}
+                        )) : <p className="text-xs text-slate-500 p-3">No recorded activity yet.</p>}
                      </div>
                   </div>
                 </div>

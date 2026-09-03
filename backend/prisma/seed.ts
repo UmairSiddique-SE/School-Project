@@ -180,10 +180,10 @@ async function main() {
   await prisma.subscription.create({
     data: {
       schoolId: school.id,
-      plan: 'ENTERPRISE',
+      plan: 'PREMIUM',
       status: 'ACTIVE',
-      amount: 499,
-      currency: 'USD',
+      amount: 5000,
+      currency: 'PKR',
       startDate: new Date(),
       endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     },
@@ -608,7 +608,7 @@ async function main() {
         email: 'amina@brightfuture.edu',
         phone: '+92 300 1112233',
         city: 'Lahore',
-        requestedPlan: 'STANDARD',
+        requestedPlan: 'PROFESSIONAL',
         status: 'PENDING',
       },
       {
@@ -617,7 +617,7 @@ async function main() {
         email: 'usman@knowledgetree.edu',
         phone: '+92 301 4445566',
         city: 'Islamabad',
-        requestedPlan: 'BASIC',
+        requestedPlan: 'PROFESSIONAL',
         status: 'PENDING',
       },
       {
@@ -638,15 +638,15 @@ async function main() {
       {
         schoolId: school.id,
         plan: 'PREMIUM',
-        amount: 199,
+        amount: 5000,
         method: 'Bank Transfer',
         reference: 'EDU-DEMO-001',
         status: 'PENDING',
       },
       {
         schoolId: school.id,
-        plan: 'STANDARD',
-        amount: 99,
+        plan: 'PROFESSIONAL',
+        amount: 3000,
         method: 'JazzCash',
         reference: 'EDU-DEMO-002',
         status: 'APPROVED',

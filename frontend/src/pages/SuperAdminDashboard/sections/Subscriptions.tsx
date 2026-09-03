@@ -10,8 +10,7 @@ import { toast } from 'sonner';
 
 const planMeta: Record<string, { color: string; gradient: string; icon: React.ComponentType<any>; badge?: string }> = {
   FREE_TRIAL: { color: 'text-slate-400', gradient: 'from-slate-600 to-slate-700', icon: Zap },
-  BASIC: { color: 'text-blue-400', gradient: 'from-blue-600 to-cyan-600', icon: Star },
-  STANDARD: { color: 'text-violet-400', gradient: 'from-violet-600 to-purple-600', icon: Award, badge: 'Popular' },
+  PROFESSIONAL: { color: 'text-violet-400', gradient: 'from-violet-600 to-purple-600', icon: Award, badge: 'Popular' },
   PREMIUM: { color: 'text-amber-400', gradient: 'from-amber-500 to-orange-600', icon: Sparkles, badge: 'Enterprise' },
 };
 
@@ -42,7 +41,7 @@ export default function Subscriptions() {
   const [extendModal, setExtendModal] = useState(false);
   const [extendDays, setExtendDays] = useState(30);
   const [changePlanModal, setChangePlanModal] = useState(false);
-  const [newPlan, setNewPlan] = useState('BASIC');
+  const [newPlan, setNewPlan] = useState('PROFESSIONAL');
   const [savingAction, setSavingAction] = useState(false);
 
   const fetchData = () => {
@@ -201,7 +200,7 @@ export default function Subscriptions() {
       {activeTab === 'plans' && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
           {plans.map((plan, i) => {
-            const meta = planMeta[plan.planKey] || planMeta['BASIC'];
+            const meta = planMeta[plan.planKey] || planMeta['PROFESSIONAL'];
             const Icon = meta.icon;
             return (
               <motion.div
@@ -302,7 +301,7 @@ export default function Subscriptions() {
                 </thead>
                 <tbody className="divide-y divide-white/[0.03]">
                   {(activeTab === 'active' ? activeSchools : activeTab === 'expiring' ? expiringSchools : expiredSchools).map((s) => {
-                    const plan = s.subscription?.plan || 'BASIC';
+                    const plan = s.subscription?.plan || 'PROFESSIONAL';
                     const expiry = s.subscription?.endDate ? new Date(s.subscription.endDate) : null;
                     const daysLeft = expiry ? Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 3600 * 24)) : 0;
 
@@ -357,7 +356,7 @@ export default function Subscriptions() {
                             <button
                               onClick={() => {
                                 setSelectedSchool(s);
-                                setNewPlan(s.subscription?.plan || 'BASIC');
+                                setNewPlan(s.subscription?.plan || 'PROFESSIONAL');
                                 setChangePlanModal(true);
                               }}
                               className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-white border border-white/10 font-bold transition-all"
@@ -531,9 +530,8 @@ export default function Subscriptions() {
                     className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-slate-900 text-white text-xs"
                   >
                     <option value="FREE_TRIAL">Free Trial</option>
-                    <option value="BASIC">Basic</option>
-                    <option value="STANDARD">Standard (Popular)</option>
-                    <option value="PREMIUM">Premium (Enterprise)</option>
+                    <option value="PROFESSIONAL">Professional</option>
+                    <option value="PREMIUM">Premium</option>
                   </select>
                 </div>
 

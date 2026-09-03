@@ -55,7 +55,7 @@ const DEFAULT_SCHOOLS: SchoolItem[] = [
     country: "Pakistan",
     studentsCount: "2,400+",
     teachersCount: "120",
-    plan: "ENTERPRISE",
+    plan: "PREMIUM",
     isPopular: true,
   },
   {
@@ -65,7 +65,7 @@ const DEFAULT_SCHOOLS: SchoolItem[] = [
     country: "Pakistan",
     studentsCount: "820+",
     teachersCount: "42",
-    plan: "STANDARD",
+    plan: "PROFESSIONAL",
     isPopular: true,
   },
   {
@@ -75,7 +75,7 @@ const DEFAULT_SCHOOLS: SchoolItem[] = [
     country: "Pakistan",
     studentsCount: "650+",
     teachersCount: "38",
-    plan: "STANDARD",
+    plan: "PROFESSIONAL",
     isPopular: true,
   },
   {
@@ -95,7 +95,7 @@ const DEFAULT_SCHOOLS: SchoolItem[] = [
     country: "Pakistan",
     studentsCount: "520+",
     teachersCount: "30",
-    plan: "STANDARD",
+    plan: "PROFESSIONAL",
     isPopular: false,
   },
 ];
@@ -123,7 +123,7 @@ export default function SchoolLogin() {
             country: item.country || "Pakistan",
             studentsCount: item._count?.students || item.studentCount || "500+",
             teachersCount: item._count?.teachers || item.teacherCount || "35",
-            plan: item.subscription?.plan || item.plan || "STANDARD",
+            plan: item.subscription?.plan || item.plan || "PROFESSIONAL",
             isPopular: item.slug === "demo",
           }));
           setSchools(mapped);

@@ -57,7 +57,7 @@ export class CreateSchoolRequestDto {
   country?: string;
 
   @IsOptional()
-  @IsIn(['FREE_TRIAL', 'BASIC', 'STANDARD', 'PREMIUM'])
+  @IsIn(['FREE_TRIAL', 'PROFESSIONAL', 'PREMIUM'])
   requestedPlan?: string;
 
   @IsOptional()

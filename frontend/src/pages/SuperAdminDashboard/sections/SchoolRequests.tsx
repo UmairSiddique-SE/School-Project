@@ -20,8 +20,7 @@ interface SchoolRequest {
 
 const planColors: Record<string, string> = {
   FREE_TRIAL: 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
-  BASIC: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-  STANDARD: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
+  PROFESSIONAL: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
   PREMIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
 };
 
@@ -325,8 +324,7 @@ export default function SchoolRequests() {
                         className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                       >
                         <option value="FREE_TRIAL">Free Trial (14 Days)</option>
-                        <option value="BASIC">Basic Plan</option>
-                        <option value="STANDARD">Standard Plan</option>
+                        <option value="PROFESSIONAL">Professional Plan</option>
                         <option value="PREMIUM">Premium Plan</option>
                       </select>
                     </div>

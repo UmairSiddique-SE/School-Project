@@ -39,9 +39,9 @@ const DEFAULT_PLANS = [
     ]),
   },
   {
-    planKey: 'BASIC',
-    name: 'Basic',
-    price: 5000,
+    planKey: 'PROFESSIONAL',
+    name: 'Professional',
+    price: 3000,
     currency: 'PKR',
     period: 'per month',
     maxStudents: 200,
@@ -58,30 +58,9 @@ const DEFAULT_PLANS = [
     ]),
   },
   {
-    planKey: 'STANDARD',
-    name: 'Standard',
-    price: 10000,
-    currency: 'PKR',
-    period: 'per month',
-    maxStudents: 1000,
-    maxTeachers: 50,
-    storageMb: 51200,
-    supportTier: 'Priority',
-    features: JSON.stringify([
-      'Up to 1,000 students',
-      '50 teachers',
-      '50 GB storage',
-      'Advanced analytics',
-      'Priority support',
-      'Fee management',
-      'Attendance & grades',
-      'Parent portal',
-    ]),
-  },
-  {
     planKey: 'PREMIUM',
     name: 'Premium',
-    price: 20000,
+    price: 5000,
     currency: 'PKR',
     period: 'per month',
     maxStudents: 999999,
@@ -94,7 +73,7 @@ const DEFAULT_PLANS = [
       '500 GB storage',
       'Custom domain',
       'Dedicated support',
-      'All Standard features',
+      'All Professional features',
       'Transport Management',
       'Multi-campus',
       'API access',
@@ -748,8 +727,7 @@ export class AdminService {
       const plan = request.requestedPlan || 'FREE_TRIAL';
       const daysMap: Record<string, number> = {
         FREE_TRIAL: 14,
-        BASIC: 365,
-        STANDARD: 365,
+        PROFESSIONAL: 365,
         PREMIUM: 365,
       };
       const days = daysMap[plan] ?? 365;

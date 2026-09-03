@@ -27,7 +27,7 @@ const categoryMeta: Record<string, { title: string; icon: React.ComponentType<an
 const dangerKeys = ['platform.maintenance', 'server.ipWhitelist'];
 
 const selectOptions: Record<string, string[]> = {
-  'subscription.defaultPlan': ['FREE_TRIAL', 'BASIC', 'STANDARD', 'PREMIUM'],
+  'subscription.defaultPlan': ['FREE_TRIAL', 'PROFESSIONAL', 'PREMIUM'],
 };
 
 export default function SystemSettings() {

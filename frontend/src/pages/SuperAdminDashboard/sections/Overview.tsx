@@ -55,8 +55,7 @@ const CT = {
 /* ─── Pie colours ──────────────────────────────────────────────────────────── */
 const PIE_COLORS: Record<string, string> = {
   FREE_TRIAL: "#64748b",
-  BASIC: "#3b82f6",
-  STANDARD: "#8b5cf6",
+  PROFESSIONAL: "#8b5cf6",
   PREMIUM: "#f59e0b",
   Active: "#10b981",
   Inactive: "#ef4444",
