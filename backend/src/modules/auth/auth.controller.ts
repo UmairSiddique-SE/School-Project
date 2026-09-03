@@ -38,21 +38,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new school with admin user' })
   async registerSchool(@Body() dto: RegisterSchoolDto) {
     const result = await this.authService.registerSchool(dto);
-
-    // Keep the existing auth flow, but also create the Super Admin review record.
     await this.schoolRequestService.create({
       schoolName: dto.schoolName,
       ownerName: dto.adminName,
       email: dto.adminEmail,
       phone: dto.adminPhone,
       whatsapp: dto.adminPhone,
-      city: dto.city || dto.schoolAddress,
+      city: dto.city,
       address: dto.schoolAddress,
-      expectedStudents: dto.expectedStudents,
       subdomain: dto.schoolSlug,
       requestedPlan: dto.requestedPlan || 'FREE_TRIAL',
     });
-
     return result;
   }
 
@@ -61,8 +57,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email and password' })
   async login(@Body() dto: LoginDto) {
     const result = await this.authService.login(dto);
-
-    // A school admin may only enter the school portal after Super Admin approval.
     if (result.user.role === 'SCHOOL_ADMIN' && result.user.schoolId) {
       const request = await this.schoolRequestService.findLatestByEmail(dto.email);
       if (!request || request.status !== 'APPROVED') {
@@ -73,53 +67,39 @@ export class AuthController {
         );
       }
     }
-
     return result;
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refreshToken(dto.refreshToken);
-  }
+  refresh(@Body() dto: RefreshTokenDto) { return this.authService.refreshToken(dto.refreshToken); }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout and revoke refresh token' })
-  logout(@Body() dto: RefreshTokenDto) {
-    return this.authService.logout(dto.refreshToken);
-  }
+  logout(@Body() dto: RefreshTokenDto) { return this.authService.logout(dto.refreshToken); }
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send password reset email' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
-  }
+  forgotPassword(@Body() dto: ForgotPasswordDto) { return this.authService.forgotPassword(dto); }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using token' })
-  resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto);
-  }
+  resetPassword(@Body() dto: ResetPasswordDto) { return this.authService.resetPassword(dto); }
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify email with OTP' })
-  verifyEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto);
-  }
+  verifyEmail(@Body() dto: VerifyEmailDto) { return this.authService.verifyEmail(dto); }
 
   @Post('onboarding-payment')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  submitOnboardingPayment(
-    @Body() dto: OnboardingPaymentDto,
-    @CurrentUser() user: any,
-  ) {
+  submitOnboardingPayment(@Body() dto: OnboardingPaymentDto, @CurrentUser() user: any) {
     return this.authService.submitOnboardingPayment(dto, user);
   }
 
@@ -127,21 +107,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
-  me(@CurrentUser() user: any) {
-    return { user };
-  }
+  me(@CurrentUser() user: any) { return { user }; }
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  updateProfile(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
-    return this.authService.updateProfile(user.id, dto);
-  }
+  updateProfile(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) { return this.authService.updateProfile(user.id, dto); }
 
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(user.id, dto);
-  }
+  changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) { return this.authService.changePassword(user.id, dto); }
 }
