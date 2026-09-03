@@ -35,28 +35,21 @@ import Subscription from "@/pages/Subscription";
 import AttendanceAdmin from "@/pages/AttendanceAdmin";
 import Notifications from "@/pages/Notifications";
 import BuildingManagement from "@/pages/BuildingManagement";
+import StudentPortal from "@/pages/StudentPortal";
 
 import { useAuth } from "@/context/AuthContext";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import SchoolLogin from "@/pages/SchoolLogin";
 import RegisterSchool from "@/pages/RegisterSchool";
+import AdminLogin from "@/pages/AdminLogin";
 
 const NotFound = () => (
   <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6">
     <div>
-      <div className="text-8xl font-black bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent mb-4">
-        404
-      </div>
+      <div className="text-8xl font-black bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent mb-4">404</div>
       <h2 className="text-2xl font-bold text-white mb-3">Page Not Found</h2>
-      <p className="text-white/50 mb-8">
-        The page you're looking for doesn't exist or has been moved.
-      </p>
-      <a
-        href="/"
-        className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform"
-      >
-        Go Home
-      </a>
+      <p className="text-white/50 mb-8">The page you're looking for doesn't exist or has been moved.</p>
+      <a href="/" className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform">Go Home</a>
     </div>
   </div>
 );
@@ -64,30 +57,19 @@ const NotFound = () => (
 const Unauthorized = () => (
   <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6">
     <div>
-      <div className="text-8xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-4">
-        403
-      </div>
+      <div className="text-8xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-4">403</div>
       <h2 className="text-2xl font-bold text-white mb-3">Access Denied</h2>
-      <p className="text-white/50 mb-8">
-        You don't have permission to view this page.
-      </p>
-      <a
-        href="/dashboard"
-        className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform"
-      >
-        Back to Dashboard
-      </a>
+      <p className="text-white/50 mb-8">You don't have permission to view this page.</p>
+      <a href="/dashboard" className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform">Back to Dashboard</a>
     </div>
   </div>
 );
 
-import AdminLogin from "@/pages/AdminLogin";
-
-// Always redirect to super-admin or edusphere dashboard — no login needed
+// Always redirect to super-admin or the authenticated tenant dashboard.
 const TenantRedirect = ({ to }: { to: string }) => {
   const { user } = useAuth();
-  if (user?.role === 'SUPER_ADMIN') return <Navigate to="/super-admin" replace />;
-  const slug = user?.schoolSlug || 'edusphere';
+  if (user?.role === "SUPER_ADMIN") return <Navigate to="/super-admin" replace />;
+  const slug = user?.schoolSlug || "edusphere";
   return <Navigate to={`/${slug}/${to}`} replace />;
 };
 
@@ -97,19 +79,18 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public Landing Page */}
-            {/* Main entry — Landing Page */}
+            {/* Public */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/portal" element={<PortalSelector />} />
 
-            {/* Auth Routes */}
+            {/* Auth */}
             <Route path="/school-login" element={<SchoolLogin />} />
             <Route path="/register-school" element={<RegisterSchool />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* Super Admin Command Center (Priority Route) */}
+            {/* Super Admin */}
             <Route
               path="/super-admin"
               element={
@@ -119,73 +100,34 @@ export default function App() {
               }
             />
 
+            {/* School authentication */}
             <Route path="/:schoolSlug/login" element={<AuthLayout />}>
               <Route index element={<LoginPage />} />
             </Route>
             <Route path="/login" element={<Navigate to="/school-login" replace />} />
 
-            {/* Direct Shortcut Routes (Redirect to tenant-namespaced paths) */}
-            <Route
-              path="/dashboard"
-              element={<TenantRedirect to="dashboard" />}
-            />
-            <Route
-              path="/super-admin"
-              element={
-                <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                  <SuperAdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/students"
-              element={<TenantRedirect to="students" />}
-            />
-            <Route
-              path="/teachers"
-              element={<TenantRedirect to="staff" />}
-            />
-            <Route path="/parents" element={<TenantRedirect to="students" />} />
+            {/* Direct shortcuts */}
+            <Route path="/dashboard" element={<TenantRedirect to="dashboard" />} />
+            <Route path="/students" element={<TenantRedirect to="students" />} />
+            <Route path="/teachers" element={<TenantRedirect to="staff" />} />
+            <Route path="/parents" element={<TenantRedirect to="parents" />} />
             <Route path="/classes" element={<TenantRedirect to="classes" />} />
             <Route path="/staff" element={<TenantRedirect to="staff" />} />
-            <Route
-              path="/homework"
-              element={<TenantRedirect to="homework" />}
-            />
+            <Route path="/homework" element={<TenantRedirect to="homework" />} />
             <Route path="/exams" element={<TenantRedirect to="exams" />} />
-            <Route
-              path="/timetable"
-              element={<TenantRedirect to="timetable" />}
-            />
+            <Route path="/timetable" element={<TenantRedirect to="timetable" />} />
             <Route path="/notices" element={<TenantRedirect to="notices" />} />
-            <Route
-              path="/transport"
-              element={<TenantRedirect to="transport" />}
-            />
+            <Route path="/transport" element={<TenantRedirect to="transport" />} />
             <Route path="/reports" element={<TenantRedirect to="reports" />} />
-            <Route
-              path="/subscription"
-              element={<TenantRedirect to="subscription" />}
-            />
-            <Route
-              path="/attendance"
-              element={<TenantRedirect to="attendance" />}
-            />
-            <Route
-              path="/notifications"
-              element={<TenantRedirect to="notifications" />}
-            />
+            <Route path="/subscription" element={<TenantRedirect to="subscription" />} />
+            <Route path="/attendance" element={<TenantRedirect to="attendance" />} />
+            <Route path="/notifications" element={<TenantRedirect to="notifications" />} />
             <Route path="/finance" element={<TenantRedirect to="finance" />} />
-            <Route
-              path="/settings"
-              element={<TenantRedirect to="settings" />}
-            />
-            <Route
-              path="/buildings"
-              element={<TenantRedirect to="buildings" />}
-            />
+            <Route path="/settings" element={<TenantRedirect to="settings" />} />
+            <Route path="/buildings" element={<TenantRedirect to="buildings" />} />
+            <Route path="/student-portal" element={<TenantRedirect to="student-portal" />} />
 
-            {/* Protected Dashboard Routes with schoolSlug */}
+            {/* Protected tenant application */}
             <Route
               path="/:schoolSlug"
               element={
@@ -195,16 +137,15 @@ export default function App() {
               }
             >
               <Route index element={<Navigate to="dashboard" replace />} />
-
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<Settings />} />
               <Route path="buildings" element={<BuildingManagement />} />
 
-              {/* School Admin & Shared Portals */}
+              {/* School Admin & shared modules */}
               <Route path="classes" element={<Classes />} />
               <Route path="teachers" element={<Navigate to="staff" replace />} />
               <Route path="students" element={<Students />} />
-              <Route path="parents" element={<Navigate to="students" replace />} />
+              <Route path="parents" element={<Parents />} />
               <Route path="finance" element={<Finance />} />
               <Route path="staff" element={<Staff />} />
               <Route path="homework" element={<Homework />} />
@@ -218,20 +159,29 @@ export default function App() {
               <Route path="attendance/mark" element={<Attendance />} />
               <Route path="notifications" element={<Notifications />} />
 
-              {/* Teacher */}
+              {/* Student portal */}
+              <Route
+                path="student-portal"
+                element={
+                  <ProtectedRoute allowedRoles={["STUDENT"]}>
+                    <StudentPortal />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Teacher portal */}
               <Route path="teacher/classes" element={<MyClasses />} />
               <Route path="teacher/attendance" element={<TeacherAttendance />} />
               <Route path="teacher/grades" element={<Grades />} />
             </Route>
 
-            {/* Error Pages */}
+            {/* Error pages */}
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </BrowserRouter>
 
-        {/* Global Toast Notifications */}
         <Toaster
           position="top-right"
           toastOptions={{
