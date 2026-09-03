@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Class, PrismaClient, Section, Subject } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -9,87 +9,137 @@ async function main() {
   // Disable SQLite foreign keys temporarily for clean reset
   try {
     await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
-  } catch (e) {
+  } catch {
     console.log('Note: PRAGMA foreign_keys command skipped');
   }
 
   // Clear existing tables
   try {
     await prisma.auditLog.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.feePayment.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.feeStructure.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.examResult.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.exam.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.attendance.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.studentParent.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.parent.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.student.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.classSubject.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.subject.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.section.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.class.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.academicYear.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.teacher.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.staff.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.announcement.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.notification.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.transportRoute.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.building.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.subscription.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.refreshToken.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.user.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
   try {
     await prisma.school.deleteMany({});
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
 
   try {
     await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
-  } catch (e) {}
+  } catch {
+    // A table may not exist yet in older development databases.
+  }
 
   const defaultHash = await bcrypt.hash('12345678', 12);
   const teacherHash = await bcrypt.hash('teacher123', 12);
@@ -236,8 +286,8 @@ async function main() {
     { name: 'Grade 10', num: 10 },
   ];
 
-  const createdClasses: any[] = [];
-  const createdSections: any[] = [];
+  const createdClasses: Class[] = [];
+  const createdSections: Section[] = [];
 
   for (const c of classNames) {
     const cls = await prisma.class.create({
@@ -313,7 +363,7 @@ async function main() {
     },
   ];
 
-  const createdSubjects: any[] = [];
+  const createdSubjects: Subject[] = [];
   for (const s of subjectsData) {
     const sub = await prisma.subject.create({
       data: {
@@ -489,7 +539,7 @@ async function main() {
   });
 
   // 11. Buildings & Infrastructure
-  const mainBuilding = await prisma.building.create({
+  await prisma.building.create({
     data: {
       name: 'Ibn-e-Sina Academic Complex',
       buildingType: 'OWNED',
@@ -509,7 +559,7 @@ async function main() {
   });
 
   // 12. Transport Routes & Vehicles
-  const routeGulberg = await prisma.transportRoute.create({
+  await prisma.transportRoute.create({
     data: {
       name: 'Route 1: DHA Phase 5 to Main Campus',
       startPoint: 'DHA Phase 5 Commercial',
