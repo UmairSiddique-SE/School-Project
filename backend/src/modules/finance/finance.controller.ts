@@ -8,6 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('SCHOOL_ADMIN')
 @Controller('finance')
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
@@ -18,7 +19,6 @@ export class FinanceController {
   }
 
   @Post('structures')
-  @Roles('SCHOOL_ADMIN')
   createStructure(@CurrentUser() user: any, @Body() dto: any) {
     return this.financeService.createFeeStructure(user.schoolId, dto);
   }
@@ -29,7 +29,6 @@ export class FinanceController {
   }
 
   @Post('payments')
-  @Roles('SCHOOL_ADMIN')
   collectFee(@CurrentUser() user: any, @Body() dto: any) {
     return this.financeService.collectFee(user.schoolId, dto);
   }
