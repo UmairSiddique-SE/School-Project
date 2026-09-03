@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { OverviewDto } from './dto/overview.dto';
@@ -40,7 +41,8 @@ const DEFAULT_PLANS = [
   {
     planKey: 'BASIC',
     name: 'Basic',
-    price: 49,
+    price: 5000,
+    currency: 'PKR',
     period: 'per month',
     maxStudents: 200,
     maxTeachers: 15,
@@ -58,7 +60,8 @@ const DEFAULT_PLANS = [
   {
     planKey: 'STANDARD',
     name: 'Standard',
-    price: 99,
+    price: 10000,
+    currency: 'PKR',
     period: 'per month',
     maxStudents: 1000,
     maxTeachers: 50,
@@ -78,7 +81,8 @@ const DEFAULT_PLANS = [
   {
     planKey: 'PREMIUM',
     name: 'Premium',
-    price: 199,
+    price: 20000,
+    currency: 'PKR',
     period: 'per month',
     maxStudents: 999999,
     maxTeachers: 999999,
@@ -377,14 +381,14 @@ export class AdminService {
 
     const [pendingPayments, monthRevenueAgg, todayRevenueAgg] =
       await Promise.all([
-        this.prisma.feePayment.count({ where: { status: 'PENDING' } }),
-        this.prisma.feePayment.aggregate({
-          _sum: { totalPaid: true },
-          where: { paidDate: { gte: startOfMonth(now) } },
+        this.prisma.onboardingPayment.count({ where: { status: 'PENDING' } }),
+        this.prisma.onboardingPayment.aggregate({
+          _sum: { amount: true },
+          where: { status: 'APPROVED', reviewedAt: { gte: startOfMonth(now) } },
         }),
-        this.prisma.feePayment.aggregate({
-          _sum: { totalPaid: true },
-          where: { paidDate: { gte: startOfDay(now) } },
+        this.prisma.onboardingPayment.aggregate({
+          _sum: { amount: true },
+          where: { status: 'APPROVED', reviewedAt: { gte: startOfDay(now) } },
         }),
       ]);
 
@@ -399,7 +403,7 @@ export class AdminService {
       select: { id: true, name: true, createdAt: true },
     });
 
-    const recentPayments = await this.prisma.feePayment.findMany({
+    const recentPayments = await this.prisma.onboardingPayment.findMany({
       where: { status: 'PENDING' },
       orderBy: { createdAt: 'desc' },
       take: 10,
@@ -449,15 +453,15 @@ export class AdminService {
       .map(([month, count]) => ({ month, count }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    const paymentsForTimeline = await this.prisma.feePayment.findMany({
-      where: { paidDate: { not: null } },
-      select: { paidDate: true, totalPaid: true },
+    const paymentsForTimeline = await this.prisma.onboardingPayment.findMany({
+      where: { status: 'APPROVED', reviewedAt: { not: null } },
+      select: { reviewedAt: true, amount: true },
     });
     const revenueMap: Record<string, number> = {};
     paymentsForTimeline.forEach((p) => {
-      if (p.paidDate) {
-        const month = p.paidDate.toISOString().slice(0, 7);
-        revenueMap[month] = (revenueMap[month] || 0) + p.totalPaid;
+      if (p.reviewedAt) {
+        const month = p.reviewedAt.toISOString().slice(0, 7);
+        revenueMap[month] = (revenueMap[month] || 0) + p.amount;
       }
     });
     const revenueTimeline = Object.entries(revenueMap)
@@ -503,8 +507,8 @@ export class AdminService {
       expiredSchools,
       pendingSchoolRequests,
       pendingPayments,
-      monthRevenue: monthRevenueAgg._sum.totalPaid || 0,
-      todayRevenue: todayRevenueAgg._sum.totalPaid || 0,
+      monthRevenue: monthRevenueAgg._sum.amount || 0,
+      todayRevenue: todayRevenueAgg._sum.amount || 0,
       totalStudents,
       totalTeachers,
       activeSubscriptions,
@@ -668,14 +672,15 @@ export class AdminService {
     }
 
     if (action === 'REJECTED') {
-      return this.prisma.schoolRequest.update({
-        where: { id },
-        data: {
+      return this.prisma.$transaction(async (tx) => {
+        const updated = await tx.schoolRequest.update({ where: { id }, data: {
           status: 'REJECTED',
           reviewNotes: reviewNotes || null,
           reviewedBy: reviewedBy || 'Super Admin',
           reviewedAt: new Date(),
-        },
+        }});
+        if (reviewerUserId) await tx.auditLog.create({ data: { action: 'SCHOOL_REQUEST_REJECTED', entity: 'SchoolRequest', entityId: id, userId: reviewerUserId, after: `Rejected registration request for ${request.schoolName}` } });
+        return updated;
       });
     }
 
@@ -735,6 +740,7 @@ export class AdminService {
           schoolId: school.id,
           isActive: true,
           mustChangePassword: true,
+          emailVerified: true,
         },
       });
 
@@ -747,13 +753,15 @@ export class AdminService {
         PREMIUM: 365,
       };
       const days = daysMap[plan] ?? 365;
+      const platformPlan = await tx.platformPlan.findUnique({ where: { planKey: plan } });
       const subscription = await tx.subscription.create({
         data: {
           schoolId: school.id,
           plan,
           status: 'ACTIVE',
           endDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
-          amount: 0,
+          amount: platformPlan?.price || 0,
+          currency: platformPlan?.currency || 'PKR',
         },
       });
 
@@ -897,11 +905,12 @@ export class AdminService {
     return payments;
   }
 
-  async approvePayment(id: string) {
+  async approvePayment(id: string, actor?: any) {
     const payment = await this.prisma.onboardingPayment.findUnique({
       where: { id },
     });
     if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.status !== 'PENDING') throw new BadRequestException('Only pending payments can be approved');
     return this.prisma.$transaction(async (tx) => {
       const approved = await tx.onboardingPayment.update({
         where: { id },
@@ -911,6 +920,7 @@ export class AdminService {
         where: { id: payment.schoolId },
         data: { isActive: true },
       });
+      const plan = await tx.platformPlan.findUnique({ where: { planKey: payment.plan } });
       await tx.subscription.update({
         where: { schoolId: payment.schoolId },
         data: {
@@ -919,20 +929,25 @@ export class AdminService {
           startDate: new Date(),
           endDate: addDays(new Date(), 365),
           amount: payment.amount,
+          currency: plan?.currency || 'PKR',
         },
       });
+      if (actor?.id) await tx.auditLog.create({ data: { action: 'PAYMENT_APPROVED', entity: 'OnboardingPayment', entityId: id, after: `Approved PKR ${payment.amount} for ${payment.plan}`, schoolId: payment.schoolId, userId: actor.id } });
+      await tx.notification.createMany({ data: (await tx.user.findMany({ where: { schoolId: payment.schoolId, isActive: true }, select: { id: true } })).map((u) => ({ type: 'PAYMENT', title: 'Payment approved', message: `Your ${payment.plan} subscription payment has been approved.`, schoolId: payment.schoolId, userId: u.id })) });
       return approved;
     });
   }
 
-  async rejectPayment(id: string) {
+  async rejectPayment(id: string, actor?: any) {
     const payment = await this.prisma.onboardingPayment.findUnique({
       where: { id },
     });
     if (!payment) throw new NotFoundException('Payment not found');
-    return this.prisma.onboardingPayment.update({
-      where: { id },
-      data: { status: 'REJECTED', reviewedAt: new Date() },
+    if (payment.status !== 'PENDING') throw new BadRequestException('Only pending payments can be rejected');
+    return this.prisma.$transaction(async (tx) => {
+      const rejected = await tx.onboardingPayment.update({ where: { id }, data: { status: 'REJECTED', reviewedAt: new Date() } });
+      if (actor?.id) await tx.auditLog.create({ data: { action: 'PAYMENT_REJECTED', entity: 'OnboardingPayment', entityId: id, after: `Rejected PKR ${payment.amount} for ${payment.plan}`, schoolId: payment.schoolId, userId: actor.id } });
+      return rejected;
     });
   }
 
@@ -949,12 +964,12 @@ export class AdminService {
       return csv;
     }
     if (id === 'revenue-report') {
-      const payments = await this.prisma.feePayment.findMany({
+      const payments = await this.prisma.onboardingPayment.findMany({
         include: { school: true },
       });
       let csv = 'PaymentID,SchoolName,Amount,Method,Status,Date\n';
       for (const p of payments) {
-        csv += `"${p.id}","${p.school?.name || 'N/A'}",${p.totalPaid || p.amount},"${p.method}","${p.status}","${p.createdAt.toISOString()}"\n`;
+        csv += `"${p.id}","${p.school?.name || 'N/A'}",${p.amount},"${p.method}","${p.status}","${p.createdAt.toISOString()}"\n`;
       }
       return csv;
     }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -17,8 +17,14 @@ export default function Subscription() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly",
   );
+  const [plans, setPlans] = useState<any[]>([]);
+  const [proof, setProof] = useState<string>("");
 
-  const plans = [
+  useEffect(() => {
+    apiClient.get('/public/plans').then(({ data }) => setPlans(data.filter((plan: any) => plan.isActive))).catch(() => toast.error('Unable to load subscription plans'));
+  }, []);
+
+  const fallbackPlans = [
     {
       name: "Starter",
       price: billingCycle === "monthly" ? 49 : 39,
@@ -58,7 +64,10 @@ export default function Subscription() {
     },
   ];
 
-  const handleUpgrade = async (planName: string) => {
+  const visiblePlans = plans.length ? plans : fallbackPlans.map((plan) => ({ ...plan, planKey: plan.name.toUpperCase(), price: plan.price, period: 'per month' }));
+
+  const handleUpgrade = async (plan: any) => {
+    const planName = plan.planKey || plan.name;
     if (planName === activePlan && user?.activationStatus === "ACTIVE") return;
     if (user?.role === "SCHOOL_ADMIN" && user.schoolId) {
       await apiClient.post("/auth/onboarding-payment", {
@@ -66,6 +75,8 @@ export default function Subscription() {
         plan: planName.toUpperCase(),
         method: "Bank Transfer",
         reference: `EDU-${Date.now().toString().slice(-8)}`,
+        amount: plan.price,
+        screenshotUrl: proof || undefined,
       });
       toast.success(
         "Payment submitted. Super admin approval will activate this plan.",
@@ -145,7 +156,7 @@ export default function Subscription() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((p, idx) => (
+          {visiblePlans.map((p, idx) => (
             <motion.div
               key={p.name}
               initial={{ opacity: 0, y: 15 }}
@@ -168,7 +179,7 @@ export default function Subscription() {
                 </h4>
                 <div className="my-4 flex items-baseline gap-1">
                   <span className="text-3xl font-black text-foreground">
-                    {typeof p.price === "number" ? `$${p.price}` : p.price}
+                  {typeof p.price === "number" ? `PKR ${p.price.toLocaleString()}` : p.price}
                   </span>
                   {typeof p.price === "number" && (
                     <span className="text-xs text-muted-foreground">
@@ -178,7 +189,7 @@ export default function Subscription() {
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-muted-foreground my-6">
-                  {p.features.map((f) => (
+                  {(p.features || []).map((f: string) => (
                     <li key={f} className="flex items-center gap-2">
                       <CheckCircle2
                         size={13}
@@ -191,19 +202,32 @@ export default function Subscription() {
               </div>
 
               <button
-                onClick={() => handleUpgrade(p.name)}
+                onClick={() => handleUpgrade(p)}
                 className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-                  p.name === activePlan
+                  (p.planKey || p.name) === activePlan
                     ? "bg-accent text-accent-foreground cursor-default"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow shadow-primary/10"
                 }`}
               >
-                {p.name === activePlan
+                {(p.planKey || p.name) === activePlan
                   ? "Current Active Plan"
                   : "Select Package"}
               </button>
             </motion.div>
           ))}
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <label className="text-sm font-bold text-foreground">Payment screenshot (bank transfer)</label>
+          <p className="text-xs text-muted-foreground mt-1">Optional proof, maximum 2 MB. It is shown to Super Admin for verification.</p>
+          <input type="file" accept="image/png,image/jpeg,image/webp" className="mt-3 block text-xs" onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { toast.error('Screenshot must be 2 MB or smaller'); event.target.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = () => setProof(String(reader.result));
+            reader.readAsDataURL(file);
+          }} />
+          {proof && <p className="text-xs text-emerald-600 mt-2">Payment proof attached.</p>}
         </div>
       </div>
 

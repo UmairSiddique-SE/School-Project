@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Send, X, Check, Info, AlertTriangle, CheckCircle, Megaphone, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-const initialNotifications = [
-  { id: '1', type: 'WARNING', title: 'Plan Expiring Soon', message: 'Army Public School plan expires in 5 days.', school: 'Army Public School', time: '2 hours ago', read: false },
-  { id: '2', type: 'INFO', title: 'New School Registered', message: 'Beacon House School has been successfully registered.', school: 'Beacon House', time: '5 hours ago', read: false },
-  { id: '3', type: 'SUCCESS', title: 'Payment Received', message: '$299 received from City High School.', school: 'City High School', time: '1 day ago', read: true },
-  { id: '4', type: 'WARNING', title: 'Subscription Overdue', message: 'Old Academy subscription is 15 days overdue.', school: 'Old Academy', time: '2 days ago', read: false },
-  { id: '5', type: 'INFO', title: 'Plan Upgraded', message: 'Lahore Grammar School upgraded from Basic to Standard.', school: 'LGS', time: '3 days ago', read: true },
-  { id: '6', type: 'SUCCESS', title: 'School Activated', message: 'Roots International has been reactivated.', school: 'Roots International', time: '4 days ago', read: true },
-];
+import apiClient from '@/api/apiClient';
 
 const typeConfig: Record<string, { icon: React.ComponentType<any>; color: string; bg: string }> = {
   WARNING: { icon: AlertTriangle, color: 'text-amber-400', bg: 'bg-amber-500/10' },
@@ -19,11 +11,24 @@ const typeConfig: Record<string, { icon: React.ComponentType<any>; color: string
 };
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [broadcast, setBroadcast] = useState({ title: '', message: '', target: 'ALL' });
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
+
+  const loadNotifications = async () => {
+    try {
+      const { data } = await apiClient.get('/admin/announcements');
+      setNotifications((Array.isArray(data) ? data : []).map((item: any) => ({
+        id: item.id, type: item.priority === 'HIGH' ? 'WARNING' : 'INFO', title: item.title,
+        message: item.message, school: item.target === 'ALL' ? 'All schools' : item.target,
+        time: new Date(item.createdAt).toLocaleString('en-PK'), read: false,
+      })));
+    } catch { toast.error('Failed to load notifications'); }
+  };
+
+  useEffect(() => { loadNotifications(); }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const filtered = filter === 'UNREAD' ? notifications.filter(n => !n.read) : notifications;
@@ -40,11 +45,14 @@ export default function Notifications() {
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success(`Broadcast sent to ${broadcast.target === 'ALL' ? 'all schools' : broadcast.target + ' schools'}!`);
-    setShowBroadcast(false);
-    setBroadcast({ title: '', message: '', target: 'ALL' });
-    setSending(false);
+    try {
+      await apiClient.post('/admin/announcements', { ...broadcast, priority: 'NORMAL' });
+      toast.success('Broadcast published successfully');
+      setShowBroadcast(false);
+      setBroadcast({ title: '', message: '', target: 'ALL' });
+      await loadNotifications();
+    } catch { toast.error('Broadcast could not be published'); }
+    finally { setSending(false); }
   };
 
   return (

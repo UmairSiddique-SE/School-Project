@@ -5,6 +5,7 @@ import { SchoolService } from './school.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('schools')
@@ -31,49 +32,55 @@ export class SchoolController {
 
   @Post()
   @Roles('SUPER_ADMIN')
-  create(@Body() dto: any) {
-    return this.schoolService.create(dto);
+  create(@Body() dto: any, @CurrentUser() user: any) {
+    return this.schoolService.create(dto, user);
   }
 
   @Put(':id')
   @Roles('SUPER_ADMIN')
-  update(@Param('id') id: string, @Body() dto: any) {
-    return this.schoolService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: any, @CurrentUser() user: any) {
+    return this.schoolService.update(id, dto, user);
   }
 
   @Patch(':id/suspend')
   @Roles('SUPER_ADMIN')
-  suspend(@Param('id') id: string) {
-    return this.schoolService.suspend(id);
+  suspend(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.schoolService.suspend(id, user);
   }
 
   @Patch(':id/activate')
   @Roles('SUPER_ADMIN')
-  activate(@Param('id') id: string) {
-    return this.schoolService.activate(id);
+  activate(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.schoolService.activate(id, user);
   }
 
   @Patch(':id/archive')
   @Roles('SUPER_ADMIN')
-  archive(@Param('id') id: string) {
-    return this.schoolService.archive(id);
+  archive(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.schoolService.archive(id, user);
   }
 
   @Patch(':id/extend-expiry')
   @Roles('SUPER_ADMIN')
-  extendExpiry(@Param('id') id: string, @Body() dto: { days: number }) {
-    return this.schoolService.extendExpiry(id, dto.days);
+  extendExpiry(@Param('id') id: string, @Body() dto: { days: number }, @CurrentUser() user: any) {
+    return this.schoolService.extendExpiry(id, dto.days, user);
   }
 
   @Patch(':id/change-plan')
   @Roles('SUPER_ADMIN')
-  changePlan(@Param('id') id: string, @Body() dto: { plan: string; amount?: number }) {
-    return this.schoolService.changePlan(id, dto.plan, dto.amount);
+  changePlan(@Param('id') id: string, @Body() dto: { plan: string; amount?: number }, @CurrentUser() user: any) {
+    return this.schoolService.changePlan(id, dto.plan, dto.amount, user);
+  }
+
+  @Patch(':id/expire')
+  @Roles('SUPER_ADMIN')
+  expire(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.schoolService.expire(id, user);
   }
 
   @Delete(':id')
   @Roles('SUPER_ADMIN')
-  remove(@Param('id') id: string) {
-    return this.schoolService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.schoolService.remove(id, user);
   }
 }

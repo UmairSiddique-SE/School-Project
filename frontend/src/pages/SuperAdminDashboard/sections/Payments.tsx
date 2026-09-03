@@ -321,8 +321,13 @@ export default function Payments() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Transaction Ref:</span>
-                  <span className="font-mono text-violet-300">{viewPayment.receiptNo || 'REF-' + viewPayment.id.slice(0, 10)}</span>
+                  <span className="font-mono text-violet-300">{viewPayment.reference || 'REF-' + viewPayment.id.slice(0, 10)}</span>
                 </div>
+                {viewPayment.screenshotUrl && (
+                  <a href={viewPayment.screenshotUrl} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden border border-white/10">
+                    <img src={viewPayment.screenshotUrl} alt="Submitted payment proof" className="w-full max-h-56 object-contain bg-black/30" />
+                  </a>
+                )}
                 <div className="flex justify-between">
                   <span className="text-slate-400">Submission Date:</span>
                   <span className="text-white font-medium">{new Date(viewPayment.createdAt).toLocaleDateString('en-PK')}</span>

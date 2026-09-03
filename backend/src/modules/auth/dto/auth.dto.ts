@@ -108,6 +108,13 @@ export class OnboardingPaymentDto {
   method: string;
 
   @IsOptional()
+  amount?: number;
+
+  @IsOptional()
+  @IsString()
+  screenshotUrl?: string;
+
+  @IsOptional()
   @IsString()
   reference?: string;
 }

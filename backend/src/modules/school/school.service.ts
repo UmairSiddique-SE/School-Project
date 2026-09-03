@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class SchoolService {
@@ -124,7 +125,7 @@ export class SchoolService {
     return school;
   }
 
-  async create(data: any) {
+  async create(data: any, actor?: any) {
     if (!data.name || !data.slug) {
       throw new ConflictException('School name and slug are required');
     }
@@ -181,6 +182,10 @@ export class SchoolService {
           },
         });
 
+        if (data.adminEmail && data.adminPassword) {
+          await tx.user.create({ data: { name: data.adminName || 'School Admin', email: data.adminEmail.trim().toLowerCase(), passwordHash: await bcrypt.hash(data.adminPassword, 12), role: 'SCHOOL_ADMIN', phone: data.adminPhone || null, schoolId: school.id, emailVerified: true } });
+        }
+        await this.log(tx, actor, 'SCHOOL_CREATED', school.id, school.id, `Created ${school.name} with ${plan} subscription`);
         return school;
       });
     } catch (error: any) {
@@ -195,7 +200,7 @@ export class SchoolService {
     }
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: any, actor?: any) {
     await this.findOne(id);
 
     if (data.slug) {
@@ -214,7 +219,7 @@ export class SchoolService {
     }
 
     try {
-      return await this.prisma.school.update({
+      const updated = await this.prisma.school.update({
         where: { id },
         data: {
           name: data.name ?? undefined,
@@ -228,6 +233,8 @@ export class SchoolService {
           website: data.website ?? undefined,
         },
       });
+      await this.log(this.prisma, actor, 'SCHOOL_UPDATED', id, id, `Updated school profile for ${updated.name}`);
+      return updated;
     } catch (error: any) {
       if (error?.code === 'P2002') {
         throw new ConflictException(
@@ -240,58 +247,89 @@ export class SchoolService {
     }
   }
 
-  async suspend(id: string) {
+  async suspend(id: string, actor?: any) {
     await this.findOne(id);
-    return this.prisma.school.update({
+    const school = await this.prisma.school.update({
       where: { id },
       data: { isActive: false },
     });
+    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name}`);
+    return school;
   }
 
-  async activate(id: string) {
+  async activate(id: string, actor?: any) {
     await this.findOne(id);
-    return this.prisma.school.update({
+    const school = await this.prisma.school.update({
       where: { id },
       data: { isActive: true },
     });
+    await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}`);
+    return school;
   }
 
-  async archive(id: string) {
+  async archive(id: string, actor?: any) {
     await this.findOne(id);
-    return this.prisma.school.update({
+    const school = await this.prisma.school.update({
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
     });
+    await this.log(this.prisma, actor, 'SCHOOL_ARCHIVED', id, id, `Archived ${school.name}`);
+    return school;
   }
 
-  async extendExpiry(id: string, days: number) {
+  async extendExpiry(id: string, days: number, actor?: any) {
     await this.findOne(id);
     const sub = await this.prisma.subscription.findUnique({
       where: { schoolId: id },
     });
     if (!sub) throw new NotFoundException('Subscription not found');
 
+    if (!Number.isInteger(days) || days < 1 || days > 3660) throw new ConflictException('Extension must be between 1 and 3660 days');
     const base = sub.endDate > new Date() ? sub.endDate : new Date();
     const newEnd = new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
 
-    return this.prisma.subscription.update({
+    const updated = await this.prisma.subscription.update({
       where: { schoolId: id },
       data: { endDate: newEnd, status: 'ACTIVE' },
     });
+    await this.log(this.prisma, actor, 'SUBSCRIPTION_EXTENDED', id, id, `Extended subscription by ${days} days`);
+    return updated;
   }
 
-  async changePlan(id: string, plan: string, amount?: number) {
+  async changePlan(id: string, plan: string, amount?: number, actor?: any) {
     await this.findOne(id);
-    const updateData: any = { plan };
-    if (amount !== undefined) updateData.amount = amount;
-    return this.prisma.subscription.update({
+    const platformPlan = await this.prisma.platformPlan.findUnique({ where: { planKey: plan } });
+    if (!platformPlan || !platformPlan.isActive) throw new ConflictException('Selected plan is unavailable');
+    const updateData: any = { plan, currency: platformPlan.currency, status: 'ACTIVE' };
+    updateData.amount = amount !== undefined ? Number(amount) : platformPlan.price;
+    const updated = await this.prisma.subscription.update({
       where: { schoolId: id },
       data: updateData,
     });
+    await this.log(this.prisma, actor, 'SUBSCRIPTION_PLAN_CHANGED', id, id, `Changed subscription to ${plan} (PKR ${updated.amount})`);
+    return updated;
   }
 
-  async remove(id: string) {
-    return this.archive(id);
+  async expire(id: string, actor?: any) {
+    const school = await this.findOne(id);
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.school.update({ where: { id }, data: { isActive: false } });
+      return tx.subscription.update({
+        where: { schoolId: id },
+        data: { status: 'EXPIRED', endDate: new Date() },
+      });
+    });
+    await this.log(this.prisma, actor, 'SUBSCRIPTION_EXPIRED', id, id, `Expired ${school.name} subscription`);
+    return updated;
+  }
+
+  async remove(id: string, actor?: any) {
+    return this.archive(id, actor);
+  }
+
+  private async log(db: any, actor: any, action: string, entityId: string, schoolId: string, after: string) {
+    if (!actor?.id) return;
+    await db.auditLog.create({ data: { action, entity: 'School', entityId, schoolId, userId: actor.id, after } });
   }
 
   async getSuperAdminAnalytics() {

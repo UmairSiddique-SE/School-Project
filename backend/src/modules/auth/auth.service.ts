@@ -144,6 +144,11 @@ export class AuthService {
       );
     if (!user.isActive)
       throw new UnauthorizedException('This account has been suspended');
+    if (user.school && !user.school.isActive) {
+      throw new UnauthorizedException(
+        'This school account is suspended or awaiting payment approval',
+      );
+    }
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -330,13 +335,44 @@ export class AuthService {
       where: { id: dto.schoolId },
     });
     if (!school) throw new BadRequestException('School account not found');
-    return this.prisma.onboardingPayment.create({
-      data: {
-        schoolId: dto.schoolId,
-        plan: dto.plan,
-        method: dto.method,
-        reference: dto.reference,
-      },
+    const plan = await this.prisma.platformPlan.findUnique({
+      where: { planKey: dto.plan },
+    });
+    if (!plan || !plan.isActive) {
+      throw new BadRequestException(
+        'Selected subscription plan is unavailable',
+      );
+    }
+    const amount = Number(dto.amount ?? plan.price);
+    if (!Number.isFinite(amount) || amount < 0) {
+      throw new BadRequestException('A valid payment amount is required');
+    }
+    if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) {
+      throw new BadRequestException(
+        'Payment screenshot must be 2 MB or smaller',
+      );
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const payment = await tx.onboardingPayment.create({
+        data: {
+          schoolId: dto.schoolId,
+          plan: dto.plan,
+          amount,
+          method: dto.method,
+          reference: dto.reference,
+          screenshotUrl: dto.screenshotUrl || null,
+        },
+      });
+      await tx.subscription.update({
+        where: { schoolId: dto.schoolId },
+        data: {
+          plan: dto.plan,
+          amount,
+          currency: plan.currency,
+          status: 'PENDING',
+        },
+      });
+      return payment;
     });
   }
 

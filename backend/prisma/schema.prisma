@@ -78,6 +78,7 @@ model OnboardingPayment {
   amount      Float     @default(0)
   method      String
   reference   String?
+  screenshotUrl String?
   status      String    @default("PENDING")
   submittedAt DateTime  @default(now())
   reviewedAt  DateTime?
@@ -881,6 +882,7 @@ model PlatformPlan {
   planKey     String   @unique
   name        String
   price       Float    @default(0)
+  currency    String   @default("PKR")
   period      String   @default("per month")
   maxStudents Int      @default(50)
   maxTeachers Int      @default(3)

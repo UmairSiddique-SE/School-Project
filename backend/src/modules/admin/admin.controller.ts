@@ -112,13 +112,13 @@ export class AdminController {
   }
 
   @Patch('payments/:id/approve')
-  approvePayment(@Param('id') id: string) {
-    return this.adminService.approvePayment(id);
+  approvePayment(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.adminService.approvePayment(id, user);
   }
 
   @Patch('payments/:id/reject')
-  rejectPayment(@Param('id') id: string) {
-    return this.adminService.rejectPayment(id);
+  rejectPayment(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.adminService.rejectPayment(id, user);
   }
 
   @Get('reports/:id/download')
@@ -169,4 +169,3 @@ export class AdminController {
     return this.adminService.createAnnouncement(dto);
   }
 }
-
