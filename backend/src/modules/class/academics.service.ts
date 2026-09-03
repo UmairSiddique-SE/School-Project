@@ -7,7 +7,7 @@ export class AcademicsService {
 
   async getHomework(schoolId: string) {
     return this.prisma.homework.findMany({
-      where: { schoolId, deletedAt: null },
+      where: { schoolId },
       include: {
         section: { include: { class: true } },
         subject: true,
