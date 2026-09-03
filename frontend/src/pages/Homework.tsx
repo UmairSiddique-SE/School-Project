@@ -72,18 +72,7 @@ const FACULTY_LIST: TeacherProfile[] = [
   { id: 't-6', name: 'Mr. Zahid Bashir', subject: 'History & Pak Studies', department: 'Social Sciences', phone: '+92 311 8899001', avatarColor: 'from-purple-600 to-violet-600' },
 ];
 
-const DEFAULT_SUBJECTS = [
-  'Mathematics',
-  'Physics',
-  'Chemistry',
-  'Biology',
-  'Computer Science',
-  'English Literature',
-  'Urdu Language',
-  'Islamic Studies',
-  'Pakistan Studies',
-  'General Science',
-];
+
 
 const DEFAULT_HOMEWORK_LIST: HomeworkItem[] = [
   {
@@ -195,7 +184,7 @@ function getStoredHomework(schoolSlug: string): HomeworkItem[] {
 
 export default function Homework() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
 
   const [homeworks, setHomeworks] = useState<HomeworkItem[]>(() => getStoredHomework(schoolSlug));
   const [loading, setLoading] = useState(false);
@@ -538,7 +527,7 @@ export default function Homework() {
               className="px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary shadow-sm"
             >
               <option value="ALL">📚 All Subjects</option>
-              {DEFAULT_SUBJECTS.map(s => (
+              {[].map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -771,7 +760,7 @@ export default function Homework() {
                         onChange={e => setForm({ ...form, subject: e.target.value })}
                         className="w-full px-2 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary"
                       >
-                        {DEFAULT_SUBJECTS.map(sub => (
+                        {[].map(sub => (
                           <option key={sub} value={sub}>{sub}</option>
                         ))}
                       </select>

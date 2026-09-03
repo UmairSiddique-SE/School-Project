@@ -63,17 +63,7 @@ interface RankedStudentRecord extends StudentGradeRecord {
 
 // ─── Default Realistic Seed Data ───────────────────────────────────────────────
 
-const DEFAULT_SUBJECTS = [
-  'Mathematics',
-  'Physics',
-  'Chemistry',
-  'Biology',
-  'English Literature',
-  'Computer Science',
-  'Urdu Language',
-  'Islamic Studies',
-  'Pakistan Studies',
-];
+
 
 const DEFAULT_DATE_SHEET: DateSheetItem[] = [
   { id: 'ds-1', subject: 'Mathematics', examDate: '2026-10-15', startTime: '09:00 AM', endTime: '12:00 PM', roomNo: 'Hall A (Main)', totalMarks: 100, passingMarks: 33, invigilator: 'Dr. Ananya Roy', syllabus: 'Chapters 1–5: Quadratic Equations, Matrices & Logarithms' },
@@ -243,7 +233,7 @@ export function getGradeAndGPA(percentage: number): { grade: string; gpa: number
 
 export default function Exams() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const examsStorageKey = `edusphere_exams_${schoolSlug}`;
   const gradesStorageKey = `edusphere_grades_${schoolSlug}`;
 
@@ -422,17 +412,6 @@ export default function Exams() {
     toast.success('Exam removed.');
   };
 
-  // Reset Demo
-  const handleResetDemo = () => {
-    if (confirm('Reset all exams, date sheets, and grade records to demo state?')) {
-      setExams(DEFAULT_EXAMS);
-      setGradesData(DEFAULT_STUDENTS_GRADES);
-      localStorage.setItem(examsStorageKey, JSON.stringify(DEFAULT_EXAMS));
-      localStorage.setItem(gradesStorageKey, JSON.stringify(DEFAULT_STUDENTS_GRADES));
-      setSelectedExamId(DEFAULT_EXAMS[0].id);
-      toast.success('Demo exams and results restored!');
-    }
-  };
 
   // Calculate Student Cumulative Totals & Ranks
   const rankedStudents = useMemo((): RankedStudentRecord[] => {
@@ -766,7 +745,7 @@ export default function Exams() {
                   <tr>
                     <th className="p-3.5">Roll</th>
                     <th className="p-3.5">Student Name</th>
-                    {DEFAULT_SUBJECTS.slice(0, 6).map(sub => (
+                    {[].slice(0, 6).map(sub => (
                       <th key={sub} className="p-3.5 text-center">{sub} (100)</th>
                     ))}
                     <th className="p-3.5 text-center">Total Marks</th>
@@ -789,7 +768,7 @@ export default function Exams() {
                       </td>
 
                       {/* Subject Mark Inputs */}
-                      {DEFAULT_SUBJECTS.slice(0, 6).map(sub => {
+                      {[].slice(0, 6).map(sub => {
                         const rec = st.subjectMarks[sub] || { obtained: 0, isAbsent: false };
                         return (
                           <td key={sub} className="p-2 text-center">
@@ -1196,7 +1175,7 @@ export default function Exams() {
                     onChange={e => setDateSheetForm({ ...dateSheetForm, subject: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs font-bold focus:outline-none focus:border-primary"
                   >
-                    {DEFAULT_SUBJECTS.map(s => (
+                    {[].map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>

@@ -30,7 +30,7 @@ const MONTHLY_DAYS = Array.from({ length: 26 }, (_, i) => i + 1);
 
 export default function AttendanceAdmin() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const navigate = useNavigate();
   const [view, setView] = useState<'daily' | 'monthly'>('daily');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);

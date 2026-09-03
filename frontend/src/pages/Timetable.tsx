@@ -138,7 +138,7 @@ const ROOMS_LIST = [
 
 export default function Timetable() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const storageKey = `edusphere_timetables_${schoolSlug}`;
 
   // State

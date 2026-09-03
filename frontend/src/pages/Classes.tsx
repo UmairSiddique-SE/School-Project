@@ -289,7 +289,7 @@ function saveStudentsToStorage(schoolSlug: string, sectionId: string, students: 
 
 export default function Classes() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const navigate = useNavigate();
 
   const [classes, setClasses] = useState<ClassItem[]>(() => getStoredClasses(schoolSlug));

@@ -12,7 +12,7 @@ export const AuthLayout: React.FC = () => {
   if (isAuthenticated) {
     const destination = user?.role === 'SUPER_ADMIN'
       ? '/platform/super-admin'
-      : `/${schoolSlug || user?.schoolSlug || 'demo'}/dashboard`;
+      : `/${schoolSlug || user?.schoolSlug || ''}/dashboard`;
     return <Navigate to={destination} replace />;
   }
 

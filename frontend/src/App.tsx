@@ -4,6 +4,22 @@ import LandingPage from "@/pages/LandingPage"; import LoginPage from "@/pages/Lo
 const NotFound=()=> <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6"><div><div className="text-8xl font-black text-violet-400 mb-4">404</div><h2 className="text-2xl font-bold text-white mb-3">Page Not Found</h2><p className="text-white/50 mb-8">The page you're looking for doesn't exist or has been moved.</p><a href="/" className="px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold">Go Home</a></div></div>;
 const Unauthorized=()=> <div className="min-h-screen bg-[#030817] flex items-center justify-center text-center px-6"><div><div className="text-8xl font-black text-red-400 mb-4">403</div><h2 className="text-2xl font-bold text-white mb-3">Access Denied</h2><p className="text-white/50 mb-8">You don't have permission to view this page.</p><a href="/school-login" className="px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold">Back to Login</a></div></div>;
 const TenantRedirect=({to}:{to:string})=>{const {user}=useAuth();if(user?.role==="SUPER_ADMIN")return <Navigate to="/super-admin" replace/>;if(!user)return <Navigate to="/school-login" replace/>;return <Navigate to={`/${user.schoolSlug||"edusphere"}/${to}`} replace/>};
+
+
+// Legacy demo-data cleanup
+// Removes records created by the old frontend-only demo implementation.
+try {
+  if (typeof window !== 'undefined') {
+    const demoPrefixes = ['edusphere_exams_', 'edusphere_grades_', 'edusphere_timetable_', 'edusphere_homework_', 'edusphere_classes_', 'edusphere_notifications_', 'edusphere_students_', 'edusphere_finance_', 'edusphere_transport_', 'edusphere_attendance_', 'edusphere_notices_'];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && demoPrefixes.some(prefix => key.startsWith(prefix))) localStorage.removeItem(key);
+    }
+  }
+} catch {
+  // Ignore storage access errors.
+}
+
 export default function App(){return <ThemeProvider><AuthProvider><BrowserRouter><Routes><Route path="/" element={<LandingPage/>}/><Route path="/school-login" element={<SchoolLogin/>}/><Route path="/register-school" element={<SchoolOnboarding/>}/><Route path="/admin-login" element={<AdminLogin/>}/><Route path="/admin" element={<AdminLogin/>}/><Route path="/admin/login" element={<AdminLogin/>}/><Route path="/super-admin" element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]}><SuperAdminDashboard/></ProtectedRoute>}/><Route path="/:schoolSlug/login" element={<AuthLayout/>}><Route index element={<LoginPage/>}/></Route><Route path="/login" element={<Navigate to="/school-login" replace/>}/>
 <Route path="/dashboard" element={<TenantRedirect to="dashboard"/>}/><Route path="/students" element={<TenantRedirect to="students"/>}/><Route path="/teachers" element={<TenantRedirect to="staff"/>}/><Route path="/classes" element={<TenantRedirect to="classes"/>}/><Route path="/sections" element={<TenantRedirect to="sections"/>}/><Route path="/subjects" element={<TenantRedirect to="subjects"/>}/><Route path="/staff" element={<TenantRedirect to="staff"/>}/><Route path="/homework" element={<TenantRedirect to="homework"/>}/><Route path="/exams" element={<TenantRedirect to="exams"/>}/><Route path="/results" element={<TenantRedirect to="results"/>}/><Route path="/timetable" element={<TenantRedirect to="timetable"/>}/><Route path="/notices" element={<TenantRedirect to="notices"/>}/><Route path="/transport" element={<TenantRedirect to="transport"/>}/><Route path="/reports" element={<TenantRedirect to="reports"/>}/><Route path="/subscription" element={<TenantRedirect to="subscription"/>}/><Route path="/attendance" element={<TenantRedirect to="attendance"/>}/><Route path="/notifications" element={<TenantRedirect to="notifications"/>}/><Route path="/finance" element={<TenantRedirect to="finance"/>}/><Route path="/settings" element={<TenantRedirect to="settings"/>}/><Route path="/profile" element={<TenantRedirect to="profile"/>}/><Route path="/buildings" element={<TenantRedirect to="buildings"/>}/>
 <Route path="/:schoolSlug/teacher" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherLayout/></ProtectedRoute>}><Route index element={<TeacherPortal/>}/><Route path="classes" element={<TeacherPortal/>}/><Route path="attendance" element={<TeacherPortal/>}/></Route>

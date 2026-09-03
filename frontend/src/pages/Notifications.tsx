@@ -107,7 +107,7 @@ const DEFAULT_NOTIFICATIONS: Notification[] = [
 
 export default function Notifications() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const storageKey = `edusphere_notifications_${schoolSlug}`;
 
   const [notifications, setNotifications] = useState<Notification[]>(() => {
