@@ -8,6 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('SCHOOL_ADMIN')
 @Controller('academics')
 export class AcademicsController {
   constructor(private readonly academicsService: AcademicsService) {}
@@ -18,13 +19,11 @@ export class AcademicsController {
   }
 
   @Post('homework')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
   createHomework(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createHomework(user.schoolId, user.id, dto);
   }
 
   @Delete('homework/:id')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
   deleteHomework(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteHomework(id, user.schoolId);
   }
@@ -35,13 +34,11 @@ export class AcademicsController {
   }
 
   @Post('timetables')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
   createTimetable(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createTimetable(user.schoolId, dto);
   }
 
   @Delete('timetables/:id')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
   deleteTimetable(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteTimetable(id, user.schoolId);
   }
@@ -52,18 +49,15 @@ export class AcademicsController {
   }
 
   @Post('announcements')
-  @Roles('SCHOOL_ADMIN')
   createAnnouncement(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createAnnouncement(user.schoolId, dto);
   }
 
   @Delete('announcements/:id')
-  @Roles('SCHOOL_ADMIN')
   deleteAnnouncement(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteAnnouncement(id, user.schoolId);
   }
 
-  // Library
   @Get('library/books')
   getBooks(@CurrentUser() user: any) {
     return this.academicsService.getBooks(user.schoolId);
@@ -75,37 +69,31 @@ export class AcademicsController {
   }
 
   @Post('library/books')
-  @Roles('SCHOOL_ADMIN')
   createBook(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createBook(user.schoolId, dto);
   }
 
   @Post('library/issues')
-  @Roles('SCHOOL_ADMIN')
   issueBook(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.issueBook(user.schoolId, dto);
   }
 
   @Delete('library/books/:id')
-  @Roles('SCHOOL_ADMIN')
   deleteBook(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteBook(id, user.schoolId);
   }
 
-  // Transport
   @Get('routes')
   getRoutes(@CurrentUser() user: any) {
     return this.academicsService.getRoutes(user.schoolId);
   }
 
   @Post('routes')
-  @Roles('SCHOOL_ADMIN')
   createRoute(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createRoute(user.schoolId, dto);
   }
 
   @Delete('routes/:id')
-  @Roles('SCHOOL_ADMIN')
   deleteRoute(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteRoute(id, user.schoolId);
   }
@@ -116,13 +104,11 @@ export class AcademicsController {
   }
 
   @Post('vehicles')
-  @Roles('SCHOOL_ADMIN')
   createVehicle(@CurrentUser() user: any, @Body() dto: any) {
     return this.academicsService.createVehicle(user.schoolId, dto);
   }
 
   @Delete('vehicles/:id')
-  @Roles('SCHOOL_ADMIN')
   deleteVehicle(@CurrentUser() user: any, @Param('id') id: string) {
     return this.academicsService.deleteVehicle(id, user.schoolId);
   }
