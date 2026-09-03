@@ -1,0 +1,44 @@
+name: Push Demo Cleanup
+
+on:
+  push:
+    branches:
+      - cleanup/all-demo-data
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove remaining frontend demo arrays
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, subprocess
+          root = Path('frontend/src')
+          changed = []
+          for path in root.rglob('*.tsx'):
+              text = path.read_text(encoding='utf-8')
+              original = text
+              names = set(re.findall(r'(?m)^const\s+((?:DEFAULT_[A-Z0-9_]+)|(?:TEACHERS_LIST)|(?:SUBJECTS_LIST))', text))
+              for name in names:
+                  text = re.sub(rf'(?ms)^const\s+{re.escape(name)}(?:\s*:\s*[^=]+)?\s*=\s*\[.*?^\];\s*', '', text, count=1)
+                  text = re.sub(rf'\b{re.escape(name)}\b', '[]', text)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(str(path))
+          if changed:
+              subprocess.run(['git','config','user.name','github-actions[bot]'], check=True)
+              subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git','add','frontend/src'], check=True)
+              subprocess.run(['git','diff','--cached','--check'], check=True)
+              subprocess.run(['git','commit','-m','chore: remove remaining demo arrays'], check=True)
+              subprocess.run(['git','push','origin','HEAD'], check=True)
+              print('Changed:', *changed, sep='\n')
+          else:
+              print('No remaining named demo arrays')
