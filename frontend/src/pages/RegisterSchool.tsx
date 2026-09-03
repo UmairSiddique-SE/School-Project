@@ -356,6 +356,8 @@ export default function RegisterSchool() {
 
   const sendOtp = async () => {
     if (!validateForm()) return;
+    console.log("Starting registration with payload:", { ...form, logoUrl: form.logoUrl.slice(0, 50) + "..." });
+
     try {
       const response = await apiClient.post("/auth/register-school", {
         schoolName: form.schoolName,
@@ -367,21 +369,33 @@ export default function RegisterSchool() {
         schoolAddress: [form.address, `Tehsil ${form.tehsil}`, `District ${form.district}`, form.province].filter(Boolean).join(", "),
         schoolPhone: form.adminPhone,
         adminName: form.adminName,
-        adminEmail: form.adminEmail,
+        adminEmail: form.adminEmail.trim().toLowerCase(), // Trim and lowercase
         adminPhone: form.adminPhone,
         adminPassword: form.adminPassword,
         requestedPlan: "FREE_TRIAL",
       });
+
+      console.log("Registration API Success:", response.data);
       setVerificationUserId(response.data.verificationUserId);
       setGeneratedOtp("123456");
       setFlowStep("otp");
       toast.success(`Verification code sent to ${form.adminEmail}. Demo OTP: 123456`);
     } catch (error: any) {
-      const message = error?.response?.data?.message;
-      if (Array.isArray(message)) {
-        message.forEach((msg: string) => toast.error(msg));
+      console.error("Registration API Error Details:", {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message
+      });
+
+      const backendMessage = error?.response?.data?.message;
+      if (Array.isArray(backendMessage)) {
+        backendMessage.forEach((msg: string) => toast.error(msg));
+      } else if (backendMessage) {
+        toast.error(backendMessage);
+      } else if (error?.message === "Network Error") {
+        toast.error("Network Error: Could not connect to server. Check your connection.");
       } else {
-        toast.error(message || "Unable to start registration.");
+        toast.error(`Error (${error?.response?.status || "Unknown"}): Unable to start registration.`);
       }
     }
   };

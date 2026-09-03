@@ -3,7 +3,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false, // Disable default to override limit below
+  });
   
   app.enableCors({
     origin: '*',
@@ -12,10 +14,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // Increase payload limit for base64 images
-  const { json, urlencoded } = require('body-parser');
-  app.use(json({ limit: '10mb' }));
-  app.use(urlencoded({ extended: true, limit: '10mb' }));
+  // Increase payload limit for base64 images (50MB)
+  const bodyParser = require('body-parser');
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({
