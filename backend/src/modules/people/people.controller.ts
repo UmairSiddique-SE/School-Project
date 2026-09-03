@@ -4,8 +4,11 @@ import {
 import { PeopleService } from './people.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('SCHOOL_ADMIN')
 @Controller('people')
 export class PeopleController {
   constructor(private readonly peopleService: PeopleService) {}
@@ -15,7 +18,6 @@ export class PeopleController {
     return this.peopleService.getSchoolStats(user.schoolId);
   }
 
-  // Teachers
   @Get('teachers')
   getTeachers(@CurrentUser() user: any) {
     return this.peopleService.getTeachers(user.schoolId);
@@ -36,7 +38,6 @@ export class PeopleController {
     return this.peopleService.deleteTeacher(id, user.schoolId);
   }
 
-  // Students
   @Get('students')
   getStudents(@CurrentUser() user: any) {
     return this.peopleService.getStudents(user.schoolId);
@@ -57,18 +58,6 @@ export class PeopleController {
     return this.peopleService.deleteStudent(id, user.schoolId);
   }
 
-  // Parents
-  @Get('parents')
-  getParents(@CurrentUser() user: any) {
-    return this.peopleService.getParents(user.schoolId);
-  }
-
-  @Post('parents')
-  createParent(@CurrentUser() user: any, @Body() dto: any) {
-    return this.peopleService.createParent(user.schoolId, dto);
-  }
-
-  // Staff
   @Get('staff')
   getStaff(@CurrentUser() user: any) {
     return this.peopleService.getStaff(user.schoolId);
@@ -89,4 +78,3 @@ export class PeopleController {
     return this.peopleService.deleteStaff(id, user.schoolId);
   }
 }
-
