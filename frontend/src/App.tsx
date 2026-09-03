@@ -65,6 +65,15 @@ const TenantRedirect = ({ to }: { to: string }) => {
   return <Navigate to={`/${slug}/${to}`} replace />;
 };
 
+const AttendanceRedirect = () => {
+  const { user } = useAuth();
+  if (user?.role === "SUPER_ADMIN") return <Navigate to="/super-admin" replace />;
+  const slug = user?.schoolSlug || "edusphere";
+  if (user?.role === "TEACHER") return <Navigate to={`/${slug}/teacher/attendance`} replace />;
+  if (user?.role === "STUDENT" || user?.role === "PARENT") return <Navigate to={`/${slug}/student-portal`} replace />;
+  return <Navigate to={`/${slug}/attendance`} replace />;
+};
+
 const TenantRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{children}</ProtectedRoute>
 );
@@ -89,7 +98,6 @@ export default function App() {
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
-
             <Route path="/super-admin" element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]}><SuperAdminDashboard /></ProtectedRoute>} />
 
             <Route path="/:schoolSlug/login" element={<AuthLayout />}><Route index element={<LoginPage />} /></Route>
@@ -108,7 +116,7 @@ export default function App() {
             <Route path="/transport" element={<TenantRedirect to="transport" />} />
             <Route path="/reports" element={<TenantRedirect to="reports" />} />
             <Route path="/subscription" element={<TenantRedirect to="subscription" />} />
-            <Route path="/attendance" element={<TenantRedirect to="attendance" />} />
+            <Route path="/attendance" element={<AttendanceRedirect />} />
             <Route path="/notifications" element={<TenantRedirect to="notifications" />} />
             <Route path="/finance" element={<TenantRedirect to="finance" />} />
             <Route path="/settings" element={<TenantRedirect to="settings" />} />
@@ -133,8 +141,8 @@ export default function App() {
               <Route path="transport" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Transport /></TenantRoute>} />
               <Route path="reports" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Reports /></TenantRoute>} />
               <Route path="subscription" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Subscription /></TenantRoute>} />
-              <Route path="attendance" element={<TenantRoute allowedRoles={ACADEMIC_READ}><AttendanceAdmin /></TenantRoute>} />
-              <Route path="attendance/mark" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Attendance /></TenantRoute>} />
+              <Route path="attendance" element={<TenantRoute allowedRoles={["SCHOOL_ADMIN"]}><AttendanceAdmin /></TenantRoute>} />
+              <Route path="attendance/mark" element={<TenantRoute allowedRoles={["SCHOOL_ADMIN", "TEACHER"]}><Attendance /></TenantRoute>} />
               <Route path="notifications" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Notifications /></TenantRoute>} />
               <Route path="student-portal" element={<TenantRoute allowedRoles={STUDENT_ONLY}><StudentPortal /></TenantRoute>} />
               <Route path="teacher/classes" element={<TenantRoute allowedRoles={["TEACHER"]}><MyClasses /></TenantRoute>} />
