@@ -1,61 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, Loader2, Plus, RefreshCw } from "lucide-react";
 import apiClient from "@/api/apiClient";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-interface Payment { id: string; amount: number; totalPaid: number; discount?: number; fine?: number; method: string; status: string; paidDate?: string; dueDate?: string; student?: { name: string; admissionNo: string; class?: string }; feeStructure?: { name: string } }
+interface Payment { id: string; amount: number; totalPaid: number; discount?: number; fine?: number; method: string; status: string; paidDate?: string; dueDate?: string; student?: { name: string; admissionNo: string }; feeStructure?: { name: string } }
 interface Structure { id: string; name: string; amount: number; frequency: string; description?: string }
-
 const unwrap = (data: any) => Array.isArray(data) ? data : data?.data || data?.items || data?.payments || data?.structures || [];
 
 export default function Finance() {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [structures, setStructures] = useState<Structure[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [showStructure, setShowStructure] = useState(false);
-  const [form, setForm] = useState({ name: "", amount: "", frequency: "MONTHLY", description: "" });
-  const [query, setQuery] = useState("");
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [p, s] = await Promise.all([apiClient.get("/finance/payments"), apiClient.get("/finance/structures")]);
-      setPayments(unwrap(p.data));
-      setStructures(unwrap(s.data));
-    } catch (e: any) {
-      setPayments([]); setStructures([]);
-      toast.error(e?.response?.data?.message || "Unable to load finance data.");
-    } finally { setLoading(false); }
-  };
+  const { user } = useAuth(); const canManage = user?.role === 'SCHOOL_ADMIN';
+  const [payments, setPayments] = useState<Payment[]>([]); const [structures, setStructures] = useState<Structure[]>([]); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [showStructure, setShowStructure] = useState(false); const [form, setForm] = useState({ name: "", amount: "", frequency: "MONTHLY", description: "" }); const [query, setQuery] = useState("");
+  const load = async () => { setLoading(true); try { const [p,s] = await Promise.all([apiClient.get('/finance/payments'), apiClient.get('/finance/structures')]); setPayments(unwrap(p.data)); setStructures(unwrap(s.data)); } catch(e:any) { setPayments([]); setStructures([]); toast.error(e?.response?.data?.message || 'Unable to load finance data.'); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
-
-  const filtered = useMemo(() => payments.filter(p => `${p.student?.name || ""} ${p.student?.admissionNo || ""} ${p.feeStructure?.name || ""}`.toLowerCase().includes(query.toLowerCase())), [payments, query]);
-  const paid = payments.reduce((n, p) => n + Number(p.totalPaid || 0), 0);
-  const outstanding = payments.reduce((n, p) => n + Math.max(0, Number(p.amount || 0) - Number(p.totalPaid || 0)), 0);
-
-  const createStructure = async (e: React.FormEvent) => {
-    e.preventDefault(); setSaving(true);
-    try {
-      await apiClient.post("/finance/structures", { ...form, amount: Number(form.amount) });
-      toast.success("Fee structure created."); setForm({ name: "", amount: "", frequency: "MONTHLY", description: "" }); setShowStructure(false); await load();
-    } catch (e: any) { toast.error(e?.response?.data?.message || "Unable to create fee structure."); }
-    finally { setSaving(false); }
-  };
-
-  const exportCsv = () => {
-    const rows = filtered.map(p => [p.student?.name || "", p.student?.admissionNo || "", p.feeStructure?.name || "", p.amount || 0, p.totalPaid || 0, p.status, p.method, p.paidDate || ""].map(v => `"${String(v).replaceAll('"', '""')}"`).join(","));
-    const blob = new Blob(["Student,Admission No,Fee,Amount,Paid,Status,Method,Paid Date\n" + rows.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `finance-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
-  };
-
-  return <div className="space-y-6 max-w-screen-2xl mx-auto pb-12">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><h1 className="text-3xl font-black">Finance & Fees</h1><p className="text-sm text-muted-foreground">Live financial records from the school database.</p></div>
-      <div className="flex gap-2"><button onClick={load} className="px-4 py-2.5 rounded-xl border flex items-center gap-2"><RefreshCw size={15}/> Refresh</button><button onClick={exportCsv} className="px-4 py-2.5 rounded-xl border flex items-center gap-2"><Download size={15}/> Export</button><button onClick={() => setShowStructure(true)} className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2"><Plus size={15}/> Fee Structure</button></div>
-    </div>
-    <div className="grid md:grid-cols-3 gap-4"><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Collected</p><p className="text-2xl font-black">PKR {paid.toLocaleString()}</p></div><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Outstanding</p><p className="text-2xl font-black">PKR {outstanding.toLocaleString()}</p></div><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Payments</p><p className="text-2xl font-black">{payments.length}</p></div></div>
-    <div className="rounded-2xl border overflow-hidden"><div className="p-4 border-b"><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search student, admission no or fee" className="w-full md:max-w-md rounded-xl border bg-background px-4 py-2.5"/></div>{loading ? <div className="p-12 flex justify-center"><Loader2 className="animate-spin"/></div> : filtered.length === 0 ? <div className="p-12 text-center text-muted-foreground">No finance records found.</div> : <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-4">Student</th><th className="p-4">Fee</th><th className="p-4">Amount</th><th className="p-4">Paid</th><th className="p-4">Status</th></tr></thead><tbody>{filtered.map(p => <tr key={p.id} className="border-b last:border-0"><td className="p-4"><b>{p.student?.name || "—"}</b><div className="text-xs text-muted-foreground">{p.student?.admissionNo || ""}</div></td><td className="p-4">{p.feeStructure?.name || "Manual"}</td><td className="p-4">PKR {Number(p.amount || 0).toLocaleString()}</td><td className="p-4">PKR {Number(p.totalPaid || 0).toLocaleString()}</td><td className="p-4">{p.status}</td></tr>)}</tbody></table></div>}</div>
-    {showStructure && <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"><form onSubmit={createStructure} className="w-full max-w-md rounded-2xl bg-background border p-6 space-y-4"><h2 className="text-xl font-bold">Create Fee Structure</h2><input required value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Name" className="w-full rounded-xl border px-4 py-3"/><input required min="0" type="number" value={form.amount} onChange={e => setForm({...form,amount:e.target.value})} placeholder="Amount" className="w-full rounded-xl border px-4 py-3"/><select value={form.frequency} onChange={e => setForm({...form,frequency:e.target.value})} className="w-full rounded-xl border px-4 py-3"><option value="MONTHLY">Monthly</option><option value="QUARTERLY">Quarterly</option><option value="ANNUAL">Annual</option><option value="ONE_TIME">One Time</option></select><textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="Description" className="w-full rounded-xl border px-4 py-3"/><div className="flex justify-end gap-2"><button type="button" onClick={() => setShowStructure(false)} className="px-4 py-2 rounded-xl border">Cancel</button><button disabled={saving} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground">{saving ? "Saving..." : "Create"}</button></div></form></div>}
-  </div>;
+  const filtered = useMemo(() => payments.filter(p => `${p.student?.name || ''} ${p.student?.admissionNo || ''} ${p.feeStructure?.name || ''}`.toLowerCase().includes(query.toLowerCase())), [payments,query]);
+  const paid = payments.reduce((n,p)=>n+Number(p.totalPaid||0),0); const outstanding = payments.reduce((n,p)=>n+Math.max(0,Number(p.amount||0)-Number(p.totalPaid||0)),0);
+  const createStructure = async (e:React.FormEvent) => { e.preventDefault(); setSaving(true); try { await apiClient.post('/finance/structures',{...form,amount:Number(form.amount)}); toast.success('Fee structure created.'); setForm({name:'',amount:'',frequency:'MONTHLY',description:''}); setShowStructure(false); await load(); } catch(e:any){toast.error(e?.response?.data?.message||'Unable to create fee structure.')} finally{setSaving(false)} };
+  const exportCsv = () => { const rows=filtered.map(p=>[p.student?.name||'',p.student?.admissionNo||'',p.feeStructure?.name||'',p.amount||0,p.totalPaid||0,p.status,p.method,p.paidDate||''].map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')); const blob=new Blob([`Student,Admission No,Fee,Amount,Paid,Status,Method,Paid Date\n${rows.join('\n')}`],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`finance-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); };
+  return <div className="space-y-6 max-w-screen-2xl mx-auto pb-12"><div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-black">Finance & Fees</h1><p className="text-sm text-muted-foreground">Live financial records from the school database.</p></div><div className="flex gap-2"><button onClick={load} className="px-4 py-2.5 rounded-xl border flex items-center gap-2"><RefreshCw size={15}/> Refresh</button><button onClick={exportCsv} className="px-4 py-2.5 rounded-xl border flex items-center gap-2"><Download size={15}/> Export</button>{canManage&&<button onClick={()=>setShowStructure(true)} className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2"><Plus size={15}/> Fee Structure</button>}</div></div><div className="grid md:grid-cols-3 gap-4"><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Collected</p><p className="text-2xl font-black">PKR {paid.toLocaleString()}</p></div><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Outstanding</p><p className="text-2xl font-black">PKR {outstanding.toLocaleString()}</p></div><div className="rounded-2xl border p-5"><p className="text-xs text-muted-foreground">Payments</p><p className="text-2xl font-black">{payments.length}</p></div></div><div className="rounded-2xl border overflow-hidden"><div className="p-4 border-b"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search student, admission no or fee" className="w-full md:max-w-md rounded-xl border bg-background px-4 py-2.5"/></div>{loading?<div className="p-12 flex justify-center"><Loader2 className="animate-spin"/></div>:filtered.length===0?<div className="p-12 text-center text-muted-foreground">No finance records found.</div>:<div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-4">Student</th><th className="p-4">Fee</th><th className="p-4">Amount</th><th className="p-4">Paid</th><th className="p-4">Status</th></tr></thead><tbody>{filtered.map(p=><tr key={p.id} className="border-b last:border-0"><td className="p-4"><b>{p.student?.name||'—'}</b><div className="text-xs text-muted-foreground">{p.student?.admissionNo||''}</div></td><td className="p-4">{p.feeStructure?.name||'Manual'}</td><td className="p-4">PKR {Number(p.amount||0).toLocaleString()}</td><td className="p-4">PKR {Number(p.totalPaid||0).toLocaleString()}</td><td className="p-4">{p.status}</td></tr>)}</tbody></table></div>}</div>{showStructure&&canManage&&<div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"><form onSubmit={createStructure} className="w-full max-w-md rounded-2xl bg-background border p-6 space-y-4"><h2 className="text-xl font-bold">Create Fee Structure</h2><input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Name" className="w-full rounded-xl border px-4 py-3"/><input required min="0" type="number" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} placeholder="Amount" className="w-full rounded-xl border px-4 py-3"/><select value={form.frequency} onChange={e=>setForm({...form,frequency:e.target.value})} className="w-full rounded-xl border px-4 py-3"><option value="MONTHLY">Monthly</option><option value="QUARTERLY">Quarterly</option><option value="ANNUAL">Annual</option><option value="ONE_TIME">One Time</option></select><textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Description" className="w-full rounded-xl border px-4 py-3"/><div className="flex justify-end gap-2"><button type="button" onClick={()=>setShowStructure(false)} className="px-4 py-2 rounded-xl border">Cancel</button><button disabled={saving} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground">{saving?'Saving...':'Create'}</button></div></form></div>}</div>;
 }
