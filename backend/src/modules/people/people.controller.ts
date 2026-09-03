@@ -19,20 +19,11 @@ export class PeopleController {
   @Get('me')
   async getMe(@CurrentUser() user: any) {
     if (user?.role !== 'STUDENT') {
-      return this.prisma.user.findFirst({
-        where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null },
-        select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true },
-      });
+      return this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true } });
     }
-    const account = await this.prisma.user.findFirst({
-      where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null },
-      select: { id: true, name: true, email: true, role: true },
-    });
+    const account = await this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true } });
     if (!account) return null;
-    const student = await this.prisma.student.findFirst({
-      where: { schoolId: user.schoolId, email: account.email, deletedAt: null },
-      include: { section: { include: { class: true } } },
-    });
+    const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: account.email, deletedAt: null }, include: { section: { include: { class: true } } } });
     return student ? { ...student, account } : null;
   }
 
@@ -40,7 +31,6 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getStats(@CurrentUser() user: any) { return this.peopleService.getSchoolStats(user.schoolId); }
 
-  // Teachers are managed by the school administration.
   @Get('teachers')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getTeachers(@CurrentUser() user: any) { return this.peopleService.getTeachers(user.schoolId); }
@@ -57,10 +47,17 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   deleteTeacher(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteTeacher(id, user.schoolId); }
 
-  // Students can be viewed/managed by admin and teachers; only admin mutates enrollment.
   @Get('students')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
-  getStudents(@CurrentUser() user: any) { return this.peopleService.getStudents(user.schoolId); }
+  async getStudents(@CurrentUser() user: any) {
+    if (user?.role === 'SCHOOL_ADMIN') return this.peopleService.getStudents(user.schoolId);
+    const teacher = await this.prisma.teacher.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
+    if (!teacher) return [];
+    const assignments = await this.prisma.classSubject.findMany({ where: { schoolId: user.schoolId, teacherId: teacher.id }, select: { sectionId: true } });
+    const sectionIds = [...new Set(assignments.map(a => a.sectionId).filter((id): id is string => Boolean(id)))];
+    if (!sectionIds.length) return [];
+    return this.prisma.student.findMany({ where: { schoolId: user.schoolId, sectionId: { in: sectionIds }, deletedAt: null }, include: { section: { include: { class: true } } }, orderBy: { name: 'asc' } });
+  }
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
@@ -74,7 +71,6 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
 
-  // Parent directory is administrative data.
   @Get('parents')
   @Roles('SCHOOL_ADMIN')
   getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
@@ -83,7 +79,6 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
 
-  // Staff is administrative data.
   @Get('staff')
   @Roles('SCHOOL_ADMIN')
   getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
