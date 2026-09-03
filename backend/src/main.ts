@@ -1,25 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+  app.set('trust proxy', 1);
+  app.use(helmet());
+
+  const allowedOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: '*',
+    origin: allowedOrigins.length ? allowedOrigins : false,
     credentials: true,
   });
 
   app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: false }));
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-    }),
-  );
-
-  const port = process.env.PORT ?? 3000;
+  const port = Number(process.env.PORT || 3000);
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}/api`);
+  console.log(`Application started on port ${port}`);
 }
 bootstrap();
