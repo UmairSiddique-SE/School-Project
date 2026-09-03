@@ -34,8 +34,12 @@ jobs:
               if new != old:
                   p.write_text(new, encoding='utf-8')
 
+          def strip_mock_arrays(t):
+              # Remove top-level const MOCK_* arrays regardless of their declared element type.
+              return re.sub(r"\n(?:const|let|var)\s+MOCK_[A-Z0-9_]+[^=]*=\s*\[.*?\];\n", "\n", t, flags=re.S)
+
           def attendance(t):
-              t = re.sub(r"\nconst MOCK_CLASSES: ClassSection\[\] = \[.*?\];\n\nconst MOCK_STUDENTS: Student\[\] = \[.*?\];\n", "\n", t, flags=re.S)
+              t = strip_mock_arrays(t)
               t = t.replace("const schoolSlug = user?.schoolSlug || 'demo';", "const schoolSlug = user?.schoolSlug || '';")
               t = t.replace("useState<ClassSection[]>(MOCK_CLASSES)", "useState<ClassSection[]>([])")
               t = t.replace("useState<string>(sectionIdParam || 'sec-1')", "useState<string>(sectionIdParam || '')")
@@ -44,29 +48,28 @@ jobs:
               return t
 
           def finance(t):
-              t = re.sub(r"\nconst MOCK_PAYMENTS: FeePayment\[\] = \[.*?\];\n\nconst MOCK_STRUCTURES:.*?\];\n\nconst MOCK_STUDENTS: Student\[\] = \[.*?\];\n", "\n", t, flags=re.S)
-              t = t.replace("setPayments(Array.isArray(pRes.data) ? pRes.data : MOCK_PAYMENTS);", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);")
-              t = t.replace("setStructures(Array.isArray(sRes.data) ? sRes.data : MOCK_STRUCTURES);", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);")
-              t = t.replace("setStudents(Array.isArray(stRes.data) ? stRes.data : MOCK_STUDENTS);", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);")
-              t = re.sub(r"    \} catch \(\) \{.*?\n    \}", "    } catch (error) {\n      setPayments([]);\n      setStructures([]);\n      setStudents([]);\n      toast.error('Unable to load finance data. Please try again.');\n    }", t, count=1, flags=re.S)
-              t = re.sub(r"\+\{todayRevenue[^\n]*\}", "", t)
+              t = strip_mock_arrays(t)
+              t = re.sub(r"\bsetPayments\(Array\.isArray\(pRes\.data\) \? pRes\.data : MOCK_[A-Z0-9_]+\);", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);", t)
+              t = re.sub(r"\bsetStructures\(Array\.isArray\(sRes\.data\) \? sRes\.data : MOCK_[A-Z0-9_]+\);", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);", t)
+              t = re.sub(r"\bsetStudents\(Array\.isArray\(stRes\.data\) \? stRes\.data : MOCK_[A-Z0-9_]+\);", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);", t)
               return t
 
           def transport(t):
-              t = re.sub(r"\nconst MOCK_ROUTES: TransportRoute\[\] = \[.*?\];\n\nconst MOCK_VEHICLES: Vehicle\[\] = \[.*?\];\n", "\n", t, flags=re.S)
-              t = t.replace("useState<TransportRoute[]>(MOCK_ROUTES)", "useState<TransportRoute[]>([])")
-              t = t.replace("useState<Vehicle[]>(MOCK_VEHICLES)", "useState<Vehicle[]>([])")
-              t = t.replace("setRoutes(MOCK_ROUTES)", "setRoutes([])").replace("setVehicles(MOCK_VEHICLES)", "setVehicles([])")
+              t = strip_mock_arrays(t)
+              t = re.sub(r"useState<TransportRoute\[\]>\(MOCK_[A-Z0-9_]+\)", "useState<TransportRoute[]>([])", t)
+              t = re.sub(r"useState<Vehicle\[\]>\(MOCK_[A-Z0-9_]+\)", "useState<Vehicle[]>([])", t)
+              t = re.sub(r"setRoutes\(MOCK_[A-Z0-9_]+\)", "setRoutes([])", t)
+              t = re.sub(r"setVehicles\(MOCK_[A-Z0-9_]+\)", "setVehicles([])", t)
               return t
 
           def notices(t):
-              t = re.sub(r"\nconst MOCK_NOTICES: Notice\[\] = \[.*?\];\n", "\n", t, flags=re.S)
-              t = t.replace("setNotices(Array.isArray(res.data) ? res.data : MOCK_NOTICES)", "setNotices(Array.isArray(res.data) ? res.data : [])")
-              t = t.replace("setNotices(MOCK_NOTICES);", "setNotices([]);")
+              t = strip_mock_arrays(t)
+              t = re.sub(r"setNotices\(Array\.isArray\(res\.data\) \? res\.data : MOCK_[A-Z0-9_]+\)", "setNotices(Array.isArray(res.data) ? res.data : [])", t)
+              t = re.sub(r"setNotices\(MOCK_[A-Z0-9_]+\);", "setNotices([]);", t)
               return t
 
           def students(t):
-              t = re.sub(r"\n  const MOCK_STUDENTS = \[.*?\n  \];\n\n  const MOCK_CLASSES = \[.*?\n  \];\n", "\n", t, flags=re.S)
+              t = strip_mock_arrays(t)
               t = t.replace("setStudents(MOCK_STUDENTS);", "setStudents([]);")
               t = t.replace("setClasses(MOCK_CLASSES);", "setClasses([]);")
               t = t.replace("toast.success('Mock Excel parsed successfully: 12 students imported!');", "toast.error('Bulk import is not available until the import API is connected.');")
