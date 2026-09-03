@@ -27,19 +27,17 @@ jobs:
 
           def edit(path, fn):
               p = Path(path)
-              if not p.exists():
-                  return
+              if not p.exists(): return
               old = p.read_text(encoding='utf-8')
               new = fn(old)
-              if new != old:
-                  p.write_text(new, encoding='utf-8')
+              if new != old: p.write_text(new, encoding='utf-8')
 
-          def strip_mock_arrays(t):
-              # Remove top-level const MOCK_* arrays regardless of their declared element type.
-              return re.sub(r"\n(?:const|let|var)\s+MOCK_[A-Z0-9_]+[^=]*=\s*\[.*?\];\n", "\n", t, flags=re.S)
+          def between(t, start, end):
+              pattern = re.escape(start) + r'.*?' + re.escape(end)
+              return re.sub(pattern, end, t, count=1, flags=re.S)
 
           def attendance(t):
-              t = strip_mock_arrays(t)
+              t = between(t, 'const MOCK_CLASSES:', '// ─── Main Component')
               t = t.replace("const schoolSlug = user?.schoolSlug || 'demo';", "const schoolSlug = user?.schoolSlug || '';")
               t = t.replace("useState<ClassSection[]>(MOCK_CLASSES)", "useState<ClassSection[]>([])")
               t = t.replace("useState<string>(sectionIdParam || 'sec-1')", "useState<string>(sectionIdParam || '')")
@@ -48,32 +46,31 @@ jobs:
               return t
 
           def finance(t):
-              t = strip_mock_arrays(t)
-              t = re.sub(r"\bsetPayments\(Array\.isArray\(pRes\.data\) \? pRes\.data : MOCK_[A-Z0-9_]+\);", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);", t)
-              t = re.sub(r"\bsetStructures\(Array\.isArray\(sRes\.data\) \? sRes\.data : MOCK_[A-Z0-9_]+\);", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);", t)
-              t = re.sub(r"\bsetStudents\(Array\.isArray\(stRes\.data\) \? stRes\.data : MOCK_[A-Z0-9_]+\);", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);", t)
+              t = between(t, '// ─── Mock Data', '// ─── Main Component')
+              t = re.sub(r'MOCK_[A-Z0-9_]+', '', t)
+              t = t.replace("setPayments(Array.isArray(pRes.data) ? pRes.data : );", "setPayments(Array.isArray(pRes.data) ? pRes.data : []);")
+              t = t.replace("setStructures(Array.isArray(sRes.data) ? sRes.data : );", "setStructures(Array.isArray(sRes.data) ? sRes.data : []);")
+              t = t.replace("setStudents(Array.isArray(stRes.data) ? stRes.data : );", "setStudents(Array.isArray(stRes.data) ? stRes.data : []);")
               return t
 
           def transport(t):
-              t = strip_mock_arrays(t)
-              t = re.sub(r"useState<TransportRoute\[\]>\(MOCK_[A-Z0-9_]+\)", "useState<TransportRoute[]>([])", t)
-              t = re.sub(r"useState<Vehicle\[\]>\(MOCK_[A-Z0-9_]+\)", "useState<Vehicle[]>([])", t)
-              t = re.sub(r"setRoutes\(MOCK_[A-Z0-9_]+\)", "setRoutes([])", t)
-              t = re.sub(r"setVehicles\(MOCK_[A-Z0-9_]+\)", "setVehicles([])", t)
+              t = between(t, 'const MOCK_ROUTES:', 'export default function Transport')
+              t = re.sub(r'useState<TransportRoute\[\]>\(MOCK_[A-Z0-9_]+\)', 'useState<TransportRoute[]>([])', t)
+              t = re.sub(r'useState<Vehicle\[\]>\(MOCK_[A-Z0-9_]+\)', 'useState<Vehicle[]>([])', t)
+              t = re.sub(r'setRoutes\(MOCK_[A-Z0-9_]+\)', 'setRoutes([])', t)
+              t = re.sub(r'setVehicles\(MOCK_[A-Z0-9_]+\)', 'setVehicles([])', t)
               return t
 
           def notices(t):
-              t = strip_mock_arrays(t)
-              t = re.sub(r"setNotices\(Array\.isArray\(res\.data\) \? res\.data : MOCK_[A-Z0-9_]+\)", "setNotices(Array.isArray(res.data) ? res.data : [])", t)
-              t = re.sub(r"setNotices\(MOCK_[A-Z0-9_]+\);", "setNotices([]);", t)
+              t = between(t, 'const MOCK_NOTICES:', 'export default function NoticeBoard')
+              t = re.sub(r'MOCK_[A-Z0-9_]+', '[]', t)
               return t
 
           def students(t):
-              t = strip_mock_arrays(t)
+              t = between(t, '  const MOCK_STUDENTS = [', '  const fetchAll = () => {')
               t = t.replace("setStudents(MOCK_STUDENTS);", "setStudents([]);")
               t = t.replace("setClasses(MOCK_CLASSES);", "setClasses([]);")
               t = t.replace("toast.success('Mock Excel parsed successfully: 12 students imported!');", "toast.error('Bulk import is not available until the import API is connected.');")
-              t = re.sub(r"    setImporting\(true\);\n    setTimeout\(\(\) => \{.*?\n    \}, 1500\);", "    setImporting(true);\n    setImporting(false);\n    setShowImport(false);", t, flags=re.S)
               t = t.replace("students.filter(s => s.gender === 'MALE').length || Math.floor(students.length * 0.52)", "students.filter(s => s.gender === 'MALE').length")
               t = t.replace("students.filter(s => s.gender === 'FEMALE').length || Math.floor(students.length * 0.48)", "students.filter(s => s.gender === 'FEMALE').length")
               t = t.replace("{s.section?.class?.name || 'Class 10'}", "{s.section?.class?.name || '—'}")
@@ -108,17 +105,14 @@ jobs:
           edit('frontend/src/pages/Students.tsx', students)
 
           parent = Path('frontend/src/pages/Parents.tsx')
-          if parent.exists():
-              parent.unlink()
+          if parent.exists(): parent.unlink()
 
           forbidden = []
           for p in Path('frontend/src/pages').glob('*.tsx'):
               text = p.read_text(encoding='utf-8')
               for token in ('MOCK_STUDENTS','MOCK_PAYMENTS','MOCK_STRUCTURES','MOCK_CLASSES','MOCK_ROUTES','MOCK_VEHICLES','MOCK_NOTICES'):
-                  if token in text:
-                      forbidden.append(f'{p}:{token}')
-          if forbidden:
-              raise SystemExit('Remaining demo constants: ' + ', '.join(forbidden))
+                  if token in text: forbidden.append(f'{p}:{token}')
+          if forbidden: raise SystemExit('Remaining demo constants: ' + ', '.join(forbidden))
 
       - name: Commit cleanup to PR branch
         shell: bash
@@ -126,9 +120,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add frontend/src/pages
-          if git diff --cached --quiet; then
-            echo "No cleanup changes detected"
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo "No cleanup changes detected"; exit 0; fi
           git commit -m "Remove frontend demo and mock data"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
