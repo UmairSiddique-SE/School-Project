@@ -96,3 +96,11 @@ jobs:
           print('Changed files:')
           for p in changed:
               print(p)
+          if changed:
+              import subprocess
+              subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+              subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'add', 'frontend/src'], check=True)
+              subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+              subprocess.run(['git', 'commit', '-m', 'chore: remove frontend demo data'], check=True)
+              subprocess.run(['git', 'push', 'origin', 'HEAD:${{ github.head_ref }}'], check=True)
