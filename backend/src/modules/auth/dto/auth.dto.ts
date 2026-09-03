@@ -61,7 +61,7 @@ export class RegisterSchoolDto {
   adminPhone: string;
 
   @IsString()
-  @MinLength(12, { message: 'Password must be at least 12 characters' })
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
   adminPassword: string;
 
   @IsOptional()

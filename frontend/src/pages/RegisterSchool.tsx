@@ -377,7 +377,12 @@ export default function RegisterSchool() {
       setFlowStep("otp");
       toast.success(`Verification code sent to ${form.adminEmail}. Demo OTP: 123456`);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Unable to start registration.");
+      const message = error?.response?.data?.message;
+      if (Array.isArray(message)) {
+        message.forEach((msg: string) => toast.error(msg));
+      } else {
+        toast.error(message || "Unable to start registration.");
+      }
     }
   };
 

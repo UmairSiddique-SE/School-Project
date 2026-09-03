@@ -12,6 +12,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  // Increase payload limit for base64 images
+  const { json, urlencoded } = require('body-parser');
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

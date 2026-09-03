@@ -32,6 +32,9 @@ interface Stats {
   pendingHomeworks: number;
   pendingLeaves: number;
   overdueLibraryBooks: number;
+  todayAttendancePercentage: number;
+  presentToday: number;
+  absentToday: number;
   announcements: any[];
   recentAdmissions: any[];
   upcomingExams: any[];
@@ -92,6 +95,14 @@ const upcomingExamsList = [
   { title: 'Mid-Term Mathematics Exam', class: 'Classes 8-12', date: 'Sep 10, 2026', daysLeft: 9, type: 'Theory' },
   { title: 'Physics & Chemistry Practical', class: 'Classes 10 & 12', date: 'Sep 14, 2026', daysLeft: 13, type: 'Practical' },
   { title: 'English Language Assessment', class: 'All Secondary', date: 'Sep 18, 2026', daysLeft: 17, type: 'Written' },
+];
+
+const studentGrowthData = [
+  { year: '2021', students: 850 },
+  { year: '2022', students: 940 },
+  { year: '2023', students: 1050 },
+  { year: '2024', students: 1180 },
+  { year: '2025', students: 1248 },
 ];
 
 /* ===== Custom Tooltip ===== */
@@ -755,68 +766,68 @@ export default function Dashboard() {
         <StatCard
           icon={GraduationCap}
           label="Total Students"
-          value={stats?.studentsCount ?? 1248}
+          value={stats?.studentsCount ?? 0}
           trend="+14 this month"
           trendDir="up"
-          subtitle="94.8% Present Today"
+          subtitle="Active Scholars"
           gradient="gradient-bg-blue"
           delay={0.05}
           onClick={() => navigate(`${basePath}/students`)}
         />
         <StatCard
           icon={UserCheck}
-          label="Faculty Staff"
-          value={stats?.teachersCount ?? 84}
-          trend="81 on duty"
+          label="Total Staff"
+          value={(stats?.teachersCount || 0) + (stats?.staffCount || 0)}
+          trend={`${stats?.teachersCount || 0} Teachers`}
           trendDir="up"
-          subtitle="3 on approved leave"
+          subtitle={`${stats?.staffCount || 0} Support Staff`}
           gradient="gradient-bg-primary"
           delay={0.1}
           onClick={() => navigate(`${basePath}/staff`)}
         />
         <StatCard
-          icon={Users}
-          label="Parents Active"
-          value={stats?.parentsCount ?? 1096}
-          trend="96% app verified"
+          icon={BookOpen}
+          label="Total Classes"
+          value={stats?.classesCount ?? 0}
+          trend="All Sections"
           trendDir="up"
-          subtitle="Instant SMS linked"
-          gradient="gradient-bg-rose"
+          subtitle="Active Curriculum"
+          gradient="gradient-bg-cyan"
           delay={0.15}
-          onClick={() => navigate(`${basePath}/parents`)}
+          onClick={() => navigate(`${basePath}/classes`)}
+        />
+        <StatCard
+          icon={Calendar}
+          label="Today Attendance"
+          value={`${stats?.presentToday ?? 0} / ${stats?.absentToday ?? 0}`}
+          trend={`${stats?.todayAttendancePercentage ?? 0}% Present`}
+          trendDir="up"
+          subtitle="Present / Absent"
+          gradient="gradient-bg-emerald"
+          delay={0.2}
+          onClick={() => navigate(`${basePath}/attendance`)}
         />
         <StatCard
           icon={DollarSign}
           label="Fee Collection"
-          value={`₹${((stats?.totalRevenue ?? 2480000) / 100000).toFixed(1)}L`}
-          trend="+19% vs target"
+          value={`₹${((stats?.totalRevenue ?? 0) / 100000).toFixed(1)}L`}
+          trend="Current Month"
           trendDir="up"
-          subtitle="₹3.1L pending recovery"
-          gradient="gradient-bg-emerald"
-          delay={0.2}
+          subtitle="Total Collected"
+          gradient="gradient-bg-rose"
+          delay={0.25}
           onClick={() => navigate(`${basePath}/finance`)}
         />
         <StatCard
-          icon={BookOpen}
-          label="Active Classes"
-          value={stats?.classesCount ?? 28}
-          trend="100% staffed"
-          trendDir="up"
-          subtitle="56 Daily Periods"
-          gradient="gradient-bg-cyan"
-          delay={0.25}
-          onClick={() => navigate(`${basePath}/classes`)}
-        />
-        <StatCard
           icon={AlertCircle}
-          label="Urgent Tasks"
-          value={stats?.pendingFeePaymentsCount ?? 6}
+          label="Pending Fees"
+          value={`₹${((stats?.pendingFees ?? 0) / 100000).toFixed(1)}L`}
           trend="Action required"
           trendDir="down"
-          subtitle="4 fee alerts, 2 leaves"
+          subtitle="Fees to receive"
           gradient="gradient-bg-amber"
           delay={0.3}
-          onClick={() => navigate(`${basePath}/notifications`)}
+          onClick={() => navigate(`${basePath}/finance`)}
         />
       </div>
 
@@ -831,8 +842,8 @@ export default function Dashboard() {
                   <TrendingUp size={16} />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">Financial & Academic Insights</h2>
-                  <p className="text-xs text-slate-400">Monthly trend of revenue, collections & budget</p>
+                  <h2 className="text-base font-bold text-white">Financial & Student Analytics</h2>
+                  <p className="text-xs text-slate-400">Trends of revenue, attendance & growth</p>
                 </div>
               </div>
 
@@ -844,7 +855,7 @@ export default function Dashboard() {
                     activeChartTab === 'revenue' ? 'bg-violet-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Revenue
+                  Fees
                 </button>
                 <button
                   onClick={() => setActiveChartTab('attendance')}
@@ -860,7 +871,7 @@ export default function Dashboard() {
                     activeChartTab === 'performance' ? 'bg-violet-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Scores
+                  Growth
                 </button>
               </div>
             </div>
@@ -875,17 +886,12 @@ export default function Dashboard() {
                       <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
                       <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.0} />
                     </linearGradient>
-                    <linearGradient id="feeGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                    </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 100000).toFixed(0)}L`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#revGrad)" name="Total Revenue" />
-                  <Area type="monotone" dataKey="fees" stroke="#10b981" strokeWidth={2} fill="url(#feeGrad)" name="Fee Collected" />
+                  <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#revGrad)" name="Monthly Collection" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -897,21 +903,26 @@ export default function Dashboard() {
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={[70, 100]} tickFormatter={v => `${v}%`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="students" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Students %" />
-                  <Bar dataKey="staff" fill="#06b6d4" radius={[6, 6, 0, 0]} name="Faculty %" />
+                  <Bar dataKey="students" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Attendance %" />
                 </BarChart>
               </ResponsiveContainer>
             )}
 
             {activeChartTab === 'performance' && (
               <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={classAverages} margin={{ top: 10, right: 16, left: -15, bottom: 0 }}>
+                <AreaChart data={studentGrowthData} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="class" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={[60, 100]} tickFormatter={v => `${v}%`} />
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="score" fill="#10b981" radius={[6, 6, 0, 0]} name="Avg Score %" />
-                </BarChart>
+                  <Area type="monotone" dataKey="students" stroke="#10b981" strokeWidth={2.5} fill="url(#growthGrad)" name="Total Students" />
+                </AreaChart>
               </ResponsiveContainer>
             )}
           </div>
@@ -992,70 +1003,54 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <VIPQuickAction
             to={`${basePath}/students`}
-            icon={GraduationCap}
-            label="Students"
-            description="Enroll & Records"
+            icon={Plus}
+            label="Add Student"
+            description="Enroll new scholar"
             gradient="bg-gradient-to-tr from-blue-600 to-cyan-600"
             glow="bg-blue-600"
           />
           <VIPQuickAction
             to={`${basePath}/staff`}
             icon={UserCheck}
-            label="Staff"
-            description="Faculty & Team"
+            label="Add Staff"
+            description="Onboard faculty"
             gradient="bg-gradient-to-tr from-violet-600 to-indigo-600"
             glow="bg-violet-600"
           />
           <VIPQuickAction
             to={`${basePath}/classes`}
-            icon={BookOpen}
-            label="Classes"
-            description="Sections & Batches"
+            icon={Plus}
+            label="Add Class"
+            description="Create section"
             gradient="bg-gradient-to-tr from-emerald-600 to-teal-600"
             glow="bg-emerald-600"
           />
           <VIPQuickAction
-            to={`${basePath}/finance`}
-            icon={CreditCard}
-            label="Finance"
-            description="Fee Invoices"
-            gradient="bg-gradient-to-tr from-amber-600 to-orange-600"
-            glow="bg-amber-600"
-          />
-          <VIPQuickAction
             to={`${basePath}/attendance`}
-            icon={Calendar}
-            label="Attendance"
-            description="Daily Tracking"
+            icon={CheckCircle2}
+            label="Mark Attendance"
+            description="Daily check-in"
             gradient="bg-gradient-to-tr from-fuchsia-600 to-pink-600"
             glow="bg-fuchsia-600"
           />
           <VIPQuickAction
-            to={`${basePath}/exams`}
-            icon={ClipboardList}
-            label="Exams"
-            description="Grading & Tests"
-            gradient="bg-gradient-to-tr from-indigo-600 to-blue-600"
-            glow="bg-indigo-600"
+            to={`${basePath}/finance`}
+            icon={DollarSign}
+            label="Add Fee Payment"
+            description="Collect dues"
+            gradient="bg-gradient-to-tr from-amber-600 to-orange-600"
+            glow="bg-amber-600"
           />
           <VIPQuickAction
-            to={`${basePath}/timetable`}
-            icon={Clock}
-            label="Timetable"
-            description="Daily Periods"
-            gradient="bg-gradient-to-tr from-teal-600 to-emerald-600"
-            glow="bg-teal-600"
-          />
-          <VIPQuickAction
-            to={`${basePath}/transport`}
-            icon={Bus}
-            label="Transport"
-            description="Bus Routes"
+            icon={MessageSquare}
+            label="Create Notice"
+            description="Broadcast info"
             gradient="bg-gradient-to-tr from-rose-600 to-pink-600"
             glow="bg-rose-600"
+            onClick={() => setIsNoticeModalOpen(true)}
           />
         </div>
       </div>
@@ -1202,13 +1197,13 @@ export default function Dashboard() {
             </div>
           </GlassCard>
 
-          {/* Upcoming Exams & Timeline */}
+          {/* Upcoming Exams & Events */}
           <GlassCard delay={0.35} className="p-6">
             <SectionHeader
               icon={ClipboardList}
-              title="Upcoming Exams & Tests"
+              title="Upcoming Exams / Events"
               subtitle="Examination dates countdown"
-              action="Exam Schedule"
+              action="Full Schedule"
               onAction={() => navigate(`${basePath}/exams`)}
             />
 
@@ -1227,14 +1222,14 @@ export default function Dashboard() {
             </div>
           </GlassCard>
 
-          {/* Notice Board & Announcements */}
+          {/* Recent Notifications */}
           <GlassCard delay={0.4} className="p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center">
                   <BellRing size={15} />
                 </div>
-                <h3 className="text-sm font-bold text-white">Institutional Notices</h3>
+                <h3 className="text-sm font-bold text-white">Recent Notifications</h3>
               </div>
               <button
                 onClick={() => setIsNoticeModalOpen(true)}

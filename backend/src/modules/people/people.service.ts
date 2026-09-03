@@ -658,6 +658,7 @@ export class PeopleService {
 
     const totalTodayAttendance = attendances.length;
     const presentToday = attendances.filter(a => a.status === 'PRESENT').length;
+    const absentToday = attendances.filter(a => a.status === 'ABSENT').length;
     const todayAttendancePercentage = totalTodayAttendance > 0 ? Math.round((presentToday / totalTodayAttendance) * 100) : 0;
 
     const totalRevenue = feePayments.reduce((acc, curr) => acc + (curr.totalPaid || 0), 0);
@@ -674,6 +675,8 @@ export class PeopleService {
       staffCount,
       classesCount,
       todayAttendancePercentage,
+      presentToday,
+      absentToday,
       totalRevenue,
       pendingFees,
       pendingFeePaymentsCount,
