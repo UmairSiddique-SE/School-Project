@@ -1,36 +1,39 @@
-/* EduSphere — polished SaaS design system
- * Visual language: calm indigo/cyan accents, high readability, restrained glass.
- * Works with the existing .light / .dark theme classes.
+/* EduSphere — polished school ERP design system
+ * Visual language: clean white surfaces, blue section headers, subtle indigo accents.
+ * Dark mode remains supported, but light mode is the primary product experience.
  */
 
 :root {
-  --ds-primary: #6366f1;
-  --ds-primary-strong: #4f46e5;
-  --ds-cyan: #06b6d4;
-  --ds-success: #10b981;
+  --ds-primary: #1268e8;
+  --ds-primary-strong: #0757cf;
+  --ds-blue: #0b7bdc;
+  --ds-indigo: #4f46e5;
+  --ds-cyan: #0ea5e9;
+  --ds-success: #16a34a;
   --ds-warning: #f59e0b;
-  --ds-danger: #ef4444;
-  --ds-radius: 14px;
-  --ds-radius-lg: 20px;
+  --ds-danger: #dc2626;
+  --ds-radius: 12px;
+  --ds-radius-lg: 18px;
+  --ds-page: #f5f8fc;
 }
 
 .light {
-  --ds-bg: #f7f8fc;
-  --ds-surface: rgba(255,255,255,.92);
+  --ds-bg: #f5f8fc;
+  --ds-surface: rgba(255,255,255,.96);
   --ds-surface-solid: #ffffff;
-  --ds-border: rgba(15,23,42,.08);
-  --ds-border-strong: rgba(99,102,241,.20);
-  --ds-shadow: 0 10px 30px rgba(15,23,42,.06);
-  --ds-shadow-hover: 0 18px 42px rgba(15,23,42,.10);
+  --ds-border: #dbe4ef;
+  --ds-border-strong: #a9c7ec;
+  --ds-shadow: 0 8px 26px rgba(31, 65, 105, .07);
+  --ds-shadow-hover: 0 14px 34px rgba(31, 65, 105, .12);
   --ds-text-soft: #64748b;
 }
 
 .dark {
-  --ds-bg: #070b16;
-  --ds-surface: rgba(15,23,42,.72);
+  --ds-bg: #07111f;
+  --ds-surface: rgba(15,23,42,.86);
   --ds-surface-solid: #0f172a;
-  --ds-border: rgba(148,163,184,.11);
-  --ds-border-strong: rgba(129,140,248,.28);
+  --ds-border: rgba(148,163,184,.14);
+  --ds-border-strong: rgba(96,165,250,.35);
   --ds-shadow: 0 14px 38px rgba(0,0,0,.28);
   --ds-shadow-hover: 0 20px 50px rgba(0,0,0,.40);
   --ds-text-soft: #94a3b8;
@@ -40,23 +43,19 @@ html { background: var(--ds-bg); }
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 8% 0%, rgba(99,102,241,.075), transparent 28%),
-    radial-gradient(circle at 92% 8%, rgba(6,182,212,.055), transparent 25%),
+    radial-gradient(circle at 8% 0%, rgba(37,99,235,.045), transparent 26%),
+    radial-gradient(circle at 92% 8%, rgba(14,165,233,.035), transparent 24%),
     var(--ds-bg);
+  color: #10233d;
 }
+.dark body { color: #e2e8f0; }
 
-.dark body {
-  background:
-    radial-gradient(circle at 8% 0%, rgba(99,102,241,.12), transparent 30%),
-    radial-gradient(circle at 92% 8%, rgba(6,182,212,.07), transparent 26%),
-    var(--ds-bg);
-}
-
-/* Consistent dashboard surfaces */
+/* Consistent content surfaces */
 main .glass-card,
 main .stat-card,
-main .glass-elevated {
-  border-radius: var(--ds-radius-lg);
+main .glass-elevated,
+main > div > .rounded-xl.border,
+main > div > .rounded-2xl.border {
   border-color: var(--ds-border);
   box-shadow: var(--ds-shadow);
 }
@@ -65,91 +64,152 @@ main .glass-card:hover,
 main .stat-card:hover {
   border-color: var(--ds-border-strong);
   box-shadow: var(--ds-shadow-hover);
-  transform: translateY(-1px);
 }
 
-/* Make standard controls feel like one product */
+/* Primary controls */
 main button:not([disabled]),
 main a[role="button"] {
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background-color .16s ease;
 }
-
 main button:not([disabled]):active,
 main a[role="button"]:active { transform: translateY(1px); }
 
 main input,
 main select,
 main textarea {
-  border-radius: 12px;
-  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
 }
-
 .light main input,
 .light main select,
-.light main textarea {
-  background: rgba(255,255,255,.90);
-  border-color: rgba(15,23,42,.10);
-}
-
+.light main textarea { background: #fff; }
 .dark main input,
 .dark main select,
-.dark main textarea {
-  background: rgba(15,23,42,.72);
-}
-
+.dark main textarea { background: rgba(15,23,42,.78); }
 main input:focus,
 main select:focus,
 main textarea:focus {
   outline: none;
-  border-color: rgba(99,102,241,.60);
-  box-shadow: 0 0 0 3px rgba(99,102,241,.13);
+  border-color: rgba(18,104,232,.62);
+  box-shadow: 0 0 0 3px rgba(18,104,232,.12);
+}
+
+/* Screenshot-inspired form sections */
+.erp-section {
+  overflow: hidden;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-surface-solid);
+  box-shadow: var(--ds-shadow);
+}
+.erp-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 0 22px;
+  border-left: 7px solid var(--ds-primary);
+  background: linear-gradient(90deg, #e7f4ff 0%, #f3f9ff 55%, #f8fbff 100%);
+  color: #10233d;
+  font-size: 20px;
+  font-weight: 800;
+}
+.erp-section-title.indigo {
+  border-left-color: #8b2be2;
+  background: linear-gradient(90deg, #f2e9ff 0%, #fbf8ff 100%);
+}
+.erp-section-title.green {
+  border-left-color: #16a34a;
+  background: linear-gradient(90deg, #eaf9ef 0%, #f7fcf8 100%);
+}
+.erp-section-body { padding: 22px; }
+.erp-form-label {
+  display: block;
+  color: #17365f;
+  font-size: 14px;
+  font-weight: 700;
+}
+.erp-form-label .required { color: #dc2626; }
+.erp-form-help { color: #64748b; font-size: 12px; margin-top: 5px; }
+.erp-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--ds-border);
+  background: #f8fafc;
+}
+.erp-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #1677ed, #0b62d1);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 5px 14px rgba(18,104,232,.20);
+}
+.erp-secondary-btn {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
 }
 
 /* Data tables: clean enterprise rhythm */
 main table thead th {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: .055em;
   text-transform: uppercase;
+  color: #52657d;
 }
-
-main table tbody tr {
-  transition: background-color .15s ease;
-}
-
-.light main table tbody tr:hover { background: rgba(99,102,241,.035); }
+main table tbody tr { transition: background-color .15s ease; }
+.light main table tbody tr:hover { background: #f4f8fd; }
 .dark main table tbody tr:hover { background: rgba(148,163,184,.035); }
+
+/* Sidebar */
+.light aside.glass {
+  background: rgba(255,255,255,.96) !important;
+  box-shadow: 10px 0 35px rgba(15,23,42,.055);
+  border-color: #e2e8f0 !important;
+}
+.light aside.glass .text-white { color: #14213d !important; }
+.light aside.glass .text-slate-400,
+.light aside.glass .text-muted-foreground { color: #64748b !important; }
+.light .sidebar-nav-item:hover { color: #1554a6; background: #eff6ff; }
+.dark .sidebar-nav-item:hover { color: #e2e8f0; background: rgba(255,255,255,.045); }
+.sidebar-nav-item.active {
+  box-shadow: inset 3px 0 0 var(--ds-primary), 0 4px 14px rgba(18,104,232,.08) !important;
+}
+
+/* Header */
+.light header { background: rgba(255,255,255,.88) !important; border-color: #e2e8f0 !important; }
+.dark header { border-color: rgba(148,163,184,.08) !important; }
 
 /* Scrollbars */
 * { scrollbar-width: thin; scrollbar-color: rgba(100,116,139,.35) transparent; }
 *::-webkit-scrollbar { width: 7px; height: 7px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: rgba(100,116,139,.30); border-radius: 999px; }
-*::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,.55); }
+*::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,.55); }
 
-/* Sidebar: premium but restrained */
-.light aside.glass { box-shadow: 10px 0 35px rgba(15,23,42,.045); }
-.dark aside.glass { box-shadow: 12px 0 42px rgba(0,0,0,.25); }
-
-.light .sidebar-nav-item:hover { color: #312e81; background: rgba(99,102,241,.055); }
-.dark .sidebar-nav-item:hover { color: #e2e8f0; background: rgba(255,255,255,.045); }
-
-.sidebar-nav-item.active {
-  box-shadow: inset 3px 0 0 var(--ds-primary), 0 4px 14px rgba(99,102,241,.08) !important;
-}
-
-/* Header/search polish */
-.light header { border-color: rgba(15,23,42,.07) !important; }
-.dark header { border-color: rgba(148,163,184,.08) !important; }
-
-/* Mobile comfort */
 @media (max-width: 767px) {
   main { padding-bottom: 24px; }
-  main .glass-card,
-  main .stat-card { border-radius: 16px; }
+  .erp-section-title { min-height: 52px; padding: 0 15px; font-size: 17px; }
+  .erp-section-body { padding: 15px; }
+  .erp-action-bar { padding: 13px 15px; }
 }
 
-/* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;
