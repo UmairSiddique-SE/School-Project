@@ -1,0 +1,62 @@
+/* EduSphere Professional visual system: premium navy + cyan/teal, replacing the old violet-heavy accents. */
+:root {
+  --background: 220 32% 6%;
+  --foreground: 210 40% 96%;
+  --card: 220 28% 9%;
+  --card-foreground: 210 40% 96%;
+  --popover: 220 28% 9%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 187 85% 45%;
+  --primary-foreground: 220 40% 6%;
+  --secondary: 218 30% 13%;
+  --secondary-foreground: 210 40% 88%;
+  --muted: 218 28% 12%;
+  --muted-foreground: 215 18% 62%;
+  --accent: 190 45% 14%;
+  --accent-foreground: 190 80% 88%;
+  --border: 216 25% 17%;
+  --input: 216 25% 17%;
+  --ring: 187 85% 45%;
+  --glow-primary: 187 85% 45%;
+  --glow-blue: 199 89% 48%;
+}
+
+.light {
+  --background: 210 40% 98%;
+  --foreground: 222 35% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 35% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 35% 12%;
+  --primary: 187 82% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 214 30% 92%;
+  --secondary-foreground: 222 35% 12%;
+  --muted: 210 35% 95%;
+  --muted-foreground: 215 18% 43%;
+  --accent: 190 35% 92%;
+  --accent-foreground: 190 75% 25%;
+  --border: 214 28% 87%;
+  --input: 214 28% 87%;
+  --ring: 187 82% 36%;
+}
+
+/* Existing utility names remain compatible with the component library. */
+.gradient-bg-primary { background: linear-gradient(135deg, #0891b2 0%, #0d9488 52%, #14b8a6 100%) !important; }
+.gradient-text-primary { background: linear-gradient(135deg, #67e8f9 0%, #22d3ee 45%, #5eead4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.glow-violet, .glow-violet-sm { box-shadow: 0 0 22px rgba(20, 184, 166, .22), 0 0 44px rgba(8, 145, 178, .10); }
+
+/* Keep violet component classes visually aligned with the new brand palette. */
+.bg-violet-500 { background-color: rgb(20 184 166) !important; }
+.bg-violet-600 { background-color: rgb(13 148 136) !important; }
+.bg-violet-700 { background-color: rgb(15 118 110) !important; }
+.text-violet-400 { color: rgb(45 212 191) !important; }
+.text-violet-500 { color: rgb(20 184 166) !important; }
+.border-violet-500\/25 { border-color: rgb(20 184 166 / .25) !important; }
+.border-violet-500\/30 { border-color: rgb(20 184 166 / .30) !important; }
+.from-violet-600 { --tw-gradient-from: #0d9488 !important; }
+.from-violet-500 { --tw-gradient-from: #14b8a6 !important; }
+.to-indigo-600 { --tw-gradient-to: #0891b2 !important; }
+.to-indigo-700 { --tw-gradient-to: #0e7490 !important; }
+
+.light .text-violet-400, .light .text-violet-500 { color: rgb(13 148 136) !important; }
