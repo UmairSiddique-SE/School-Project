@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { PeopleService } from './people.service';
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from './people.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -19,11 +19,20 @@ export class PeopleController {
   @Get('me')
   async getMe(@CurrentUser() user: any) {
     if (user?.role !== 'STUDENT') {
-      return this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true } });
+      return this.prisma.user.findFirst({
+        where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null },
+        select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true },
+      });
     }
-    const account = await this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true } });
+    const account = await this.prisma.user.findFirst({
+      where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null },
+      select: { id: true, name: true, email: true, role: true },
+    });
     if (!account) return null;
-    const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: account.email, deletedAt: null }, include: { section: { include: { class: true } } } });
+    const student = await this.prisma.student.findFirst({
+      where: { schoolId: user.schoolId, email: account.email, deletedAt: null },
+      include: { section: { include: { class: true } } },
+    });
     return student ? { ...student, account } : null;
   }
 
@@ -51,12 +60,25 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   async getStudents(@CurrentUser() user: any) {
     if (user?.role === 'SCHOOL_ADMIN') return this.peopleService.getStudents(user.schoolId);
-    const teacher = await this.prisma.teacher.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
+
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
+      select: { id: true },
+    });
     if (!teacher) return [];
-    const assignments = await this.prisma.classSubject.findMany({ where: { schoolId: user.schoolId, teacherId: teacher.id }, select: { sectionId: true } });
-    const sectionIds = [...new Set(assignments.map(a => a.sectionId).filter((id): id is string => Boolean(id)))];
+
+    const sections = await this.prisma.section.findMany({
+      where: { schoolId: user.schoolId, teacherId: teacher.id, deletedAt: null },
+      select: { id: true },
+    });
+    const sectionIds = sections.map(section => section.id);
     if (!sectionIds.length) return [];
-    return this.prisma.student.findMany({ where: { schoolId: user.schoolId, sectionId: { in: sectionIds }, deletedAt: null }, include: { section: { include: { class: true } } }, orderBy: { name: 'asc' } });
+
+    return this.prisma.student.findMany({
+      where: { schoolId: user.schoolId, sectionId: { in: sectionIds }, deletedAt: null },
+      include: { section: { include: { class: true } } },
+      orderBy: { name: 'asc' },
+    });
   }
 
   @Post('students')
@@ -93,5 +115,5 @@ export class PeopleController {
 
   @Delete('staff/:id')
   @Roles('SCHOOL_ADMIN')
-  deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
+  deleteStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto?: any) { return this.peopleService.deleteStaff(id, user.schoolId); }
 }
