@@ -1,0 +1,62 @@
+/* Student enrollment wizard: clear step labels + responsive page sizing. */
+.student-enrollment-wizard {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+/* The existing wizard markup is scoped by its max-width container. */
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] {
+  width: 100%;
+  min-height: 74px;
+  padding: 8px 4px 10px;
+  gap: 8px;
+  justify-content: space-between;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"] {
+  flex: 1 0 112px;
+  min-width: 112px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  background: rgba(255,255,255,.025);
+  transition: .2s ease;
+}
+
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]::after {
+  font-size: 9px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(148 163 184);
+  margin-top: 2px;
+}
+
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(1)::after { content: "Student Info"; }
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(3)::after { content: "Admission"; }
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(5)::after { content: "Parent / Guardian"; }
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(7)::after { content: "Address"; }
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(9)::after { content: "Academic"; }
+.max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] > div[class*="flex-col"]:nth-of-type(11)::after { content: "Review"; }
+
+.max-w-4xl.mx-auto > form {
+  width: 100%;
+  max-width: none;
+  min-height: 520px;
+}
+
+@media (max-width: 768px) {
+  .max-w-4xl.mx-auto > div[class*="justify-center"][class*="gap-1.5"] {
+    justify-content: flex-start;
+  }
+
+  .max-w-4xl.mx-auto > form {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
