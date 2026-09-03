@@ -66,8 +66,6 @@ jobs:
                   text = strip_const(text, name)
                   text = re.sub(rf'\b{re.escape(name)}\b', '[]', text)
 
-              # Remove frontend-only localStorage seed fallback blocks. Real records must
-              # come from the backend/database rather than browser demo storage.
               text = re.sub(
                   r'useState<([^>]+)>\(\(\)\s*=>\s*\{\s*const\s+saved\s*=\s*localStorage\.getItem\([^;]+;\s*return\s+saved\s*\?\s*JSON\.parse\(saved\)\s*:\s*\[\];\s*\}\)',
                   lambda m: f'useState<{m.group(1)}>([])',
@@ -75,7 +73,6 @@ jobs:
                   flags=re.S,
               )
 
-              # Remove the explicit demo reset action from Exams.
               text = re.sub(r'(?ms)^\s*// Reset Demo\s*\n.*?(?=^\s*// Calculate Student Cumulative Totals)', '\n', text)
               text = re.sub(r'(?ms)\n\s*<button\s+\n\s*onClick=\{handleResetDemo\}.*?</button>', '', text)
               text = text.replace("user?.schoolSlug || 'demo'", "user?.schoolSlug || ''")
@@ -84,7 +81,6 @@ jobs:
                   path.write_text(text, encoding='utf-8')
                   changed.append(str(path))
 
-          # Remove legacy browser demo records for known module keys. Auth storage is untouched.
           app = Path('frontend/src/App.tsx')
           if app.exists():
               text = app.read_text(encoding='utf-8')
@@ -100,5 +96,11 @@ jobs:
           print('Changed files:')
           for p in changed:
               print(p)
-          if not changed:
-              print('No changes needed')
+          if changed:
+              import subprocess
+              subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+              subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'add', 'frontend/src'], check=True)
+              subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+              subprocess.run(['git', 'commit', '-m', 'chore: remove frontend demo data'], check=True)
+              subprocess.run(['git', 'push', 'origin', 'HEAD:${{ github.head_ref }}'], check=True)
