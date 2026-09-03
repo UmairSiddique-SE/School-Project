@@ -56,7 +56,9 @@ export class AttendanceService {
     });
     if (!section) throw new NotFoundException('Section not found');
 
-    const studentIds = [...new Set(data.records.map((r: any) => String(r.studentId)))];
+    const studentIds: string[] = [
+      ...new Set<string>(data.records.map((r: any) => String(r.studentId))),
+    ];
     const students = await this.prisma.student.findMany({
       where: { id: { in: studentIds }, sectionId: data.sectionId, schoolId, deletedAt: null },
       select: { id: true },
