@@ -74,14 +74,18 @@ export default function App() {
             <Route path="/:schoolSlug/login" element={<AuthLayout />}><Route index element={<LoginPage />} /></Route>
             <Route path="/login" element={<Navigate to="/school-login" replace />} />
 
+            {/* Legacy/top-level tenant links resolve to the logged-in school's real route. */}
             <Route path="/dashboard" element={<TenantRedirect to="dashboard" />} />
             <Route path="/students" element={<TenantRedirect to="students" />} />
             <Route path="/teachers" element={<TenantRedirect to="staff" />} />
             <Route path="/parents" element={<TenantRedirect to="parents" />} />
             <Route path="/classes" element={<TenantRedirect to="classes" />} />
+            <Route path="/sections" element={<TenantRedirect to="sections" />} />
+            <Route path="/subjects" element={<TenantRedirect to="subjects" />} />
             <Route path="/staff" element={<TenantRedirect to="staff" />} />
             <Route path="/homework" element={<TenantRedirect to="homework" />} />
             <Route path="/exams" element={<TenantRedirect to="exams" />} />
+            <Route path="/results" element={<TenantRedirect to="results" />} />
             <Route path="/timetable" element={<TenantRedirect to="timetable" />} />
             <Route path="/notices" element={<TenantRedirect to="notices" />} />
             <Route path="/transport" element={<TenantRedirect to="transport" />} />
@@ -91,14 +95,18 @@ export default function App() {
             <Route path="/notifications" element={<TenantRedirect to="notifications" />} />
             <Route path="/finance" element={<TenantRedirect to="finance" />} />
             <Route path="/settings" element={<TenantRedirect to="settings" />} />
+            <Route path="/profile" element={<TenantRedirect to="profile" />} />
             <Route path="/buildings" element={<TenantRedirect to="buildings" />} />
 
             <Route path="/:schoolSlug" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="profile" element={<Settings />} />
               <Route path="buildings" element={<BuildingManagement />} />
               <Route path="classes" element={<Classes />} />
+              <Route path="sections" element={<Classes />} />
+              <Route path="subjects" element={<Classes />} />
               <Route path="teachers" element={<Navigate to="staff" replace />} />
               <Route path="students" element={<Students />} />
               <Route path="parents" element={<Parents />} />
@@ -106,6 +114,7 @@ export default function App() {
               <Route path="staff" element={<Staff />} />
               <Route path="homework" element={<Homework />} />
               <Route path="exams" element={<Exams />} />
+              <Route path="results" element={<Exams />} />
               <Route path="timetable" element={<Timetable />} />
               <Route path="notices" element={<NoticeBoard />} />
               <Route path="transport" element={<Transport />} />
