@@ -1,0 +1,160 @@
+/* EduSphere — polished SaaS design system
+ * Visual language: calm indigo/cyan accents, high readability, restrained glass.
+ * Works with the existing .light / .dark theme classes.
+ */
+
+:root {
+  --ds-primary: #6366f1;
+  --ds-primary-strong: #4f46e5;
+  --ds-cyan: #06b6d4;
+  --ds-success: #10b981;
+  --ds-warning: #f59e0b;
+  --ds-danger: #ef4444;
+  --ds-radius: 14px;
+  --ds-radius-lg: 20px;
+}
+
+.light {
+  --ds-bg: #f7f8fc;
+  --ds-surface: rgba(255,255,255,.92);
+  --ds-surface-solid: #ffffff;
+  --ds-border: rgba(15,23,42,.08);
+  --ds-border-strong: rgba(99,102,241,.20);
+  --ds-shadow: 0 10px 30px rgba(15,23,42,.06);
+  --ds-shadow-hover: 0 18px 42px rgba(15,23,42,.10);
+  --ds-text-soft: #64748b;
+}
+
+.dark {
+  --ds-bg: #070b16;
+  --ds-surface: rgba(15,23,42,.72);
+  --ds-surface-solid: #0f172a;
+  --ds-border: rgba(148,163,184,.11);
+  --ds-border-strong: rgba(129,140,248,.28);
+  --ds-shadow: 0 14px 38px rgba(0,0,0,.28);
+  --ds-shadow-hover: 0 20px 50px rgba(0,0,0,.40);
+  --ds-text-soft: #94a3b8;
+}
+
+html { background: var(--ds-bg); }
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,.075), transparent 28%),
+    radial-gradient(circle at 92% 8%, rgba(6,182,212,.055), transparent 25%),
+    var(--ds-bg);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,.12), transparent 30%),
+    radial-gradient(circle at 92% 8%, rgba(6,182,212,.07), transparent 26%),
+    var(--ds-bg);
+}
+
+/* Consistent dashboard surfaces */
+main .glass-card,
+main .stat-card,
+main .glass-elevated {
+  border-radius: var(--ds-radius-lg);
+  border-color: var(--ds-border);
+  box-shadow: var(--ds-shadow);
+}
+
+main .glass-card:hover,
+main .stat-card:hover {
+  border-color: var(--ds-border-strong);
+  box-shadow: var(--ds-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* Make standard controls feel like one product */
+main button:not([disabled]),
+main a[role="button"] {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+main button:not([disabled]):active,
+main a[role="button"]:active { transform: translateY(1px); }
+
+main input,
+main select,
+main textarea {
+  border-radius: 12px;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.light main input,
+.light main select,
+.light main textarea {
+  background: rgba(255,255,255,.90);
+  border-color: rgba(15,23,42,.10);
+}
+
+.dark main input,
+.dark main select,
+.dark main textarea {
+  background: rgba(15,23,42,.72);
+}
+
+main input:focus,
+main select:focus,
+main textarea:focus {
+  outline: none;
+  border-color: rgba(99,102,241,.60);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.13);
+}
+
+/* Data tables: clean enterprise rhythm */
+main table thead th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+main table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.light main table tbody tr:hover { background: rgba(99,102,241,.035); }
+.dark main table tbody tr:hover { background: rgba(148,163,184,.035); }
+
+/* Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: rgba(100,116,139,.35) transparent; }
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(100,116,139,.30); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,.55); }
+
+/* Sidebar: premium but restrained */
+.light aside.glass { box-shadow: 10px 0 35px rgba(15,23,42,.045); }
+.dark aside.glass { box-shadow: 12px 0 42px rgba(0,0,0,.25); }
+
+.light .sidebar-nav-item:hover { color: #312e81; background: rgba(99,102,241,.055); }
+.dark .sidebar-nav-item:hover { color: #e2e8f0; background: rgba(255,255,255,.045); }
+
+.sidebar-nav-item.active {
+  box-shadow: inset 3px 0 0 var(--ds-primary), 0 4px 14px rgba(99,102,241,.08) !important;
+}
+
+/* Header/search polish */
+.light header { border-color: rgba(15,23,42,.07) !important; }
+.dark header { border-color: rgba(148,163,184,.08) !important; }
+
+/* Mobile comfort */
+@media (max-width: 767px) {
+  main { padding-bottom: 24px; }
+  main .glass-card,
+  main .stat-card { border-radius: 16px; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
