@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { PeopleService } from './people.service';
-import { PrismaService } from './people.service';
+import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -115,5 +115,5 @@ export class PeopleController {
 
   @Delete('staff/:id')
   @Roles('SCHOOL_ADMIN')
-  deleteStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto?: any) { return this.peopleService.deleteStaff(id, user.schoolId); }
+  deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
 }
