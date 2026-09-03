@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -6,15 +6,20 @@ export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAttendanceForSection(schoolId: string, sectionId: string, dateStr: string) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, schoolId },
+      select: { id: true },
+    });
+    if (!section) throw new BadRequestException('Section does not belong to this school');
+
     const date = new Date(dateStr);
-    
-    // Find all students in this section
+    if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid attendance date');
+
     const students = await this.prisma.student.findMany({
       where: { sectionId, schoolId, deletedAt: null },
       orderBy: { name: 'asc' },
     });
 
-    // Find attendance records for this date
     const records = await this.prisma.attendance.findMany({
       where: {
         sectionId,
@@ -26,7 +31,6 @@ export class AttendanceService {
       },
     });
 
-    // Map students with their attendance status
     return students.map((student) => {
       const record = records.find((r) => r.studentId === student.id);
       return {
@@ -34,26 +38,53 @@ export class AttendanceService {
         name: student.name,
         rollNo: student.rollNo,
         admissionNo: student.admissionNo,
-        status: record ? record.status : 'PRESENT', // default to PRESENT if not marked yet
+        status: record ? record.status : 'PRESENT',
         remarks: record ? record.remarks : '',
       };
     });
   }
 
   async markAttendance(schoolId: string, data: any) {
+    if (!data?.sectionId || !data?.date || !Array.isArray(data.records)) {
+      throw new BadRequestException('sectionId, date and records are required');
+    }
+
     const date = new Date(data.date);
-    const records = data.records; // Array of { studentId, status, remarks }
+    if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid attendance date');
+
+    const section = await this.prisma.section.findFirst({
+      where: { id: data.sectionId, schoolId },
+      select: { id: true },
+    });
+    if (!section) throw new BadRequestException('Section does not belong to this school');
+
+    const studentIds = [...new Set(data.records.map((r: any) => r.studentId).filter(Boolean))];
+    if (studentIds.length !== data.records.length) {
+      throw new BadRequestException('Every attendance record must have a valid studentId');
+    }
+
+    const students = await this.prisma.student.findMany({
+      where: {
+        id: { in: studentIds },
+        sectionId: data.sectionId,
+        schoolId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (students.length !== studentIds.length) {
+      throw new BadRequestException('One or more students do not belong to this school/section');
+    }
 
     const academicYear = await this.prisma.academicYear.findFirst({
       where: { schoolId, isCurrent: true },
     });
 
     return this.prisma.$transaction(
-      records.map((r: any) => {
-        // Upsert attendance for each student on that date
+      data.records.map((r: any) => {
         return this.prisma.attendance.upsert({
           where: {
-            id: `${data.sectionId}-${r.studentId}-${data.date}`, // we can construct a deterministic token or search and update
+            id: `${data.sectionId}-${r.studentId}-${data.date}`,
           },
           create: {
             id: `${data.sectionId}-${r.studentId}-${data.date}`,
@@ -70,7 +101,7 @@ export class AttendanceService {
             remarks: r.remarks || null,
           },
         });
-      })
+      }),
     );
   }
 }
