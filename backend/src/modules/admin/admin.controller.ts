@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, Res, UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -13,30 +14,24 @@ import { ReviewSchoolRequestDto } from '../school-request/dto/review-school-requ
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly paymentLifecycleService: PaymentLifecycleService,
+  ) {}
 
-  // ─── Overview ──────────────────────────────────────────────────────────────
   @Get('overview')
-  async getOverview(): Promise<OverviewDto> {
-    return this.adminService.getOverview();
-  }
+  async getOverview(): Promise<OverviewDto> { return this.adminService.getOverview(); }
 
-  // ─── Platform Plans ────────────────────────────────────────────────────────
   @Get('plans')
-  getPlans() {
-    return this.adminService.getPlans();
-  }
+  getPlans() { return this.adminService.getPlans(); }
 
   @Put('plans/:id')
   updatePlan(@Param('id') id: string, @Body() dto: any) {
     return this.adminService.updatePlan(id, dto);
   }
 
-  // ─── Platform Settings ─────────────────────────────────────────────────────
   @Get('settings')
-  getSettings() {
-    return this.adminService.getSettings();
-  }
+  getSettings() { return this.adminService.getSettings(); }
 
   @Post('settings')
   updateSettings(@Body() dto: { updates: { key: string; value: string }[] }) {
@@ -48,16 +43,11 @@ export class AdminController {
     return this.adminService.updateSetting(key, dto.value);
   }
 
-  // ─── Email Templates ───────────────────────────────────────────────────────
   @Get('email-templates')
-  getEmailTemplates() {
-    return this.adminService.getEmailTemplates();
-  }
+  getEmailTemplates() { return this.adminService.getEmailTemplates(); }
 
   @Post('email-templates')
-  createEmailTemplate(@Body() dto: any) {
-    return this.adminService.createEmailTemplate(dto);
-  }
+  createEmailTemplate(@Body() dto: any) { return this.adminService.createEmailTemplate(dto); }
 
   @Put('email-templates/:id')
   updateEmailTemplate(@Param('id') id: string, @Body() dto: any) {
@@ -69,7 +59,6 @@ export class AdminController {
     return this.adminService.deleteEmailTemplate(id);
   }
 
-  // ─── School Requests ───────────────────────────────────────────────────────
   @Get('requests')
   getSchoolRequests(@Query('status') status?: string) {
     return this.adminService.getSchoolRequests(status);
@@ -89,7 +78,6 @@ export class AdminController {
     return this.adminService.reviewSchoolRequest(id, dto.action, dto.reviewNotes, user?.name, user?.id);
   }
 
-  // ─── Audit Logs ────────────────────────────────────────────────────────────
   @Get('audit-logs')
   getAuditLogs(
     @Query('action') action?: string,
@@ -105,20 +93,17 @@ export class AdminController {
     );
   }
 
-  // ─── Payments (Global) ─────────────────────────────────────────────────────
   @Get('payments')
-  getPayments() {
-    return this.adminService.getPayments();
-  }
+  getPayments() { return this.adminService.getPayments(); }
 
   @Patch('payments/:id/approve')
   approvePayment(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.adminService.approvePayment(id, user);
+    return this.paymentLifecycleService.approvePayment(id, user);
   }
 
   @Patch('payments/:id/reject')
   rejectPayment(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.adminService.rejectPayment(id, user);
+    return this.paymentLifecycleService.rejectPayment(id, user);
   }
 
   @Get('reports/:id/download')
@@ -130,12 +115,8 @@ export class AdminController {
     return res.send(csv);
   }
 
-  // ─── Platform Users ────────────────────────────────────────────────────────
   @Get('users')
-  getUsers(
-    @Query('search') search?: string,
-    @Query('role') role?: string,
-  ) {
+  getUsers(@Query('search') search?: string, @Query('role') role?: string) {
     return this.adminService.getPlatformUsers(search, role);
   }
 
@@ -144,11 +125,8 @@ export class AdminController {
     return this.adminService.toggleUserActive(id);
   }
 
-  // ─── Support Tickets ───────────────────────────────────────────────────────
   @Get('support')
-  getSupportTickets() {
-    return this.adminService.getSupportTickets();
-  }
+  getSupportTickets() { return this.adminService.getSupportTickets(); }
 
   @Patch('support/:id')
   updateSupportTicket(
@@ -158,11 +136,8 @@ export class AdminController {
     return this.adminService.updateSupportTicket(id, dto.status, dto.reply);
   }
 
-  // ─── Announcements ─────────────────────────────────────────────────────────
   @Get('announcements')
-  getAnnouncements() {
-    return this.adminService.getAnnouncements();
-  }
+  getAnnouncements() { return this.adminService.getAnnouncements(); }
 
   @Post('announcements')
   createAnnouncement(@Body() dto: { title: string; message: string; target?: string; priority?: string }) {
