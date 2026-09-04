@@ -12,8 +12,6 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class BuildingController {
   constructor(private readonly buildingService: BuildingService) {}
 
-  // ─── Buildings ────────────────────────────────────────────────────────────
-
   @Get()
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
   findAll(@CurrentUser() user: any, @Query('schoolId') schoolId?: string) {
@@ -32,7 +30,11 @@ export class BuildingController {
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
   create(@CurrentUser() user: any, @Body() dto: any) {
     const schoolId = user.role === 'SUPER_ADMIN' ? (dto.schoolId || user.schoolId) : user.schoolId;
-    return this.buildingService.createBuilding({ ...dto, schoolId });
+    return this.buildingService.createBuilding({
+      ...dto,
+      schoolId,
+      enforcePlan: user.role !== 'SUPER_ADMIN',
+    });
   }
 
   @Put(':id')
@@ -48,8 +50,6 @@ export class BuildingController {
     const effectiveSchoolId = user.role === 'SUPER_ADMIN' ? undefined : user.schoolId;
     return this.buildingService.deleteBuilding(id, effectiveSchoolId);
   }
-
-  // ─── Rooms ────────────────────────────────────────────────────────────────
 
   @Get(':buildingId/rooms')
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
