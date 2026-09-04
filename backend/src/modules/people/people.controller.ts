@@ -38,6 +38,47 @@ export class PeopleController {
     return student ? { ...student, account } : null;
   }
 
+  @Get('parent/me')
+  @Roles('PARENT')
+  async getParentMe(@CurrentUser() user: any) {
+    const parent = await this.prisma.parent.findFirst({
+      where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        students: {
+          where: { student: { schoolId: user.schoolId, deletedAt: null } },
+          select: {
+            student: {
+              select: {
+                id: true,
+                admissionNo: true,
+                rollNo: true,
+                name: true,
+                gender: true,
+                dob: true,
+                status: true,
+                section: { select: { id: true, name: true, class: { select: { id: true, name: true } } } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!parent) return null;
+    return {
+      id: parent.id,
+      name: parent.name,
+      email: parent.email,
+      phone: parent.phone,
+      address: parent.address,
+      children: parent.students.map((link) => link.student),
+    };
+  }
+
   @Get('stats')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getStats(@CurrentUser() user: any) { return this.peopleService.getSchoolStats(user.schoolId); }
@@ -65,33 +106,17 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   async getStudents(@CurrentUser() user: any) {
     if (user?.role === 'SCHOOL_ADMIN') return this.peopleService.getStudents(user.schoolId);
-
-    const teacher = await this.prisma.teacher.findFirst({
-      where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
-      select: { id: true },
-    });
+    const teacher = await this.prisma.teacher.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
     if (!teacher) return [];
-
-    const sections = await this.prisma.section.findMany({
-      where: { class: { schoolId: user.schoolId }, teacherId: teacher.id, deletedAt: null },
-      select: { id: true },
-    });
+    const sections = await this.prisma.section.findMany({ where: { class: { schoolId: user.schoolId }, teacherId: teacher.id, deletedAt: null }, select: { id: true } });
     const sectionIds = sections.map(section => section.id);
     if (!sectionIds.length) return [];
-
-    return this.prisma.student.findMany({
-      where: { schoolId: user.schoolId, sectionId: { in: sectionIds }, deletedAt: null },
-      include: { section: { include: { class: true } } },
-      orderBy: { name: 'asc' },
-    });
+    return this.prisma.student.findMany({ where: { schoolId: user.schoolId, sectionId: { in: sectionIds }, deletedAt: null }, include: { section: { include: { class: true } } }, orderBy: { name: 'asc' } });
   }
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
-  async createStudent(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStudentCapacity(user.schoolId);
-    return this.peopleService.createStudent(user.schoolId, dto);
-  }
+  async createStudent(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStudentCapacity(user.schoolId); return this.peopleService.createStudent(user.schoolId, dto); }
 
   @Patch('students/:id')
   @Roles('SCHOOL_ADMIN')
@@ -115,10 +140,7 @@ export class PeopleController {
 
   @Post('staff')
   @Roles('SCHOOL_ADMIN')
-  async createStaff(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStaffCapacity(user.schoolId);
-    return this.peopleService.createStaff(user.schoolId, dto);
-  }
+  async createStaff(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createStaff(user.schoolId, dto); }
 
   @Patch('staff/:id')
   @Roles('SCHOOL_ADMIN')
