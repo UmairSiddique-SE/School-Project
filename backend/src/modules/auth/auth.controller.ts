@@ -8,6 +8,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -108,6 +109,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
+    if (user?.role === 'STUDENT') {
+      throw new ForbiddenException('Students cannot change their password. Please contact the School Admin.');
+    }
     return this.authService.changePassword(user.id, dto);
   }
 }
