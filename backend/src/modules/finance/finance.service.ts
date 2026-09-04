@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
@@ -117,7 +118,7 @@ export class FinanceService {
       if (Number.isNaN(dueDate.getTime())) throw new BadRequestException('Invalid due date');
     }
 
-    const receiptNo = `FEE-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const receiptNo = `FEE-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`;
 
     return this.prisma.feePayment.create({
       data: {
