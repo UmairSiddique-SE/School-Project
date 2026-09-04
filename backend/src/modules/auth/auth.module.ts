@@ -13,12 +13,19 @@ import { MailModule } from '../mail/mail.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'fallback-secret',
-        signOptions: {
-          expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any,
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET');
+        if (!secret && config.get<string>('NODE_ENV') === 'production') {
+          throw new Error('JWT_SECRET is required in production.');
+        }
+
+        return {
+          secret: secret || 'development-only-secret',
+          signOptions: {
+            expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any,
+          },
+        };
+      },
     }),
     MailModule,
   ],
