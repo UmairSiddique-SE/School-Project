@@ -16,9 +16,9 @@ export class FinanceService {
       const studentIds = await this.getStudentIdsForUser(user);
       if (!studentIds.length) return [];
       const students = await this.prisma.student.findMany({ where: { id: { in: studentIds }, schoolId, deletedAt: null }, select: { sectionId: true } });
-      const sectionIds: string[] = [...new Set<string>(students.map((student) => student.sectionId).filter((id): id is string => Boolean(id)))];
+      const sectionIds: string[] = Array.from(new Set(students.map((student) => student.sectionId).filter((id): id is string => Boolean(id))));
       const sections = sectionIds.length ? await this.prisma.section.findMany({ where: { id: { in: sectionIds }, class: { schoolId }, deletedAt: null }, select: { id: true, classId: true } }) : [];
-      const classIds = [...new Set(sections.map((section) => section.classId))];
+      const classIds = Array.from(new Set(sections.map((section) => section.classId)));
       where.OR = [{ classId: null }, ...(classIds.length ? [{ classId: { in: classIds } }] : [])];
     }
     return this.prisma.feeStructure.findMany({ where, include: { class: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
@@ -43,7 +43,7 @@ export class FinanceService {
     const studentIds = await this.getStudentIdsForUser(user);
     if (!studentIds.length) return [];
     return this.prisma.feePayment.findMany({
-      where: { schoolId: user.schoolId, studentId: { in: [...new Set(studentIds)] } },
+      where: { schoolId: user.schoolId, studentId: { in: Array.from(new Set(studentIds)) } },
       include: { student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } }, feeStructure: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
     });
@@ -59,7 +59,7 @@ export class FinanceService {
 
   async collectFee(schoolId: string, data: any) {
     const studentId = String(data?.studentId || '').trim();
-    const student = await this.prisma.student.findFirst({ where: { id: studentId, schoolId, deletedAt: null } });
+    const student = await this.prisma.student.findFirst({ where: { id: studentId, schoolId, deletedAt: null }, select: { id: true, sectionId: true } });
     if (!student) throw new NotFoundException('Student not found in this school');
 
     let structure: any = null;
