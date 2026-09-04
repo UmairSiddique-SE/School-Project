@@ -109,8 +109,7 @@ export class PeopleController {
 
   @Post('parents')
   @Roles('SCHOOL_ADMIN')
-  async createParent(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStaffCapacity(user.schoolId);
+  createParent(@CurrentUser() user: any, @Body() dto: any) {
     return this.peopleService.createParent(user.schoolId, dto);
   }
 
@@ -141,9 +140,7 @@ export class PeopleController {
     });
     if (!section) throw new BadRequestException('Selected section does not belong to this school');
 
-    const enrolled = await this.prisma.student.count({
-      where: { schoolId, sectionId, deletedAt: null },
-    });
+    const enrolled = await this.prisma.student.count({ where: { schoolId, sectionId, deletedAt: null } });
     if (enrolled >= section.capacity) {
       throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
     }
