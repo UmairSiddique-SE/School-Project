@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../database/prisma.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const FOREVER_DATE = new Date('9999-12-31T23:59:59.999Z');
 
 @Injectable()
 export class PaymentLifecycleService {
@@ -44,8 +45,6 @@ export class PaymentLifecycleService {
       const now = new Date();
       const endDate = this.calculateEndDate(now, plan.period);
 
-      // The conditional update makes approval idempotent-safe even if two admin
-      // requests reach the transaction at nearly the same time.
       const updatedPayment = await tx.onboardingPayment.updateMany({
         where: { id, status: 'PENDING' },
         data: {
@@ -96,7 +95,7 @@ export class PaymentLifecycleService {
           data: users.map((user) => ({
             type: 'PAYMENT',
             title: 'Payment approved',
-            message: `Your ${plan.name} subscription payment has been approved.`,
+            message: `Your ${plan.name} subscription payment has been approved and is active until ${endDate.toISOString().slice(0, 10)}.`,
             schoolId: payment.schoolId,
             userId: user.id,
           })),
@@ -122,11 +121,12 @@ export class PaymentLifecycleService {
         throw new BadRequestException('Only pending payments can be rejected');
       }
 
+      const now = new Date();
       const rejected = await tx.onboardingPayment.updateMany({
         where: { id, status: 'PENDING' },
         data: {
           status: 'REJECTED',
-          reviewedAt: new Date(),
+          reviewedAt: now,
         },
       });
       if (rejected.count !== 1) {
@@ -146,6 +146,22 @@ export class PaymentLifecycleService {
         });
       }
 
+      const users = await tx.user.findMany({
+        where: { schoolId: payment.schoolId, isActive: true },
+        select: { id: true },
+      });
+      if (users.length) {
+        await tx.notification.createMany({
+          data: users.map((user) => ({
+            type: 'PAYMENT',
+            title: 'Payment rejected',
+            message: `Your ${payment.plan} subscription payment was rejected. Please review the payment details and submit a new payment.`,
+            schoolId: payment.schoolId,
+            userId: user.id,
+          })),
+        });
+      }
+
       return tx.onboardingPayment.findUnique({
         where: { id },
         include: { school: { select: { name: true, slug: true } } },
@@ -155,9 +171,7 @@ export class PaymentLifecycleService {
 
   private calculateEndDate(start: Date, period: string): Date {
     const normalized = period.trim().toLowerCase();
-    if (normalized === 'forever') {
-      return new Date('9999-12-31T23:59:59.999Z');
-    }
+    if (normalized === 'forever') return FOREVER_DATE;
 
     const monthMatch = normalized.match(/(\d+)\s*month/);
     if (monthMatch) {
@@ -168,9 +182,7 @@ export class PaymentLifecycleService {
     }
 
     const dayMatch = normalized.match(/(\d+)\s*day/);
-    if (dayMatch) {
-      return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
-    }
+    if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
 
     if (normalized.includes('year')) {
       const years = Number(normalized.match(/\d+/)?.[0] || 1);
@@ -179,8 +191,6 @@ export class PaymentLifecycleService {
       return end;
     }
 
-    // Paid catalogue plans are monthly today. Unknown periods fail closed rather
-    // than silently granting a year of service.
     throw new BadRequestException('Unsupported subscription period');
   }
 }
