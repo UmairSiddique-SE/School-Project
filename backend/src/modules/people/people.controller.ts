@@ -79,9 +79,6 @@ export class PeopleController {
   async createStudent(@CurrentUser() user: any, @Body() dto: any) {
     await this.planLimitService.assertStudentCapacity(user.schoolId);
     await this.assertSectionCapacity(user.schoolId, dto.sectionId);
-
-    // Student credentials are always generated server-side. Ignore any client-supplied
-    // password/parentPassword so old clients cannot create fixed or parent login credentials.
     const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
     void _password;
     void _parentPassword;
@@ -106,13 +103,27 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
 
+  @Get('parents')
+  @Roles('SCHOOL_ADMIN')
+  getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
+
+  @Post('parents')
+  @Roles('SCHOOL_ADMIN')
+  async createParent(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStaffCapacity(user.schoolId);
+    return this.peopleService.createParent(user.schoolId, dto);
+  }
+
   @Get('staff')
   @Roles('SCHOOL_ADMIN')
   getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
 
   @Post('staff')
   @Roles('SCHOOL_ADMIN')
-  async createStaff(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createStaff(user.schoolId, dto); }
+  async createStaff(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStaffCapacity(user.schoolId);
+    return this.peopleService.createStaff(user.schoolId, dto);
+  }
 
   @Patch('staff/:id')
   @Roles('SCHOOL_ADMIN')
