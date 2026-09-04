@@ -38,47 +38,6 @@ export class PeopleController {
     return student ? { ...student, account } : null;
   }
 
-  @Get('parent/me')
-  @Roles('PARENT')
-  async getParentMe(@CurrentUser() user: any) {
-    const parent = await this.prisma.parent.findFirst({
-      where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        address: true,
-        students: {
-          where: { student: { schoolId: user.schoolId, deletedAt: null } },
-          select: {
-            student: {
-              select: {
-                id: true,
-                admissionNo: true,
-                rollNo: true,
-                name: true,
-                gender: true,
-                dateOfBirth: true,
-                status: true,
-                section: { select: { id: true, name: true, class: { select: { id: true, name: true } } } },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (!parent) return null;
-    return {
-      id: parent.id,
-      name: parent.name,
-      email: parent.email,
-      phone: parent.phone,
-      address: parent.address,
-      children: parent.students.map((link) => link.student),
-    };
-  }
-
   @Get('stats')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getStats(@CurrentUser() user: any) { return this.peopleService.getSchoolStats(user.schoolId); }
