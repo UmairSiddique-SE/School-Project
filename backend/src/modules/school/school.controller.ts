@@ -68,8 +68,9 @@ export class SchoolController {
 
   @Patch(':id/change-plan')
   @Roles('SUPER_ADMIN')
-  changePlan(@Param('id') id: string, @Body() dto: { plan: string; amount?: number }, @CurrentUser() user: any) {
-    return this.schoolService.changePlan(id, dto.plan, dto.amount, user);
+  changePlan(@Param('id') id: string, @Body() dto: { plan: string }, @CurrentUser() user: any) {
+    // Price is always resolved server-side from PlatformPlan; never trust a client-supplied amount.
+    return this.schoolService.changePlan(id, dto.plan, undefined, user);
   }
 
   @Patch(':id/expire')
