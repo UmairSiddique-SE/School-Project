@@ -15,7 +15,7 @@ export class FinanceController {
   @Get('structures')
   @Roles('SCHOOL_ADMIN', 'STUDENT', 'PARENT')
   getStructures(@CurrentUser() user: any) {
-    return this.financeService.getFeeStructures(user.schoolId);
+    return this.financeService.getFeeStructures(user.schoolId, user);
   }
 
   @Post('structures')
