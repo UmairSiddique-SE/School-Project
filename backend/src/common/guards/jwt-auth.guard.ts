@@ -29,7 +29,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (!user?.schoolId || user.role === 'SUPER_ADMIN') return true;
 
-    const path = String(request.originalUrl || request.url || '').split('?')[0];
+    const rawPath = String(request.originalUrl || request.url || '').split('?')[0];
+    const path = rawPath.replace(/^\/api(?=\/|$)/, '') || '/';
     const pendingAllowedPaths = new Set([
       '/auth/onboarding-payment',
       '/auth/me',
