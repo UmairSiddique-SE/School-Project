@@ -53,6 +53,38 @@ export class ExamService {
     });
   }
 
+  async getMyResults(schoolId: string, user: any) {
+    const student = await this.prisma.student.findFirst({
+      where: { schoolId, email: user?.email, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
+    if (!student) throw new NotFoundException('Student profile not found');
+
+    const results = await this.prisma.examResult.findMany({
+      where: { studentId: student.id, exam: { schoolId, deletedAt: null, isPublished: true } },
+      include: {
+        exam: { select: { id: true, name: true, startDate: true, totalMarks: true, passingMarks: true } },
+        subject: { select: { id: true, name: true } },
+      },
+      orderBy: [{ exam: { startDate: 'desc' } }, { subject: { name: 'asc' } }],
+    });
+
+    return results.map((result) => ({
+      id: result.id,
+      examId: result.exam.id,
+      examName: result.exam.name,
+      examDate: result.exam.startDate,
+      subjectId: result.subject.id,
+      subjectName: result.subject.name,
+      marksObtained: result.marksObtained,
+      totalMarks: result.exam.totalMarks,
+      passingMarks: result.exam.passingMarks,
+      isAbsent: result.isAbsent,
+      grade: result.grade,
+      remarks: result.remarks,
+    }));
+  }
+
   async recordResults(schoolId: string, data: any, teacherEmail?: string) {
     if (!data.examId || !Array.isArray(data.results) || data.results.length === 0) throw new BadRequestException('Exam and at least one result are required');
     const exam = await this.prisma.exam.findFirst({ where: { id: data.examId, schoolId, deletedAt: null } });
