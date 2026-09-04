@@ -75,7 +75,15 @@ export class PeopleController {
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
-  async createStudent(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStudentCapacity(user.schoolId); return this.peopleService.createStudent(user.schoolId, dto); }
+  async createStudent(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStudentCapacity(user.schoolId);
+    // Student credentials are always generated server-side. Ignore any client-supplied
+    // password/parentPassword so old clients cannot create fixed or parent login credentials.
+    const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
+    void _password;
+    void _parentPassword;
+    return this.peopleService.createStudent(user.schoolId, studentDto);
+  }
 
   @Patch('students/:id')
   @Roles('SCHOOL_ADMIN')
