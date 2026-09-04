@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { PeopleService } from './people.service';
+import { randomBytes } from 'crypto';
 
 /**
  * Compatibility restoration for staff/stats methods that are part of the
@@ -99,4 +100,42 @@ PeopleService.prototype.getSchoolStats = async function (schoolId: string) {
     recentAdmissions,
     upcomingExams,
   };
+};
+
+/**
+ * Final product rule: parents are stored as guardian/contact records only.
+ * They do not receive a PARENT User account because Parent Portal is out of scope.
+ * The legacy service still expects parentPassword when parent details are present,
+ * so a short-lived internal password satisfies that legacy branch and the generated
+ * parent User is immediately detached/deleted after the student transaction succeeds.
+ */
+const originalCreateStudent = PeopleService.prototype.createStudent;
+PeopleService.prototype.createStudent = async function (schoolId: string, data: any) {
+  const hasParentDetails = Boolean(data.fatherName || data.motherName || data.guardianName);
+  const payload = hasParentDetails && !data.parentPassword
+    ? { ...data, parentPassword: randomBytes(24).toString('base64url') }
+    : data;
+
+  const result = await originalCreateStudent.call(this, schoolId, payload);
+  if (!hasParentDetails || !result?.student?.id) return result;
+
+  const service = this as any;
+  const link = await service.prisma.studentParent.findFirst({
+    where: { studentId: result.student.id, isPrimary: true },
+    select: { parentId: true },
+  });
+  if (!link) return result;
+
+  const parent = await service.prisma.parent.findFirst({
+    where: { id: link.parentId, schoolId },
+    select: { id: true, userId: true },
+  });
+  if (!parent?.userId) return result;
+
+  await service.prisma.$transaction(async (tx: any) => {
+    await tx.parent.update({ where: { id: parent.id }, data: { userId: null } });
+    await tx.user.deleteMany({ where: { id: parent.userId, schoolId, role: 'PARENT' } });
+  });
+
+  return result;
 };
