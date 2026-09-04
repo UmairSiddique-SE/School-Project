@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { PeopleService } from './people.service';
+import { PlanLimitService } from './plan-limit.service';
 import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -13,6 +14,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class PeopleController {
   constructor(
     private readonly peopleService: PeopleService,
+    private readonly planLimitService: PlanLimitService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -46,7 +48,10 @@ export class PeopleController {
 
   @Post('teachers')
   @Roles('SCHOOL_ADMIN')
-  createTeacher(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createTeacher(user.schoolId, dto); }
+  async createTeacher(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStaffCapacity(user.schoolId);
+    return this.peopleService.createTeacher(user.schoolId, dto);
+  }
 
   @Patch('teachers/:id')
   @Roles('SCHOOL_ADMIN')
@@ -68,7 +73,7 @@ export class PeopleController {
     if (!teacher) return [];
 
     const sections = await this.prisma.section.findMany({
-      where: { schoolId: user.schoolId, teacherId: teacher.id, deletedAt: null },
+      where: { class: { schoolId: user.schoolId }, teacherId: teacher.id, deletedAt: null },
       select: { id: true },
     });
     const sectionIds = sections.map(section => section.id);
@@ -83,7 +88,10 @@ export class PeopleController {
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
-  createStudent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createStudent(user.schoolId, dto); }
+  async createStudent(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStudentCapacity(user.schoolId);
+    return this.peopleService.createStudent(user.schoolId, dto);
+  }
 
   @Patch('students/:id')
   @Roles('SCHOOL_ADMIN')
@@ -107,7 +115,10 @@ export class PeopleController {
 
   @Post('staff')
   @Roles('SCHOOL_ADMIN')
-  createStaff(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createStaff(user.schoolId, dto); }
+  async createStaff(@CurrentUser() user: any, @Body() dto: any) {
+    await this.planLimitService.assertStaffCapacity(user.schoolId);
+    return this.peopleService.createStaff(user.schoolId, dto);
+  }
 
   @Patch('staff/:id')
   @Roles('SCHOOL_ADMIN')
