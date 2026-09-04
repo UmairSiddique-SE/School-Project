@@ -29,27 +29,15 @@ export class AuthService {
       const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
       const otp = String(Math.floor(100000 + Math.random() * 900000));
       const result = await this.prisma.$transaction(async (tx) => {
-        const school = await tx.school.create({ data: {
-          name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl,
-          phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country,
-          city: dto.city, isActive: false,
-        } });
-        const user = await tx.user.create({ data: {
-          name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN',
-          schoolId: school.id, phone: dto.adminPhone,
-        } });
-        const endDate = plan.period.trim().toLowerCase() === 'forever'
-          ? new Date(FOREVER_DATE)
-          : this.calculateEndDate(new Date(), plan.period);
-        await tx.subscription.create({
-          data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency },
-        });
+        const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: false } });
+        const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
+        const endDate = plan.period.trim().toLowerCase() === 'forever' ? new Date(FOREVER_DATE) : this.calculateEndDate(new Date(), plan.period);
+        await tx.subscription.create({ data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency } });
         await tx.emailVerification.create({ data: { userId: user.id, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) } });
         return { school, user };
       });
       this.mailService.sendEmailVerification(result.user.email, otp).catch((error) => console.error('Failed to send verification email:', error));
-      return { message: 'School registered. Verify your email to continue.', verificationRequired: true, verificationUserId: result.user.id,
-        user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role, schoolId: result.user.schoolId, schoolName: result.school.name, schoolSlug: result.school.slug } };
+      return { message: 'School registered. Verify your email to continue.', verificationRequired: true, verificationUserId: result.user.id, user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role, schoolId: result.user.schoolId, schoolName: result.school.name, schoolSlug: result.school.slug } };
     } catch (error: any) {
       if (error instanceof ConflictException) throw error;
       console.error('Error in registerSchool:', error);
@@ -60,7 +48,6 @@ export class AuthService {
   async login(dto: LoginDto) {
     const identifier = dto.email.trim().toLowerCase();
     let user = await this.prisma.user.findUnique({ where: { email: identifier }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
-
     if (!user && identifier.includes('@student.')) {
       const match = identifier.match(/^([a-z0-9]+?)(\d+)@student\.([a-z0-9-]+)\.pk$/i);
       if (match) {
@@ -68,21 +55,15 @@ export class AuthService {
         const school = await this.prisma.school.findUnique({ where: { slug: schoolSlug }, select: { id: true } });
         if (school) {
           const students = await this.prisma.student.findMany({ where: { schoolId: school.id, deletedAt: null }, select: { admissionNo: true, name: true, email: true } });
-          const student = students.find((s) => {
-            const nameFirst = s.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-            const suffix = s.admissionNo.match(/(\d+)$/)?.[1] || s.admissionNo.replace(/\D/g, '');
-            return nameFirst === firstName.toLowerCase() && suffix === admissionSuffix;
-          });
+          const student = students.find((s) => { const nameFirst = s.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, ''); const suffix = s.admissionNo.match(/(\d+)$/)?.[1] || s.admissionNo.replace(/\D/g, ''); return nameFirst === firstName.toLowerCase() && suffix === admissionSuffix; });
           if (student?.email) user = await this.prisma.user.findUnique({ where: { email: student.email.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
         }
       }
     }
-
     if (!user) {
       const student = await this.prisma.student.findUnique({ where: { admissionNo: dto.email.trim() } });
       if (student?.email) user = await this.prisma.user.findUnique({ where: { email: student.email.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
     }
-
     if (!user) throw new UnauthorizedException('No account found for this Login ID');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
     if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended or awaiting payment approval');
@@ -108,7 +89,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email.trim().toLowerCase() } });
     if (!user) return { message: 'If that email exists, a reset link has been sent' };
     const token = uuidv4();
-    await this.prisma.passwordResetToken.create({ data: { userId: user.id, token, expiresAt: new Date(Date.now() + 60 * 60 * 1000) });
+    await this.prisma.passwordResetToken.create({ data: { userId: user.id, token, expiresAt: new Date(Date.now() + 60 * 60 * 1000) } });
     await this.mailService.sendPasswordReset(user.email, token);
     return { message: 'If that email exists, a reset link has been sent' };
   }
@@ -148,21 +129,14 @@ export class AuthService {
     const amount = Number(dto.amount);
     if (!Number.isFinite(amount) || amount !== Number(plan.price)) throw new BadRequestException(`Payment amount must exactly match the ${plan.name} plan price`);
     if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) throw new BadRequestException('Payment screenshot must be 2 MB or smaller');
-
     return this.prisma.$transaction(async (tx) => {
       const pendingPayment = await tx.onboardingPayment.findFirst({ where: { schoolId: dto.schoolId, status: 'PENDING' }, select: { id: true } });
       if (pendingPayment) throw new ConflictException('A payment is already pending review for this school');
-
       const payment = await tx.onboardingPayment.create({ data: { schoolId: dto.schoolId, plan: plan.planKey, amount: plan.price, method: dto.method, reference: dto.reference, screenshotUrl: dto.screenshotUrl || null } });
       const now = new Date();
       const currentSubscription = school.subscription;
       const activeUnexpired = school.isActive && currentSubscription?.status === 'ACTIVE' && currentSubscription.endDate > now;
-
-      // During an active subscription renewal, keep the current subscription usable
-      // until approval. The pending payment must not lock the school out early.
-      if (!activeUnexpired) {
-        await tx.subscription.update({ where: { schoolId: dto.schoolId }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'PENDING' } });
-      }
+      if (!activeUnexpired) await tx.subscription.update({ where: { schoolId: dto.schoolId }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'PENDING' } });
       return payment;
     });
   }
