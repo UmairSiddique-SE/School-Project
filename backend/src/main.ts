@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/http-exception.filter';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -35,8 +36,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
 
-  // Keep request bodies bounded. File uploads should use object storage URLs rather than
-  // sending large base64 payloads through the API.
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ limit: '10mb', extended: true }));
 
@@ -49,9 +48,10 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   const port = Number(process.env.PORT || 3000);
   await app.listen(port, '0.0.0.0');
-  console.log(`Application is running on port ${port}`);
 }
 
 bootstrap();
