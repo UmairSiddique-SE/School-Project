@@ -141,6 +141,30 @@ CREATE TABLE "Subject" (
 );
 
 -- CreateTable
+CREATE TABLE "Teacher" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "employeeNo" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "gender" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
+    "bloodGroup" TEXT,
+    "qualification" TEXT,
+    "experience" INTEGER,
+    "joiningDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "salary" REAL,
+    "avatarUrl" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+    "schoolId" TEXT NOT NULL,
+    CONSTRAINT "Teacher_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+-- CreateTable
 CREATE TABLE "ClassSubject" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "classId" TEXT NOT NULL,
