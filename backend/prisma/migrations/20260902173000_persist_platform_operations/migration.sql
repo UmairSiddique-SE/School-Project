@@ -11,8 +11,8 @@ CREATE TABLE "SupportTicket" (
     "category" TEXT NOT NULL DEFAULT 'GENERAL',
     "priority" TEXT NOT NULL DEFAULT 'MEDIUM',
     "status" TEXT NOT NULL DEFAULT 'OPEN',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 CREATE UNIQUE INDEX "SupportTicket_ticketNo_key" ON "SupportTicket"("ticketNo");
@@ -22,7 +22,7 @@ CREATE TABLE "TicketReply" (
     "ticketId" TEXT NOT NULL,
     "sender" TEXT NOT NULL,
     "message" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TicketReply_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "SupportTicket" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -36,8 +36,9 @@ CREATE TABLE "PlatformAnnouncement" (
     "priority" TEXT NOT NULL DEFAULT 'NORMAL',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "author" TEXT NOT NULL DEFAULT 'Super Admin',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 CREATE INDEX "PlatformAnnouncement_target_isActive_idx" ON "PlatformAnnouncement"("target", "isActive");
+
