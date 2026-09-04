@@ -5,9 +5,15 @@ import { PrismaService } from '../database/prisma.service';
 export class AcademicsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getHomework(schoolId: string) {
+  async getHomework(schoolId: string, user?: any) {
+    const where: any = { schoolId };
+    if (user?.role === 'STUDENT') {
+      const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null }, select: { sectionId: true } });
+      if (!student?.sectionId) return [];
+      where.sectionId = student.sectionId;
+    }
     return this.prisma.homework.findMany({
-      where: { schoolId },
+      where,
       include: { section: { include: { class: true } }, subject: true, teacher: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -62,8 +68,14 @@ export class AcademicsService {
     return this.prisma.homework.delete({ where: { id } });
   }
 
-  async getTimetables(schoolId: string) {
-    return this.prisma.timetable.findMany({ where: { section: { class: { schoolId } } }, include: { section: { include: { class: true } }, subject: true, teacher: true } });
+  async getTimetables(schoolId: string, user?: any) {
+    const where: any = { section: { class: { schoolId } } };
+    if (user?.role === 'STUDENT') {
+      const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null }, select: { sectionId: true } });
+      if (!student?.sectionId) return [];
+      where.sectionId = student.sectionId;
+    }
+    return this.prisma.timetable.findMany({ where, include: { section: { include: { class: true } }, subject: true, teacher: true } });
   }
 
   async createTimetable(schoolId: string, data: any) {
@@ -112,8 +124,15 @@ export class AcademicsService {
     return this.prisma.timetable.delete({ where: { id } });
   }
 
-  async getAnnouncements(schoolId: string) {
-    return this.prisma.announcement.findMany({ where: { schoolId }, orderBy: { publishedAt: 'desc' } });
+  async getAnnouncements(schoolId: string, user?: any) {
+    const where: any = {
+      schoolId,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    };
+    if (user?.role === 'STUDENT') {
+      where.AND = [{ OR: [{ targetRoles: 'ALL' }, { targetRoles: 'STUDENT' }] }];
+    }
+    return this.prisma.announcement.findMany({ where, orderBy: { publishedAt: 'desc' } });
   }
 
   async createAnnouncement(schoolId: string, data: any) {
