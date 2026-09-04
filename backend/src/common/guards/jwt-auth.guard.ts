@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { firstValueFrom, Observable } from 'rxjs';
 import { PrismaService } from '../../modules/database/prisma.service';
 
 @Injectable()
@@ -13,62 +14,58 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const result = super.canActivate(context);
-    return Promise.resolve(result).then(async (activated) => {
-      if (!activated) return activated;
+    const activated = typeof result === 'boolean'
+      ? result
+      : result instanceof Observable
+        ? await firstValueFrom(result)
+        : await result;
 
-      const request = context.switchToHttp().getRequest();
-      const user = request.user;
+    if (!activated) return false;
 
-      // Super admins are platform-level users and are not tied to a school subscription.
-      if (!user?.schoolId || user.role === 'SUPER_ADMIN') return activated;
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
-      // Keep the payment submission and basic account recovery/profile endpoints available
-      // while a school is waiting for payment approval.
-      const path = String(request.originalUrl || request.url || '').split('?')[0];
-      const pendingAllowedPaths = new Set([
-        '/auth/onboarding-payment',
-        '/auth/me',
-        '/auth/profile',
-        '/auth/change-password',
-      ]);
+    if (!user?.schoolId || user.role === 'SUPER_ADMIN') return true;
 
-      const school = await this.prisma.school.findUnique({
-        where: { id: user.schoolId },
-        select: {
-          isActive: true,
-          deletedAt: true,
-          subscription: {
-            select: { status: true, endDate: true },
-          },
-        },
-      });
+    const path = String(request.originalUrl || request.url || '').split('?')[0];
+    const pendingAllowedPaths = new Set([
+      '/auth/onboarding-payment',
+      '/auth/me',
+      '/auth/profile',
+      '/auth/change-password',
+    ]);
 
-      if (!school || school.deletedAt) {
-        throw new ForbiddenException('School account is no longer available');
-      }
-
-      const subscription = school.subscription;
-      const pendingApproval =
-        subscription?.status === 'PENDING' && pendingAllowedPaths.has(path);
-
-      if (pendingApproval) return activated;
-
-      if (!school.isActive) {
-        throw new ForbiddenException('School account is suspended or awaiting activation');
-      }
-
-      if (
-        !subscription ||
-        subscription.status !== 'ACTIVE' ||
-        subscription.endDate.getTime() < Date.now()
-      ) {
-        throw new ForbiddenException('School subscription is inactive or expired');
-      }
-
-      return activated;
+    const school = await this.prisma.school.findUnique({
+      where: { id: user.schoolId },
+      select: {
+        isActive: true,
+        deletedAt: true,
+        subscription: { select: { status: true, endDate: true } },
+      },
     });
+
+    if (!school || school.deletedAt) {
+      throw new ForbiddenException('School account is no longer available');
+    }
+
+    const subscription = school.subscription;
+    if (subscription?.status === 'PENDING' && pendingAllowedPaths.has(path)) return true;
+
+    if (!school.isActive) {
+      throw new ForbiddenException('School account is suspended or awaiting activation');
+    }
+
+    if (
+      !subscription ||
+      subscription.status !== 'ACTIVE' ||
+      subscription.endDate.getTime() < Date.now()
+    ) {
+      throw new ForbiddenException('School subscription is inactive or expired');
+    }
+
+    return true;
   }
 
   handleRequest(err: any, user: any, info: any) {
