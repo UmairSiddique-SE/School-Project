@@ -1,4 +1,4 @@
--- CreateTable
+﻿-- CreateTable
 CREATE TABLE "School" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -114,6 +114,28 @@ CREATE TABLE "Class" (
 );
 
 -- CreateTable
+CREATE TABLE "Teacher" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "employeeNo" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "gender" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
+    "bloodGroup" TEXT,
+    "qualification" TEXT,
+    "experience" INTEGER,
+    "joiningDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "salary" REAL,
+    "avatarUrl" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+    "schoolId" TEXT NOT NULL,
+    CONSTRAINT "Teacher_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+-- CreateTable
 CREATE TABLE "Section" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -139,30 +161,6 @@ CREATE TABLE "Subject" (
     "deletedAt" TIMESTAMP(3),
     CONSTRAINT "Subject_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
-
--- CreateTable
-CREATE TABLE "Teacher" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "employeeNo" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
-    "gender" TEXT,
-    "dateOfBirth" TIMESTAMP(3),
-    "bloodGroup" TEXT,
-    "qualification" TEXT,
-    "experience" INTEGER,
-    "joiningDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "salary" REAL,
-    "avatarUrl" TEXT,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-    "schoolId" TEXT NOT NULL,
-    CONSTRAINT "Teacher_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
 
 -- CreateTable
 CREATE TABLE "ClassSubject" (
@@ -201,29 +199,6 @@ CREATE TABLE "Student" (
     "sectionId" TEXT,
     CONSTRAINT "Student_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Student_sectionId_fkey" FOREIGN KEY ("sectionId") REFERENCES "Section" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Teacher" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "employeeNo" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
-    "gender" TEXT,
-    "dateOfBirth" TIMESTAMP(3),
-    "bloodGroup" TEXT,
-    "qualification" TEXT,
-    "experience" INTEGER,
-    "joiningDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "salary" REAL,
-    "avatarUrl" TEXT,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-    "schoolId" TEXT NOT NULL,
-    CONSTRAINT "Teacher_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -990,3 +965,4 @@ CREATE INDEX "SchoolRequest_status_idx" ON "SchoolRequest"("status");
 
 -- CreateIndex
 CREATE INDEX "SchoolRequest_createdAt_idx" ON "SchoolRequest"("createdAt");
+
