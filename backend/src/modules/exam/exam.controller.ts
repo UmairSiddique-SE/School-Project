@@ -14,7 +14,7 @@ export class ExamController {
 
   @Get()
   getExams(@CurrentUser() user: any) {
-    return this.examService.getExams(user.schoolId);
+    return this.examService.getExams(user.schoolId, user);
   }
 
   @Post()
@@ -29,7 +29,7 @@ export class ExamController {
     @Query('examId') examId: string,
     @Query('subjectId') subjectId: string,
   ) {
-    return this.examService.getExamResults(user.schoolId, examId, subjectId);
+    return this.examService.getExamResults(user.schoolId, examId, subjectId, user);
   }
 
   @Post('results')
