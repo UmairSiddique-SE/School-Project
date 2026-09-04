@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, Res, UseGuards,
+  Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, Res, UseGuards, BadRequestException,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { PaymentLifecycleService } from './payment-lifecycle.service';
@@ -107,7 +107,6 @@ export class AdminController {
   }
 
   @Get('reports/:id/download')
-  @Roles('SUPER_ADMIN')
   async downloadReport(@Param('id') id: string, @Res() res: any) {
     const csv = await this.adminService.getReportCsv(id);
     res.setHeader('Content-Type', 'text/csv');
@@ -121,7 +120,10 @@ export class AdminController {
   }
 
   @Patch('users/:id/toggle-status')
-  toggleUserStatus(@Param('id') id: string) {
+  toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) {
+    if (user?.id && user.id === id) {
+      throw new BadRequestException('Super Admin cannot disable the account currently in use.');
+    }
     return this.adminService.toggleUserActive(id);
   }
 
