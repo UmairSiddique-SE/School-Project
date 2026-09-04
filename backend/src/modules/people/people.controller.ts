@@ -126,14 +126,6 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
 
-  @Get('parents')
-  @Roles('SCHOOL_ADMIN')
-  getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
-
-  @Post('parents')
-  @Roles('SCHOOL_ADMIN')
-  createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
-
   @Get('staff')
   @Roles('SCHOOL_ADMIN')
   getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
