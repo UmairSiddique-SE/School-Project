@@ -59,14 +59,26 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email.trim().toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
-    if (!user) throw new UnauthorizedException('No account found for this email address');
+    const identifier = dto.email.trim();
+    let user = await this.prisma.user.findUnique({ where: { email: identifier.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
+
+    // Students use their Admission Number as their login ID. The stored user email
+    // remains internal and is not required from the student.
+    if (!user) {
+      const student = await this.prisma.student.findUnique({ where: { admissionNo: identifier } });
+      if (student?.email) {
+        user = await this.prisma.user.findUnique({ where: { email: student.email.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
+      }
+    }
+
+    if (!user) throw new UnauthorizedException('No account found for this login ID');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
     if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended or awaiting payment approval');
-    if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid email or password');
-    if (!user.emailVerified) throw new UnauthorizedException('Please verify your email before signing in');
+    if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid login ID or password');
+    if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
     if (user.school?.subscription && (user.school.subscription.status === 'EXPIRED' || user.school.subscription.endDate < new Date())) throw new UnauthorizedException('Your subscription has expired. Please renew your plan.');
     const tokens = await this.generateTokens(user.id, user.email, user.role, user.schoolId ?? undefined);
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     return { user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING', plan: user.school?.subscription?.plan }, ...tokens };
   }
 
