@@ -59,7 +59,7 @@ export class PeopleController {
                 rollNo: true,
                 name: true,
                 gender: true,
-                dob: true,
+                dateOfBirth: true,
                 status: true,
                 section: { select: { id: true, name: true, class: { select: { id: true, name: true } } } },
               },
