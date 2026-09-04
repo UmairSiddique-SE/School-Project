@@ -23,6 +23,12 @@ export class ExamController {
     return this.examService.createExam(user.schoolId, dto);
   }
 
+  @Get('my-results')
+  @Roles('STUDENT')
+  getMyResults(@CurrentUser() user: any) {
+    return this.examService.getMyResults(user.schoolId, user);
+  }
+
   @Get('results')
   getResults(
     @CurrentUser() user: any,
