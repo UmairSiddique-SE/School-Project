@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -25,9 +26,7 @@ async function bootstrap() {
     throw new Error('CORS_ORIGINS is required in production.');
   }
 
-  const corsOrigins = configuredOrigins.length
-    ? configuredOrigins
-    : ['http://localhost:5173'];
+  const corsOrigins = configuredOrigins.length ? configuredOrigins : ['http://localhost:5173'];
 
   app.enableCors({
     origin: corsOrigins,
@@ -38,9 +37,8 @@ async function bootstrap() {
 
   // Keep request bodies bounded. File uploads should use object storage URLs rather than
   // sending large base64 payloads through the API.
-  const bodyParser = require('body-parser');
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ limit: '10mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({
