@@ -41,100 +41,92 @@
   --ring: 187 82% 36%;
 }
 
-/* Existing utility names remain compatible with the component library. */
 .gradient-bg-primary { background: linear-gradient(135deg, #0891b2 0%, #0d9488 52%, #14b8a6 100%) !important; }
 .gradient-text-primary { background: linear-gradient(135deg, #67e8f9 0%, #22d3ee 45%, #5eead4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .glow-violet, .glow-violet-sm { box-shadow: 0 0 22px rgba(20, 184, 166, .22), 0 0 44px rgba(8, 145, 178, .10); }
 
-/* Keep violet component classes visually aligned with the new brand palette. */
 .bg-violet-500 { background-color: rgb(20 184 166) !important; }
 .bg-violet-600 { background-color: rgb(13 148 136) !important; }
 .bg-violet-700 { background-color: rgb(15 118 110) !important; }
 .text-violet-400 { color: rgb(45 212 191) !important; }
 .text-violet-500 { color: rgb(20 184 166) !important; }
-.border-violet-500\\/25 { border-color: rgb(20 184 166 / .25) !important; }
-.border-violet-500\\/30 { border-color: rgb(20 184 166 / .30) !important; }
+.border-violet-500\/25 { border-color: rgb(20 184 166 / .25) !important; }
+.border-violet-500\/30 { border-color: rgb(20 184 166 / .30) !important; }
 .from-violet-600 { --tw-gradient-from: #0d9488 !important; }
 .from-violet-500 { --tw-gradient-from: #14b8a6 !important; }
 .to-indigo-600 { --tw-gradient-to: #0891b2 !important; }
 .to-indigo-700 { --tw-gradient-to: #0e7490 !important; }
-
 .light .text-violet-400, .light .text-violet-500 { color: rgb(13 148 136) !important; }
 
 /* -------------------------------------------------------------------------- */
-/* Landing page: true light-mode presentation.                              */
-/* The selector scopes the overrides to the LandingPage root so dashboards   */
-/* and authenticated screens keep their own design system.                   */
+/* Landing page light mode.                                                  */
+/* Use an attribute selector so Tailwind's arbitrary class needs no escaping. */
 /* -------------------------------------------------------------------------- */
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) {
-  background: #f7fbff;
+html.light body:has([class*="bg-[#030817]"]) {
+  background: #f6fbff !important;
 }
 
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) div.min-h-screen.bg-\\[\\#030817\\] {
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #f4fbff 100%) !important;
+html.light body:has([class*="bg-[#030817]"]) [class*="bg-[#030817]"] {
+  background: linear-gradient(180deg, #f8fcff 0%, #ffffff 46%, #f1fbff 100%) !important;
   color: #172033 !important;
 }
 
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) div.min-h-screen.bg-\\[\\#030817\\] .bg-gradient-to-br.from-\\[\\#0d0221\\] {
-  background: radial-gradient(circle at 18% 12%, rgba(34, 211, 238, .18), transparent 34%), radial-gradient(circle at 82% 28%, rgba(129, 140, 248, .16), transparent 38%), linear-gradient(135deg, #f8fcff 0%, #eef9ff 48%, #f8f7ff 100%) !important;
+html.light body:has([class*="bg-[#030817]"]) .text-white { color: #172033 !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/80 { color: #334155 !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/70 { color: #475569 !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/60 { color: #64748b !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/50 { color: #64748b !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/40 { color: #94a3b8 !important; }
+html.light body:has([class*="bg-[#030817]"]) .text-white\/30 { color: #94a3b8 !important; }
+
+html.light body:has([class*="bg-[#030817]"]) .bg-gradient-to-br.from-\[\#0d0221\] {
+  background: radial-gradient(circle at 18% 12%, rgba(34,211,238,.18), transparent 34%), radial-gradient(circle at 82% 28%, rgba(129,140,248,.16), transparent 38%), linear-gradient(135deg, #f8fcff 0%, #eef9ff 48%, #f8f7ff 100%) !important;
 }
 
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white { color: #172033 !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/80 { color: #334155 !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/70 { color: #475569 !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/60 { color: #64748b !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/50 { color: #64748b !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/40 { color: #94a3b8 !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .text-white\\/30 { color: #94a3b8 !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-white\/5 { background-color: rgba(255,255,255,.72) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.03\] { background-color: rgba(255,255,255,.78) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.04\] { background-color: rgba(255,255,255,.82) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.07\] { background-color: rgba(255,255,255,.86) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.12\] { background-color: rgba(255,255,255,.96) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-black\/60 { background-color: rgba(255,255,255,.90) !important; }
+html.light body:has([class*="bg-[#030817]"]) .bg-black\/80 { background-color: rgba(255,255,255,.97) !important; }
 
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-white\\/5 { background-color: rgba(255,255,255,.72) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-white\\/\\[0\\.03\\] { background-color: rgba(255,255,255,.78) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-white\\/\\[0\\.04\\] { background-color: rgba(255,255,255,.82) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-white\\/\\[0\\.07\\] { background-color: rgba(255,255,255,.86) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-white\\/\\[0\\.12\\] { background-color: rgba(255,255,255,.96) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-black\\/60 { background-color: rgba(255,255,255,.9) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .bg-black\\/80 { background-color: rgba(255,255,255,.97) !important; }
+html.light body:has([class*="bg-[#030817]"]) .border-white\/10 { border-color: rgba(15,23,42,.10) !important; }
+html.light body:has([class*="bg-[#030817]"]) .border-white\/15 { border-color: rgba(15,23,42,.14) !important; }
+html.light body:has([class*="bg-[#030817]"]) .border-white\/20 { border-color: rgba(15,23,42,.16) !important; }
 
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .border-white\\/10 { border-color: rgba(15, 23, 42, .10) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .border-white\\/15 { border-color: rgba(15, 23, 42, .14) !important; }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) .border-white\\/20 { border-color: rgba(15, 23, 42, .16) !important; }
-
-/* Pricing cards: clean white surfaces with colorful plan identities. */
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing {
-  background: linear-gradient(180deg, transparent 0%, rgba(224, 247, 250, .45) 100%) !important;
+html.light body:has([class*="bg-[#030817]"]) #pricing {
+  background: linear-gradient(180deg, transparent 0%, rgba(224,247,250,.45) 100%) !important;
 }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing .border-violet-500\\/50 {
-  border-color: rgba(13, 148, 136, .45) !important;
-  background: linear-gradient(145deg, rgba(240, 253, 250, .98), rgba(255,255,255,.98)) !important;
-  box-shadow: 0 22px 60px rgba(13, 148, 136, .14) !important;
+
+html.light body:has([class*="bg-[#030817]"]) #pricing .border-violet-500\/50 {
+  border-color: rgba(13,148,136,.45) !important;
+  background: linear-gradient(145deg, rgba(240,253,250,.98), rgba(255,255,255,.98)) !important;
+  box-shadow: 0 22px 60px rgba(13,148,136,.14) !important;
 }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing .border-amber-500\\/40 {
-  border-color: rgba(245, 158, 11, .38) !important;
+
+html.light body:has([class*="bg-[#030817]"]) #pricing .border-amber-500\/40 {
+  border-color: rgba(245,158,11,.38) !important;
   background: linear-gradient(145deg, rgba(255,251,235,.98), rgba(255,255,255,.98)) !important;
-  box-shadow: 0 22px 60px rgba(245, 158, 11, .12) !important;
+  box-shadow: 0 22px 60px rgba(245,158,11,.12) !important;
 }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing .border-white\\/10 {
-  border-color: rgba(15, 23, 42, .10) !important;
+
+html.light body:has([class*="bg-[#030817]"]) #pricing .border-white\/10 {
+  border-color: rgba(15,23,42,.10) !important;
   background: rgba(255,255,255,.96) !important;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, .07) !important;
+  box-shadow: 0 18px 50px rgba(15,23,42,.07) !important;
 }
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing .text-5xl.font-black.text-white {
+
+html.light body:has([class*="bg-[#030817]"]) #pricing .text-5xl.font-black.text-white {
   color: #0f172a !important;
 }
 
-/* Hide the obsolete annual-toggle state if it is ever rendered; the product  */
-/* now has one simple monthly pricing presentation. */
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) #pricing button[aria-label=\"Annual billing\"] { display: none; }
+html.light body:has([class*="bg-[#030817]"]) h1,
+html.light body:has([class*="bg-[#030817]"]) h2,
+html.light body:has([class*="bg-[#030817]"]) h3 { text-shadow: none; }
 
-/* Strong readable headings and cards in light mode. */
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) h1,
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) h2,
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) h3 {
-  text-shadow: none;
-}
-
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) input,
-html.light body:has(div.min-h-screen.bg-\\[\\#030817\\]) textarea {
+html.light body:has([class*="bg-[#030817]"]) input,
+html.light body:has([class*="bg-[#030817]"]) textarea {
   color: #172033 !important;
   background: rgba(255,255,255,.96) !important;
   border-color: rgba(15,23,42,.12) !important;
