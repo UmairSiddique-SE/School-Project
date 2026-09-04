@@ -26,6 +26,10 @@ Production must use a managed PostgreSQL database (for example Neon PostgreSQL).
 - Take a database backup before any production migration.
 - Verify tenant isolation and subscription/payment data after migration.
 
+## CI verification checkpoint
+
+Every production-readiness code change must pass the repository CI build before the next implementation step is marked complete.
+
 ## Environment
 
 Use `backend/.env.example` as the template. Production `DATABASE_URL` must be a PostgreSQL connection string and should normally include `schema=public`.
