@@ -27,7 +27,11 @@ async function bootstrap() {
     throw new Error('CORS_ORIGINS is required in production.');
   }
 
-  const corsOrigins = configuredOrigins.length ? configuredOrigins : ['http://localhost:5173'];
+  // Allow both common Vite development ports. If CORS_ORIGINS is set,
+  // those explicitly configured origins take precedence.
+  const corsOrigins = configuredOrigins.length
+    ? configuredOrigins
+    : ['http://localhost:5173', 'http://localhost:5174'];
 
   app.enableCors({
     origin: corsOrigins,
