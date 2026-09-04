@@ -21,6 +21,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma generate
+      - run: DATABASE_URL=file:./ci.db npm run validate:production-db
       - run: npm run build
       - run: npm run test -- --runInBand
 
