@@ -1,26 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, LockKeyhole, Loader2, ArrowRight } from "lucide-react";
+import { Mail, LockKeyhole, Loader2, ArrowRight, GraduationCap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const { schoolSlug: urlSchoolSlug } = useParams();
-  const [email, setEmail] = useState("schooladmin@gmail.com");
-  const [password, setPassword] = useState("12345678");
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!identifier.trim() || !password) return;
     setLoading(true);
     try {
       const res = await apiClient.post("/auth/login", {
-        email: email.trim().toLowerCase(),
+        email: identifier.trim().toLowerCase(),
         password,
       });
       const { user, accessToken } = res.data;
@@ -29,12 +29,14 @@ export default function LoginPage() {
       const destination =
         user.role === "SUPER_ADMIN"
           ? "/super-admin"
-          : `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/dashboard`;
+          : user.role === "STUDENT"
+            ? `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/student-portal`
+            : `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/dashboard`;
       navigate(destination, { replace: true });
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
-          "No account found for this email address.",
+          "Invalid Login ID or password. Please check your credentials.",
       );
     } finally {
       setLoading(false);
@@ -43,11 +45,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#030817] flex items-center justify-center p-4 relative overflow-hidden text-white selection:bg-violet-500/30">
-      {/* Background Gradient Orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Grid overlay */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -63,7 +62,6 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        {/* Logo */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white text-3xl font-black mb-4 shadow-xl shadow-violet-600/30">
             E
@@ -82,28 +80,36 @@ export default function LoginPage() {
           <div className="p-4 border-b border-white/10 bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-purple-950/40 flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-bold text-slate-300">
-              Live School Management — Email Access
+              Secure School Access
             </span>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Email / Login ID
+                Email / Student Login ID
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Mail size={16} />
                 </div>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                   autoFocus
+                  autoComplete="username"
                   className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all"
-                  placeholder="name@school.edu"
+                  placeholder="admin@school.pk or ali150@student.school.pk"
                 />
+              </div>
+              <div className="flex items-start gap-2 px-1 pt-1 text-[11px] text-slate-500 leading-relaxed">
+                <GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  Students use their school-issued Login ID, e.g. <strong className="text-slate-400">ali150@student.school.pk</strong>.
+                  Admins and teachers use their registered email.
+                </span>
               </div>
             </div>
 
@@ -120,13 +126,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all"
                   placeholder="Enter your password"
                 />
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -137,12 +143,12 @@ export default function LoginPage() {
               ) : (
                 <ArrowRight size={18} />
               )}
-              <span>{loading ? "Signing in..." : "Sign In to Dashboard"}</span>
+              <span>{loading ? "Signing in..." : "Sign In"}</span>
             </button>
           </form>
 
           <div className="px-6 pb-5 text-center text-xs text-slate-400 border-t border-white/5 pt-4">
-            <p>Students, Teachers, Classes &amp; Finance — unified system.</p>
+            <p>Secure access for School Admin, Teachers &amp; Students.</p>
           </div>
         </div>
       </motion.div>
