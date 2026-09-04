@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { PeopleService } from './people.service';
@@ -77,6 +78,8 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   async createStudent(@CurrentUser() user: any, @Body() dto: any) {
     await this.planLimitService.assertStudentCapacity(user.schoolId);
+    await this.assertSectionCapacity(user.schoolId, dto.sectionId);
+
     // Student credentials are always generated server-side. Ignore any client-supplied
     // password/parentPassword so old clients cannot create fixed or parent login credentials.
     const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
@@ -87,7 +90,17 @@ export class PeopleController {
 
   @Patch('students/:id')
   @Roles('SCHOOL_ADMIN')
-  updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateStudent(id, user.schoolId, dto); }
+  async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (dto.sectionId) {
+      const current = await this.prisma.student.findFirst({
+        where: { id, schoolId: user.schoolId, deletedAt: null },
+        select: { sectionId: true },
+      });
+      if (!current) throw new BadRequestException('Student not found');
+      if (current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId);
+    }
+    return this.peopleService.updateStudent(id, user.schoolId, dto);
+  }
 
   @Delete('students/:id')
   @Roles('SCHOOL_ADMIN')
@@ -108,4 +121,20 @@ export class PeopleController {
   @Delete('staff/:id')
   @Roles('SCHOOL_ADMIN')
   deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
+
+  private async assertSectionCapacity(schoolId: string, sectionId?: string) {
+    if (!sectionId) return;
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } },
+      select: { id: true, capacity: true },
+    });
+    if (!section) throw new BadRequestException('Selected section does not belong to this school');
+
+    const enrolled = await this.prisma.student.count({
+      where: { schoolId, sectionId, deletedAt: null },
+    });
+    if (enrolled >= section.capacity) {
+      throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
+    }
+  }
 }
