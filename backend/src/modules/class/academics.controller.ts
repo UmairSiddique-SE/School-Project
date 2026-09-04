@@ -13,8 +13,9 @@ export class AcademicsController {
   constructor(private readonly academicsService: AcademicsService) {}
 
   @Get('homework')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getHomework(@CurrentUser() user: any) {
-    return this.academicsService.getHomework(user.schoolId);
+    return this.academicsService.getHomework(user.schoolId, user);
   }
 
   @Post('homework')
@@ -30,8 +31,9 @@ export class AcademicsController {
   }
 
   @Get('timetables')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getTimetables(@CurrentUser() user: any) {
-    return this.academicsService.getTimetables(user.schoolId);
+    return this.academicsService.getTimetables(user.schoolId, user);
   }
 
   @Post('timetables')
@@ -47,8 +49,9 @@ export class AcademicsController {
   }
 
   @Get('announcements')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getAnnouncements(@CurrentUser() user: any) {
-    return this.academicsService.getAnnouncements(user.schoolId);
+    return this.academicsService.getAnnouncements(user.schoolId, user);
   }
 
   @Post('announcements')
@@ -64,6 +67,7 @@ export class AcademicsController {
   }
 
   @Get('routes')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   getRoutes(@CurrentUser() user: any) {
     return this.academicsService.getRoutes(user.schoolId);
   }
@@ -81,6 +85,7 @@ export class AcademicsController {
   }
 
   @Get('vehicles')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   getVehicles(@CurrentUser() user: any) {
     return this.academicsService.getVehicles(user.schoolId);
   }
