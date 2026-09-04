@@ -124,10 +124,6 @@ export class RefreshTokenDto {
   @IsString()
   @IsNotEmpty()
   refreshToken: string;
-
-  @IsString()
-  @IsNotEmpty()
-  refreshToken: string;
 }
 
 export class UpdateProfileDto {
@@ -141,10 +137,6 @@ export class UpdateProfileDto {
 }
 
 export class ChangePasswordDto {
-  @IsString()
-  @MinLength(8)
-  currentPassword: string;
-
   @IsString()
   @MinLength(8)
   currentPassword: string;
