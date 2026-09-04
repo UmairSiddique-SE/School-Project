@@ -13,7 +13,7 @@ export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
 
   @Get('structures')
-  @Roles('SCHOOL_ADMIN', 'STUDENT', 'PARENT')
+  @Roles('SCHOOL_ADMIN', 'STUDENT')
   getStructures(@CurrentUser() user: any) {
     return this.financeService.getFeeStructures(user.schoolId, user);
   }
@@ -25,7 +25,7 @@ export class FinanceController {
   }
 
   @Get('payments')
-  @Roles('SCHOOL_ADMIN', 'STUDENT', 'PARENT')
+  @Roles('SCHOOL_ADMIN', 'STUDENT')
   getPayments(@CurrentUser() user: any) {
     return this.financeService.getPaymentsForUser(user);
   }
