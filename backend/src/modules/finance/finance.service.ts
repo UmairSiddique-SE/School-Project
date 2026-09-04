@@ -15,18 +15,13 @@ export class FinanceService {
       where.isActive = true;
       const studentIds = await this.getStudentIdsForUser(user);
       if (!studentIds.length) return [];
-      const students = await this.prisma.student.findMany({
-        where: { id: { in: studentIds }, schoolId, deletedAt: null },
-        select: { classId: true },
-      });
-      const classIds = [...new Set(students.map((student) => student.classId).filter(Boolean))];
+      const students = await this.prisma.student.findMany({ where: { id: { in: studentIds }, schoolId, deletedAt: null }, select: { sectionId: true } });
+      const sectionIds: string[] = [...new Set<string>(students.map((student) => student.sectionId).filter((id): id is string => Boolean(id)))];
+      const sections = sectionIds.length ? await this.prisma.section.findMany({ where: { id: { in: sectionIds }, class: { schoolId }, deletedAt: null }, select: { id: true, classId: true } }) : [];
+      const classIds = [...new Set(sections.map((section) => section.classId))];
       where.OR = [{ classId: null }, ...(classIds.length ? [{ classId: { in: classIds } }] : [])];
     }
-    return this.prisma.feeStructure.findMany({
-      where,
-      include: { class: { select: { name: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.prisma.feeStructure.findMany({ where, include: { class: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
   }
 
   async createFeeStructure(schoolId: string, data: any) {
@@ -40,9 +35,7 @@ export class FinanceService {
       const schoolClass = await this.prisma.class.findFirst({ where: { id: data.classId, schoolId, deletedAt: null } });
       if (!schoolClass) throw new NotFoundException('Class not found in this school');
     }
-    return this.prisma.feeStructure.create({
-      data: { name, amount, frequency, description: data.description?.trim() || null, classId: data.classId || null, schoolId },
-    });
+    return this.prisma.feeStructure.create({ data: { name, amount, frequency, description: data.description?.trim() || null, classId: data.classId || null, schoolId } });
   }
 
   async getPaymentsForUser(user: any) {
@@ -51,10 +44,7 @@ export class FinanceService {
     if (!studentIds.length) return [];
     return this.prisma.feePayment.findMany({
       where: { schoolId: user.schoolId, studentId: { in: [...new Set(studentIds)] } },
-      include: {
-        student: { select: { id: true, name: true, admissionNo: true, class: { select: { name: true } } } },
-        feeStructure: { select: { id: true, name: true } },
-      },
+      include: { student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } }, feeStructure: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -62,10 +52,7 @@ export class FinanceService {
   async getPayments(schoolId: string) {
     return this.prisma.feePayment.findMany({
       where: { schoolId },
-      include: {
-        student: { select: { id: true, name: true, admissionNo: true, class: { select: { name: true } } } },
-        feeStructure: { select: { id: true, name: true } },
-      },
+      include: { student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } }, feeStructure: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -79,8 +66,9 @@ export class FinanceService {
     if (data?.feeStructureId) {
       structure = await this.prisma.feeStructure.findFirst({ where: { id: data.feeStructureId, schoolId, isActive: true } });
       if (!structure) throw new NotFoundException('Fee structure not found or inactive');
-      if (structure.classId && structure.classId !== student.classId) {
-        throw new BadRequestException("Selected fee structure is not assigned to this student's class");
+      if (structure.classId) {
+        const section = student.sectionId ? await this.prisma.section.findFirst({ where: { id: student.sectionId, class: { schoolId }, deletedAt: null }, select: { classId: true } }) : null;
+        if (!section || structure.classId !== section.classId) throw new BadRequestException("Selected fee structure is not assigned to this student's class");
       }
     }
 
@@ -94,7 +82,6 @@ export class FinanceService {
     if (totalPaid < 0 || discount < 0 || fine < 0) throw new BadRequestException('Discount, fine and payment cannot be negative');
     if (discount > amount) throw new BadRequestException('Discount cannot exceed the amount due');
     if (!PAYMENT_METHODS.has(method)) throw new BadRequestException('Invalid payment method');
-
     const payable = amount - discount + fine;
     if (totalPaid > payable) throw new BadRequestException('Amount paid cannot exceed the final payable amount');
     const status = totalPaid >= payable ? 'PAID' : totalPaid > 0 ? 'PARTIAL' : 'PENDING';
@@ -104,16 +91,8 @@ export class FinanceService {
       dueDate = new Date(data.dueDate);
       if (Number.isNaN(dueDate.getTime())) throw new BadRequestException('Invalid due date');
     }
-
     const receiptNo = `FEE-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`;
-    return this.prisma.feePayment.create({
-      data: {
-        amount, discount, fine, totalPaid, method, status, dueDate,
-        paidDate: totalPaid > 0 ? new Date() : null,
-        receiptNo, remarks: data?.remarks?.trim() || null,
-        schoolId, studentId: student.id, feeStructureId: structure?.id || null,
-      },
-    });
+    return this.prisma.feePayment.create({ data: { amount, discount, fine, totalPaid, method, status, dueDate, paidDate: totalPaid > 0 ? new Date() : null, receiptNo, remarks: data?.remarks?.trim() || null, schoolId, studentId: student.id, feeStructureId: structure?.id || null } });
   }
 
   private async getStudentIdsForUser(user: any): Promise<string[]> {
@@ -125,10 +104,7 @@ export class FinanceService {
     if (user.role === 'PARENT') {
       const parent = await this.prisma.parent.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
       if (!parent) return [];
-      const links = await this.prisma.studentParent.findMany({
-        where: { parentId: parent.id, student: { schoolId: user.schoolId, deletedAt: null } },
-        select: { studentId: true },
-      });
+      const links = await this.prisma.studentParent.findMany({ where: { parentId: parent.id, student: { schoolId: user.schoolId, deletedAt: null } }, select: { studentId: true } });
       return links.map((link) => link.studentId);
     }
     return [];
