@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../database/prisma.service';
 import { LoginDto, RegisterSchoolDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, OnboardingPaymentDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { randomInt } from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { JwtPayload } from './strategies/jwt.strategy';
 
@@ -27,7 +28,7 @@ export class AuthService {
       const plan = await this.prisma.platformPlan.findUnique({ where: { planKey } });
       if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable');
       const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
-      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      const otp = String(randomInt(100000, 1000000));
       const result = await this.prisma.$transaction(async (tx) => {
         const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: false } });
         const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
