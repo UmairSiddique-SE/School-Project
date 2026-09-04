@@ -19,6 +19,7 @@ export class AttendanceController {
   }
 
   @Get()
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   getAttendance(
     @CurrentUser() user: any,
     @Query('sectionId') sectionId: string,
@@ -28,6 +29,7 @@ export class AttendanceController {
   }
 
   @Get('section/:sectionId')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   getAttendanceBySection(
     @CurrentUser() user: any,
     @Param('sectionId') sectionId: string,
