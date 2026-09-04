@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type UserRole =
-  | "SUPER_ADMIN"
-  | "SCHOOL_ADMIN"
-  | "TEACHER"
-  | "STUDENT";
+export type UserRole = "SUPER_ADMIN" | "SCHOOL_ADMIN" | "TEACHER" | "STUDENT";
 
 export interface User {
   id: string;
@@ -50,7 +46,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem("auth_user");
       }
     }
+    const handleSessionExpired = () => {
+      setToken(null);
+      setUser(null);
+      setPreviewRole(null);
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_refresh_token");
+      localStorage.removeItem("auth_user");
+    };
+    window.addEventListener("edusphere:session-expired", handleSessionExpired);
     setIsLoading(false);
+    return () => window.removeEventListener("edusphere:session-expired", handleSessionExpired);
   }, []);
 
   const login = (newToken: string, newUser: User, newRefreshToken?: string) => {
