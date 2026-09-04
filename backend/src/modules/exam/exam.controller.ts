@@ -35,6 +35,10 @@ export class ExamController {
   @Post('results')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   recordResults(@CurrentUser() user: any, @Body() dto: any) {
-    return this.examService.recordResults(user.schoolId, dto);
+    return this.examService.recordResults(
+      user.schoolId,
+      dto,
+      user.role === 'TEACHER' ? user.email : undefined,
+    );
   }
 }
