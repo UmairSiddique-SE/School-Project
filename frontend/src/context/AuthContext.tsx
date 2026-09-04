@@ -24,7 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   previewRole: UserRole | null;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: User, refreshToken?: string) => void;
   logout: () => void;
   setPreviewRole: (role: UserRole | null) => void;
 }
@@ -46,18 +46,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(JSON.parse(storedUser));
       } catch {
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_refresh_token");
         localStorage.removeItem("auth_user");
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User, newRefreshToken?: string) => {
     setToken(newToken);
     setUser(newUser);
     setPreviewRole(null);
     localStorage.setItem("auth_token", newToken);
     localStorage.setItem("auth_user", JSON.stringify(newUser));
+    if (newRefreshToken) localStorage.setItem("auth_refresh_token", newRefreshToken);
   };
 
   const logout = () => {
@@ -65,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setPreviewRole(null);
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_refresh_token");
     localStorage.removeItem("auth_user");
   };
 
