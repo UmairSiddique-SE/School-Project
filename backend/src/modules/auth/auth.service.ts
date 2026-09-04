@@ -59,22 +59,47 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const identifier = dto.email.trim();
-    let user = await this.prisma.user.findUnique({ where: { email: identifier.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
+    const identifier = dto.email.trim().toLowerCase();
+    let user = await this.prisma.user.findUnique({ where: { email: identifier }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
 
-    // Students use their Admission Number as their login ID. The stored user email
-    // remains internal and is not required from the student.
+    // Student Login ID is derived from the student's first name + admission number suffix
+    // + school slug, e.g. ali150@student.cityschool.pk. It is a login alias only;
+    // Student.admissionNo and the internal User.email remain unchanged.
+    if (!user && identifier.includes('@student.')) {
+      const match = identifier.match(/^([a-z0-9]+?)(\d+)@student\.([a-z0-9-]+)\.pk$/i);
+      if (match) {
+        const [, firstName, admissionSuffix, schoolSlug] = match;
+        const school = await this.prisma.school.findUnique({ where: { slug: schoolSlug }, select: { id: true } });
+        if (school) {
+          const students = await this.prisma.student.findMany({
+            where: { schoolId: school.id, deletedAt: null },
+            select: { admissionNo: true, name: true, email: true },
+          });
+          const normalizedFirstName = firstName.toLowerCase();
+          const student = students.find((s) => {
+            const nameFirst = s.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+            const suffix = s.admissionNo.match(/(\d+)$/)?.[1] || s.admissionNo.replace(/\D/g, '');
+            return nameFirst === normalizedFirstName && suffix === admissionSuffix;
+          });
+          if (student?.email) {
+            user = await this.prisma.user.findUnique({ where: { email: student.email.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
+          }
+        }
+      }
+    }
+
+    // Legacy/direct Admission Number login remains supported for existing accounts.
     if (!user) {
-      const student = await this.prisma.student.findUnique({ where: { admissionNo: identifier } });
+      const student = await this.prisma.student.findUnique({ where: { admissionNo: dto.email.trim() } });
       if (student?.email) {
         user = await this.prisma.user.findUnique({ where: { email: student.email.toLowerCase() }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
       }
     }
 
-    if (!user) throw new UnauthorizedException('No account found for this login ID');
+    if (!user) throw new UnauthorizedException('No account found for this Login ID');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
     if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended or awaiting payment approval');
-    if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid login ID or password');
+    if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
     if (user.school?.subscription && (user.school.subscription.status === 'EXPIRED' || user.school.subscription.endDate < new Date())) throw new UnauthorizedException('Your subscription has expired. Please renew your plan.');
     const tokens = await this.generateTokens(user.id, user.email, user.role, user.schoolId ?? undefined);
