@@ -23,11 +23,14 @@ interface Plan {
   features: string[];
 }
 
+const UNLIMITED = 999999;
+
 export default function Plans() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Plan | null>(null);
   const [editForm, setEditForm] = useState({ price: '', maxStudents: '', maxTeachers: '' });
+  const [unlimited, setUnlimited] = useState({ students: false, staff: false });
   const [saving, setSaving] = useState(false);
 
   const fetchPlans = () => {
@@ -43,16 +46,23 @@ export default function Plans() {
   const handleEdit = (plan: Plan) => {
     setEditing(plan);
     setEditForm({ price: plan.price.toString(), maxStudents: plan.maxStudents.toString(), maxTeachers: plan.maxTeachers.toString() });
+    setUnlimited({ students: plan.maxStudents >= UNLIMITED, staff: plan.maxTeachers >= UNLIMITED });
   };
 
   const handleSave = async () => {
     if (!editing) return;
+    const students = unlimited.students ? UNLIMITED : parseInt(editForm.maxStudents);
+    const staff = unlimited.staff ? UNLIMITED : parseInt(editForm.maxTeachers);
+    if (!Number.isFinite(students) || students < 1 || !Number.isFinite(staff) || staff < 1) {
+      toast.error('Student and staff limits must be at least 1, or set Unlimited.');
+      return;
+    }
     setSaving(true);
     try {
       await apiClient.put(`/admin/plans/${editing.id}`, {
         price: parseFloat(editForm.price) || 0,
-        maxStudents: parseInt(editForm.maxStudents) || 0,
-        maxTeachers: parseInt(editForm.maxTeachers) || 0,
+        maxStudents: students,
+        maxTeachers: staff,
       });
       toast.success(`${editing.name} plan updated!`);
       setEditing(null);
@@ -92,8 +102,8 @@ export default function Plans() {
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Students', value: plan.maxStudents >= 999999 ? '∞' : plan.maxStudents.toLocaleString(), icon: GraduationCap },
-                    { label: 'Staff', value: plan.maxTeachers >= 999999 ? '∞' : plan.maxTeachers.toLocaleString(), icon: Users },
+                    { label: 'Students', value: plan.maxStudents >= UNLIMITED ? '∞' : plan.maxStudents.toLocaleString(), icon: GraduationCap },
+                    { label: 'Staff', value: plan.maxTeachers >= UNLIMITED ? '∞' : plan.maxTeachers.toLocaleString(), icon: Users },
                     { label: 'Storage', value: plan.storageMb >= 512000 ? '500 GB' : `${plan.storageMb / 1024} GB`, icon: HardDrive },
                     { label: 'Support', value: plan.supportTier, icon: Headphones },
                   ].map(item => <div key={item.label} className="bg-muted/50 rounded-xl p-2.5 text-center"><p className="text-xs font-black text-foreground">{item.value}</p><p className="text-[10px] text-muted-foreground">{item.label}</p></div>)}
@@ -113,7 +123,15 @@ export default function Plans() {
           <motion.div initial={{ scale: 0.93, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.93, y: 20 }} className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between mb-5"><h3 className="font-bold text-foreground">Edit {editing.name} Plan</h3><button onClick={() => setEditing(null)}><X size={20} className="text-muted-foreground" /></button></div>
             <div className="space-y-4">
-              {[{ label: 'Monthly Price (PKR)', key: 'price' }, { label: 'Max Students', key: 'maxStudents' }, { label: 'Max Staff', key: 'maxTeachers' }].map(field => <div key={field.key}><label className="text-xs font-semibold text-foreground">{field.label}</label><input type="number" min="0" value={(editForm as any)[field.key]} onChange={e => setEditForm(p => ({ ...p, [field.key]: e.target.value }))} className="mt-1 w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>)}
+              <div><label className="text-xs font-semibold text-foreground">Monthly Price (PKR)</label><input type="number" min="0" value={editForm.price} onChange={e => setEditForm(p => ({ ...p, price: e.target.value }))} className="mt-1 w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+              <div>
+                <label className="text-xs font-semibold text-foreground">Max Students</label>
+                <div className="flex gap-2 mt-1"><input type="number" min="1" disabled={unlimited.students} value={editForm.maxStudents} onChange={e => setEditForm(p => ({ ...p, maxStudents: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm disabled:opacity-50" /><button type="button" onClick={() => setUnlimited(p => ({ ...p, students: !p.students }))} className={`px-3 rounded-xl border text-xs font-bold ${unlimited.students ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>Unlimited</button></div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-foreground">Max Staff</label>
+                <div className="flex gap-2 mt-1"><input type="number" min="1" disabled={unlimited.staff} value={editForm.maxTeachers} onChange={e => setEditForm(p => ({ ...p, maxTeachers: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm disabled:opacity-50" /><button type="button" onClick={() => setUnlimited(p => ({ ...p, staff: !p.staff }))} className={`px-3 rounded-xl border text-xs font-bold ${unlimited.staff ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>Unlimited</button></div>
+              </div>
             </div>
             <button onClick={handleSave} disabled={saving} className="mt-5 w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 disabled:opacity-70 flex items-center justify-center gap-2">{saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}{saving ? 'Saving…' : 'Save Changes'}</button>
           </motion.div>
