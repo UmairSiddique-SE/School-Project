@@ -25,7 +25,23 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = String(response.config.method || '').toLowerCase();
+    const url = String(response.config.url || '');
+    const credentials = response.data?.credentials;
+
+    if (method === 'post' && /\/people\/students\/?$/.test(url) && credentials?.loginId && credentials?.password) {
+      window.dispatchEvent(new CustomEvent('edusphere:student-credentials', {
+        detail: {
+          loginId: String(credentials.loginId),
+          password: String(credentials.password),
+          studentName: response.data?.student?.name || 'Student',
+        },
+      }));
+    }
+
+    return response;
+  },
   async (error) => {
     // Authentication redirects are handled by the application auth boundary.
     return Promise.reject(error);
