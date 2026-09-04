@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { PlanLimitService } from '../people/plan-limit.service';
 
 @Injectable()
 export class BuildingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimitService: PlanLimitService,
+  ) {}
 
   // ─── Buildings ────────────────────────────────────────────────────────────
 
@@ -22,7 +26,7 @@ export class BuildingService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // If no buildings exist for this school yet, auto-create a default Main Campus Building so user has immediate data
+    // Provide one real operational campus record for a school that has none yet.
     if (buildings.length === 0 && schoolId) {
       const school = await this.prisma.school.findUnique({ where: { id: schoolId } });
       if (school) {
@@ -106,12 +110,17 @@ export class BuildingService {
     hasFireSafety?: boolean;
     hasFirstAid?: boolean;
     description?: string;
+    enforcePlan?: boolean;
   }) {
     if (!data.schoolId || !data.name) {
       throw new ConflictException('schoolId and name are required');
     }
     const school = await this.prisma.school.findUnique({ where: { id: data.schoolId } });
     if (!school) throw new NotFoundException('School not found');
+
+    if (data.enforcePlan !== false) {
+      await this.planLimitService.assertCampusCapacity(data.schoolId);
+    }
 
     return this.prisma.building.create({
       data: {
