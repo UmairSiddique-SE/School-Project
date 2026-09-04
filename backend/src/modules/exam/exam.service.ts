@@ -5,8 +5,10 @@ import { PrismaService } from '../database/prisma.service';
 export class ExamService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getExams(schoolId: string) {
-    return this.prisma.exam.findMany({ where: { schoolId, deletedAt: null }, orderBy: { startDate: 'desc' } });
+  async getExams(schoolId: string, user?: any) {
+    const baseWhere: any = { schoolId, deletedAt: null };
+    if (user?.role === 'STUDENT') baseWhere.isPublished = true;
+    return this.prisma.exam.findMany({ where: baseWhere, orderBy: { startDate: 'desc' } });
   }
 
   async createExam(schoolId: string, data: any) {
@@ -29,13 +31,26 @@ export class ExamService {
     return this.prisma.exam.create({ data: { name: data.name.trim(), type: data.type || 'UNIT_TEST', startDate, endDate, totalMarks, passingMarks, description: data.description?.trim() || null, schoolId, academicYearId: academicYear?.id || null, sectionId } });
   }
 
-  async getExamResults(schoolId: string, examId: string, subjectId: string) {
+  async getExamResults(schoolId: string, examId: string, subjectId: string, user?: any) {
     if (!examId || !subjectId) throw new BadRequestException('Exam and subject are required');
     const exam = await this.prisma.exam.findFirst({ where: { id: examId, schoolId, deletedAt: null } });
     if (!exam) throw new NotFoundException('Exam not found');
+    if (user?.role === 'STUDENT' && !exam.isPublished) throw new ForbiddenException('Exam results are not published');
     const subject = await this.prisma.subject.findFirst({ where: { id: subjectId, schoolId, deletedAt: null } });
     if (!subject) throw new NotFoundException('Subject not found');
-    return this.prisma.examResult.findMany({ where: { examId, subjectId, exam: { schoolId } }, include: { student: { select: { name: true, rollNo: true, admissionNo: true } } }, orderBy: { student: { name: 'asc' } } });
+
+    const where: any = { examId, subjectId, exam: { schoolId } };
+    if (user?.role === 'STUDENT') {
+      const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null, isActive: true }, select: { id: true } });
+      if (!student) throw new NotFoundException('Student profile not found');
+      where.studentId = student.id;
+    }
+
+    return this.prisma.examResult.findMany({
+      where,
+      include: { student: { select: { name: true, rollNo: true, admissionNo: true } } },
+      orderBy: { student: { name: 'asc' } },
+    });
   }
 
   async recordResults(schoolId: string, data: any, teacherEmail?: string) {
