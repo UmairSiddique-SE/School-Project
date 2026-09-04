@@ -1,4 +1,4 @@
-/* EduSphere Professional visual system: premium navy + cyan/teal, replacing the old violet-heavy accents. */
+/* EduSphere Professional visual system */
 :root {
   --background: 220 32% 6%;
   --foreground: 210 40% 96%;
@@ -22,112 +22,133 @@
 }
 
 .light {
-  --background: 210 40% 98%;
-  --foreground: 222 35% 12%;
+  --background: 210 45% 97%;
+  --foreground: 222 40% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 222 35% 12%;
+  --card-foreground: 222 40% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 35% 12%;
-  --primary: 187 82% 36%;
+  --popover-foreground: 222 40% 11%;
+  --primary: 186 84% 34%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 214 30% 92%;
-  --secondary-foreground: 222 35% 12%;
-  --muted: 210 35% 95%;
-  --muted-foreground: 215 18% 43%;
-  --accent: 190 35% 92%;
-  --accent-foreground: 190 75% 25%;
-  --border: 214 28% 87%;
-  --input: 214 28% 87%;
-  --ring: 187 82% 36%;
+  --secondary: 210 32% 94%;
+  --secondary-foreground: 222 40% 11%;
+  --muted: 210 35% 94%;
+  --muted-foreground: 215 22% 38%;
+  --accent: 188 42% 92%;
+  --accent-foreground: 188 80% 24%;
+  --border: 214 25% 84%;
+  --input: 214 25% 84%;
+  --ring: 186 84% 34%;
 }
 
 .gradient-bg-primary { background: linear-gradient(135deg, #0891b2 0%, #0d9488 52%, #14b8a6 100%) !important; }
-.gradient-text-primary { background: linear-gradient(135deg, #67e8f9 0%, #22d3ee 45%, #5eead4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.gradient-text-primary { background: linear-gradient(135deg, #0e7490 0%, #0891b2 45%, #0f766e 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .glow-violet, .glow-violet-sm { box-shadow: 0 0 22px rgba(20, 184, 166, .22), 0 0 44px rgba(8, 145, 178, .10); }
-
 .bg-violet-500 { background-color: rgb(20 184 166) !important; }
 .bg-violet-600 { background-color: rgb(13 148 136) !important; }
 .bg-violet-700 { background-color: rgb(15 118 110) !important; }
 .text-violet-400 { color: rgb(45 212 191) !important; }
 .text-violet-500 { color: rgb(20 184 166) !important; }
-.border-violet-500\/25 { border-color: rgb(20 184 166 / .25) !important; }
-.border-violet-500\/30 { border-color: rgb(20 184 166 / .30) !important; }
+.border-violet-500\\/25 { border-color: rgb(20 184 166 / .25) !important; }
+.border-violet-500\\/30 { border-color: rgb(20 184 166 / .30) !important; }
 .from-violet-600 { --tw-gradient-from: #0d9488 !important; }
 .from-violet-500 { --tw-gradient-from: #14b8a6 !important; }
 .to-indigo-600 { --tw-gradient-to: #0891b2 !important; }
 .to-indigo-700 { --tw-gradient-to: #0e7490 !important; }
 .light .text-violet-400, .light .text-violet-500 { color: rgb(13 148 136) !important; }
 
-/* -------------------------------------------------------------------------- */
-/* Landing page light mode.                                                  */
-/* Use an attribute selector so Tailwind's arbitrary class needs no escaping. */
-/* -------------------------------------------------------------------------- */
-html.light body:has([class*="bg-[#030817]"]) {
-  background: #f6fbff !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) [class*="bg-[#030817]"] {
-  background: linear-gradient(180deg, #f8fcff 0%, #ffffff 46%, #f1fbff 100%) !important;
-  color: #172033 !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) .text-white { color: #172033 !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/80 { color: #334155 !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/70 { color: #475569 !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/60 { color: #64748b !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/50 { color: #64748b !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/40 { color: #94a3b8 !important; }
-html.light body:has([class*="bg-[#030817]"]) .text-white\/30 { color: #94a3b8 !important; }
-
-html.light body:has([class*="bg-[#030817]"]) .bg-gradient-to-br.from-\[\#0d0221\] {
-  background: radial-gradient(circle at 18% 12%, rgba(34,211,238,.18), transparent 34%), radial-gradient(circle at 82% 28%, rgba(129,140,248,.16), transparent 38%), linear-gradient(135deg, #f8fcff 0%, #eef9ff 48%, #f8f7ff 100%) !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) .bg-white\/5 { background-color: rgba(255,255,255,.72) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.03\] { background-color: rgba(255,255,255,.78) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.04\] { background-color: rgba(255,255,255,.82) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.07\] { background-color: rgba(255,255,255,.86) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-white\/\[0\.12\] { background-color: rgba(255,255,255,.96) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-black\/60 { background-color: rgba(255,255,255,.90) !important; }
-html.light body:has([class*="bg-[#030817]"]) .bg-black\/80 { background-color: rgba(255,255,255,.97) !important; }
-
-html.light body:has([class*="bg-[#030817]"]) .border-white\/10 { border-color: rgba(15,23,42,.10) !important; }
-html.light body:has([class*="bg-[#030817]"]) .border-white\/15 { border-color: rgba(15,23,42,.14) !important; }
-html.light body:has([class*="bg-[#030817]"]) .border-white\/20 { border-color: rgba(15,23,42,.16) !important; }
-
-html.light body:has([class*="bg-[#030817]"]) #pricing {
-  background: linear-gradient(180deg, transparent 0%, rgba(224,247,250,.45) 100%) !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) #pricing .border-violet-500\/50 {
-  border-color: rgba(13,148,136,.45) !important;
-  background: linear-gradient(145deg, rgba(240,253,250,.98), rgba(255,255,255,.98)) !important;
-  box-shadow: 0 22px 60px rgba(13,148,136,.14) !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) #pricing .border-amber-500\/40 {
-  border-color: rgba(245,158,11,.38) !important;
-  background: linear-gradient(145deg, rgba(255,251,235,.98), rgba(255,255,255,.98)) !important;
-  box-shadow: 0 22px 60px rgba(245,158,11,.12) !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) #pricing .border-white\/10 {
-  border-color: rgba(15,23,42,.10) !important;
-  background: rgba(255,255,255,.96) !important;
-  box-shadow: 0 18px 50px rgba(15,23,42,.07) !important;
-}
-
-html.light body:has([class*="bg-[#030817]"]) #pricing .text-5xl.font-black.text-white {
+/* Super Admin: polished light mode. Child screens contain legacy dark utility classes,
+   so this scoped layer normalizes them without changing the rest of the application. */
+.light .edusphere-admin {
+  background: linear-gradient(145deg, #f7fbff 0%, #ffffff 48%, #f0fbfc 100%) !important;
   color: #0f172a !important;
+  border-color: rgba(15, 23, 42, .09) !important;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .10) !important;
 }
-
-html.light body:has([class*="bg-[#030817]"]) h1,
-html.light body:has([class*="bg-[#030817]"]) h2,
-html.light body:has([class*="bg-[#030817]"]) h3 { text-shadow: none; }
-
-html.light body:has([class*="bg-[#030817]"]) input,
-html.light body:has([class*="bg-[#030817]"]) textarea {
-  color: #172033 !important;
-  background: rgba(255,255,255,.96) !important;
-  border-color: rgba(15,23,42,.12) !important;
+.light .edusphere-admin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 12% 4%, rgba(20,184,166,.10), transparent 28%), radial-gradient(circle at 92% 18%, rgba(8,145,178,.08), transparent 30%);
 }
+.light .edusphere-admin .bg-card\/95,
+.light .edusphere-admin .bg-card\/80,
+.light .edusphere-admin .bg-card {
+  background-color: rgba(255,255,255,.88) !important;
+}
+.light .edusphere-admin .bg-slate-950\/40,
+.light .edusphere-admin .bg-slate-900\/60,
+.light .edusphere-admin .bg-slate-900\/50,
+.light .edusphere-admin .bg-slate-900\/40,
+.light .edusphere-admin .bg-slate-800\/50 {
+  background-color: rgba(255,255,255,.88) !important;
+}
+.light .edusphere-admin .bg-white\/5,
+.light .edusphere-admin .bg-white\/10,
+.light .edusphere-admin .bg-white\/\[0\.03\],
+.light .edusphere-admin .bg-white\/\[0\.04\],
+.light .edusphere-admin .bg-white\/\[0\.06\],
+.light .edusphere-admin .bg-white\/\[0\.07\],
+.light .edusphere-admin .bg-white\/\[0\.12\] {
+  background-color: rgba(15,23,42,.035) !important;
+}
+.light .edusphere-admin .border-white\/10,
+.light .edusphere-admin .border-white\/15,
+.light .edusphere-admin .border-white\/20,
+.light .edusphere-admin .border-white\/\[0\.06\] {
+  border-color: rgba(15,23,42,.10) !important;
+}
+.light .edusphere-admin .text-white { color: #0f172a !important; }
+.light .edusphere-admin .text-slate-200 { color: #334155 !important; }
+.light .edusphere-admin .text-slate-300 { color: #475569 !important; }
+.light .edusphere-admin .text-slate-400 { color: #64748b !important; }
+.light .edusphere-admin .text-slate-500 { color: #64748b !important; }
+.light .edusphere-admin .text-slate-600 { color: #94a3b8 !important; }
+.light .edusphere-admin .text-slate-700 { color: #475569 !important; }
+.light .edusphere-admin .shadow-2xl,
+.light .edusphere-admin .shadow-xl { box-shadow: 0 16px 40px rgba(15,23,42,.07) !important; }
+.light .edusphere-admin input,
+.light .edusphere-admin textarea,
+.light .edusphere-admin select {
+  background: #fff !important;
+  color: #0f172a !important;
+  border-color: rgba(15,23,42,.14) !important;
+}
+.light .edusphere-admin input::placeholder,
+.light .edusphere-admin textarea::placeholder { color: #94a3b8 !important; }
+.light .edusphere-admin table thead,
+.light .edusphere-admin .bg-slate-800 { background: #f1f5f9 !important; }
+.light .edusphere-admin .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(15,23,42,.08) !important; }
+.light .edusphere-admin .hover\\:bg-white\\/5:hover { background-color: rgba(15,23,42,.04) !important; }
+.light .edusphere-admin .hover\\:bg-white\\/10:hover { background-color: rgba(15,23,42,.07) !important; }
+.light .edusphere-admin .hover\\:border-white\\/20:hover { border-color: rgba(15,23,42,.16) !important; }
+
+/* Keep high-contrast semantic states intact in light mode. */
+.light .edusphere-admin .text-emerald-400 { color: #059669 !important; }
+.light .edusphere-admin .text-rose-400 { color: #dc2626 !important; }
+.light .edusphere-admin .text-amber-400 { color: #d97706 !important; }
+.light .edusphere-admin .text-cyan-400 { color: #0891b2 !important; }
+
+/* Landing page light mode */
+html.light body:has([class*="bg-[#030817"]) { background: #f6fbff !important; }
+html.light body:has([class*="bg-[#030817"]) [class*="bg-[#030817"] { background: linear-gradient(180deg, #f8fcff 0%, #ffffff 46%, #f1fbff 100%) !important; color: #172033 !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white { color: #172033 !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/80 { color: #334155 !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/70 { color: #475569 !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/60 { color: #64748b !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/50 { color: #64748b !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/40 { color: #94a3b8 !important; }
+html.light body:has([class*="bg-[#030817"]) .text-white\/30 { color: #94a3b8 !important; }
+html.light body:has([class*="bg-[#030817"]) .bg-white\/5 { background-color: rgba(255,255,255,.72) !important; }
+html.light body:has([class*="bg-[#030817"]) .bg-white\/\[0\.03\] { background-color: rgba(255,255,255,.78) !important; }
+html.light body:has([class*="bg-[#030817"]) .bg-white\/\[0\.04\] { background-color: rgba(255,255,255,.82) !important; }
+html.light body:has([class*="bg-[#030817"]) .bg-white\/\[0\.07\] { background-color: rgba(255,255,255,.86) !important; }
+html.light body:has([class*="bg-[#030817"]) .bg-white\/\[0\.12\] { background-color: rgba(255,255,255,.96) !important; }
+html.light body:has([class*="bg-[#030817"]) .border-white\/10 { border-color: rgba(15,23,42,.10) !important; }
+html.light body:has([class*="bg-[#030817"]) .border-white\/15 { border-color: rgba(15,23,42,.14) !important; }
+html.light body:has([class*="bg-[#030817"]) .border-white\/20 { border-color: rgba(15,23,42,.16) !important; }
+html.light body:has([class*="bg-[#030817"]) #pricing { background: linear-gradient(180deg, transparent 0%, rgba(224,247,250,.45) 100%) !important; }
+html.light body:has([class*="bg-[#030817"]) #pricing .text-5xl.font-black.text-white { color: #0f172a !important; }
+html.light body:has([class*="bg-[#030817"]) h1, html.light body:has([class*="bg-[#030817"]) h2, html.light body:has([class*="bg-[#030817"]) h3 { text-shadow: none; }
+html.light body:has([class*="bg-[#030817"]) input, html.light body:has([class*="bg-[#030817"]) textarea { color: #172033 !important; background: rgba(255,255,255,.96) !important; border-color: rgba(15,23,42,.12) !important; }
