@@ -57,9 +57,11 @@ export class AttendanceService {
     });
     if (!section) throw new BadRequestException('Section does not belong to this school');
 
-    const studentIds: string[] = [...new Set(
-      data.records.map((r: any) => r.studentId).filter((id: any): id is string => typeof id === 'string' && id.length > 0),
-    )];
+    const studentIds: string[] = Array.from(new Set(
+      data.records
+        .map((r: any) => r.studentId)
+        .filter((id: any): id is string => typeof id === 'string' && id.length > 0),
+    ));
     if (studentIds.length !== data.records.length) {
       throw new BadRequestException('Every attendance record must have a valid studentId');
     }
@@ -99,12 +101,12 @@ export class AttendanceService {
       where: { schoolId, role: 'SCHOOL_ADMIN', isActive: true, deletedAt: null },
       select: { id: true },
     });
-    const intendedEmails = [...new Set(
+    const intendedEmails = Array.from(new Set(
       students.flatMap((student) => [
         ...(student.email ? [student.email] : []),
         ...student.parents.map((parent) => parent.parent.email).filter((email): email is string => Boolean(email)),
       ]),
-    )];
+    ));
     const recipients = await this.prisma.user.findMany({
       where: { schoolId, isActive: true, deletedAt: null, email: { in: intendedEmails } },
       select: { id: true, email: true },
@@ -120,7 +122,7 @@ export class AttendanceService {
         ...student.parents.map((parent) => parent.parent.email).filter((email): email is string => Boolean(email)),
       ];
       const userIds = emails.map((email) => byEmail.get(email.toLowerCase())).filter((id): id is string => Boolean(id));
-      return userIds.length ? [{ userIds: [...new Set(userIds)], title: 'Attendance Updated', message: `${student.name}'s attendance was marked ${statusLabel} for ${data.date}.` }] : [];
+      return userIds.length ? [{ userIds: Array.from(new Set(userIds)), title: 'Attendance Updated', message: `${student.name}'s attendance was marked ${statusLabel} for ${data.date}.` }] : [];
     });
 
     for (const job of notificationJobs) {
