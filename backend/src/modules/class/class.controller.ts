@@ -51,4 +51,16 @@ export class ClassController {
   createSubject(@CurrentUser() user: any, @Body() dto: any) {
     return this.classService.createSubject(user.schoolId, dto);
   }
+
+  @Post('subjects/assign')
+  @Roles('SCHOOL_ADMIN')
+  assignSubjectTeacher(@CurrentUser() user: any, @Body() dto: any) {
+    return this.classService.assignSubjectTeacher(user.schoolId, dto);
+  }
+
+  @Delete('subjects/assign/:id')
+  @Roles('SCHOOL_ADMIN')
+  removeSubjectTeacher(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.classService.removeSubjectTeacher(id, user.schoolId);
+  }
 }
