@@ -48,14 +48,14 @@ export class ExamService {
     if (normalized.some((r: any) => !r.studentId || !r.subjectId)) throw new BadRequestException('Each result requires a student and subject');
     if (normalized.some((r: any) => !Number.isFinite(r.marksObtained) || r.marksObtained < 0 || r.marksObtained > exam.totalMarks)) throw new BadRequestException(`Marks must be between 0 and ${exam.totalMarks}`);
 
-    const studentIds: string[] = [...new Set<string>(normalized.map((r: any) => r.studentId))];
-    const subjectIds: string[] = [...new Set<string>(normalized.map((r: any) => r.subjectId))];
+    const studentIds = Array.from(new Set(normalized.map((r: any) => r.studentId))) as string[];
+    const subjectIds = Array.from(new Set(normalized.map((r: any) => r.subjectId))) as string[];
     const [students, subjects] = await Promise.all([
       this.prisma.student.findMany({ where: { id: { in: studentIds }, schoolId, deletedAt: null }, select: { id: true, sectionId: true } }),
       this.prisma.subject.findMany({ where: { id: { in: subjectIds }, schoolId, deletedAt: null }, select: { id: true } }),
     ]);
     if (students.length !== studentIds.length || subjects.length !== subjectIds.length) throw new NotFoundException('Student or subject not found');
-    const sectionIds: string[] = [...new Set<string>(students.map((s) => s.sectionId).filter((id): id is string => Boolean(id)))];
+    const sectionIds = Array.from(new Set(students.map((s) => s.sectionId).filter((id): id is string => Boolean(id))));
     const sections = sectionIds.length ? await this.prisma.section.findMany({ where: { id: { in: sectionIds }, class: { schoolId }, deletedAt: null }, select: { id: true, classId: true } }) : [];
     const sectionMap = new Map(sections.map((s) => [s.id, s]));
     const studentMap = new Map(students.map((s) => [s.id, s]));
