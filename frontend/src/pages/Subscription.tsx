@@ -68,33 +68,9 @@ export default function Subscription() {
   }, []);
 
   const fallbackPlans = [
-    {
-      planKey: "FREE_TRIAL",
-      name: "Free Trial",
-      price: 0,
-      period: "1 day",
-      features: ["Up to 100 Students", "Up to 15 Staff", "Core Modules", "Attendance", "Fees & Exams", "Results"],
-      color: "border-border",
-    },
-    {
-      planKey: "PROFESSIONAL",
-      name: "Professional",
-      price: 5000,
-      period: "per month",
-      features: ["Up to 800 Students", "Unlimited Staff", "All Modules", "Advanced Reports", "School Website", "Custom Branding"],
-      color: "border-primary shadow-lg shadow-primary/5",
-      badge: "Most Popular",
-      star: true,
-    },
-    {
-      planKey: "PREMIUM",
-      name: "Premium",
-      price: 10000,
-      period: "per month",
-      features: ["Unlimited Students", "Unlimited Staff", "All Modules", "Advanced Reports", "School Website", "Custom Branding", "Custom Domain"],
-      color: "border-border",
-      badge: "Best Value",
-    },
+    { planKey: "FREE_TRIAL", name: "Free Trial", price: 0, period: "1 day", features: ["Up to 100 Students", "Up to 15 Staff", "Core Modules", "Attendance", "Fees & Exams", "Results"], color: "border-border" },
+    { planKey: "PROFESSIONAL", name: "Professional", price: 5000, period: "per month", features: ["Up to 800 Students", "Unlimited Staff", "All Modules", "Advanced Reports", "School Website", "Custom Branding"], color: "border-primary shadow-lg shadow-primary/5", badge: "Most Popular", star: true },
+    { planKey: "PREMIUM", name: "Premium", price: 10000, period: "per month", features: ["Unlimited Students", "Unlimited Staff", "All Modules", "Advanced Reports", "School Website", "Custom Branding", "Custom Domain"], color: "border-border", badge: "Best Value" },
   ];
 
   const visiblePlans = plans.length ? plans : fallbackPlans;
@@ -103,10 +79,7 @@ export default function Subscription() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.size > MAX_PROOF_BYTES) {
-      toast.error("Screenshot must be 2 MB or smaller.");
-      return;
-    }
+    if (file.size > MAX_PROOF_BYTES) { toast.error("Screenshot must be 2 MB or smaller."); return; }
     setProofBusy(true);
     try {
       const prepared = await preparePaymentProof(file);
@@ -117,9 +90,7 @@ export default function Subscription() {
       setProof("");
       setProofName("");
       toast.error(error instanceof Error ? error.message : "Unable to attach screenshot.");
-    } finally {
-      setProofBusy(false);
-    }
+    } finally { setProofBusy(false); }
   };
 
   const clearProof = () => { setProof(""); setProofName(""); };
@@ -127,10 +98,10 @@ export default function Subscription() {
   const handleUpgrade = async (plan: any) => {
     const planName = String(plan.planKey || plan.name || "").toUpperCase();
     const isFreeTrial = planName === "FREE_TRIAL";
-    if (planName === activePlan && user?.activationStatus === "ACTIVE") return;
+    const isCurrentActivePlan = planName === activePlan && user?.activationStatus === "ACTIVE";
+    if (isCurrentActivePlan && isFreeTrial) return;
     if (user?.role !== "SCHOOL_ADMIN" || !user.schoolId) {
       toast.info(`Selected ${plan.name} plan.`);
-      setActivePlan(planName);
       return;
     }
     if (!isFreeTrial && !proof) {
@@ -147,8 +118,7 @@ export default function Subscription() {
         amount: Number(plan.price) || 0,
         screenshotUrl: isFreeTrial ? undefined : proof,
       });
-      toast.success(isFreeTrial ? "Free trial request submitted successfully." : "Payment submitted. Super Admin approval will activate this plan.");
-      setActivePlan(planName);
+      toast.success(isFreeTrial ? "Free trial request submitted successfully." : isCurrentActivePlan ? "Renewal payment submitted. Your current plan remains active until Super Admin approval." : "Payment submitted. Super Admin approval will activate this plan.");
       if (!isFreeTrial) clearProof();
     } catch (error: any) {
       const message = error?.response?.data?.message;
@@ -158,84 +128,29 @@ export default function Subscription() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-black text-foreground">Subscription & Billing</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your school plan and submit payment proof securely for verification.</p>
-      </div>
-
+      <div><h1 className="text-3xl font-black text-foreground">Subscription & Billing</h1><p className="text-muted-foreground text-sm mt-1">Manage your school plan and submit payment proof securely for verification.</p></div>
       <div className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-indigo-600/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white uppercase tracking-widest">
-              {user?.activationStatus === "PAYMENT_PENDING" ? "Pending Activation" : "Active Plan"}
-            </span>
-            <ShieldCheck size={18} />
-          </div>
-          <h2 className="text-3xl font-black">{activePlan} Plan</h2>
-          <p className="text-white/70 text-sm">Your plan is controlled by Super Admin approval.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Calendar size={18} className="text-white/60" />
-          <span className="font-bold text-sm">Plan billing period</span>
-        </div>
+        <div className="space-y-2"><div className="flex items-center gap-2"><span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white uppercase tracking-widest">{user?.activationStatus === "PAYMENT_PENDING" ? "Pending Activation" : "Active Plan"}</span><ShieldCheck size={18} /></div><h2 className="text-3xl font-black">{activePlan} Plan</h2><p className="text-white/70 text-sm">Your plan is controlled by Super Admin approval.</p></div>
+        <div className="flex items-center gap-3"><Calendar size={18} className="text-white/60" /><span className="font-bold text-sm">Plan billing period</span></div>
       </div>
-
       <div className="space-y-6">
-        <div>
-          <h3 className="text-xl font-extrabold text-foreground">Available Plans</h3>
-          <p className="text-xs text-muted-foreground mt-1">Choose the package that matches your school size.</p>
-        </div>
-
+        <div><h3 className="text-xl font-extrabold text-foreground">Available Plans</h3><p className="text-xs text-muted-foreground mt-1">Choose the package that matches your school size.</p></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {visiblePlans.map((plan, index) => {
             const planKey = String(plan.planKey || plan.name || "").toUpperCase();
             const isCurrent = planKey === activePlan;
+            const isRenewableCurrent = isCurrent && planKey !== "FREE_TRIAL" && user?.role === "SCHOOL_ADMIN" && user?.activationStatus === "ACTIVE";
             const price = Number(plan.price) || 0;
-            return (
-              <motion.div key={planKey || plan.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className={`bg-card border-2 ${plan.color || "border-border"} rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden`}>
-                {plan.badge && <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary text-primary-foreground uppercase">{plan.badge}</span>}
-                <div>
-                  <h4 className="font-extrabold text-lg text-foreground mb-1 flex items-center gap-1.5">
-                    {plan.star && <Star size={16} className="text-amber-500 fill-amber-500" />}{plan.name}
-                  </h4>
-                  <div className="my-4 flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-foreground">{price === 0 ? "Free" : `PKR ${price.toLocaleString()}`}</span>
-                    <span className="text-xs text-muted-foreground">{plan.period || (price ? "per month" : "trial")}</span>
-                  </div>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground my-6">
-                    {(plan.features || []).map((feature: string) => <li key={feature} className="flex items-center gap-2"><CheckCircle2 size={13} className="text-primary shrink-0" /><span>{feature}</span></li>)}
-                  </ul>
-                </div>
-                <button onClick={() => handleUpgrade(plan)} disabled={isCurrent || submitting || proofBusy} className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isCurrent ? "bg-accent text-accent-foreground cursor-default" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow shadow-primary/10 disabled:opacity-50"}`}>
-                  {submitting && !isCurrent ? "Submitting..." : isCurrent ? "Current Active Plan" : "Select Plan"}
-                </button>
-              </motion.div>
-            );
+            return <motion.div key={planKey || plan.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className={`bg-card border-2 ${plan.color || "border-border"} rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden`}>
+              {plan.badge && <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary text-primary-foreground uppercase">{plan.badge}</span>}
+              <div><h4 className="font-extrabold text-lg text-foreground mb-1 flex items-center gap-1.5">{plan.star && <Star size={16} className="text-amber-500 fill-amber-500" />}{plan.name}</h4><div className="my-4 flex items-baseline gap-1"><span className="text-3xl font-black text-foreground">{price === 0 ? "Free" : `PKR ${price.toLocaleString()}`}</span><span className="text-xs text-muted-foreground">{plan.period || (price ? "per month" : "trial")}</span></div><ul className="space-y-2.5 text-xs text-muted-foreground my-6">{(plan.features || []).map((feature: string) => <li key={feature} className="flex items-center gap-2"><CheckCircle2 size={13} className="text-primary shrink-0" /><span>{feature}</span></li>)}</ul></div>
+              <button onClick={() => handleUpgrade(plan)} disabled={(!isRenewableCurrent && isCurrent) || submitting || proofBusy} className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isCurrent && !isRenewableCurrent ? "bg-accent text-accent-foreground cursor-default" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow shadow-primary/10 disabled:opacity-50"}`}>{submitting ? "Submitting..." : isRenewableCurrent ? "Renew Plan" : isCurrent ? "Current Active Plan" : "Select Plan"}</button>
+            </motion.div>;
           })}
         </div>
-
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <label className="text-sm font-bold text-foreground flex items-center gap-2"><Upload size={16} /> Payment screenshot</label>
-              <p className="text-xs text-muted-foreground mt-1">Required for Professional and Premium. PNG/JPG/WebP, maximum 2 MB.</p>
-            </div>
-            {proof && <button type="button" onClick={clearProof} className="p-2 rounded-lg hover:bg-accent text-muted-foreground" aria-label="Remove payment screenshot"><X size={16} /></button>}
-          </div>
-          <input type="file" accept="image/png,image/jpeg,image/webp" disabled={proofBusy || submitting} onChange={handleProofChange} className="mt-4 block w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary-foreground hover:file:opacity-90 disabled:opacity-50" />
-          {proofBusy && <p className="text-xs text-primary mt-2">Preparing screenshot...</p>}
-          {proof && !proofBusy && <div className="mt-3 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><CheckCircle2 size={16} className="text-emerald-500 shrink-0" /><div className="min-w-0"><p className="text-xs font-bold text-foreground truncate">{proofName}</p><p className="text-[11px] text-emerald-600">Payment proof attached and ready to submit.</p></div></div>}
-        </div>
+        <div className="bg-card border border-border rounded-2xl p-5"><div className="flex items-start justify-between gap-4"><div><label className="text-sm font-bold text-foreground flex items-center gap-2"><Upload size={16} /> Payment screenshot</label><p className="text-xs text-muted-foreground mt-1">Required for Professional and Premium. PNG/JPG/WebP, maximum 2 MB.</p></div>{proof && <button type="button" onClick={clearProof} className="p-2 rounded-lg hover:bg-accent text-muted-foreground" aria-label="Remove payment screenshot"><X size={16} /></button>}</div><input type="file" accept="image/png,image/jpeg,image/webp" disabled={proofBusy || submitting} onChange={handleProofChange} className="mt-4 block w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary-foreground hover:file:opacity-90 disabled:opacity-50" />{proofBusy && <p className="text-xs text-primary mt-2">Preparing screenshot...</p>}{proof && !proofBusy && <div className="mt-3 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><CheckCircle2 size={16} className="text-emerald-500 shrink-0" /><div className="min-w-0"><p className="text-xs font-bold text-foreground truncate">{proofName}</p><p className="text-[11px] text-emerald-600">Payment proof attached and ready to submit.</p></div></div>}</div>
       </div>
-
-      <div className="space-y-4">
-        <h3 className="text-xl font-extrabold text-foreground">Recent Invoices</h3>
-        <div className="bg-card border border-border rounded-3xl p-8 text-center">
-          <CreditCard className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
-          <p className="text-sm font-bold text-foreground">No invoices available yet</p>
-          <p className="text-xs text-muted-foreground mt-1">Approved payments will appear here when billing records are available.</p>
-        </div>
-      </div>
+      <div className="space-y-4"><h3 className="text-xl font-extrabold text-foreground">Recent Invoices</h3><div className="bg-card border border-border rounded-3xl p-8 text-center"><CreditCard className="mx-auto h-8 w-8 text-muted-foreground mb-3" /><p className="text-sm font-bold text-foreground">No invoices available yet</p><p className="text-xs text-muted-foreground mt-1">Approved payments will appear here when billing records are available.</p></div></div>
     </div>
   );
 }
