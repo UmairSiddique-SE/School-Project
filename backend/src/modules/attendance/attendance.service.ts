@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 
@@ -8,6 +8,29 @@ export class AttendanceService {
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
   ) {}
+
+  async getStudentAttendance(schoolId: string, email: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { schoolId, email: email?.toLowerCase(), deletedAt: null },
+      select: { id: true, name: true, admissionNo: true, rollNo: true },
+    });
+    if (!student) throw new NotFoundException('Student profile not found');
+
+    const records = await this.prisma.attendance.findMany({
+      where: { schoolId, studentId: student.id },
+      orderBy: { date: 'desc' },
+    });
+    return records.map((record) => ({
+      id: record.id,
+      studentId: student.id,
+      name: student.name,
+      admissionNo: student.admissionNo,
+      rollNo: student.rollNo,
+      date: record.date,
+      status: record.status,
+      remarks: record.remarks || '',
+    }));
+  }
 
   async getAttendanceForSection(schoolId: string, sectionId: string, dateStr: string) {
     const section = await this.prisma.section.findFirst({
@@ -40,6 +63,7 @@ export class AttendanceService {
         admissionNo: student.admissionNo,
         status: record ? record.status : 'PRESENT',
         remarks: record ? record.remarks : '',
+        date,
       };
     });
   }
