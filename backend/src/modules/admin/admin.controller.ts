@@ -14,13 +14,35 @@ import { ReviewSchoolRequestDto } from '../school-request/dto/review-school-requ
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
 export class AdminController {
+  private overviewCache: OverviewDto | null = null;
+  private overviewCacheAt = 0;
+  private overviewInFlight: Promise<OverviewDto> | null = null;
+  private readonly overviewCacheMs = 10000;
+
   constructor(
     private readonly adminService: AdminService,
     private readonly paymentLifecycleService: PaymentLifecycleService,
   ) {}
 
   @Get('overview')
-  async getOverview(): Promise<OverviewDto> { return this.adminService.getOverview(); }
+  async getOverview(): Promise<OverviewDto> {
+    const now = Date.now();
+    if (this.overviewCache && now - this.overviewCacheAt < this.overviewCacheMs) {
+      return this.overviewCache;
+    }
+    if (!this.overviewInFlight) {
+      this.overviewInFlight = this.adminService.getOverview()
+        .then((data) => {
+          this.overviewCache = data;
+          this.overviewCacheAt = Date.now();
+          return data;
+        })
+        .finally(() => {
+          this.overviewInFlight = null;
+        });
+    }
+    return this.overviewInFlight;
+  }
 
   @Get('plans')
   getPlans() { return this.adminService.getPlans(); }
@@ -142,7 +164,8 @@ export class AdminController {
   getAnnouncements() { return this.adminService.getAnnouncements(); }
 
   @Post('announcements')
-  createAnnouncement(@Body() dto: { title: string; message: string; target?: string; priority?: string }) {
-    return this.adminService.createAnnouncement(dto);
+  createAnnouncement(data: { title: string; message: string; target?: string; priority?: string }) {
+    const target = data.target || 'ALL';
+    return this.adminService.createAnnouncement(data);
   }
 }
