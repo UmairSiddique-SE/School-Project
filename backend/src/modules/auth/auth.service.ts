@@ -71,9 +71,10 @@ export class AuthService {
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
     if (user.school?.subscription && (user.school.subscription.status === 'EXPIRED' || user.school.subscription.endDate < new Date())) throw new UnauthorizedException('Your subscription has expired. Please renew your plan.');
+    const now = new Date();
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
     const tokens = await this.generateTokens(user.id, user.email, user.role, user.schoolId ?? undefined);
-    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    return { user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING', plan: user.school?.subscription?.plan }, ...tokens };
+    return { user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING', plan: user.school?.subscription?.plan, phone: user.phone, lastLoginAt: now }, ...tokens };
   }
 
   async refreshToken(token: string) {
@@ -142,7 +143,15 @@ export class AuthService {
     });
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto) { return this.prisma.user.update({ where: { id: userId }, data: { name: dto.name.trim(), phone: dto.phone?.trim() || null }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true } }); }
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true, isActive: true, emailVerified: true } });
+    if (!user || !user.isActive) throw new UnauthorizedException('User account is unavailable');
+    return { user };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    return this.prisma.user.update({ where: { id: userId }, data: { name: dto.name.trim(), phone: dto.phone?.trim() || null }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true } });
+  }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
