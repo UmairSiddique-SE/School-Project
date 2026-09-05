@@ -50,13 +50,15 @@ export default function SuperAdminDashboard() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
+  // Navigation badges are loaded once. Re-fetching overview on every click was
+  // causing every Super Admin section to wait for an unnecessary DB request.
   useEffect(() => {
     let cancelled = false;
     apiClient.get("/admin/overview").then((response) => {
       if (!cancelled) setBadgeCounts({ pendingSchoolRequests: Number(response.data?.pendingSchoolRequests ?? 0), pendingPayments: Number(response.data?.pendingPayments ?? 0) });
     }).catch(() => { if (!cancelled) setBadgeCounts({ pendingSchoolRequests: 0, pendingPayments: 0 }); });
     return () => { cancelled = true; };
-  }, [activeSection]);
+  }, []);
 
   const ActiveComponent = sectionComponents[activeSection];
   const activeItem = allNavItems.find((item) => item.id === activeSection);
