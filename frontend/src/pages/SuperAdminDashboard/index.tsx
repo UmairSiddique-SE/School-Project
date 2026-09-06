@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import apiClient from "@/api/apiClient";
 import Overview from "./sections/Overview";
+import PaymentAccountingPanel from "./sections/PaymentAccountingPanel";
 import SchoolRequests from "./sections/SchoolRequests";
 import Schools from "./sections/Schools";
 import Plans from "./sections/Plans";
@@ -34,7 +35,22 @@ const navGroups: NavGroup[] = [
 ];
 
 const allNavItems = navGroups.flatMap((group) => group.items);
-const sectionComponents: Record<SectionId, React.ComponentType> = { overview: Overview, "school-requests": SchoolRequests, schools: Schools, plans: Plans, payments: Payments, users: Users, support: Support, announcements: Announcements, reports: Reports, notifications: Notifications, "email-templates": EmailTemplates, "system-settings": SystemSettings, "audit-logs": AuditLogs, profile: Profile };
+const sectionComponents: Record<SectionId, React.ComponentType> = {
+  overview: () => <div className="space-y-7"><Overview /><PaymentAccountingPanel /></div>,
+  "school-requests": SchoolRequests,
+  schools: Schools,
+  plans: Plans,
+  payments: Payments,
+  users: Users,
+  support: Support,
+  announcements: Announcements,
+  reports: Reports,
+  notifications: Notifications,
+  "email-templates": EmailTemplates,
+  "system-settings": SystemSettings,
+  "audit-logs": AuditLogs,
+  profile: Profile,
+};
 
 function LiveClock() {
   const [time, setTime] = useState(new Date());
@@ -50,8 +66,6 @@ export default function SuperAdminDashboard() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  // Navigation badges are loaded once. Re-fetching overview on every click was
-  // causing every Super Admin section to wait for an unnecessary DB request.
   useEffect(() => {
     let cancelled = false;
     apiClient.get("/admin/overview").then((response) => {
