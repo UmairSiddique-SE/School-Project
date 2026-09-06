@@ -1,47 +1,24 @@
 -- Final EduSphere launch catalogue.
--- Keeps the existing plan keys so existing subscriptions and payment history remain linked.
+-- Uses the existing plan keys so subscriptions and payment history remain linked.
+-- Upserts are included so a fresh production database gets the same catalogue before the app starts.
 
-UPDATE "PlatformPlan"
-SET "name" = 'Free Trial',
-    "price" = 0,
-    "currency" = 'PKR',
-    "period" = 'free trial',
-    "maxStudents" = 20,
-    "maxTeachers" = 10,
-    "storageMb" = 1024,
-    "supportTier" = 'Email',
-    "features" = '["Up to 20 students","Up to 10 staff","1 campus","Attendance & fees","Basic reports","Email support"]',
-    "isActive" = true,
-    "updatedAt" = CURRENT_TIMESTAMP
-WHERE "planKey" = 'FREE_TRIAL';
-
-UPDATE "PlatformPlan"
-SET "name" = 'Professional',
-    "price" = 3000,
-    "currency" = 'PKR',
-    "period" = 'per month',
-    "maxStudents" = 500,
-    "maxTeachers" = 999999,
-    "storageMb" = 10240,
-    "supportTier" = 'Email + Chat',
-    "features" = '["Up to 500 students","Unlimited staff","2 campuses","10 GB storage","Full reports","Fee management","Exams & results","Email + Chat support"]',
-    "isActive" = true,
-    "updatedAt" = CURRENT_TIMESTAMP
-WHERE "planKey" = 'PROFESSIONAL';
-
-UPDATE "PlatformPlan"
-SET "name" = 'Premium',
-    "price" = 5000,
-    "currency" = 'PKR',
-    "period" = 'per month',
-    "maxStudents" = 999999,
-    "maxTeachers" = 999999,
-    "storageMb" = 512000,
-    "supportTier" = 'Dedicated',
-    "features" = '["Unlimited students","Unlimited staff","All modules","500 GB storage","School website","Custom domain","Advanced reports","Dedicated support"]',
-    "isActive" = true,
-    "updatedAt" = CURRENT_TIMESTAMP
-WHERE "planKey" = 'PREMIUM';
+INSERT INTO "PlatformPlan" ("planKey", "name", "price", "currency", "period", "maxStudents", "maxTeachers", "storageMb", "supportTier", "features", "isActive", "updatedAt")
+VALUES
+('FREE_TRIAL', 'Free Trial', 0, 'PKR', 'free trial', 20, 10, 1024, 'Email', '["Up to 20 students","Up to 10 staff","1 campus","Attendance & fees","Basic reports","Email support"]', true, CURRENT_TIMESTAMP),
+('PROFESSIONAL', 'Professional', 3000, 'PKR', 'per month', 500, 999999, 10240, 'Email + Chat', '["Up to 500 students","Unlimited staff","2 campuses","10 GB storage","Full reports","Fee management","Exams & results","Email + Chat support"]', true, CURRENT_TIMESTAMP),
+('PREMIUM', 'Premium', 5000, 'PKR', 'per month', 999999, 999999, 512000, 'Dedicated', '["Unlimited students","Unlimited staff","All modules","500 GB storage","School website","Custom domain","Advanced reports","Dedicated support"]', true, CURRENT_TIMESTAMP)
+ON CONFLICT ("planKey") DO UPDATE SET
+  "name" = EXCLUDED."name",
+  "price" = EXCLUDED."price",
+  "currency" = EXCLUDED."currency",
+  "period" = EXCLUDED."period",
+  "maxStudents" = EXCLUDED."maxStudents",
+  "maxTeachers" = EXCLUDED."maxTeachers",
+  "storageMb" = EXCLUDED."storageMb",
+  "supportTier" = EXCLUDED."supportTier",
+  "features" = EXCLUDED."features",
+  "isActive" = EXCLUDED."isActive",
+  "updatedAt" = CURRENT_TIMESTAMP;
 
 UPDATE "Subscription"
 SET "amount" = CASE "plan"
