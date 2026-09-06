@@ -64,7 +64,9 @@ export class AdminController {
   getAuditLogs(@Query('action') action?: string, @Query('search') search?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
     const parsedPage = page === undefined ? undefined : Number.parseInt(page, 10);
     const parsedLimit = limit === undefined ? undefined : Number.parseInt(limit, 10);
-    if ((page !== undefined && (!Number.isInteger(parsedPage) || parsedPage < 1)) || (limit !== undefined && (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100))) {
+    const invalidPage = page !== undefined && (parsedPage === undefined || !Number.isInteger(parsedPage) || parsedPage < 1);
+    const invalidLimit = limit !== undefined && (parsedLimit === undefined || !Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100);
+    if (invalidPage || invalidLimit) {
       throw new BadRequestException('Audit log page must be >= 1 and limit must be between 1 and 100.');
     }
     return this.adminService.getAuditLogs(action, search?.trim(), parsedPage, parsedLimit);
