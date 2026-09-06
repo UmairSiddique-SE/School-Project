@@ -19,7 +19,9 @@ function addDays(d: Date, days: number): Date {
   return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
-// Default platform plans seed data
+// Default platform plans seed data. Keep this fallback catalogue identical to the
+// launch migration so a brand-new database and an existing database expose the
+// same commercial limits.
 const DEFAULT_PLANS = [
   {
     planKey: 'FREE_TRIAL',
@@ -27,33 +29,31 @@ const DEFAULT_PLANS = [
     price: 0,
     currency: 'PKR',
     period: '1 day',
-    maxStudents: 100,
+    maxStudents: 20,
     maxTeachers: 15,
     storageMb: 1024,
     supportTier: 'Email',
     features: JSON.stringify([
-      'Up to 100 students',
+      'Up to 20 students',
       'Up to 15 staff',
       '1 campus',
-      'Basic reports',
+      'Core features',
       'Email support',
     ]),
   },
   {
     planKey: 'PROFESSIONAL',
     name: 'Professional',
-    price: 5000,
+    price: 3000,
     currency: 'PKR',
     period: 'per month',
-    maxStudents: 800,
+    maxStudents: 500,
     maxTeachers: 999999,
     storageMb: 10240,
     supportTier: 'Email + Chat',
     features: JSON.stringify([
-      'Up to 800 students',
+      'Up to 500 students',
       'Unlimited staff',
-      '2 campuses',
-      '10 GB storage',
       'Full reports',
       'Fee management',
       'Email + Chat support',
@@ -62,7 +62,7 @@ const DEFAULT_PLANS = [
   {
     planKey: 'PREMIUM',
     name: 'Premium',
-    price: 10000,
+    price: 5000,
     currency: 'PKR',
     period: 'per month',
     maxStudents: 999999,
@@ -72,10 +72,9 @@ const DEFAULT_PLANS = [
     features: JSON.stringify([
       'Unlimited students',
       'Unlimited staff',
-      '5 campuses',
+      'Unlimited platform features',
       '500 GB storage',
       'Dedicated support',
-      'All Professional features',
     ]),
   },
 ];
@@ -222,7 +221,7 @@ export class AdminService {
     const pendingSchoolRequests = await this.prisma.schoolRequest.count({ where: { status: 'PENDING' } });
     const recentSchools = await this.prisma.school.findMany({ where: { deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, name: true, createdAt: true } });
     const recentPayments = await this.prisma.onboardingPayment.findMany({ where: { status: 'PENDING' }, orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, amount: true, status: true, createdAt: true, school: { select: { name: true } } } });
-    const recentActivities = await this.prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, action: true, entity: true, createdAt: true, user: { select: { name: true } } } });
+    const recentActivities = await this.prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, action: true, entity: true, createdAt: true, user: { select: { name: true } } });
     const expiringSchools = await this.prisma.school.findMany({ where: { subscription: { endDate: { gte: now, lte: addDays(now, 30) } }, deletedAt: null }, select: { id: true, name: true, subscription: { select: { endDate: true } } } });
     const schoolsForGrowth = await this.prisma.school.findMany({ where: { deletedAt: null }, select: { createdAt: true } });
     const growthMap: Record<string, number> = {};
@@ -313,42 +312,5 @@ export class AdminService {
     return logs.map((log) => ({ id: log.id, action: log.action, entity: log.entity, entityId: log.entityId, entityName: log.school?.name || log.entity, actor: log.user?.name || 'System', actorEmail: log.user?.email || '', details: log.after || log.action, ip: log.ipAddress || 'N/A', timestamp: log.createdAt }));
   }
 
-  async getPayments() { return this.prisma.onboardingPayment.findMany({ orderBy: { createdAt: 'desc' }, take: 100, include: { school: { select: { name: true, slug: true } } } }); }
-  async approvePayment(id: string, actor?: any) {
-    const payment = await this.prisma.onboardingPayment.findUnique({ where: { id } });
-    if (!payment) throw new NotFoundException('Payment not found');
-    if (payment.status !== 'PENDING') throw new BadRequestException('Only pending payments can be approved');
-    return this.prisma.$transaction(async (tx) => {
-      const approved = await tx.onboardingPayment.update({ where: { id }, data: { status: 'APPROVED', reviewedAt: new Date() } });
-      await tx.school.update({ where: { id: payment.schoolId }, data: { isActive: true } });
-      const plan = await tx.platformPlan.findUnique({ where: { planKey: payment.plan } });
-      await tx.subscription.update({ where: { schoolId: payment.schoolId }, data: { plan: payment.plan, status: 'ACTIVE', startDate: new Date(), endDate: addDays(new Date(), 365), amount: payment.amount, currency: plan?.currency || 'PKR' } });
-      if (actor?.id) await tx.auditLog.create({ data: { action: 'PAYMENT_APPROVED', entity: 'OnboardingPayment', entityId: id, after: `Approved PKR ${payment.amount} for ${payment.plan}`, schoolId: payment.schoolId, userId: actor.id } });
-      await tx.notification.createMany({ data: (await tx.user.findMany({ where: { schoolId: payment.schoolId, isActive: true }, select: { id: true } })).map((u) => ({ type: 'PAYMENT', title: 'Payment approved', message: `Your ${payment.plan} subscription payment has been approved.`, schoolId: payment.schoolId, userId: u.id })) });
-      return approved;
-    });
-  }
-  async rejectPayment(id: string, actor?: any) {
-    const payment = await this.prisma.onboardingPayment.findUnique({ where: { id } });
-    if (!payment) throw new NotFoundException('Payment not found');
-    if (payment.status !== 'PENDING') throw new BadRequestException('Only pending payments can be rejected');
-    return this.prisma.$transaction(async (tx) => { const rejected = await tx.onboardingPayment.update({ where: { id }, data: { status: 'REJECTED', reviewedAt: new Date() } }); if (actor?.id) await tx.auditLog.create({ data: { action: 'PAYMENT_REJECTED', entity: 'OnboardingPayment', entityId: id, after: `Rejected PKR ${payment.amount} for ${payment.plan}`, schoolId: payment.schoolId, userId: actor.id } }); return rejected; });
-  }
-
-  async getReportCsv(id: string): Promise<string> {
-    if (id === 'school-summary') { const schools = await this.prisma.school.findMany({ where: { deletedAt: null }, include: { subscription: true } }); let csv = 'ID,Name,Slug,Email,Phone,City,Plan,Status,ExpiryDate\n'; for (const s of schools) csv += `"${s.id}","${s.name}","${s.slug}","${s.email || ''}","${s.phone || ''}","${s.city || ''}","${s.subscription?.plan || 'N/A'}","${s.isActive ? 'Active' : 'Suspended'}","${s.subscription?.endDate ? s.subscription.endDate.toISOString() : ''}"\n`; return csv; }
-    if (id === 'revenue-report') { const payments = await this.prisma.onboardingPayment.findMany({ include: { school: true } }); let csv = 'PaymentID,SchoolName,Amount,Method,Status,Date\n'; for (const p of payments) csv += `"${p.id}","${p.school?.name || 'N/A'}",${p.amount},"${p.method}","${p.status}","${p.createdAt.toISOString()}"\n`; return csv; }
-    if (id === 'user-report') { const users = await this.prisma.user.findMany({ where: { deletedAt: null }, include: { school: true } }); let csv = 'UserID,Name,Email,Role,School,Status,CreatedAt\n'; for (const u of users) csv += `"${u.id}","${u.name}","${u.email}","${u.role}","${u.school?.name || 'Platform'}","${u.isActive ? 'Active' : 'Suspended'}","${u.createdAt.toISOString()}"\n`; return csv; }
-    if (id === 'plan-report') { const subs = await this.prisma.subscription.findMany({ include: { school: true } }); let csv = 'SchoolID,SchoolName,Plan,Status,EndDate\n'; for (const s of subs) csv += `"${s.schoolId}","${s.school?.name}","${s.plan}","${s.status}","${s.endDate.toISOString()}"\n`; return csv; }
-    if (id === 'expiry-report') { const now = new Date(); const thirtyDays = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); const schools = await this.prisma.school.findMany({ where: { deletedAt: null, subscription: { endDate: { gte: now, lte: thirtyDays } } }, include: { subscription: true } }); let csv = 'SchoolID,SchoolName,Plan,ExpiryDate,Email\n'; for (const s of schools) csv += `"${s.id}","${s.name}","${s.subscription?.plan}","${s.subscription?.endDate.toISOString()}","${s.email || ''}"\n`; return csv; }
-    if (id === 'audit-report') { const logs = await this.prisma.auditLog.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' }, take: 1000 }); let csv = 'LogID,Action,Entity,EntityID,Actor,ActorEmail,Timestamp\n'; for (const l of logs) csv += `"${l.id}","${l.action}","${l.entity}","${l.entityId || ''}","${l.user?.name || 'System'}","${l.user?.email || ''}","${l.createdAt.toISOString()}"\n`; return csv; }
-    throw new NotFoundException('Report type not found');
-  }
-
-  async getPlatformUsers(search?: string, role?: string) { const where: any = { deletedAt: null }; if (role && role !== 'ALL') where.role = role; if (search) where.OR = [{ name: { contains: search } }, { email: { contains: search } }, { school: { name: { contains: search } } }]; return this.prisma.user.findMany({ where, orderBy: { createdAt: 'desc' }, take: 200, select: { id: true, name: true, email: true, role: true, phone: true, isActive: true, lastLoginAt: true, createdAt: true, school: { select: { id: true, name: true, slug: true } } } }); }
-  async toggleUserActive(id: string) { const user = await this.prisma.user.findUnique({ where: { id } }); if (!user) throw new NotFoundException('User not found'); return this.prisma.user.update({ where: { id }, data: { isActive: !user.isActive } }); }
-  async getSupportTickets() { const tickets = await this.prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, include: { replies: { orderBy: { createdAt: 'asc' } } } }); return tickets.map((ticket) => ({ ...ticket, replies: ticket.replies.map((reply) => ({ sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) })); }
-  async updateSupportTicket(id: string, status: string, replyMessage?: string) { const ticket = await this.prisma.supportTicket.findUnique({ where: { id } }); if (!ticket) throw new NotFoundException('Ticket not found'); await this.prisma.$transaction(async (tx) => { await tx.supportTicket.update({ where: { id }, data: { status } }); if (replyMessage) await tx.ticketReply.create({ data: { ticketId: id, sender: 'Super Admin', message: replyMessage } }); }); const updated = await this.prisma.supportTicket.findUnique({ where: { id }, include: { replies: { orderBy: { createdAt: 'asc' } } } }); return updated ? { ...updated, replies: updated.replies.map((reply) => ({ sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) } : updated; }
-  async getAnnouncements() { return this.prisma.platformAnnouncement.findMany({ orderBy: { createdAt: 'desc' } }); }
-  async createAnnouncement(data: { title: string; message: string; target?: string; priority?: string }) { const target = data.target || 'ALL'; return this.prisma.$transaction(async (tx) => { const announcement = await tx.platformAnnouncement.create({ data: { title: data.title.trim(), message: data.message.trim(), target, priority: data.priority || 'NORMAL' } }); const schools = await tx.school.findMany({ where: { isActive: true, ...(target === 'PAID' ? { subscription: { plan: { not: 'FREE_TRIAL' } } } : {}) }, select: { id: true, users: { where: { isActive: true }, select: { id: true } } } }); const notifications = schools.flatMap((school) => school.users.map((user) => ({ type: 'ANNOUNCEMENT', title: announcement.title, message: announcement.message, schoolId: school.id, userId: user.id }))); if (notifications.length) await tx.notification.createMany({ data: notifications }); return announcement; }); }
+  async getPayments() { return this.prisma.onboardingPayment.findMany({ orderBy: { createdAt: 'desc' }, take: 100, include: { school: { select: { name: true, slug: true } } } });
 }
