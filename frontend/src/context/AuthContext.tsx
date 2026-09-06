@@ -10,7 +10,7 @@ export interface User {
   schoolId?: string;
   schoolName?: string;
   schoolSlug?: string;
-  activationStatus?: "ACTIVE" | "PAYMENT_PENDING";
+  activationStatus?: "ACTIVE" | "PAYMENT_PENDING" | "EXPIRED";
   plan?: string;
 }
 
@@ -37,22 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedToken = localStorage.getItem("auth_token");
     const storedUser = localStorage.getItem("auth_user");
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_refresh_token");
-        localStorage.removeItem("auth_user");
-      }
+      try { setToken(storedToken); setUser(JSON.parse(storedUser)); }
+      catch { localStorage.removeItem("auth_token"); localStorage.removeItem("auth_refresh_token"); localStorage.removeItem("auth_user"); }
     }
     const handleSessionExpired = () => {
-      setToken(null);
-      setUser(null);
-      setPreviewRole(null);
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("auth_refresh_token");
-      localStorage.removeItem("auth_user");
+      setToken(null); setUser(null); setPreviewRole(null);
+      localStorage.removeItem("auth_token"); localStorage.removeItem("auth_refresh_token"); localStorage.removeItem("auth_user");
     };
     window.addEventListener("edusphere:session-expired", handleSessionExpired);
     setIsLoading(false);
@@ -60,25 +50,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (newToken: string, newUser: User, newRefreshToken?: string) => {
-    setToken(newToken);
-    setUser(newUser);
-    setPreviewRole(null);
-    localStorage.setItem("auth_token", newToken);
-    localStorage.setItem("auth_user", JSON.stringify(newUser));
+    setToken(newToken); setUser(newUser); setPreviewRole(null);
+    localStorage.setItem("auth_token", newToken); localStorage.setItem("auth_user", JSON.stringify(newUser));
     if (newRefreshToken) localStorage.setItem("auth_refresh_token", newRefreshToken);
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    setPreviewRole(null);
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_refresh_token");
-    localStorage.removeItem("auth_user");
+    setToken(null); setUser(null); setPreviewRole(null);
+    localStorage.removeItem("auth_token"); localStorage.removeItem("auth_refresh_token"); localStorage.removeItem("auth_user");
   };
 
   const isAuthenticated = !!user && !!token;
-
   return <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, previewRole, login, logout, setPreviewRole }}>{children}</AuthContext.Provider>;
 };
 
