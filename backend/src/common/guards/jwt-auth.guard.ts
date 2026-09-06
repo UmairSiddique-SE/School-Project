@@ -6,7 +6,17 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { firstValueFrom, Observable } from 'rxjs';
+import { Request } from 'express';
 import { PrismaService } from '../../modules/database/prisma.service';
+
+type AuthenticatedUser = {
+  schoolId?: string;
+  role: string;
+};
+
+type AuthenticatedRequest = Request & {
+  user?: AuthenticatedUser;
+};
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -16,15 +26,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const result = super.canActivate(context);
-    const activated = typeof result === 'boolean'
-      ? result
-      : result instanceof Observable
-        ? await firstValueFrom(result)
-        : await result;
+    const activated =
+      typeof result === 'boolean'
+        ? result
+        : result instanceof Observable
+          ? await firstValueFrom(result)
+          : await result;
 
     if (!activated) return false;
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
     if (!user?.schoolId || user.role === 'SUPER_ADMIN') return true;
@@ -52,10 +63,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     const subscription = school.subscription;
-    if (subscription?.status === 'PENDING' && pendingAllowedPaths.has(path)) return true;
+    if (subscription?.status === 'PENDING' && pendingAllowedPaths.has(path)) {
+      return true;
+    }
 
     if (!school.isActive) {
-      throw new ForbiddenException('School account is suspended or awaiting activation');
+      throw new ForbiddenException(
+        'School account is suspended or awaiting activation',
+      );
     }
 
     if (
@@ -63,16 +78,28 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       subscription.status !== 'ACTIVE' ||
       subscription.endDate.getTime() < Date.now()
     ) {
-      throw new ForbiddenException('School subscription is inactive or expired');
+      throw new ForbiddenException(
+        'School subscription is inactive or expired',
+      );
     }
 
     return true;
   }
 
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest<TUser = AuthenticatedUser>(
+    err: unknown,
+    user: AuthenticatedUser | undefined,
+    info: unknown,
+    _context?: ExecutionContext,
+    _status?: unknown,
+  ): TUser {
+    void info;
     if (err || !user) {
-      throw err || new UnauthorizedException('Authentication credentials missing or invalid');
+      if (err instanceof Error) throw err;
+      throw new UnauthorizedException(
+        'Authentication credentials missing or invalid',
+      );
     }
-    return user;
+    return user as TUser;
   }
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Response } from 'express';
 
 export interface ResponseFormat<T> {
   success: boolean;
@@ -15,21 +16,23 @@ export interface ResponseFormat<T> {
 }
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, ResponseFormat<T>> {
+export class ResponseInterceptor<T>
+  implements NestInterceptor<T, ResponseFormat<T>>
+{
   intercept(
     context: ExecutionContext,
-    next: CallHandler
+    next: CallHandler,
   ): Observable<ResponseFormat<T>> {
     const ctx = context.switchToHttp();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<Response>();
     const statusCode = response.statusCode || HttpStatus.OK;
 
     return next.handle().pipe(
-      map((data) => ({
+      map((data: T) => ({
         success: true,
         statusCode,
         data,
-      }))
+      })),
     );
   }
 }

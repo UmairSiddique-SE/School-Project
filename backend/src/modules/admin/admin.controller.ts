@@ -4,7 +4,9 @@ import {
 import { AdminService } from './admin.service';
 import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { PaymentAccountingService } from './payment-accounting.service';
+import { ManualPaymentService } from './manual-payment.service';
 import { SchoolApprovalService } from './school-approval.service';
+import { SuperAdminSecurityService } from './super-admin-security.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -25,7 +27,9 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly paymentLifecycleService: PaymentLifecycleService,
     private readonly paymentAccountingService: PaymentAccountingService,
+    private readonly manualPaymentService: ManualPaymentService,
     private readonly schoolApprovalService: SchoolApprovalService,
+    private readonly superAdminSecurityService: SuperAdminSecurityService,
   ) {}
 
   @Get('overview')
@@ -60,7 +64,12 @@ export class AdminController {
 
   @Get('audit-logs')
   getAuditLogs(@Query('action') action?: string, @Query('search') search?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.adminService.getAuditLogs(action, search, page ? parseInt(page, 10) : undefined, limit ? parseInt(limit, 10) : undefined);
+    const parsedPage = page === undefined ? undefined : Number.parseInt(page, 10);
+    const parsedLimit = limit === undefined ? undefined : Number.parseInt(limit, 10);
+    const invalidPage = page !== undefined && (parsedPage === undefined || !Number.isInteger(parsedPage) || parsedPage < 1);
+    const invalidLimit = limit !== undefined && (parsedLimit === undefined || !Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100);
+    if (invalidPage || invalidLimit) throw new BadRequestException('Audit log page must be >= 1 and limit must be between 1 and 100.');
+    return this.adminService.getAuditLogs(action, search?.trim(), parsedPage, parsedLimit);
   }
 
   @Get('payments')
@@ -68,6 +77,8 @@ export class AdminController {
     return this.paymentAccountingService.getPayments({ page: page ? parseInt(page, 10) : undefined, limit: limit ? parseInt(limit, 10) : undefined, status, type, search, date });
   }
 
+  @Get('payments/manual-options') getManualPaymentOptions() { return this.manualPaymentService.getOptions(); }
+  @Post('payments/manual') createManualPayment(@Body() dto: any, @CurrentUser() user: any) { return this.manualPaymentService.create(dto, user); }
   @Patch('payments/:id/approve') approvePayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.approvePayment(id, user); }
   @Patch('payments/:id/reject') rejectPayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.rejectPayment(id, user); }
 
@@ -81,8 +92,8 @@ export class AdminController {
 
   @Get('users') getUsers(@Query('search') search?: string, @Query('role') role?: string) { return this.adminService.getPlatformUsers(search, role); }
   @Patch('users/:id/toggle-status') toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) {
-    if (user?.id && user.id === id) throw new BadRequestException('Super Admin cannot disable the account currently in use.');
-    return this.adminService.toggleUserActive(id);
+    if (!user?.id) throw new BadRequestException('Authenticated Super Admin context is required.');
+    return this.superAdminSecurityService.toggleUserActive(id, user.id);
   }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
   @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }

@@ -1,6 +1,11 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
+type TenantRequest = Request & {
+  tenantSlug?: string;
+  tenantDomain?: string;
+};
+
 /**
  * TenantMiddleware resolves the current school tenant from the incoming
  * request's Host header. It supports:
@@ -15,21 +20,16 @@ import { Request, Response, NextFunction } from 'express';
  */
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
-  // The root domain for subdomain-based resolution (configurable via ENV)
   private readonly rootDomain = process.env.ROOT_DOMAIN || 'edusphere.com';
 
-  use(req: Request, _res: Response, next: NextFunction) {
+  use(req: TenantRequest, _res: Response, next: NextFunction) {
     const host = req.hostname || req.headers.host || '';
-
-    // Strip port if present
     const hostname = host.split(':')[0].toLowerCase();
 
     if (hostname.endsWith(`.${this.rootDomain}`)) {
-      // Subdomain-based tenant: extract the first label
       const subdomain = hostname.replace(`.${this.rootDomain}`, '');
-      // Ignore www or bare domain
       if (subdomain && subdomain !== 'www' && subdomain !== 'app') {
-        (req as any).tenantSlug = subdomain;
+        req.tenantSlug = subdomain;
       }
     } else if (
       hostname !== this.rootDomain &&
@@ -37,8 +37,7 @@ export class TenantMiddleware implements NestMiddleware {
       hostname !== 'localhost' &&
       !hostname.endsWith('.localhost')
     ) {
-      // Custom domain — pass as-is for the public controller to resolve
-      (req as any).tenantDomain = hostname;
+      req.tenantDomain = hostname;
     }
 
     next();

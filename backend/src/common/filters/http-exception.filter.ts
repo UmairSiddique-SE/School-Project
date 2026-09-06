@@ -8,6 +8,11 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 
+type ErrorResponse = Record<string, unknown> & {
+  message?: unknown;
+  error?: unknown;
+};
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
@@ -18,39 +23,50 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
-    let errorDetails: any = null;
+    let message: unknown = 'Internal server error';
+    let errorDetails: unknown = null;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const resContent = exception.getResponse();
-      
+
       if (typeof resContent === 'object' && resContent !== null) {
-        message = (resContent as any).message || exception.message;
-        errorDetails = (resContent as any).error || null;
+        const responseBody = resContent as ErrorResponse;
+        message = responseBody.message ?? exception.message;
+        errorDetails = responseBody.error ?? null;
       } else {
         message = exception.message;
       }
     } else if (exception instanceof Error) {
       message = exception.message;
-      // In production, we mask raw database / server errors
       if (process.env.NODE_ENV === 'production') {
         message = 'A database or internal system error occurred';
       }
     }
 
+    const logMessage =
+      typeof message === 'object' && message !== null
+        ? JSON.stringify(message)
+        : typeof message === 'string'
+          ? message
+          : 'Unknown error';
+
     this.logger.error(
-      `[${request.method}] ${request.url} - Status: ${status} - Message: ${
-        typeof message === 'object' ? JSON.stringify(message) : message
-      }`,
-      exception instanceof Error ? exception.stack : undefined
+      `[${request.method}] ${request.url} - Status: ${status} - Message: ${logMessage}`,
+      exception instanceof Error ? exception.stack : undefined,
     );
+
+    const normalizedMessage = Array.isArray(message)
+      ? message[0]
+      : typeof message === 'string'
+        ? message
+        : 'Internal server error';
 
     response.status(status).json({
       success: false,
       statusCode: status,
       path: request.url,
-      message: Array.isArray(message) ? message[0] : message,
+      message: normalizedMessage,
       error: errorDetails,
       timestamp: new Date().toISOString(),
     });
