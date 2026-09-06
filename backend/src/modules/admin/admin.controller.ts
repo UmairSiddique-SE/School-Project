@@ -57,7 +57,7 @@ export class AdminController {
 
   @Patch('requests/:id/review')
   reviewSchoolRequest(@Param('id') id: string, @Body() dto: ReviewSchoolRequestDto, @CurrentUser() user: any) {
-    return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, user?.name, user?.id);
+    return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, dto.selectedPlan, user?.name, user?.id);
   }
 
   @Get('audit-logs')
@@ -94,7 +94,16 @@ export class AdminController {
     return this.superAdminSecurityService.toggleUserActive(id, user.id);
   }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
-  @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
+  @Patch('support/:id')
+  updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }, @CurrentUser() user: any) {
+    return this.adminService.updateSupportTicket(id, dto.status, dto.reply, user);
+  }
   @Get('announcements') getAnnouncements() { return this.adminService.getAnnouncements(); }
-  @Post('announcements') createAnnouncement(data: { title: string; message: string; target?: string; priority?: string }) { return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }); }
+  @Post('announcements')
+  createAnnouncement(
+    @Body() data: { title: string; message: string; target?: string; priority?: string; targetSchoolIds?: string[]; scheduledAt?: string; expiresAt?: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }, user?.name || 'Super Admin');
+  }
 }

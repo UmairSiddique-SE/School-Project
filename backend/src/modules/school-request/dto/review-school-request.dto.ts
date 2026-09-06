@@ -8,4 +8,9 @@ export class ReviewSchoolRequestDto {
   @IsString()
   @MaxLength(1000)
   reviewNotes?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  selectedPlan?: string;
 }

@@ -88,6 +88,7 @@ const emptyForm = {
 };
 
 type ModalType = "create" | "edit" | "view" | "extend" | "plan" | null;
+type SchoolAction = "suspend" | "activate" | "archive";
 
 export default function Schools() {
   const [schools, setSchools] = useState<any[]>([]);
@@ -103,6 +104,8 @@ export default function Schools() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [planFilter, setPlanFilter] = useState("ALL");
+  const [actionDialog, setActionDialog] = useState<{ id: string; action: SchoolAction; label: string; schoolName: string } | null>(null);
+  const [actionReason, setActionReason] = useState("");
 
   const districts = form.province
     ? Object.keys(PAKISTAN_LOCATIONS[form.province] || {})
@@ -253,29 +256,34 @@ export default function Schools() {
     }
   };
 
-  const handleAction = async (
-    id: string,
-    action: "suspend" | "activate" | "archive",
-    label: string,
-  ) => {
+  const handleAction = (id: string, action: SchoolAction, label: string, schoolName: string) => {
+    setActionReason("");
+    setActionDialog({ id, action, label, schoolName });
+    setOpenMenu(null);
+  };
+
+  const confirmAction = async () => {
+    if (!actionDialog) return;
+    if ((actionDialog.action === "suspend" || actionDialog.action === "archive") && !actionReason.trim()) {
+      toast.error(`A ${actionDialog.action} reason is required.`);
+      return;
+    }
+    setSaving(true);
     try {
-      if (action === "archive") {
-        if (
-          !confirm(
-            "Are you sure you want to permanently delete/archive this school?",
-          )
-        )
-          return;
-        await apiClient.delete(`/schools/${id}`);
+      if (actionDialog.action === "archive") {
+        await apiClient.delete(`/schools/${actionDialog.id}`, { data: { reason: actionReason.trim() } });
       } else {
-        await apiClient.patch(`/schools/${id}/${action}`);
+        await apiClient.patch(`/schools/${actionDialog.id}/${actionDialog.action}`, { reason: actionReason.trim() || undefined });
       }
-      toast.success(`School ${label} successfully.`);
+      toast.success(`School ${actionDialog.label} successfully.`);
+      setActionDialog(null);
       fetchData();
     } catch (err: any) {
       toast.error(
-        err?.response?.data?.message || `Failed to ${action} school.`,
+        err?.response?.data?.message || `Failed to ${actionDialog.action} school.`,
       );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -592,7 +600,7 @@ export default function Schools() {
                               {s.isActive ? (
                                 <button
                                   onClick={() => {
-                                    handleAction(s.id, "suspend", "suspended");
+                                    handleAction(s.id, "suspend", "suspended", s.name);
                                     setOpenMenu(null);
                                   }}
                                   className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all"
@@ -603,7 +611,7 @@ export default function Schools() {
                               ) : (
                                 <button
                                   onClick={() => {
-                                    handleAction(s.id, "activate", "activated");
+                                    handleAction(s.id, "activate", "activated", s.name);
                                     setOpenMenu(null);
                                   }}
                                   className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 transition-all"
@@ -614,7 +622,7 @@ export default function Schools() {
                               )}
                               <button
                                 onClick={() => {
-                                  handleAction(s.id, "archive", "deleted");
+                                  handleAction(s.id, "archive", "archived", s.name);
                                   setOpenMenu(null);
                                 }}
                                 className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-all"
@@ -1323,6 +1331,18 @@ export default function Schools() {
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {actionDialog && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} className="w-full max-w-md rounded-3xl border border-violet-500/20 bg-[#0b1020] p-6 shadow-2xl">
+              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-300">Sensitive platform action</p><h3 className="mt-1 text-lg font-black text-white">{actionDialog.action[0].toUpperCase() + actionDialog.action.slice(1)} {actionDialog.schoolName}</h3></div><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"><X size={17} /></button></div>
+              <p className="mt-4 text-sm text-slate-300">This action will be recorded in the platform audit log. {actionDialog.action === 'archive' ? 'Archived schools are removed from normal platform access.' : ''}</p>
+              <label className="mt-5 block text-xs font-bold text-slate-200">Reason {actionDialog.action === 'activate' ? '(optional)' : '(required)'}<textarea value={actionReason} onChange={(event) => setActionReason(event.target.value)} rows={3} placeholder={actionDialog.action === 'suspend' ? 'e.g. Overdue subscription or policy violation' : 'Describe why this action is being taken'} className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-violet-400" /></label>
+              <div className="mt-6 flex justify-end gap-2"><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-xl border border-white/10 px-4 py-2.5 text-xs font-bold text-slate-300">Cancel</button><button onClick={() => void confirmAction()} disabled={saving} className={`rounded-xl px-4 py-2.5 text-xs font-black text-white disabled:opacity-60 ${actionDialog.action === 'activate' ? 'bg-emerald-600' : 'bg-rose-600'}`}>{saving ? 'Saving…' : `Confirm ${actionDialog.action}`}</button></div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

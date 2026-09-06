@@ -44,20 +44,20 @@ export class SchoolController {
 
   @Patch(':id/suspend')
   @Roles('SUPER_ADMIN')
-  suspend(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.schoolService.suspend(id, user);
+  suspend(@Param('id') id: string, @Body() dto: { reason?: string }, @CurrentUser() user: any) {
+    return this.schoolService.suspend(id, user, dto.reason);
   }
 
   @Patch(':id/activate')
   @Roles('SUPER_ADMIN')
-  activate(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.schoolService.activate(id, user);
+  activate(@Param('id') id: string, @Body() dto: { reason?: string }, @CurrentUser() user: any) {
+    return this.schoolService.activate(id, user, dto.reason);
   }
 
   @Patch(':id/archive')
   @Roles('SUPER_ADMIN')
-  archive(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.schoolService.archive(id, user);
+  archive(@Param('id') id: string, @Body() dto: { reason?: string }, @CurrentUser() user: any) {
+    return this.schoolService.archive(id, user, dto.reason);
   }
 
   @Patch(':id/extend-expiry')
@@ -81,7 +81,7 @@ export class SchoolController {
 
   @Delete(':id')
   @Roles('SUPER_ADMIN')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.schoolService.remove(id, user);
+  remove(@Param('id') id: string, @Body() dto: { reason?: string }, @CurrentUser() user: any) {
+    return this.schoolService.remove(id, user, dto.reason);
   }
 }

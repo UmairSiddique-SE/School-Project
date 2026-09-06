@@ -14,6 +14,10 @@ interface Announcement {
   target: string;
   priority: string;
   isActive: boolean;
+  scheduledAt?: string | null;
+  publishedAt?: string | null;
+  expiresAt?: string | null;
+  deliveryCount?: number;
   createdAt: string;
   author: string;
 }
@@ -28,6 +32,8 @@ export default function Announcements() {
     message: '',
     target: 'ALL',
     priority: 'NORMAL',
+    scheduledAt: '',
+    expiresAt: '',
   });
 
   const fetchAnnouncements = () => {
@@ -52,10 +58,10 @@ export default function Announcements() {
     setSaving(true);
     try {
       const res = await apiClient.post('/admin/announcements', form);
-      toast.success('Broadcast announcement published to campuses!');
+      toast.success(form.scheduledAt ? 'Announcement scheduled successfully.' : 'Broadcast announcement published to campuses!');
       setAnnouncements((prev) => [res.data, ...prev]);
       setShowCreate(false);
-      setForm({ title: '', message: '', target: 'ALL', priority: 'NORMAL' });
+      setForm({ title: '', message: '', target: 'ALL', priority: 'NORMAL', scheduledAt: '', expiresAt: '' });
     } catch {
       toast.error('Failed to post announcement');
     } finally {
@@ -135,7 +141,7 @@ export default function Announcements() {
                   </span>
                 </div>
                 <span className="text-xs text-slate-500">
-                  {new Date(a.createdAt).toLocaleDateString('en-PK', {
+                  {(a.scheduledAt && !a.publishedAt ? new Date(a.scheduledAt) : new Date(a.createdAt)).toLocaleDateString('en-PK', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric',
@@ -150,8 +156,8 @@ export default function Announcements() {
 
               <div className="flex items-center justify-between pt-3 border-t border-white/5 text-[11px] text-slate-500">
                 <span>Published by {a.author}</span>
-                <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                  <Check size={12} /> Active Banner
+                <span className={`inline-flex items-center gap-1 font-semibold ${a.publishedAt ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  <Check size={12} /> {a.publishedAt ? `${a.deliveryCount || 0} delivered` : 'Scheduled'}{a.expiresAt ? ` · expires ${new Date(a.expiresAt).toLocaleDateString('en-PK')}` : ''}
                 </span>
               </div>
             </motion.div>
@@ -219,6 +225,11 @@ export default function Announcements() {
                       <option value="LOW">Low / Informational</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="text-[10px] font-bold uppercase text-slate-300">Schedule (optional)<input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm((p) => ({ ...p, scheduledAt: e.target.value }))} className="mt-1 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white" /></label>
+                  <label className="text-[10px] font-bold uppercase text-slate-300">Expiry (optional)<input type="datetime-local" value={form.expiresAt} onChange={(e) => setForm((p) => ({ ...p, expiresAt: e.target.value }))} className="mt-1 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white" /></label>
                 </div>
 
                 <div>

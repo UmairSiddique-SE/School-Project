@@ -7,13 +7,13 @@ import apiClient from '@/api/apiClient';
 interface SchoolRequest {
   id: string;
   schoolName: string;
-  contactName: string;
+  ownerName: string;
   email: string;
   phone: string;
   city: string;
   state: string;
   requestedPlan: string;
-  message: string;
+  notes?: string;
   status: string;
   createdAt: string;
 }
@@ -42,8 +42,9 @@ export default function SchoolRequests() {
   const [wizardStep, setWizardStep] = useState(1);
   const [reviewModal, setReviewModal] = useState<{ id: string; action: 'APPROVED' | 'REJECTED'; schoolName: string } | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('FREE_TRIAL');
   const [saving, setSaving] = useState(false);
-  const [addForm, setAddForm] = useState({ schoolName: '', contactName: '', email: '', phone: '', city: '', state: '', requestedPlan: 'FREE_TRIAL', message: '' });
+  const [addForm, setAddForm] = useState({ schoolName: '', ownerName: '', email: '', phone: '', city: '', state: '', requestedPlan: 'FREE_TRIAL', notes: '' });
 
   const fetchRequests = () => {
     setLoading(true);
@@ -62,15 +63,21 @@ export default function SchoolRequests() {
     if (!request) return;
     setReviewModal({ id, action, schoolName: request.schoolName });
     setReviewNotes('');
+    setSelectedPlan(request.requestedPlan || 'FREE_TRIAL');
   };
 
   const confirmReview = async () => {
     if (!reviewModal) return;
+    if (reviewModal.action === 'REJECTED' && !reviewNotes.trim()) {
+      toast.error('Please enter the rejection reason.');
+      return;
+    }
     setProcessing(reviewModal.id);
     try {
       await apiClient.patch(`/admin/requests/${reviewModal.id}/review`, {
         action: reviewModal.action,
         reviewNotes: reviewNotes.trim() || undefined,
+        selectedPlan: reviewModal.action === 'APPROVED' ? selectedPlan : undefined,
       });
       toast.success(
         reviewModal.action === 'APPROVED'
@@ -95,7 +102,7 @@ export default function SchoolRequests() {
       toast.success('School request submitted successfully!');
       setShowAdd(false);
       setWizardStep(1);
-      setAddForm({ schoolName: '', contactName: '', email: '', phone: '', city: '', state: '', requestedPlan: 'FREE_TRIAL', message: '' });
+      setAddForm({ schoolName: '', ownerName: '', email: '', phone: '', city: '', state: '', requestedPlan: 'FREE_TRIAL', notes: '' });
       fetchRequests();
     } catch {
       toast.error('Failed to submit request');
@@ -166,7 +173,7 @@ export default function SchoolRequests() {
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                       <p className="font-bold text-foreground">{req.schoolName}</p>
-                      <p className="text-sm text-muted-foreground">{req.contactName}</p>
+                      <p className="text-sm text-muted-foreground">{req.ownerName}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${planColors[req.requestedPlan] || planColors.FREE_TRIAL}`}>
@@ -182,7 +189,7 @@ export default function SchoolRequests() {
                     {req.city && <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin size={11} />{req.city}{req.state ? `, ${req.state}` : ''}</span>}
                     <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock size={11} />{new Date(req.createdAt).toLocaleDateString()}</span>
                   </div>
-                  {req.message && <p className="text-xs text-muted-foreground mt-2 italic line-clamp-2">"{req.message}"</p>}
+                  {req.notes && <p className="text-xs text-muted-foreground mt-2 italic line-clamp-2">"{req.notes}"</p>}
                 </div>
               </div>
               {req.status === 'PENDING' && (
@@ -283,8 +290,8 @@ export default function SchoolRequests() {
                       <input
                         type="text"
                         required
-                        value={addForm.contactName}
-                        onChange={e => setAddForm(p => ({ ...p, contactName: e.target.value }))}
+                        value={addForm.ownerName}
+                        onChange={e => setAddForm(p => ({ ...p, ownerName: e.target.value }))}
                         className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                         placeholder="Muhammad Ali"
                       />
@@ -331,8 +338,8 @@ export default function SchoolRequests() {
                     <div>
                       <label className="text-xs font-semibold text-foreground">Message / Notes</label>
                       <textarea
-                        value={addForm.message}
-                        onChange={e => setAddForm(p => ({ ...p, message: e.target.value }))}
+                        value={addForm.notes}
+                        onChange={e => setAddForm(p => ({ ...p, notes: e.target.value }))}
                         rows={3}
                         className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                         placeholder="Any special remarks..."
@@ -343,7 +350,7 @@ export default function SchoolRequests() {
                     <div className="bg-muted/50 rounded-xl p-3 text-xs space-y-1.5 border border-border">
                       <p className="font-bold text-foreground mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Preview Summary</p>
                       <div className="flex justify-between"><span className="text-muted-foreground">School:</span><span className="font-semibold text-foreground truncate max-w-[200px]">{addForm.schoolName || '—'}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Contact:</span><span className="font-semibold text-foreground truncate max-w-[200px]">{addForm.contactName || '—'}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Contact:</span><span className="font-semibold text-foreground truncate max-w-[200px]">{addForm.ownerName || '—'}</span></div>
                       <div className="flex justify-between"><span className="text-muted-foreground">Email:</span><span className="font-semibold text-foreground truncate max-w-[200px]">{addForm.email || '—'}</span></div>
                       <div className="flex justify-between"><span className="text-muted-foreground">Plan:</span><span className="font-semibold text-primary">{addForm.requestedPlan.replace(/_/g, ' ')}</span></div>
                     </div>
@@ -396,7 +403,8 @@ export default function SchoolRequests() {
                 Are you sure you want to {reviewModal.action.toLowerCase()} the request for <span className="font-semibold text-foreground">{reviewModal.schoolName}</span>?
               </p>
               <div>
-                <label className="text-xs font-semibold text-foreground">Review Notes (Optional)</label>
+                {reviewModal.action === 'APPROVED' && <label className="mb-3 block text-xs font-semibold text-foreground">Subscription Plan<select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground"><option value="FREE_TRIAL">Free Trial</option><option value="PROFESSIONAL">Professional</option><option value="PREMIUM">Premium</option></select></label>}
+                <label className="text-xs font-semibold text-foreground">Review Notes {reviewModal.action === 'REJECTED' ? '(Required)' : '(Optional)'}</label>
                 <textarea
                   value={reviewNotes}
                   onChange={e => setReviewNotes(e.target.value)}
@@ -440,7 +448,7 @@ export default function SchoolRequests() {
               <div className="space-y-3 text-sm">
                 {[
                   ['School Name', selected.schoolName],
-                  ['Contact Person', selected.contactName],
+                  ['Contact Person', selected.ownerName],
                   ['Email', selected.email],
                   ['Phone', selected.phone || 'N/A'],
                   ['Location', [selected.city, selected.state].filter(Boolean).join(', ') || 'N/A'],
@@ -453,10 +461,10 @@ export default function SchoolRequests() {
                     <span className="text-foreground font-semibold text-right">{v}</span>
                   </div>
                 ))}
-                {selected.message && (
+                {selected.notes && (
                   <div className="pt-2">
                     <p className="text-muted-foreground font-medium mb-1">Message</p>
-                    <p className="text-foreground text-sm bg-muted rounded-xl p-3 italic">"{selected.message}"</p>
+                    <p className="text-foreground text-sm bg-muted rounded-xl p-3 italic">"{selected.notes}"</p>
                   </div>
                 )}
               </div>

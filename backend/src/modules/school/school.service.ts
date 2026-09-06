@@ -113,14 +113,15 @@ export class SchoolService {
     }
   }
 
-  async suspend(id: string, actor?: any) {
+  async suspend(id: string, actor?: any, reason?: string) {
+    if (!reason?.trim()) throw new ConflictException('A suspension reason is required');
     const school = await this.findOne(id);
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: false } });
-    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name}`);
+    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name}. Reason: ${reason.trim()}`);
     return updated;
   }
 
-  async activate(id: string, actor?: any) {
+  async activate(id: string, actor?: any, reason?: string) {
     const school = await this.findOne(id);
     const sub = school.subscription;
     if (!sub) throw new NotFoundException('Subscription not found');
@@ -128,14 +129,15 @@ export class SchoolService {
       throw new ConflictException('Cannot activate this school until its subscription is active and unexpired');
     }
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: true } });
-    await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}`);
+    await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}${reason?.trim() ? `. Reason: ${reason.trim()}` : ''}`);
     return updated;
   }
 
-  async archive(id: string, actor?: any) {
+  async archive(id: string, actor?: any, reason?: string) {
+    if (!reason?.trim()) throw new ConflictException('An archive reason is required');
     const school = await this.findOne(id);
     const updated = await this.prisma.school.update({ where: { id }, data: { deletedAt: new Date(), isActive: false } });
-    await this.log(this.prisma, actor, 'SCHOOL_ARCHIVED', id, id, `Archived ${school.name}`);
+    await this.log(this.prisma, actor, 'SCHOOL_ARCHIVED', id, id, `Archived ${school.name}. Reason: ${reason.trim()}`);
     return updated;
   }
 
@@ -179,7 +181,7 @@ export class SchoolService {
     return updated;
   }
 
-  async remove(id: string, actor?: any) { return this.archive(id, actor); }
+  async remove(id: string, actor?: any, reason?: string) { return this.archive(id, actor, reason); }
 
   private calculateEndDate(start: Date, period: string): Date {
     const normalized = (period || '').trim().toLowerCase();

@@ -119,17 +119,24 @@ model TicketReply {
 }
 
 model PlatformAnnouncement {
-  id        String   @id @default(uuid())
-  title     String
-  message   String
-  target    String   @default("ALL")
-  priority  String   @default("NORMAL")
-  isActive  Boolean  @default(true)
-  author    String   @default("Super Admin")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String    @id @default(uuid())
+  title           String
+  message         String
+  target          String    @default("ALL")
+  targetSchoolIds Json?
+  priority        String    @default("NORMAL")
+  isActive        Boolean   @default(true)
+  author          String    @default("Super Admin")
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  expiresAt       DateTime?
+  deliveredAt     DateTime?
+  deliveryCount   Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([target, isActive])
+  @@index([scheduledAt, publishedAt])
 }
 
 model User {

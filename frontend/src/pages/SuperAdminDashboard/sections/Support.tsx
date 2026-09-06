@@ -18,7 +18,7 @@ interface SupportTicket {
   message: string;
   category: string;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  status: 'OPEN' | 'IN_PROGRESS' | 'WAITING_FOR_SCHOOL' | 'RESOLVED' | 'CLOSED';
   createdAt: string;
   replies: { sender: string; message: string; time: string }[];
 }
@@ -91,6 +91,10 @@ export default function Support() {
         return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'RESOLVED':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'WAITING_FOR_SCHOOL':
+        return 'bg-violet-500/10 text-violet-300 border-violet-500/20';
+      case 'CLOSED':
+        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
       default:
         return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
     }
@@ -121,7 +125,7 @@ export default function Support() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-        {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((tab) => (
+        {['ALL', 'OPEN', 'IN_PROGRESS', 'WAITING_FOR_SCHOOL', 'RESOLVED', 'CLOSED'].map((tab) => (
           <button
             key={tab}
             onClick={() => setStatusFilter(tab)}
@@ -269,7 +273,9 @@ export default function Support() {
                       >
                         <option value="OPEN">Open</option>
                         <option value="IN_PROGRESS">In Progress</option>
+                        <option value="WAITING_FOR_SCHOOL">Waiting for School</option>
                         <option value="RESOLVED">Resolved</option>
+                        <option value="CLOSED">Closed</option>
                       </select>
                     </div>
                   </div>
