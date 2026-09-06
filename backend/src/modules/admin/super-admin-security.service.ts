@@ -12,7 +12,7 @@ export class SuperAdminSecurityService {
 
     const target = await this.prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true, name: true, role: true, isActive: true, deletedAt: true },
+      select: { id: true, name: true, email: true, role: true, isActive: true, deletedAt: true },
     });
 
     if (!target || target.deletedAt) throw new NotFoundException('User not found');
@@ -28,8 +28,8 @@ export class SuperAdminSecurityService {
     }
 
     const nextActive = !target.isActive;
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const result = await tx.user.update({
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
         where: { id: targetUserId },
         data: { isActive: nextActive },
         select: { id: true, name: true, email: true, role: true, isActive: true },
@@ -45,9 +45,7 @@ export class SuperAdminSecurityService {
         },
       });
 
-      return result;
+      return updated;
     });
-
-    return updated;
   }
 }
