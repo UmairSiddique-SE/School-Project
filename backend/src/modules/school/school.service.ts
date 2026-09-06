@@ -124,7 +124,9 @@ export class SchoolService {
     const school = await this.findOne(id);
     const sub = school.subscription;
     if (!sub) throw new NotFoundException('Subscription not found');
-    if (sub.status === 'EXPIRED' || sub.endDate < new Date()) throw new ConflictException('Cannot activate an expired subscription; renew or extend it first');
+    if (sub.status !== 'ACTIVE' || sub.endDate < new Date()) {
+      throw new ConflictException('Cannot activate this school until its subscription is active and unexpired');
+    }
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: true } });
     await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}`);
     return updated;
@@ -146,7 +148,8 @@ export class SchoolService {
     const now = new Date();
     const base = sub.endDate > now ? sub.endDate : now;
     const newEnd = new Date(base.getTime() + days * DAY_MS);
-    const updated = await this.prisma.subscription.update({ where: { schoolId: id }, data: { endDate: newEnd, status: 'ACTIVE' } });
+    const nextStatus = sub.status === 'PENDING' ? 'PENDING' : 'ACTIVE';
+    const updated = await this.prisma.subscription.update({ where: { schoolId: id }, data: { endDate: newEnd, status: nextStatus } });
     await this.log(this.prisma, actor, 'SUBSCRIPTION_EXTENDED', id, id, `Extended subscription by ${days} days`);
     return updated;
   }
@@ -197,17 +200,19 @@ export class SchoolService {
   async getSuperAdminAnalytics() {
     const now = new Date();
     const thirtyDaysLater = new Date(now.getTime() + 30 * DAY_MS);
-    const [totalSchools, activeSchools, totalStudents, totalTeachers] = await Promise.all([
+    const [totalSchools, activeSchools, totalStudents, totalTeachers, allSubs, approvedPayments, pendingPayments] = await Promise.all([
       this.prisma.school.count({ where: { deletedAt: null } }),
       this.prisma.school.count({ where: { deletedAt: null, isActive: true } }),
       this.prisma.student.count({ where: { deletedAt: null } }),
       this.prisma.teacher.count({ where: { deletedAt: null } }),
+      this.prisma.subscription.findMany({ select: { plan: true, status: true, endDate: true } }),
+      this.prisma.onboardingPayment.aggregate({ where: { status: 'APPROVED' }, _sum: { amount: true } }),
+      this.prisma.onboardingPayment.count({ where: { status: 'PENDING' } }),
     ]);
-    const allSubs = await this.prisma.subscription.findMany({ select: { plan: true, status: true, endDate: true, amount: true } });
-    const activeSubscriptions = allSubs.filter((s) => s.status === 'ACTIVE').length;
-    const trialSchools = allSubs.filter((s) => s.plan === 'FREE_TRIAL' && s.status === 'ACTIVE').length;
+    const activeSubscriptions = allSubs.filter((s) => s.status === 'ACTIVE' && s.endDate > now).length;
+    const trialSchools = allSubs.filter((s) => s.plan === 'FREE_TRIAL' && s.status === 'ACTIVE' && s.endDate > now).length;
     const expiringPlans = allSubs.filter((s) => s.endDate <= thirtyDaysLater && s.endDate >= now && s.status === 'ACTIVE').length;
-    const totalRevenue = allSubs.reduce((sum, s) => sum + (s.amount || 0), 0);
-    return { totalSchools, activeSchools, inactiveSchools: totalSchools - activeSchools, trialSchools, expiringPlans, totalStudents, totalTeachers, activeSubscriptions, totalRevenue, pendingPayments: 0 };
+    const totalRevenue = approvedPayments._sum.amount ?? 0;
+    return { totalSchools, activeSchools, inactiveSchools: totalSchools - activeSchools, trialSchools, expiringPlans, totalStudents, totalTeachers, activeSubscriptions, totalRevenue, pendingPayments };
   }
 }
