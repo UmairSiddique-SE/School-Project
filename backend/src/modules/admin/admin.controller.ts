@@ -5,6 +5,7 @@ import { AdminService } from './admin.service';
 import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { PaymentAccountingService } from './payment-accounting.service';
 import { SchoolApprovalService } from './school-approval.service';
+import { SuperAdminSecurityService } from './super-admin-security.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -26,6 +27,7 @@ export class AdminController {
     private readonly paymentLifecycleService: PaymentLifecycleService,
     private readonly paymentAccountingService: PaymentAccountingService,
     private readonly schoolApprovalService: SchoolApprovalService,
+    private readonly superAdminSecurityService: SuperAdminSecurityService,
   ) {}
 
   @Get('overview')
@@ -81,8 +83,8 @@ export class AdminController {
 
   @Get('users') getUsers(@Query('search') search?: string, @Query('role') role?: string) { return this.adminService.getPlatformUsers(search, role); }
   @Patch('users/:id/toggle-status') toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) {
-    if (user?.id && user.id === id) throw new BadRequestException('Super Admin cannot disable the account currently in use.');
-    return this.adminService.toggleUserActive(id);
+    if (!user?.id) throw new BadRequestException('Authenticated Super Admin context is required.');
+    return this.superAdminSecurityService.toggleUserActive(id, user.id);
   }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
   @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
