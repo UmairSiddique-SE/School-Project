@@ -18,15 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly prisma: PrismaService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
-    if (!secret && configService.get<string>('NODE_ENV') === 'production') {
-      throw new Error('JWT_SECRET is required in production.');
-    }
-
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: secret || 'development-only-secret',
-    });
+    if (!secret && configService.get<string>('NODE_ENV') === 'production') throw new Error('JWT_SECRET is required in production.');
+    super({ jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), ignoreExpiration: false, secretOrKey: secret || 'development-only-secret' });
   }
 
   async validate(payload: JwtPayload) {
@@ -39,25 +32,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         isActive: true,
         schoolId: true,
-        school: {
-          select: {
-            name: true,
-            slug: true,
-            isActive: true,
-            subscription: { select: { plan: true, status: true } },
-          },
-        },
+        school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } },
       },
     });
+    if (!user || !user.isActive || (user.school && !user.school.isActive)) throw new UnauthorizedException('User not found or inactive');
 
-    if (!user || !user.isActive || (user.school && !user.school.isActive)) {
-      throw new UnauthorizedException('User not found or inactive');
-    }
+    const subscription = user.school?.subscription;
+    const now = new Date();
+    const activationStatus = !user.school
+      ? 'ACTIVE'
+      : subscription?.status === 'ACTIVE' && subscription.endDate > now
+        ? 'ACTIVE'
+        : subscription?.status === 'PENDING'
+          ? 'PAYMENT_PENDING'
+          : 'EXPIRED';
 
-    return {
-      ...user,
-      activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING',
-      plan: user.school?.subscription?.plan,
-    };
+    return { ...user, activationStatus, plan: subscription?.plan };
   }
 }
