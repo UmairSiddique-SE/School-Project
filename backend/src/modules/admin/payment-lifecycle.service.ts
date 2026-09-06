@@ -19,7 +19,7 @@ export class PaymentLifecycleService {
 
       const plan = await tx.platformPlan.findUnique({ where: { planKey: payment.plan } });
       if (!plan || !plan.isActive) throw new BadRequestException('The selected subscription plan is unavailable');
-      if (payment.amount !== plan.price) throw new BadRequestException(`Payment amount does not match the current ${plan.name} plan price`);
+      if (Number(payment.amount) !== Number(plan.price)) throw new BadRequestException(`Payment amount does not match the current ${plan.name} plan price`);
 
       const subscription = await tx.subscription.findUnique({ where: { schoolId: payment.schoolId } });
       if (!subscription) throw new NotFoundException('School subscription not found');
@@ -48,9 +48,12 @@ export class PaymentLifecycleService {
       if (actor?.id) {
         await tx.auditLog.create({
           data: {
-            action: 'PAYMENT_APPROVED', entity: 'OnboardingPayment', entityId: id,
+            action: 'PAYMENT_APPROVED',
+            entity: 'OnboardingPayment',
+            entityId: id,
             after: `${activeRenewal ? 'Renewed' : 'Activated'} ${plan.name} payment of ${plan.currency} ${plan.price} for ${payment.school.name} until ${endDate.toISOString().slice(0, 10)}`,
-            schoolId: payment.schoolId, userId: actor.id,
+            schoolId: payment.schoolId,
+            userId: actor.id,
           },
         });
       }
@@ -59,9 +62,11 @@ export class PaymentLifecycleService {
       if (users.length) {
         await tx.notification.createMany({
           data: users.map((user) => ({
-            type: 'PAYMENT', title: activeRenewal ? 'Subscription renewed' : 'Payment approved',
+            type: 'PAYMENT',
+            title: activeRenewal ? 'Subscription renewed' : 'Payment approved',
             message: `Your ${plan.name} subscription is active until ${endDate.toISOString().slice(0, 10)}.`,
-            schoolId: payment.schoolId, userId: user.id,
+            schoolId: payment.schoolId,
+            userId: user.id,
           })),
         });
       }
@@ -81,20 +86,27 @@ export class PaymentLifecycleService {
       if (rejected.count !== 1) throw new BadRequestException('Payment was already reviewed');
 
       if (actor?.id) {
-        await tx.auditLog.create({ data: {
-          action: 'PAYMENT_REJECTED', entity: 'OnboardingPayment', entityId: id,
-          after: `Rejected ${payment.amount} ${payment.school.name} payment for ${payment.plan}`,
-          schoolId: payment.schoolId, userId: actor.id,
-        } });
+        await tx.auditLog.create({
+          data: {
+            action: 'PAYMENT_REJECTED',
+            entity: 'OnboardingPayment',
+            entityId: id,
+            after: `Rejected ${payment.amount} ${payment.school.name} payment for ${payment.plan}`,
+            schoolId: payment.schoolId,
+            userId: actor.id,
+          },
+        });
       }
 
       const users = await tx.user.findMany({ where: { schoolId: payment.schoolId, isActive: true }, select: { id: true } });
       if (users.length) {
         await tx.notification.createMany({
           data: users.map((user) => ({
-            type: 'PAYMENT', title: 'Payment rejected',
+            type: 'PAYMENT',
+            title: 'Payment rejected',
             message: `Your ${payment.plan} subscription payment was rejected. Please review the payment details and submit a new payment.`,
-            schoolId: payment.schoolId, userId: user.id,
+            schoolId: payment.schoolId,
+            userId: user.id,
           })),
         });
       }
@@ -104,13 +116,36 @@ export class PaymentLifecycleService {
   }
 
   private calculateEndDate(start: Date, period: string): Date {
-    const normalized = period.trim().toLowerCase();
+    const normalized = (period || '').trim().toLowerCase();
     if (normalized === 'forever') return new Date(FOREVER_DATE);
+
+    // Accept both human-friendly catalogue values such as "per month"
+    // and explicit periods such as "1 month" / "30 days".
+    if (normalized === 'per month' || normalized === 'monthly' || normalized === 'month') {
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+      return end;
+    }
+
     const monthMatch = normalized.match(/(\d+)\s*month/);
-    if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
+    if (monthMatch) {
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + Number(monthMatch[1]));
+      return end;
+    }
+
     const dayMatch = normalized.match(/(\d+)\s*day/);
     if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
-    if (normalized.includes('year')) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1)); return end; }
+
+    if (normalized.includes('year')) {
+      const end = new Date(start);
+      end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1));
+      return end;
+    }
+
+    // Free Trial is intentionally one day in the current launch catalogue.
+    if (normalized === 'free trial' || normalized === 'trial') return new Date(start.getTime() + DAY_MS);
+
     throw new BadRequestException('Unsupported subscription period');
   }
 }
