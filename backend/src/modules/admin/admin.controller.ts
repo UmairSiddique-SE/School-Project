@@ -4,6 +4,7 @@ import {
 import { AdminService } from './admin.service';
 import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { PaymentAccountingService } from './payment-accounting.service';
+import { ManualPaymentService } from './manual-payment.service';
 import { SchoolApprovalService } from './school-approval.service';
 import { SuperAdminSecurityService } from './super-admin-security.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -26,6 +27,7 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly paymentLifecycleService: PaymentLifecycleService,
     private readonly paymentAccountingService: PaymentAccountingService,
+    private readonly manualPaymentService: ManualPaymentService,
     private readonly schoolApprovalService: SchoolApprovalService,
     private readonly superAdminSecurityService: SuperAdminSecurityService,
   ) {}
@@ -66,9 +68,7 @@ export class AdminController {
     const parsedLimit = limit === undefined ? undefined : Number.parseInt(limit, 10);
     const invalidPage = page !== undefined && (parsedPage === undefined || !Number.isInteger(parsedPage) || parsedPage < 1);
     const invalidLimit = limit !== undefined && (parsedLimit === undefined || !Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100);
-    if (invalidPage || invalidLimit) {
-      throw new BadRequestException('Audit log page must be >= 1 and limit must be between 1 and 100.');
-    }
+    if (invalidPage || invalidLimit) throw new BadRequestException('Audit log page must be >= 1 and limit must be between 1 and 100.');
     return this.adminService.getAuditLogs(action, search?.trim(), parsedPage, parsedLimit);
   }
 
@@ -77,6 +77,8 @@ export class AdminController {
     return this.paymentAccountingService.getPayments({ page: page ? parseInt(page, 10) : undefined, limit: limit ? parseInt(limit, 10) : undefined, status, type, search, date });
   }
 
+  @Get('payments/manual-options') getManualPaymentOptions() { return this.manualPaymentService.getOptions(); }
+  @Post('payments/manual') createManualPayment(@Body() dto: any, @CurrentUser() user: any) { return this.manualPaymentService.create(dto, user); }
   @Patch('payments/:id/approve') approvePayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.approvePayment(id, user); }
   @Patch('payments/:id/reject') rejectPayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.rejectPayment(id, user); }
 
