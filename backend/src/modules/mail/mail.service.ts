@@ -74,4 +74,16 @@ export class MailService {
       return false;
     }
   }
+
+  async sendTestEmail(to: string, subject: string, body: string) {
+    const info = await this.transporter.sendMail({
+      from: '"EduSphere" <noreply@edusphere.com>',
+      to,
+      subject,
+      text: body,
+      html: `<div style="font-family:Arial,sans-serif;white-space:pre-wrap">${body.replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[character] || character))}</div>`,
+    });
+    this.logger.log(`Test email sent to ${to}. Message ID: ${info.messageId}`);
+    return { messageId: info.messageId };
+  }
 }

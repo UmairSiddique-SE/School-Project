@@ -111,6 +111,14 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   async createEmailTemplate(data: any) { return this.prisma.emailTemplate.create({ data: { name: data.name, subject: data.subject, body: data.body, category: data.category || 'General', variables: data.variables ? JSON.stringify(data.variables) : null } }); }
   async updateEmailTemplate(id: string, data: any) { return this.prisma.emailTemplate.update({ where: { id }, data: { name: data.name, subject: data.subject, body: data.body, category: data.category, variables: data.variables ? JSON.stringify(data.variables) : undefined } }); }
   async deleteEmailTemplate(id: string) { return this.prisma.emailTemplate.delete({ where: { id } }); }
+  async sendTemplateTest(id: string, to: string, actor?: any) {
+    const template = await this.prisma.emailTemplate.findUnique({ where: { id } });
+    if (!template) throw new NotFoundException('Email template not found');
+    if (!/^\S+@\S+\.\S+$/.test(to)) throw new BadRequestException('A valid recipient email is required');
+    const result = await this.mailService.sendTestEmail(to, `[TEST] ${template.subject}`, template.body);
+    if (actor?.id) await this.prisma.auditLog.create({ data: { action: 'EMAIL_TEMPLATE_TEST_SENT', entity: 'EmailTemplate', entityId: id, userId: actor.id, after: `Sent test of ${template.name} to ${to}` } });
+    return result;
+  }
 
   async getSchoolRequests(status?: string) { const where = status && status !== 'ALL' ? { status } : {}; return this.prisma.schoolRequest.findMany({ where, orderBy: { createdAt: 'desc' } }); }
   async createSchoolRequest(data: any) { return this.prisma.schoolRequest.create({ data: { schoolName: data.schoolName, ownerName: data.ownerName, email: data.email, phone: data.phone || null, city: data.city || null, address: data.address || null, requestedPlan: data.requestedPlan || 'FREE_TRIAL', notes: data.notes || null } }); }

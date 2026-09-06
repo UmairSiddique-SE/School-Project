@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Plus, Edit2, X, Eye, Trash2, Loader2, Copy, RefreshCw } from 'lucide-react';
+import { Mail, Plus, Edit2, X, Eye, Trash2, Loader2, Copy, RefreshCw, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
 
@@ -88,6 +88,17 @@ export default function EmailTemplates() {
   const handleCopy = (body: string) => {
     navigator.clipboard.writeText(body);
     toast.success('Template copied to clipboard');
+  };
+
+  const handleTestSend = async (template: Template) => {
+    const to = window.prompt('Send a test email to:');
+    if (!to) return;
+    try {
+      await apiClient.post(`/admin/email-templates/${template.id}/test`, { to: to.trim() });
+      toast.success(`Test email sent to ${to.trim()}`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Test email could not be sent');
+    }
   };
 
   return (
@@ -220,6 +231,7 @@ export default function EmailTemplates() {
                 <p className="font-bold text-foreground text-sm mb-4">{selected.subject}</p>
                 <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed">{selected.body}</pre>
               </div>
+              <button onClick={() => void handleTestSend(selected)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"><Send size={13} />Send Test Email</button>
             </motion.div>
           </motion.div>
         )}

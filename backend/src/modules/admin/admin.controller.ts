@@ -52,6 +52,7 @@ export class AdminController {
   @Post('email-templates') createEmailTemplate(@Body() dto: any) { return this.adminService.createEmailTemplate(dto); }
   @Put('email-templates/:id') updateEmailTemplate(@Param('id') id: string, @Body() dto: any) { return this.adminService.updateEmailTemplate(id, dto); }
   @Delete('email-templates/:id') deleteEmailTemplate(@Param('id') id: string) { return this.adminService.deleteEmailTemplate(id); }
+  @Post('email-templates/:id/test') testEmailTemplate(@Param('id') id: string, @Body() dto: { to: string }, @CurrentUser() user: any) { return this.adminService.sendTemplateTest(id, dto.to, user); }
   @Get('requests') getSchoolRequests(@Query('status') status?: string) { return this.adminService.getSchoolRequests(status); }
   @Post('requests') createSchoolRequest(@Body() dto: any) { return this.adminService.createSchoolRequest(dto); }
 
