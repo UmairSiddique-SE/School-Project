@@ -67,20 +67,24 @@ export class AuthService {
     }
     if (!user) throw new UnauthorizedException('No account found for this Login ID');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
-    if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended or awaiting payment approval');
+    if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended');
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
-    if (user.school?.subscription && (user.school.subscription.status === 'EXPIRED' || user.school.subscription.endDate < new Date())) throw new UnauthorizedException('Your subscription has expired. Please renew your plan.');
+    const subscription = user.school?.subscription;
+    if (subscription && subscription.status !== 'PENDING' && (subscription.status === 'EXPIRED' || subscription.endDate < new Date())) throw new UnauthorizedException('Your subscription has expired. Please renew your plan.');
     const now = new Date();
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
     const tokens = await this.generateTokens(user.id, user.email, user.role, user.schoolId ?? undefined);
-    return { user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING', plan: user.school?.subscription?.plan, phone: user.phone, lastLoginAt: now }, ...tokens };
+    const activationStatus = user.school ? (subscription?.status === 'ACTIVE' && subscription.endDate > now ? 'ACTIVE' : 'PAYMENT_PENDING') : 'ACTIVE';
+    return { user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus, plan: subscription?.plan, phone: user.phone, lastLoginAt: now }, ...tokens };
   }
 
   async refreshToken(token: string) {
     const stored = await this.prisma.refreshToken.findUnique({ where: { token }, include: { user: { include: { school: { select: { isActive: true, subscription: { select: { status: true, endDate: true } } } } } } } });
     if (!stored || stored.revokedAt || stored.expiresAt < new Date()) throw new UnauthorizedException('Invalid or expired refresh token');
-    if (!stored.user.isActive || (stored.user.school && (!stored.user.school.isActive || stored.user.school.subscription?.status === 'EXPIRED' || (stored.user.school.subscription?.endDate && stored.user.school.subscription.endDate < new Date())))) throw new UnauthorizedException('Account or subscription is inactive');
+    const subscription = stored.user.school?.subscription;
+    const expired = subscription && subscription.status !== 'PENDING' && (subscription.status === 'EXPIRED' || subscription.endDate < new Date());
+    if (!stored.user.isActive || stored.user.school && (!stored.user.school.isActive || expired)) throw new UnauthorizedException('Account or subscription is inactive');
     await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } });
     return this.generateTokens(stored.user.id, stored.user.email, stored.user.role, stored.user.schoolId ?? undefined);
   }
@@ -115,10 +119,11 @@ export class AuthService {
       this.prisma.user.update({ where: { id: dto.userId }, data: { emailVerified: true } }),
       this.prisma.emailVerification.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
     ]);
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true } } } } } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, include: { school: { select: { name: true, slug: true, isActive: true, subscription: { select: { plan: true, status: true, endDate: true } } } } } });
     if (!user) throw new BadRequestException('User account not found');
     const tokens = await this.generateTokens(user.id, user.email, user.role, user.schoolId ?? undefined);
-    return { message: 'Email verified successfully', user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus: user.school?.isActive ? 'ACTIVE' : 'PAYMENT_PENDING', plan: user.school?.subscription?.plan }, ...tokens };
+    const activationStatus = user.school ? (user.school.subscription?.status === 'ACTIVE' && user.school.subscription.endDate > new Date() ? 'ACTIVE' : 'PAYMENT_PENDING') : 'ACTIVE';
+    return { message: 'Email verified successfully', user: { id: user.id, name: user.name, email: user.email, role: user.role, schoolId: user.schoolId, schoolName: user.school?.name, schoolSlug: user.school?.slug, activationStatus, plan: user.school?.subscription?.plan }, ...tokens };
   }
 
   async submitOnboardingPayment(dto: OnboardingPaymentDto, user: Pick<JwtPayload, 'schoolId' | 'role'>) {
