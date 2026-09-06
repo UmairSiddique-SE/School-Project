@@ -49,8 +49,8 @@
 .bg-violet-700 { background-color: rgb(15 118 110) !important; }
 .text-violet-400 { color: rgb(45 212 191) !important; }
 .text-violet-500 { color: rgb(20 184 166) !important; }
-.border-violet-500\\/25 { border-color: rgb(20 184 166 / .25) !important; }
-.border-violet-500\\/30 { border-color: rgb(20 184 166 / .30) !important; }
+.border-violet-500\/25 { border-color: rgb(20 184 166 / .25) !important; }
+.border-violet-500\/30 { border-color: rgb(20 184 166 / .30) !important; }
 .from-violet-600 { --tw-gradient-from: #0d9488 !important; }
 .from-violet-500 { --tw-gradient-from: #14b8a6 !important; }
 .to-indigo-600 { --tw-gradient-to: #0891b2 !important; }
