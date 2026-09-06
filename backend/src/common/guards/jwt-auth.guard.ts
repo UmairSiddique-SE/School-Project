@@ -86,11 +86,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return true;
   }
 
-  handleRequest(
+  handleRequest<TUser = AuthenticatedUser>(
     err: unknown,
     user: AuthenticatedUser | undefined,
     info: unknown,
-  ): AuthenticatedUser {
+    _context?: ExecutionContext,
+    _status?: unknown,
+  ): TUser {
     void info;
     if (err || !user) {
       if (err instanceof Error) throw err;
@@ -98,6 +100,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         'Authentication credentials missing or invalid',
       );
     }
-    return user;
+    return user as TUser;
   }
 }
