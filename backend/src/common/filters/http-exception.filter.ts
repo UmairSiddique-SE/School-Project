@@ -39,20 +39,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       message = exception.message;
-      // In production, we mask raw database / server errors
       if (process.env.NODE_ENV === 'production') {
         message = 'A database or internal system error occurred';
       }
     }
 
+    const logMessage =
+      typeof message === 'object' && message !== null
+        ? JSON.stringify(message)
+        : typeof message === 'string'
+          ? message
+          : 'Unknown error';
+
     this.logger.error(
-      `[${request.method}] ${request.url} - Status: ${status} - Message: ${
-        typeof message === 'object' ? JSON.stringify(message) : String(message)
-      }`,
+      `[${request.method}] ${request.url} - Status: ${status} - Message: ${logMessage}`,
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    const normalizedMessage = Array.isArray(message) ? message[0] : message;
+    const normalizedMessage = Array.isArray(message)
+      ? message[0]
+      : typeof message === 'string'
+        ? message
+        : 'Internal server error';
 
     response.status(status).json({
       success: false,
