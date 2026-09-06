@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Download, FileText, Legend, Loader2, Pie, PieChart, RefreshCw, ResponsiveContainer, School, TrendingUp, Users, DollarSign, BarChart2, CheckCircle, Tooltip, XAxis, YAxis, type LucideIcon } from 'lucide-react';
+import { Download, FileText, Loader2, RefreshCw, School, TrendingUp, Users, DollarSign, BarChart2, CheckCircle, type LucideIcon } from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
 
