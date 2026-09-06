@@ -89,8 +89,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(
     err: unknown,
     user: AuthenticatedUser | undefined,
-    _info: unknown,
+    info: unknown,
   ): AuthenticatedUser {
+    void info;
     if (err || !user) {
       if (err instanceof Error) throw err;
       throw new UnauthorizedException(
