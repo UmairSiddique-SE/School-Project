@@ -19,10 +19,15 @@ export class MailService {
     });
   }
 
+  private getSender() {
+    const sender = this.configService.get<string>('SMTP_USER') || 'noreply@edusphere.com';
+    return `"EduSphere" <${sender}>`;
+  }
+
   async sendPasswordReset(to: string, token: string) {
     const resetLink = `${this.configService.get('FRONTEND_URL') || 'http://localhost:5173'}/reset-password?token=${token}`;
     const mailOptions = {
-      from: '"EduSphere" <noreply@edusphere.com>',
+      from: this.getSender(),
       to,
       subject: 'EduSphere — Password Reset Request',
       text: `You requested a password reset. Click the following link to reset your password: ${resetLink}`,
@@ -40,7 +45,7 @@ export class MailService {
 
   async sendEmailVerification(to: string, otp: string) {
     const mailOptions = {
-      from: '"EduSphere" <noreply@edusphere.com>',
+      from: this.getSender(),
       to,
       subject: 'EduSphere — Verify Your Email',
       text: `Your EduSphere verification OTP is: ${otp}. This code expires in 15 minutes.`,
@@ -53,7 +58,7 @@ export class MailService {
       return true;
     } catch (error: any) {
       this.logger.error(`Failed to send EduSphere verification email to ${to}: ${error.message}`);
-      throw new ServiceUnavailableException('Unable to send verification email. Please check the email address and try again.');
+      throw new ServiceUnavailableException('Unable to send verification email. Please try again later.');
     }
   }
 
@@ -61,7 +66,7 @@ export class MailService {
     const appUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const loginUrl = `${appUrl}/${details.schoolSlug}/login`;
     const mailOptions = {
-      from: '"EduSphere" <noreply@edusphere.com>',
+      from: this.getSender(),
       to,
       subject: `Your ${details.schoolName} EduSphere account is ready`,
       text: `Hello ${details.adminName},\n\nYour school account has been approved.\n\nLogin URL: ${loginUrl}\nEmail: ${to}\nTemporary password: ${details.temporaryPassword}\nPlan: ${details.plan}\n\nPlease change your password after signing in.`,
