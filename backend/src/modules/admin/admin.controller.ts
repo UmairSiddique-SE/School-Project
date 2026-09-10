@@ -98,5 +98,5 @@ export class AdminController {
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
   @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
   @Get('announcements') getAnnouncements() { return this.adminService.getAnnouncements(); }
-  @Post('announcements') createAnnouncement(data: { title: string; message: string; target?: string; priority?: string }) { return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }); }
+  @Post('announcements') createAnnouncement(@Body() data: { title: string; message: string; target?: string; priority?: string }) { return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }); }
 }
