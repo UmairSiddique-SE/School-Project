@@ -13,6 +13,14 @@ apiClient.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (typeof window !== "undefined" && String(config.url || "").replace(/^\//, "").startsWith("auth/register-school")) {
+    const selectedPlan = window.sessionStorage.getItem("edusphere_registration_plan");
+    if (selectedPlan && config.data && typeof config.data === "object") {
+      config.data = { ...config.data, requestedPlan: selectedPlan };
+    }
+  }
+
   return config;
 });
 

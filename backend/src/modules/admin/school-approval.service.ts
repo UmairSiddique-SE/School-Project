@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../database/prisma.service';
@@ -15,7 +15,6 @@ export class SchoolApprovalService {
     id: string,
     action: 'APPROVED' | 'REJECTED',
     reviewNotes?: string,
-    selectedPlan?: string,
     reviewedBy?: string,
     reviewerUserId?: string,
   ) {
@@ -24,7 +23,6 @@ export class SchoolApprovalService {
     if (request.status !== 'PENDING') throw new ConflictException('This request has already been reviewed');
 
     if (action === 'REJECTED') {
-      if (!reviewNotes?.trim()) throw new BadRequestException('A rejection reason is required');
       return this.prisma.$transaction(async (tx) => {
         const updated = await tx.schoolRequest.update({
           where: { id },
@@ -68,7 +66,7 @@ export class SchoolApprovalService {
     // Generate a cryptographically secure temporary password; never use Math.random() for credentials.
     const tempPassword = randomBytes(9).toString('base64url');
     const passwordHash = await bcrypt.hash(tempPassword, 12);
-    const planKey = selectedPlan?.trim() || request.requestedPlan || 'FREE_TRIAL';
+    const planKey = request.requestedPlan || 'FREE_TRIAL';
     const plan = await this.prisma.platformPlan.findUnique({ where: { planKey } });
     if (!plan || !plan.isActive) throw new ConflictException('The requested subscription plan is unavailable');
 
@@ -138,7 +136,7 @@ export class SchoolApprovalService {
             action: 'CREATE',
             entity: 'School',
             entityId: school.id,
-            after: `Approved registration request for ${request.schoolName} on ${plan.name}. Created school ID: ${school.id}. ${isFreeTrial ? 'Free trial active.' : 'Paid plan awaiting payment approval.'}`,
+            after: `Approved registration request for ${request.schoolName}. Created school ID: ${school.id}. ${isFreeTrial ? 'Free trial active.' : 'Paid plan awaiting payment approval.'}`,
             userId: finalReviewerId,
           },
         });

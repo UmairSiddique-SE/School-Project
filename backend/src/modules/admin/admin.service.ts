@@ -1,7 +1,5 @@
 import {
   Injectable,
-  OnModuleDestroy,
-  OnModuleInit,
   NotFoundException,
   ConflictException,
   BadRequestException,
@@ -53,17 +51,8 @@ const DEFAULT_SETTINGS = [
 ];
 
 @Injectable()
-export class AdminService implements OnModuleInit, OnModuleDestroy {
-  private announcementTimer?: ReturnType<typeof setInterval>;
-
+export class AdminService {
   constructor(private readonly prisma: PrismaService, private readonly mailService: MailService) {}
-
-  onModuleInit() {
-    void this.processDueAnnouncements();
-    this.announcementTimer = setInterval(() => void this.processDueAnnouncements(), 60_000);
-  }
-
-  onModuleDestroy() { if (this.announcementTimer) clearInterval(this.announcementTimer); }
 
   async seedDefaults() {
     if ((await this.prisma.platformPlan.count()) === 0) for (const plan of DEFAULT_PLANS) await this.prisma.platformPlan.create({ data: plan });
@@ -111,14 +100,6 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   async createEmailTemplate(data: any) { return this.prisma.emailTemplate.create({ data: { name: data.name, subject: data.subject, body: data.body, category: data.category || 'General', variables: data.variables ? JSON.stringify(data.variables) : null } }); }
   async updateEmailTemplate(id: string, data: any) { return this.prisma.emailTemplate.update({ where: { id }, data: { name: data.name, subject: data.subject, body: data.body, category: data.category, variables: data.variables ? JSON.stringify(data.variables) : undefined } }); }
   async deleteEmailTemplate(id: string) { return this.prisma.emailTemplate.delete({ where: { id } }); }
-  async sendTemplateTest(id: string, to: string, actor?: any) {
-    const template = await this.prisma.emailTemplate.findUnique({ where: { id } });
-    if (!template) throw new NotFoundException('Email template not found');
-    if (!/^\S+@\S+\.\S+$/.test(to)) throw new BadRequestException('A valid recipient email is required');
-    const result = await this.mailService.sendTestEmail(to, `[TEST] ${template.subject}`, template.body);
-    if (actor?.id) await this.prisma.auditLog.create({ data: { action: 'EMAIL_TEMPLATE_TEST_SENT', entity: 'EmailTemplate', entityId: id, userId: actor.id, after: `Sent test of ${template.name} to ${to}` } });
-    return result;
-  }
 
   async getSchoolRequests(status?: string) { const where = status && status !== 'ALL' ? { status } : {}; return this.prisma.schoolRequest.findMany({ where, orderBy: { createdAt: 'desc' } }); }
   async createSchoolRequest(data: any) { return this.prisma.schoolRequest.create({ data: { schoolName: data.schoolName, ownerName: data.ownerName, email: data.email, phone: data.phone || null, city: data.city || null, address: data.address || null, requestedPlan: data.requestedPlan || 'FREE_TRIAL', notes: data.notes || null } }); }
@@ -163,62 +144,7 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   async getPlatformUsers(search?: string, role?: string) { const where: any = { deletedAt: null }; if (role && role !== 'ALL') where.role = role; if (search) where.OR = [{ name: { contains: search } }, { email: { contains: search } }, { school: { name: { contains: search } } }]; return this.prisma.user.findMany({ where, orderBy: { createdAt: 'desc' }, take: 200, select: { id: true, name: true, email: true, role: true, phone: true, isActive: true, lastLoginAt: true, createdAt: true, school: { select: { id: true, name: true, slug: true } } } }); }
   async toggleUserActive(id: string) { const user = await this.prisma.user.findUnique({ where: { id } }); if (!user) throw new NotFoundException('User not found'); return this.prisma.user.update({ where: { id }, data: { isActive: !user.isActive } }); }
   async getSupportTickets() { const tickets = await this.prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, include: { replies: { orderBy: { createdAt: 'asc' } } } }); return tickets.map((ticket) => ({ ...ticket, replies: ticket.replies.map((reply) => ({ sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) })); }
-  async updateSupportTicket(id: string, status: string, replyMessage?: string, actor?: any) {
-    const allowedStatuses = ['OPEN', 'IN_PROGRESS', 'WAITING_FOR_SCHOOL', 'RESOLVED', 'CLOSED'];
-    if (!allowedStatuses.includes(status)) throw new BadRequestException('Unsupported ticket status');
-    const ticket = await this.prisma.supportTicket.findUnique({ where: { id } });
-    if (!ticket) throw new NotFoundException('Ticket not found');
-    const reply = replyMessage?.trim();
-    await this.prisma.$transaction(async (tx) => {
-      await tx.supportTicket.update({ where: { id }, data: { status } });
-      if (reply) await tx.ticketReply.create({ data: { ticketId: id, sender: actor?.name || 'Super Admin', message: reply } });
-      if (actor?.id) await tx.auditLog.create({ data: { action: 'SUPPORT_TICKET_UPDATED', entity: 'SupportTicket', entityId: id, userId: actor.id, after: `Ticket ${ticket.ticketNo} moved from ${ticket.status} to ${status}${reply ? ' with a reply' : ''}` } });
-    });
-    const updated = await this.prisma.supportTicket.findUnique({ where: { id }, include: { replies: { orderBy: { createdAt: 'asc' } } } });
-    return updated ? { ...updated, replies: updated.replies.map((reply) => ({ sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) } : updated;
-  }
+  async updateSupportTicket(id: string, status: string, replyMessage?: string) { const ticket = await this.prisma.supportTicket.findUnique({ where: { id } }); if (!ticket) throw new NotFoundException('Ticket not found'); await this.prisma.$transaction(async (tx) => { await tx.supportTicket.update({ where: { id }, data: { status } }); if (replyMessage) await tx.ticketReply.create({ data: { ticketId: id, sender: 'Super Admin', message: replyMessage } }); }); const updated = await this.prisma.supportTicket.findUnique({ where: { id }, include: { replies: { orderBy: { createdAt: 'asc' } } } }); return updated ? { ...updated, replies: updated.replies.map((reply) => ({ sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) } : updated; }
   async getAnnouncements() { return this.prisma.platformAnnouncement.findMany({ orderBy: { createdAt: 'desc' } }); }
-
-  async createAnnouncement(data: { title: string; message: string; target?: string; priority?: string; targetSchoolIds?: string[]; scheduledAt?: string; expiresAt?: string }, author = 'Super Admin') {
-    const title = data.title?.trim();
-    const message = data.message?.trim();
-    if (!title || !message) throw new BadRequestException('Announcement title and message are required');
-    const target = data.target || 'ALL';
-    if (!['ALL', 'PAID', 'TRIAL', 'SELECTED'].includes(target)) throw new BadRequestException('Unsupported announcement target');
-    const targetSchoolIds = [...new Set((data.targetSchoolIds || []).filter(Boolean))];
-    if (target === 'SELECTED' && targetSchoolIds.length === 0) throw new BadRequestException('Select at least one school');
-    const scheduledAt = data.scheduledAt ? new Date(data.scheduledAt) : null;
-    const expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
-    if (scheduledAt && Number.isNaN(scheduledAt.getTime())) throw new BadRequestException('Invalid scheduled time');
-    if (expiresAt && Number.isNaN(expiresAt.getTime())) throw new BadRequestException('Invalid expiry time');
-    if (scheduledAt && expiresAt && expiresAt <= scheduledAt) throw new BadRequestException('Expiry must be after the scheduled time');
-    const isScheduled = !!scheduledAt && scheduledAt > new Date();
-    const announcement = await this.prisma.platformAnnouncement.create({ data: { title, message, target, targetSchoolIds: targetSchoolIds.length ? targetSchoolIds : undefined, priority: data.priority || 'NORMAL', author, scheduledAt: scheduledAt || undefined, expiresAt: expiresAt || undefined, isActive: !isScheduled } });
-    return isScheduled ? announcement : this.publishAnnouncement(announcement.id);
-  }
-
-  async processDueAnnouncements() {
-    const due = await this.prisma.platformAnnouncement.findMany({ where: { scheduledAt: { lte: new Date() }, publishedAt: null }, select: { id: true } });
-    await Promise.all(due.map((announcement) => this.publishAnnouncement(announcement.id)));
-  }
-
-  async publishAnnouncement(id: string) {
-    return this.prisma.$transaction(async (tx) => {
-      const announcement = await tx.platformAnnouncement.findUnique({ where: { id } });
-      if (!announcement) throw new NotFoundException('Announcement not found');
-      if (announcement.publishedAt) return announcement;
-      if (announcement.expiresAt && announcement.expiresAt <= new Date()) {
-        return tx.platformAnnouncement.update({ where: { id }, data: { isActive: false, publishedAt: new Date(), deliveredAt: new Date() } });
-      }
-      const targetIds = Array.isArray(announcement.targetSchoolIds) ? announcement.targetSchoolIds.filter((id): id is string => typeof id === 'string') : [];
-      const where: any = { isActive: true, deletedAt: null };
-      if (announcement.target === 'PAID') where.subscription = { plan: { not: 'FREE_TRIAL' }, status: 'ACTIVE' };
-      if (announcement.target === 'TRIAL') where.subscription = { plan: 'FREE_TRIAL', status: 'ACTIVE' };
-      if (announcement.target === 'SELECTED') where.id = { in: targetIds };
-      const schools = await tx.school.findMany({ where, select: { id: true, users: { where: { isActive: true }, select: { id: true } } } });
-      const notifications = schools.flatMap((school) => school.users.map((user) => ({ type: 'ANNOUNCEMENT', title: announcement.title, message: announcement.message, schoolId: school.id, userId: user.id })));
-      if (notifications.length) await tx.notification.createMany({ data: notifications });
-      return tx.platformAnnouncement.update({ where: { id }, data: { isActive: true, publishedAt: new Date(), deliveredAt: new Date(), deliveryCount: notifications.length } });
-    });
-  }
+  async createAnnouncement(data: { title: string; message: string; target?: string; priority?: string }) { const target = data.target || 'ALL'; return this.prisma.$transaction(async (tx) => { const announcement = await tx.platformAnnouncement.create({ data: { title: data.title.trim(), message: data.message.trim(), target, priority: data.priority || 'NORMAL' } }); const schools = await tx.school.findMany({ where: { isActive: true, ...(target === 'PAID' ? { subscription: { plan: { not: 'FREE_TRIAL' } } } : {}) }, select: { id: true, users: { where: { isActive: true }, select: { id: true } } } }); const notifications = schools.flatMap((school) => school.users.map((user) => ({ type: 'ANNOUNCEMENT', title: announcement.title, message: announcement.message, schoolId: school.id, userId: user.id }))); if (notifications.length) await tx.notification.createMany({ data: notifications }); return announcement; }); }
 }

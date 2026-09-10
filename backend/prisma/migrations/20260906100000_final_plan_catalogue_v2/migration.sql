@@ -4,7 +4,7 @@
 
 INSERT INTO "PlatformPlan" ("planKey", "name", "price", "currency", "period", "maxStudents", "maxTeachers", "storageMb", "supportTier", "features", "isActive", "updatedAt")
 VALUES
-('FREE_TRIAL', 'Free Trial', 0, 'PKR', 'free trial', 20, 10, 1024, 'Email', '["Up to 20 students","Up to 10 staff","1 campus","Attendance & fees","Basic reports","Email support"]', true, CURRENT_TIMESTAMP),
+('FREE_TRIAL', 'Free Trial', 0, 'PKR', 'free trial', 20, 15, 1024, 'Email', '["Up to 20 students","Up to 15 staff","1 campus","Attendance & fees","Basic reports","Email support"]', true, CURRENT_TIMESTAMP),
 ('PROFESSIONAL', 'Professional', 3000, 'PKR', 'per month', 500, 999999, 10240, 'Email + Chat', '["Up to 500 students","Unlimited staff","2 campuses","10 GB storage","Full reports","Fee management","Exams & results","Email + Chat support"]', true, CURRENT_TIMESTAMP),
 ('PREMIUM', 'Premium', 5000, 'PKR', 'per month', 999999, 999999, 512000, 'Dedicated', '["Unlimited students","Unlimited staff","All modules","500 GB storage","School website","Custom domain","Advanced reports","Dedicated support"]', true, CURRENT_TIMESTAMP)
 ON CONFLICT ("planKey") DO UPDATE SET
