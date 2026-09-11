@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight, BarChart3, Check, ChevronDown, Crown, GraduationCap,
-  Headphones, Menu, Moon, School, Search, ShieldCheck, Sparkles, Star,
+  Menu, Moon, School, Search, ShieldCheck, Star,
   Sun, Users, WalletCards, X, Zap,
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
@@ -102,7 +102,6 @@ function Navbar({ onSearch }: { onSearch: () => void }) {
 }
 
 function Hero({ onSearch }: { onSearch: () => void }) {
-  const navigate = useNavigate();
   const reveal = useReveal();
   return <section className="relative flex min-h-screen items-center overflow-hidden px-5 pb-20 pt-32">
     <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.15fr_.85fr]">
