@@ -15,13 +15,14 @@ export class PublicService {
     }));
   }
 
-  /** Only active, non-deleted schools are discoverable from the landing page. */
+  /**
+   * School-login discovery is intentionally DB-only.
+   * Registered schools are visible here, while the frontend clearly marks
+   * inactive/pending schools and prevents opening their login portal.
+   */
   async getSchools() {
-    return this.prisma.school.findMany({
-      where: {
-        deletedAt: null,
-        isActive: true,
-      },
+    const schools = await this.prisma.school.findMany({
+      where: { deletedAt: null },
       orderBy: { name: 'asc' },
       select: {
         id: true,
@@ -30,11 +31,18 @@ export class PublicService {
         city: true,
         country: true,
         logoUrl: true,
+        isActive: true,
         subscription: {
           select: { plan: true, status: true, endDate: true },
         },
       },
     });
+
+    return schools.map((school) => ({
+      ...school,
+      loginAvailable: school.isActive,
+      status: school.isActive ? 'ACTIVE' : 'PENDING_APPROVAL',
+    }));
   }
 
   async resolveBySlug(slug: string) {
