@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, LockKeyhole, Loader2, ArrowRight, GraduationCap } from "lucide-react";
+import { Mail, LockKeyhole, Loader2, ArrowRight, GraduationCap, UsersRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
@@ -31,7 +31,9 @@ export default function LoginPage() {
           ? "/super-admin"
           : user.role === "STUDENT"
             ? `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/student-portal`
-            : `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/dashboard`;
+            : user.role === "PARENT"
+              ? `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/parent-portal`
+              : `/${user.schoolSlug || urlSchoolSlug || "edusphere"}/dashboard`;
       navigate(destination, { replace: true });
     } catch (err: any) {
       toast.error(
@@ -58,14 +60,14 @@ export default function LoginPage() {
           <div className="p-4 border-b border-white/10 bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-purple-950/40 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /><span className="text-xs font-bold text-slate-300">Secure School Access</span></div>
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Email / Student Login ID</label>
-              <div className="relative"><div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><Mail size={16} /></div><input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all" placeholder="admin@school.pk or ali150@student.school.pk" /></div>
-              <div className="flex items-start gap-2 px-1 pt-1 text-[11px] text-slate-500 leading-relaxed"><GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" /><span>Students use their school-issued Login ID, e.g. <strong className="text-slate-400">ali150@student.school.pk</strong>. Admins and teachers use their registered email.</span></div>
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Login ID / Email</label>
+              <div className="relative"><div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><Mail size={16} /></div><input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all" placeholder="admin@school.pk or student Login ID" /></div>
+              <div className="flex items-start gap-2 px-1 pt-1 text-[11px] text-slate-500 leading-relaxed"><div className="flex gap-1.5 shrink-0 mt-0.5"><GraduationCap className="w-3.5 h-3.5 text-emerald-400" /><UsersRound className="w-3.5 h-3.5 text-violet-400" /></div><span>Admins/teachers use their registered email. Students use their school-issued Login ID. Parents use the email created for their parent account. Your role is detected automatically.</span></div>
             </div>
             <div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-slate-300">Password</label><div className="relative"><div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><LockKeyhole size={16} /></div><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all" placeholder="Enter your password" /></div></div>
             <button type="submit" disabled={loading} className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 transition-all shadow-lg shadow-violet-600/30 hover:shadow-violet-600/50 hover:scale-[1.02] disabled:opacity-70">{loading ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}<span>{loading ? "Signing in..." : "Sign In"}</span></button>
           </form>
-          <div className="px-6 pb-5 text-center text-xs text-slate-400 border-t border-white/5 pt-4"><p>Secure access for School Admin, Teachers &amp; Students.</p></div>
+          <div className="px-6 pb-5 text-center text-xs text-slate-400 border-t border-white/5 pt-4"><p>Secure access for School Admin, Teachers, Students &amp; Parents.</p></div>
         </div>
       </motion.div>
     </div>
