@@ -7,6 +7,7 @@ import { PaymentAccountingService } from './payment-accounting.service';
 import { ManualPaymentService } from './manual-payment.service';
 import { SchoolApprovalService } from './school-approval.service';
 import { SuperAdminSecurityService } from './super-admin-security.service';
+import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -30,6 +31,7 @@ export class AdminController {
     private readonly manualPaymentService: ManualPaymentService,
     private readonly schoolApprovalService: SchoolApprovalService,
     private readonly superAdminSecurityService: SuperAdminSecurityService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get('overview')
@@ -54,7 +56,29 @@ export class AdminController {
   @Post('email-templates') createEmailTemplate(@Body() dto: any) { return this.adminService.createEmailTemplate(dto); }
   @Put('email-templates/:id') updateEmailTemplate(@Param('id') id: string, @Body() dto: any) { return this.adminService.updateEmailTemplate(id, dto); }
   @Delete('email-templates/:id') deleteEmailTemplate(@Param('id') id: string) { return this.adminService.deleteEmailTemplate(id); }
-  @Get('requests') getSchoolRequests(@Query('status') status?: string) { return this.adminService.getSchoolRequests(status); }
+
+  @Get('requests')
+  async getSchoolRequests(@Query('status') status?: string) {
+    const normalizedStatus = status?.trim().toUpperCase();
+    const where = normalizedStatus && normalizedStatus !== 'ALL' ? { status: normalizedStatus } : undefined;
+    return this.prisma.schoolRequest.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        schoolName: true,
+        ownerName: true,
+        email: true,
+        phone: true,
+        city: true,
+        requestedPlan: true,
+        notes: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+  }
+
   @Post('requests') createSchoolRequest(@Body() dto: any) { return this.adminService.createSchoolRequest(dto); }
 
   @Patch('requests/:id/review')
