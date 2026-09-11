@@ -96,18 +96,19 @@ export class AuthService {
   async updateProfile(userId: string, dto: UpdateProfileDto) { return this.prisma.user.update({ where: { id: userId }, data: { name: dto.name.trim(), phone: dto.phone?.trim() || null }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true } }); }
   async changePassword(userId: string, dto: ChangePasswordDto) { const user = await this.prisma.user.findUnique({ where: { id: userId } }); if (!user || !(await bcrypt.compare(dto.currentPassword, user.passwordHash))) throw new UnauthorizedException('Current password is incorrect'); await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(dto.newPassword, 12) } }); await this.prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }); return { message: 'Password changed successfully. Please sign in again.' }; }
   private calculateEndDate(start: Date, period: string): Date {
-    const normalized = (period || '').trim().toLowerCase();
+    const normalized = (period || '').trim().toLowerCase().replace(/[_-]+/g, ' ');
     if (!normalized) throw new BadRequestException('Subscription plan period is not configured');
-    if (normalized === 'forever' || normalized === 'unlimited') return new Date(FOREVER_DATE);
-    if (normalized.includes('trial') || normalized.includes('free_trial')) return new Date(start.getTime() + 3 * DAY_MS);
-    const monthMatch = normalized.match(/(\d+)\s*month/);
+    if (normalized === 'forever' || normalized === 'unlimited' || normalized.includes('forever')) return new Date(FOREVER_DATE);
+    if (normalized.includes('trial')) return new Date(start.getTime() + 3 * DAY_MS);
+    if (/^(per\s+)?month(ly)?$/.test(normalized) || normalized === 'per month') { const end = new Date(start); end.setMonth(end.getMonth() + 1); return end; }
+    const monthMatch = normalized.match(/(?:every\s+|per\s+)?(\d+)\s*months?/);
     if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
-    if (normalized === 'monthly' || normalized === 'month') { const end = new Date(start); end.setMonth(end.getMonth() + 1); return end; }
-    const dayMatch = normalized.match(/(\d+)\s*day/);
+    if (/^(per\s+)?day(s)?$/.test(normalized)) return new Date(start.getTime() + DAY_MS);
+    const dayMatch = normalized.match(/(?:every\s+|per\s+)?(\d+)\s*days?/);
     if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
-    const yearMatch = normalized.match(/(\d+)\s*year/);
+    if (/^(per\s+)?year(ly|ly)?$/.test(normalized) || normalized === 'annual' || normalized === 'per year') { const end = new Date(start); end.setFullYear(end.getFullYear() + 1); return end; }
+    const yearMatch = normalized.match(/(?:every\s+|per\s+)?(\d+)\s*years?/);
     if (yearMatch) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(yearMatch[1])); return end; }
-    if (normalized === 'yearly' || normalized === 'annual' || normalized === 'year') { const end = new Date(start); end.setFullYear(end.getFullYear() + 1); return end; }
     throw new BadRequestException(`Unsupported subscription period: ${period}`);
   }
   private async generateTokens(userId: string, email: string, role: string, schoolId?: string) { const payload = { sub: userId, email, role, schoolId }; const accessToken = this.jwtService.sign(payload, { expiresIn: this.configService.get('JWT_EXPIRATION') || '15m' }); const refreshToken = uuidv4(); const expiresAt = new Date(Date.now() + 7 * DAY_MS); await this.prisma.refreshToken.create({ data: { token: refreshToken, userId, expiresAt } }); return { accessToken, refreshToken }; }
