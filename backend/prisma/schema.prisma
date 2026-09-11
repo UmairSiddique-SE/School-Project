@@ -3,54 +3,55 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+provider = "postgresql"
+url      = env("DATABASE_URL")
 }
 
 model School {
-  id                 String              @id @default(uuid())
-  name               String
-  slug               String              @unique
-  domain             String?             @unique
-  email              String?
-  phone              String?
-  address            String?
-  city               String?
-  state              String?
-  country            String              @default("Pakistan")
-  postalCode         String?
-  logoUrl            String?
-  website            String?
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  deletedAt          DateTime?
-  type               String?
-  academicYears      AcademicYear[]
-  accountEntries     AccountEntry[]
-  announcements      Announcement[]
-  attendances        Attendance[]
-  auditLogs          AuditLog[]
-  books              Book[]
-  classes            Class[]
-  events             Event[]
-  exams              Exam[]
-  payments           FeePayment[]
-  feeStructures      FeeStructure[]
-  homeworks          Homework[]
-  hostels            Hostel[]
-  leaveRequests      LeaveRequest[]
-  notifications      Notification[]
+  id             String           @id @default(uuid())
+  name           String
+  type           String?
+  slug           String           @unique
+  domain         String?          @unique
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  country        String           @default("Pakistan")
+  postalCode     String?
+  logoUrl        String?
+  website        String?
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  academicYears  AcademicYear[]
+  accountEntries AccountEntry[]
+  announcements  Announcement[]
+  attendances    Attendance[]
+  auditLogs      AuditLog[]
+  books          Book[]
+  classes        Class[]
+  events         Event[]
+  exams          Exam[]
+  payments       FeePayment[]
+  feeStructures  FeeStructure[]
+  homeworks      Homework[]
+  hostels        Hostel[]
+  leaveRequests  LeaveRequest[]
+  notifications  Notification[]
+  parents        Parent[]
+  payrolls       Payroll[]
+  staff          Staff[]
+  students       Student[]
+  subjects       Subject[]
+  subscription   Subscription?
+  teachers       Teacher[]
+  routes         TransportRoute[]
+  users          User[]
+  buildings      Building[]
   onboardingPayments OnboardingPayment[]
-  parents            Parent[]
-  payrolls           Payroll[]
-  staff              Staff[]
-  students           Student[]
-  subjects           Subject[]
-  subscription       Subscription?
-  teachers           Teacher[]
-  routes             TransportRoute[]
-  users              User[]
 
   @@index([slug])
   @@index([deletedAt])
@@ -63,7 +64,7 @@ model Subscription {
   status    String   @default("ACTIVE")
   startDate DateTime @default(now())
   endDate   DateTime
-  amount    Float    @default(0) @db.Real
+  amount    Float    @default(0)
   currency  String   @default("USD")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,27 +72,22 @@ model Subscription {
 }
 
 model OnboardingPayment {
-  id            String    @id @default(uuid())
-  schoolId      String
-  plan          String
-  amount        Float     @default(0) @db.Real
-  method        String
-  reference     String?
-  status        String    @default("PENDING")
-  submittedAt   DateTime  @default(now())
-  reviewedAt    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  schoolId    String
+  plan        String
+  amount      Float     @default(0)
+  method      String
+  reference   String?
   screenshotUrl String?
-  paymentDate   DateTime?
-  expiryDate    DateTime?
-  notes         String?
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  status      String    @default("PENDING")
+  submittedAt DateTime  @default(now())
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@index([schoolId])
   @@index([status])
-  @@index([expiryDate])
-  @@index([paymentDate])
 }
 
 model SupportTicket {
@@ -127,17 +123,17 @@ model PlatformAnnouncement {
   title           String
   message         String
   target          String    @default("ALL")
+  targetSchoolIds Json?
   priority        String    @default("NORMAL")
   isActive        Boolean   @default(true)
   author          String    @default("Super Admin")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  targetSchoolIds Json?
   scheduledAt     DateTime?
   publishedAt     DateTime?
   expiresAt       DateTime?
   deliveredAt     DateTime?
   deliveryCount   Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([target, isActive])
   @@index([scheduledAt, publishedAt])
@@ -255,8 +251,8 @@ model Section {
   attendances Attendance[]
   exams       Exam[]
   homeworks   Homework[]
-  class       Class        @relation(fields: [classId], references: [id])
   teacher     Teacher?     @relation("ClassTeacher", fields: [teacherId], references: [id])
+  class       Class        @relation(fields: [classId], references: [id])
   students    Student[]
   timetables  Timetable[]
 
@@ -286,9 +282,9 @@ model ClassSubject {
   classId   String
   subjectId String
   teacherId String?
-  class     Class    @relation(fields: [classId], references: [id])
-  subject   Subject  @relation(fields: [subjectId], references: [id])
   teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
 
   @@unique([classId, subjectId])
 }
@@ -308,7 +304,23 @@ model Student {
   avatarUrl           String?
   isActive            Boolean              @default(true)
   isAlumni            Boolean              @default(false)
+  status              String               @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED, LEFT
   admissionDate       DateTime             @default(now())
+  session             String?              // e.g., 2026-2027
+  bFormNumber         String?              // National ID / B-Form
+  currentAddress      String?
+  permanentAddress    String?
+  emergencyContact    String?
+  previousSchool      String?
+  previousClass       String?
+  leavingCertificateUrl String?
+  admissionType       String               @default("NEW") // NEW, TRANSFER
+  previousAcademicRecord String?
+  medicalNotes        String?
+  specialRequirements String?
+  transportRequired   Boolean              @default(false)
+  hostelRequired      Boolean              @default(false)
+  remarks             String?
   leavingDate         DateTime?
   rollNo              String?
   createdAt           DateTime             @default(now())
@@ -323,8 +335,8 @@ model Student {
   feePayments         FeePayment[]
   homeworkSubmissions HomeworkSubmission[]
   hostelAllocation    HostelAllocation?
-  school              School               @relation(fields: [schoolId], references: [id])
   section             Section?             @relation(fields: [sectionId], references: [id])
+  school              School               @relation(fields: [schoolId], references: [id])
   parents             StudentParent[]
   transportAssignment TransportAssignment?
 
@@ -346,7 +358,7 @@ model Teacher {
   qualification  String?
   experience     Int?
   joiningDate    DateTime       @default(now())
-  salary         Float?         @db.Real
+  salary         Float?
   avatarUrl      String?
   isActive       Boolean        @default(true)
   createdAt      DateTime       @default(now())
@@ -378,10 +390,13 @@ model Parent {
   fatherName       String?
   fatherMobile1    String?
   fatherMobile2    String?
+  fatherWhatsapp   String?
   fatherCnic       String?
   fatherOccupation String?
   motherName       String?
   motherMobile     String?
+  motherCnic       String?
+  motherOccupation String?
   guardianName     String?
   guardianRelation String?
   guardianMobile   String?
@@ -419,7 +434,7 @@ model Staff {
   phone         String?
   designation   String
   department    String?
-  salary        Float?         @db.Real
+  salary        Float?
   joiningDate   DateTime       @default(now())
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
@@ -444,11 +459,11 @@ model Attendance {
   sectionId      String?
   studentId      String?
   teacherId      String?
+  teacher        Teacher?      @relation(fields: [teacherId], references: [id])
+  student        Student?      @relation(fields: [studentId], references: [id])
+  section        Section?      @relation(fields: [sectionId], references: [id])
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   school         School        @relation(fields: [schoolId], references: [id])
-  section        Section?      @relation(fields: [sectionId], references: [id])
-  student        Student?      @relation(fields: [studentId], references: [id])
-  teacher        Teacher?      @relation(fields: [teacherId], references: [id])
 
   @@index([schoolId, date])
   @@index([studentId, date])
@@ -464,9 +479,9 @@ model Timetable {
   sectionId String
   subjectId String
   teacherId String
-  section   Section @relation(fields: [sectionId], references: [id])
-  subject   Subject @relation(fields: [subjectId], references: [id])
   teacher   Teacher @relation(fields: [teacherId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  section   Section @relation(fields: [sectionId], references: [id])
 
   @@index([sectionId, dayOfWeek])
 }
@@ -477,8 +492,8 @@ model Exam {
   type           String
   startDate      DateTime
   endDate        DateTime
-  totalMarks     Float         @default(100) @db.Real
-  passingMarks   Float         @default(33) @db.Real
+  totalMarks     Float         @default(100)
+  passingMarks   Float         @default(33)
   description    String?
   isPublished    Boolean       @default(false)
   createdAt      DateTime      @default(now())
@@ -487,9 +502,9 @@ model Exam {
   schoolId       String
   academicYearId String?
   sectionId      String?
+  section        Section?      @relation(fields: [sectionId], references: [id])
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   school         School        @relation(fields: [schoolId], references: [id])
-  section        Section?      @relation(fields: [sectionId], references: [id])
   results        ExamResult[]
 
   @@index([schoolId])
@@ -497,7 +512,7 @@ model Exam {
 
 model ExamResult {
   id            String   @id @default(uuid())
-  marksObtained Float    @db.Real
+  marksObtained Float
   grade         String?
   remarks       String?
   isAbsent      Boolean  @default(false)
@@ -506,9 +521,9 @@ model ExamResult {
   examId        String
   studentId     String
   subjectId     String
-  exam          Exam     @relation(fields: [examId], references: [id])
-  student       Student  @relation(fields: [studentId], references: [id])
   subject       Subject  @relation(fields: [subjectId], references: [id])
+  student       Student  @relation(fields: [studentId], references: [id])
+  exam          Exam     @relation(fields: [examId], references: [id])
 
   @@unique([examId, studentId, subjectId])
   @@index([studentId])
@@ -518,7 +533,7 @@ model ExamResult {
 model FeeStructure {
   id          String       @id @default(uuid())
   name        String
-  amount      Float        @db.Real
+  amount      Float
   frequency   String       @default("MONTHLY")
   description String?
   isActive    Boolean      @default(true)
@@ -535,10 +550,10 @@ model FeeStructure {
 
 model FeePayment {
   id             String        @id @default(uuid())
-  amount         Float         @db.Real
-  discount       Float         @default(0) @db.Real
-  fine           Float         @default(0) @db.Real
-  totalPaid      Float         @db.Real
+  amount         Float
+  discount       Float         @default(0)
+  fine           Float         @default(0)
+  totalPaid      Float
   method         String        @default("CASH")
   status         String        @default("PENDING")
   dueDate        DateTime?
@@ -551,8 +566,8 @@ model FeePayment {
   studentId      String
   feeStructureId String?
   feeStructure   FeeStructure? @relation(fields: [feeStructureId], references: [id])
-  school         School        @relation(fields: [schoolId], references: [id])
   student        Student       @relation(fields: [studentId], references: [id])
+  school         School        @relation(fields: [schoolId], references: [id])
 
   @@index([schoolId, status])
   @@index([studentId])
@@ -564,7 +579,7 @@ model AccountEntry {
   type          String
   category      String
   description   String
-  amount        Float    @db.Real
+  amount        Float
   date          DateTime
   reference     String?
   attachmentUrl String?
@@ -591,9 +606,9 @@ model LeaveRequest {
   schoolId   String
   teacherId  String?
   staffId    String?
-  school     School   @relation(fields: [schoolId], references: [id])
   staff      Staff?   @relation(fields: [staffId], references: [id])
   teacher    Teacher? @relation(fields: [teacherId], references: [id])
+  school     School   @relation(fields: [schoolId], references: [id])
 
   @@index([schoolId, status])
 }
@@ -602,10 +617,10 @@ model Payroll {
   id          String    @id @default(uuid())
   month       Int
   year        Int
-  basicSalary Float     @db.Real
-  allowances  Float     @default(0) @db.Real
-  deductions  Float     @default(0) @db.Real
-  netSalary   Float     @db.Real
+  basicSalary Float
+  allowances  Float     @default(0)
+  deductions  Float     @default(0)
+  netSalary   Float
   isPaid      Boolean   @default(false)
   paidDate    DateTime?
   createdAt   DateTime  @default(now())
@@ -613,9 +628,9 @@ model Payroll {
   schoolId    String
   teacherId   String?
   staffId     String?
-  school      School    @relation(fields: [schoolId], references: [id])
   staff       Staff?    @relation(fields: [staffId], references: [id])
   teacher     Teacher?  @relation(fields: [teacherId], references: [id])
+  school      School    @relation(fields: [schoolId], references: [id])
 
   @@index([schoolId, month, year])
 }
@@ -648,13 +663,13 @@ model BookIssue {
   issueDate  DateTime  @default(now())
   dueDate    DateTime
   returnDate DateTime?
-  fine       Float     @default(0) @db.Real
+  fine       Float     @default(0)
   remarks    String?
   createdAt  DateTime  @default(now())
   bookId     String
   studentId  String
-  book       Book      @relation(fields: [bookId], references: [id])
   student    Student   @relation(fields: [studentId], references: [id])
+  book       Book      @relation(fields: [bookId], references: [id])
 
   @@index([bookId])
   @@index([studentId])
@@ -667,7 +682,7 @@ model TransportRoute {
   startPoint  String
   endPoint    String
   stops       String
-  distance    Float?    @db.Real
+  distance    Float?
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -703,8 +718,8 @@ model TransportAssignment {
   pickupStop  String?
   dropoffStop String?
   createdAt   DateTime @default(now())
-  student     Student  @relation(fields: [studentId], references: [id])
   vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  student     Student  @relation(fields: [studentId], references: [id])
 }
 
 model Hostel {
@@ -744,7 +759,7 @@ model HostelAllocation {
   id          String     @id @default(uuid())
   joinDate    DateTime   @default(now())
   leaveDate   DateTime?
-  feePerMonth Float?     @db.Real
+  feePerMonth Float?
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   studentId   String     @unique
@@ -797,10 +812,10 @@ model Homework {
   sectionId     String
   subjectId     String
   teacherId     String
-  school        School               @relation(fields: [schoolId], references: [id])
-  section       Section              @relation(fields: [sectionId], references: [id])
-  subject       Subject              @relation(fields: [subjectId], references: [id])
   teacher       Teacher              @relation(fields: [teacherId], references: [id])
+  subject       Subject              @relation(fields: [subjectId], references: [id])
+  section       Section              @relation(fields: [sectionId], references: [id])
+  school        School               @relation(fields: [schoolId], references: [id])
   submissions   HomeworkSubmission[]
 
   @@index([schoolId, dueDate])
@@ -814,8 +829,8 @@ model HomeworkSubmission {
   grade       String?
   homeworkId  String
   studentId   String
-  homework    Homework @relation(fields: [homeworkId], references: [id])
   student     Student  @relation(fields: [studentId], references: [id])
+  homework    Homework @relation(fields: [homeworkId], references: [id])
 
   @@unique([homeworkId, studentId])
 }
@@ -861,8 +876,8 @@ model AuditLog {
   createdAt DateTime @default(now())
   schoolId  String?
   userId    String
-  school    School?  @relation(fields: [schoolId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  school    School?  @relation(fields: [schoolId], references: [id])
 
   @@index([schoolId, createdAt])
   @@index([userId])
@@ -873,7 +888,8 @@ model PlatformPlan {
   id          String   @id @default(uuid())
   planKey     String   @unique
   name        String
-  price       Float    @default(0) @db.Real
+  price       Float    @default(0)
+  currency    String   @default("PKR")
   period      String   @default("per month")
   maxStudents Int      @default(50)
   maxTeachers Int      @default(3)
@@ -883,7 +899,6 @@ model PlatformPlan {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  currency    String   @default("PKR")
 
   @@index([planKey])
 }
@@ -915,29 +930,78 @@ model EmailTemplate {
 }
 
 model SchoolRequest {
-  id            String    @id @default(uuid())
-  schoolName    String
-  contactName   String
-  email         String
-  phone         String?
-  city          String?
-  state         String?
-  country       String    @default("Pakistan")
-  requestedPlan String    @default("FREE_TRIAL")
-  message       String?
-  status        String    @default("PENDING")
-  reviewNotes   String?
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  schoolName       String
+  ownerName        String
+  email            String
+  phone            String?
+  whatsapp         String?
+  city             String?
+  address          String?
+  expectedStudents Int?
+  subdomain        String?
+  requestedPlan    String    @default("FREE_TRIAL")
+  notes            String?
+  status           String    @default("PENDING")
+  reviewNotes      String?
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([status])
   @@index([createdAt])
 }
 
-model playing_with_neon {
-  id    Int    @id @default(autoincrement())
-  name  String
-  value Float? @db.Real
+// ─── Building Infrastructure ───────────────────────────────────────────────
+
+model Building {
+  id               String   @id @default(uuid())
+  name             String
+  buildingType     String   @default("OWNED") // OWNED, RENTED, LEASED
+  address          String?
+  city             String?
+  locationArea     String?
+  floors           Int      @default(1)
+  totalClassrooms  Int      @default(0)
+  totalRooms       Int      @default(0)
+  studentCapacity  Int      @default(0)
+  hasComputerLab   Boolean  @default(false)
+  hasScienceLab    Boolean  @default(false)
+  hasLibrary       Boolean  @default(false)
+  hasPlayground    Boolean  @default(false)
+  hasAuditorium    Boolean  @default(false)
+  hasCanteen       Boolean  @default(false)
+  hasPrayerArea    Boolean  @default(false)
+  hasParking       Boolean  @default(false)
+  hasCctv          Boolean  @default(false)
+  hasSecurityGuard Boolean  @default(false)
+  hasFireSafety    Boolean  @default(false)
+  hasFirstAid      Boolean  @default(false)
+  description      String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  schoolId         String
+  school           School   @relation(fields: [schoolId], references: [id])
+  rooms            Room[]
+
+  @@index([schoolId])
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  roomNo     String
+  name       String?
+  floor      Int      @default(1)
+  capacity   Int      @default(30)
+  type       String   @default("CLASSROOM")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  @@unique([roomNo, buildingId])
+  @@index([buildingId])
 }
