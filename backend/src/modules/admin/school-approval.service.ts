@@ -26,26 +26,13 @@ export class SchoolApprovalService {
       return this.prisma.$transaction(async (tx) => {
         const updated = await tx.schoolRequest.update({
           where: { id },
-          data: {
-            status: 'REJECTED',
-            reviewNotes: reviewNotes || null,
-            reviewedBy: reviewedBy || 'Super Admin',
-            reviewedAt: new Date(),
-          },
+          data: { status: 'REJECTED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: new Date() },
         });
-
         if (reviewerUserId) {
           await tx.auditLog.create({
-            data: {
-              action: 'SCHOOL_REQUEST_REJECTED',
-              entity: 'SchoolRequest',
-              entityId: id,
-              userId: reviewerUserId,
-              after: `Rejected registration request for ${request.schoolName}`,
-            },
+            data: { action: 'SCHOOL_REQUEST_REJECTED', entity: 'SchoolRequest', entityId: id, userId: reviewerUserId, after: `Rejected registration request for ${request.schoolName}` },
           });
         }
-
         return updated;
       });
     }
@@ -53,10 +40,8 @@ export class SchoolApprovalService {
     const existingUser = await this.prisma.user.findUnique({ where: { email: request.email } });
     if (existingUser) throw new ConflictException('The contact email is already registered to an existing user');
 
-    let baseSlug = request.schoolName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    const requestedSlug = request.subdomain?.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, '');
+    let baseSlug = requestedSlug || request.schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (!baseSlug) baseSlug = 'school';
 
     let slug = baseSlug;
@@ -71,8 +56,7 @@ export class SchoolApprovalService {
 
     const isFreeTrial = planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const subscriptionEnd = isFreeTrial ? trialEnd : now;
+    const subscriptionEnd = isFreeTrial ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now;
 
     const result = await this.prisma.$transaction(async (tx) => {
       const school = await tx.school.create({
@@ -106,6 +90,7 @@ export class SchoolApprovalService {
           schoolId: school.id,
           plan: plan.planKey,
           status: isFreeTrial ? 'ACTIVE' : 'PENDING',
+          startDate: now,
           endDate: subscriptionEnd,
           amount: plan.price,
           currency: plan.currency,
@@ -114,19 +99,11 @@ export class SchoolApprovalService {
 
       const updatedRequest = await tx.schoolRequest.update({
         where: { id },
-        data: {
-          status: 'APPROVED',
-          reviewNotes: reviewNotes || null,
-          reviewedBy: reviewedBy || 'Super Admin',
-          reviewedAt: now,
-        },
+        data: { status: 'APPROVED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: now },
       });
 
       let finalReviewerId = reviewerUserId;
-      if (!finalReviewerId) {
-        finalReviewerId = (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' } }))?.id;
-      }
-
+      if (!finalReviewerId) finalReviewerId = (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' } }))?.id;
       if (finalReviewerId) {
         await tx.auditLog.create({
           data: {
@@ -142,16 +119,26 @@ export class SchoolApprovalService {
       return { school, user, subscription, updatedRequest };
     });
 
-    this.mailService
-      .sendSchoolOnboarding(result.user.email, {
-        schoolName: result.school.name,
-        schoolSlug: result.school.slug,
-        adminName: result.user.name,
-        temporaryPassword: tempPassword,
-        plan: result.subscription.plan,
-      })
-      .catch((err: unknown) => console.error('Failed to send onboarding email:', err));
+    // The account is ready immediately. The temporary credentials are delivered by email.
+    // For paid plans the login is valid, but the user will remain in payment-pending state until payment approval.
+    this.mailService.sendSchoolOnboarding(result.user.email, {
+      schoolName: result.school.name,
+      schoolSlug: result.school.slug,
+      adminName: result.user.name,
+      temporaryPassword: tempPassword,
+      plan: result.subscription.plan,
+    }).catch((err: unknown) => this.loggerSafeError(err));
 
-    return result.updatedRequest;
+    return {
+      ...result.updatedRequest,
+      school: { id: result.school.id, name: result.school.name, slug: result.school.slug },
+      loginPath: `/${result.school.slug}/login`,
+      activationStatus: isFreeTrial ? 'ACTIVE' : 'PAYMENT_PENDING',
+    };
+  }
+
+  private loggerSafeError(error: unknown) {
+    // Do not fail an already-completed approval transaction because SMTP is unavailable.
+    console.error('Failed to send school onboarding email:', error);
   }
 }
