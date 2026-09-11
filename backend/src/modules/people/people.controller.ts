@@ -21,6 +21,27 @@ export class PeopleController {
 
   @Get('me')
   async getMe(@CurrentUser() user: any) {
+    if (user?.role === 'PARENT') {
+      const account = await this.prisma.user.findFirst({
+        where: { id: user.id, schoolId: user.schoolId, role: 'PARENT', isActive: true, deletedAt: null },
+        select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true },
+      });
+      if (!account) return null;
+      const parent = await this.prisma.parent.findFirst({
+        where: { userId: account.id, schoolId: user.schoolId, deletedAt: null },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: { section: { include: { class: true } } },
+              },
+            },
+          },
+        },
+      });
+      return parent ? { ...parent, account } : { account, students: [] };
+    }
+
     if (user?.role !== 'STUDENT') {
       return this.prisma.user.findFirst({
         where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null },
@@ -89,10 +110,7 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
     if (dto.sectionId) {
-      const current = await this.prisma.student.findFirst({
-        where: { id, schoolId: user.schoolId, deletedAt: null },
-        select: { sectionId: true },
-      });
+      const current = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { sectionId: true } });
       if (!current) throw new BadRequestException('Student not found');
       if (current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId);
     }
@@ -109,9 +127,7 @@ export class PeopleController {
 
   @Post('parents')
   @Roles('SCHOOL_ADMIN')
-  createParent(@CurrentUser() user: any, @Body() dto: any) {
-    return this.peopleService.createParent(user.schoolId, dto);
-  }
+  createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
 
   @Get('staff')
   @Roles('SCHOOL_ADMIN')
@@ -134,15 +150,9 @@ export class PeopleController {
 
   private async assertSectionCapacity(schoolId: string, sectionId?: string) {
     if (!sectionId) return;
-    const section = await this.prisma.section.findFirst({
-      where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } },
-      select: { id: true, capacity: true },
-    });
+    const section = await this.prisma.section.findFirst({ where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } }, select: { id: true, capacity: true } });
     if (!section) throw new BadRequestException('Selected section does not belong to this school');
-
     const enrolled = await this.prisma.student.count({ where: { schoolId, sectionId, deletedAt: null } });
-    if (enrolled >= section.capacity) {
-      throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
-    }
+    if (enrolled >= section.capacity) throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
   }
 }
