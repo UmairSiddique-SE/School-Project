@@ -1,0 +1,2 @@
+- `[ ]` Refactor `migration.sql` to avoid `ON CONFLICT` syntax
+- `[ ]` Verify IDE errors are resolved
