@@ -169,6 +169,9 @@ export class AuthService {
   private calculateEndDate(start: Date, period: string): Date {
     const normalized = (period || '').trim().toLowerCase();
     if (normalized === 'forever') return new Date(FOREVER_DATE);
+    if (normalized === 'trial' || normalized === 'free trial' || normalized === 'free_trial') {
+      return new Date(start.getTime() + 3 * DAY_MS);
+    }
     const monthMatch = normalized.match(/(\d+)\s*month/);
     if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
     const dayMatch = normalized.match(/(\d+)\s*day/);

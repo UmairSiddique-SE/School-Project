@@ -54,13 +54,12 @@ export class AdminController {
   @Post('email-templates') createEmailTemplate(@Body() dto: any) { return this.adminService.createEmailTemplate(dto); }
   @Put('email-templates/:id') updateEmailTemplate(@Param('id') id: string, @Body() dto: any) { return this.adminService.updateEmailTemplate(id, dto); }
   @Delete('email-templates/:id') deleteEmailTemplate(@Param('id') id: string) { return this.adminService.deleteEmailTemplate(id); }
-  @Post('email-templates/:id/test') testEmailTemplate(@Param('id') id: string, @Body() dto: { to: string }, @CurrentUser() user: any) { return this.adminService.sendTemplateTest(id, dto.to, user); }
   @Get('requests') getSchoolRequests(@Query('status') status?: string) { return this.adminService.getSchoolRequests(status); }
   @Post('requests') createSchoolRequest(@Body() dto: any) { return this.adminService.createSchoolRequest(dto); }
 
   @Patch('requests/:id/review')
   reviewSchoolRequest(@Param('id') id: string, @Body() dto: ReviewSchoolRequestDto, @CurrentUser() user: any) {
-    return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, dto.selectedPlan, user?.name, user?.id);
+    return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, user?.name, user?.id);
   }
 
   @Get('audit-logs')
@@ -97,16 +96,7 @@ export class AdminController {
     return this.superAdminSecurityService.toggleUserActive(id, user.id);
   }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
-  @Patch('support/:id')
-  updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }, @CurrentUser() user: any) {
-    return this.adminService.updateSupportTicket(id, dto.status, dto.reply, user);
-  }
+  @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
   @Get('announcements') getAnnouncements() { return this.adminService.getAnnouncements(); }
-  @Post('announcements')
-  createAnnouncement(
-    @Body() data: { title: string; message: string; target?: string; priority?: string; targetSchoolIds?: string[]; scheduledAt?: string; expiresAt?: string },
-    @CurrentUser() user: any,
-  ) {
-    return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }, user?.name || 'Super Admin');
-  }
+  @Post('announcements') createAnnouncement(@Body() data: { title: string; message: string; target?: string; priority?: string }) { return this.adminService.createAnnouncement({ ...data, target: data.target || 'ALL' }); }
 }
