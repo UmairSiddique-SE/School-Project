@@ -33,7 +33,13 @@ export class PeopleController {
           students: {
             include: {
               student: {
-                include: { section: { include: { class: true } } },
+                include: {
+                  section: { include: { class: true } },
+                  attendances: { orderBy: { date: 'desc' }, take: 100 },
+                  examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 },
+                  feePayments: { orderBy: { paidAt: 'desc' }, take: 50 },
+                  homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 50 },
+                },
               },
             },
           },
