@@ -21,6 +21,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    // Never swallow unexpected backend errors. Keep the request id so the
+    // same failure can be correlated in the server log.
+    if (!(exception instanceof HttpException)) {
+      console.error(`\n[HTTP ${status}] ${request.method} ${request.originalUrl} [${requestId}]`);
+      console.error(exception);
+    }
+
     const exceptionResponse =
       exception instanceof HttpException ? exception.getResponse() : null;
 
@@ -36,6 +43,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (typeof candidate === 'string' || Array.isArray(candidate)) {
         message = candidate as string | string[];
       }
+    } else if (process.env.NODE_ENV !== 'production' && exception instanceof Error) {
+      // Development only: show the actual exception so local debugging does
+      // not get reduced to an unhelpful generic 500 response.
+      message = exception.message || message;
     }
 
     response.setHeader('X-Request-Id', requestId);
