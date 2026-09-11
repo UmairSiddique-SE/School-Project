@@ -63,7 +63,6 @@ export class SchoolApprovalService {
     let index = 1;
     while (await this.prisma.school.findUnique({ where: { slug } })) slug = `${baseSlug}-${index++}`;
 
-    // Generate a cryptographically secure temporary password; never use Math.random() for credentials.
     const tempPassword = randomBytes(9).toString('base64url');
     const passwordHash = await bcrypt.hash(tempPassword, 12);
     const planKey = request.requestedPlan || 'FREE_TRIAL';
@@ -76,8 +75,6 @@ export class SchoolApprovalService {
     const subscriptionEnd = isFreeTrial ? trialEnd : now;
 
     const result = await this.prisma.$transaction(async (tx) => {
-      // The school account is created immediately so the owner can log in and pay.
-      // Paid plans remain PAYMENT_PENDING until the separate payment review approves them.
       const school = await tx.school.create({
         data: {
           name: request.schoolName,
@@ -153,7 +150,7 @@ export class SchoolApprovalService {
         temporaryPassword: tempPassword,
         plan: result.subscription.plan,
       })
-      .catch((err) => console.error('Failed to send onboarding email:', err));
+      .catch((err: unknown) => console.error('Failed to send onboarding email:', err));
 
     return result.updatedRequest;
   }
