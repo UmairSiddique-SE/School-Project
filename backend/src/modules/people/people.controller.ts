@@ -21,21 +21,39 @@ export class PeopleController {
 
   @Get('me')
   async getMe(@CurrentUser() user: any) {
-    if (user?.role !== 'STUDENT') {
-      return this.prisma.user.findFirst({
-        where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null },
+    if (user?.role === 'PARENT') {
+      const account = await this.prisma.user.findFirst({
+        where: { id: user.id, schoolId: user.schoolId, role: 'PARENT', isActive: true, deletedAt: null },
         select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true },
       });
+      if (!account) return null;
+      const parent = await this.prisma.parent.findFirst({
+        where: { userId: account.id, schoolId: user.schoolId, deletedAt: null },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  section: { include: { class: true } },
+                  attendances: { orderBy: { date: 'desc' }, take: 100 },
+                  examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 },
+                  feePayments: { take: 50 },
+                  homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 50 },
+                },
+              },
+            },
+          },
+        },
+      });
+      return parent ? { ...parent, account } : { account, students: [] };
     }
-    const account = await this.prisma.user.findFirst({
-      where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null },
-      select: { id: true, name: true, email: true, role: true },
-    });
+
+    if (user?.role !== 'STUDENT') {
+      return this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true } });
+    }
+    const account = await this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true } });
     if (!account) return null;
-    const student = await this.prisma.student.findFirst({
-      where: { schoolId: user.schoolId, email: account.email, deletedAt: null },
-      include: { section: { include: { class: true } } },
-    });
+    const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: account.email, deletedAt: null }, include: { section: { include: { class: true } } } });
     return student ? { ...student, account } : null;
   }
 
@@ -49,18 +67,9 @@ export class PeopleController {
 
   @Post('teachers')
   @Roles('SCHOOL_ADMIN')
-  async createTeacher(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStaffCapacity(user.schoolId);
-    return this.peopleService.createTeacher(user.schoolId, dto);
-  }
-
-  @Patch('teachers/:id')
-  @Roles('SCHOOL_ADMIN')
-  updateTeacher(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateTeacher(id, user.schoolId, dto); }
-
-  @Delete('teachers/:id')
-  @Roles('SCHOOL_ADMIN')
-  deleteTeacher(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteTeacher(id, user.schoolId); }
+  async createTeacher(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createTeacher(user.schoolId, dto); }
+  @Patch('teachers/:id') @Roles('SCHOOL_ADMIN') updateTeacher(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateTeacher(id, user.schoolId, dto); }
+  @Delete('teachers/:id') @Roles('SCHOOL_ADMIN') deleteTeacher(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteTeacher(id, user.schoolId); }
 
   @Get('students')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
@@ -76,73 +85,23 @@ export class PeopleController {
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
-  async createStudent(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStudentCapacity(user.schoolId);
-    await this.assertSectionCapacity(user.schoolId, dto.sectionId);
-    const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
-    void _password;
-    void _parentPassword;
-    return this.peopleService.createStudent(user.schoolId, studentDto);
-  }
+  async createStudent(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStudentCapacity(user.schoolId); await this.assertSectionCapacity(user.schoolId, dto.sectionId); const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto; void _password; void _parentPassword; return this.peopleService.createStudent(user.schoolId, studentDto); }
+  @Patch('students/:id') @Roles('SCHOOL_ADMIN') async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { if (dto.sectionId) { const current = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { sectionId: true } }); if (!current) throw new BadRequestException('Student not found'); if (current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId); } return this.peopleService.updateStudent(id, user.schoolId, dto); }
+  @Delete('students/:id') @Roles('SCHOOL_ADMIN') deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
 
-  @Patch('students/:id')
-  @Roles('SCHOOL_ADMIN')
-  async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
-    if (dto.sectionId) {
-      const current = await this.prisma.student.findFirst({
-        where: { id, schoolId: user.schoolId, deletedAt: null },
-        select: { sectionId: true },
-      });
-      if (!current) throw new BadRequestException('Student not found');
-      if (current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId);
-    }
-    return this.peopleService.updateStudent(id, user.schoolId, dto);
-  }
+  @Get('parents') @Roles('SCHOOL_ADMIN') getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
+  @Post('parents') @Roles('SCHOOL_ADMIN') createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
 
-  @Delete('students/:id')
-  @Roles('SCHOOL_ADMIN')
-  deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
-
-  @Get('parents')
-  @Roles('SCHOOL_ADMIN')
-  getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
-
-  @Post('parents')
-  @Roles('SCHOOL_ADMIN')
-  createParent(@CurrentUser() user: any, @Body() dto: any) {
-    return this.peopleService.createParent(user.schoolId, dto);
-  }
-
-  @Get('staff')
-  @Roles('SCHOOL_ADMIN')
-  getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
-
-  @Post('staff')
-  @Roles('SCHOOL_ADMIN')
-  async createStaff(@CurrentUser() user: any, @Body() dto: any) {
-    await this.planLimitService.assertStaffCapacity(user.schoolId);
-    return this.peopleService.createStaff(user.schoolId, dto);
-  }
-
-  @Patch('staff/:id')
-  @Roles('SCHOOL_ADMIN')
-  updateStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateStaff(id, user.schoolId, dto); }
-
-  @Delete('staff/:id')
-  @Roles('SCHOOL_ADMIN')
-  deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
+  @Get('staff') @Roles('SCHOOL_ADMIN') getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
+  @Post('staff') @Roles('SCHOOL_ADMIN') async createStaff(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createStaff(user.schoolId, dto); }
+  @Patch('staff/:id') @Roles('SCHOOL_ADMIN') updateStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateStaff(id, user.schoolId, dto); }
+  @Delete('staff/:id') @Roles('SCHOOL_ADMIN') deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
 
   private async assertSectionCapacity(schoolId: string, sectionId?: string) {
     if (!sectionId) return;
-    const section = await this.prisma.section.findFirst({
-      where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } },
-      select: { id: true, capacity: true },
-    });
+    const section = await this.prisma.section.findFirst({ where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } }, select: { id: true, capacity: true } });
     if (!section) throw new BadRequestException('Selected section does not belong to this school');
-
     const enrolled = await this.prisma.student.count({ where: { schoolId, sectionId, deletedAt: null } });
-    if (enrolled >= section.capacity) {
-      throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
-    }
+    if (enrolled >= section.capacity) throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
   }
 }
