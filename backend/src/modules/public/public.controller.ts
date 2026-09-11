@@ -14,7 +14,7 @@ export class PublicController {
     return this.publicService.getPlans();
   }
 
-  /** Returns only approved/active schools that can expose a login portal. */
+  /** Returns registered, non-deleted schools with their login availability. */
   @Get('schools')
   getSchools() {
     return this.publicService.getSchools();
