@@ -1,6 +1,10 @@
 -- Final EduSphere launch catalogue
 -- Existing plan keys preserved so subscriptions/payment history remain linked.
 -- PostgreSQL / Neon migration
+
+-- Clean up existing records to avoid conflicts
+DELETE FROM "PlatformPlan" WHERE "planKey" IN ('FREE_TRIAL', 'PROFESSIONAL', 'PREMIUM');
+
 INSERT INTO "PlatformPlan" (
   "id",
   "planKey",
@@ -65,19 +69,7 @@ VALUES
   true,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
-)
-ON CONFLICT ("planKey") DO UPDATE SET
-  "name" = EXCLUDED."name",
-  "price" = EXCLUDED."price",
-  "currency" = EXCLUDED."currency",
-  "period" = EXCLUDED."period",
-  "maxStudents" = EXCLUDED."maxStudents",
-  "maxTeachers" = EXCLUDED."maxTeachers",
-  "storageMb" = EXCLUDED."storageMb",
-  "supportTier" = EXCLUDED."supportTier",
-  "features" = EXCLUDED."features",
-  "isActive" = EXCLUDED."isActive",
-  "updatedAt" = CURRENT_TIMESTAMP;
+);
 
 
 -- Update existing subscriptions

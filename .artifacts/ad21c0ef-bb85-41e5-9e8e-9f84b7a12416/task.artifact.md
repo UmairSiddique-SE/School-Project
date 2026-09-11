@@ -1,2 +1,2 @@
-- `[ ]` Refactor `migration.sql` to avoid `ON CONFLICT` syntax
-- `[ ]` Verify IDE errors are resolved
+- `[x]` Refactor `migration.sql` to avoid `ON CONFLICT` syntax
+- `[x]` Verify IDE errors are resolved
