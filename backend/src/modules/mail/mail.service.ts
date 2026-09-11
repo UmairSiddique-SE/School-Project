@@ -9,8 +9,26 @@ export class MailService {
   private readonly transporter: Transporter;
 
   constructor(private readonly configService: ConfigService) {
-    const smtpPort = Number(this.configService.get<string>('SMTP_PORT') || '587');
-    const smtpSecure = (this.configService.get<string>('SMTP_SECURE') || 'false').toLowerCase() === 'true';
+    const smtpUser = this.configService.get<string>('SMTP_USER');
+    const smtpPass = this.configService.get<string>('SMTP_PASS');
+
+    this.logger.log(`SMTP_HOST=${this.configService.get<string>('SMTP_HOST')}`);
+    this.logger.log(`SMTP_PORT=${this.configService.get<string>('SMTP_PORT')}`);
+    this.logger.log(
+      `SMTP_SECURE=${this.configService.get<string>('SMTP_SECURE')}`,
+    );
+    this.logger.log(`SMTP_USER=${smtpUser}`);
+    this.logger.log(
+      `SMTP_PASS loaded=${!!smtpPass}, length=${smtpPass?.length ?? 0}`,
+    );
+
+    const smtpPort = Number(
+      this.configService.get<string>('SMTP_PORT') || '587',
+    );
+    const smtpSecure =
+      (
+        this.configService.get<string>('SMTP_SECURE') || 'false'
+      ).toLowerCase() === 'true';
 
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com',
@@ -24,15 +42,31 @@ export class MailService {
   }
 
   private getSender(): string {
-    return this.configService.get<string>('SMTP_FROM') || this.configService.get<string>('SMTP_USER') || 'noreply@edusphere.app';
+    return (
+      this.configService.get<string>('SMTP_FROM') ||
+      this.configService.get<string>('SMTP_USER') ||
+      'noreply@edusphere.app'
+    );
   }
 
-  async sendMail(to: string, subject: string, html: string, text?: string): Promise<void> {
+  async sendMail(
+    to: string,
+    subject: string,
+    html: string,
+    text?: string,
+  ): Promise<void> {
     try {
-      await this.transporter.sendMail({ from: this.getSender(), to, subject, text, html });
+      await this.transporter.sendMail({
+        from: this.getSender(),
+        to,
+        subject,
+        text,
+        html,
+      });
       this.logger.log(`Email sent successfully to ${to}`);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown mail error';
+      const message =
+        error instanceof Error ? error.message : 'Unknown mail error';
       this.logger.error(`Failed to send email to ${to}: ${message}`);
       throw error;
     }
@@ -48,7 +82,11 @@ export class MailService {
     return true;
   }
 
-  async sendVerificationEmail(to: string, name: string, verificationUrl: string): Promise<void> {
+  async sendVerificationEmail(
+    to: string,
+    name: string,
+    verificationUrl: string,
+  ): Promise<void> {
     await this.sendMail(
       to,
       'Verify your EduSphere email',
@@ -58,7 +96,8 @@ export class MailService {
   }
 
   async sendPasswordReset(to: string, token: string): Promise<boolean> {
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const resetLink = `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
     await this.sendMail(
       to,
@@ -69,7 +108,11 @@ export class MailService {
     return true;
   }
 
-  async sendPasswordResetEmail(to: string, name: string, resetUrl: string): Promise<void> {
+  async sendPasswordResetEmail(
+    to: string,
+    name: string,
+    resetUrl: string,
+  ): Promise<void> {
     await this.sendMail(
       to,
       'Reset your EduSphere password',
@@ -80,9 +123,16 @@ export class MailService {
 
   async sendSchoolOnboarding(
     to: string,
-    details: { schoolName: string; schoolSlug: string; adminName: string; temporaryPassword: string; plan: string },
+    details: {
+      schoolName: string;
+      schoolSlug: string;
+      adminName: string;
+      temporaryPassword: string;
+      plan: string;
+    },
   ): Promise<boolean> {
-    const appUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const appUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const loginUrl = `${appUrl}/${details.schoolSlug}/login`;
     await this.sendMail(
       to,
@@ -93,7 +143,11 @@ export class MailService {
     return true;
   }
 
-  async sendSchoolApprovalEmail(to: string, schoolName: string, loginUrl: string): Promise<void> {
+  async sendSchoolApprovalEmail(
+    to: string,
+    schoolName: string,
+    loginUrl: string,
+  ): Promise<void> {
     await this.sendMail(
       to,
       'Your EduSphere school has been approved',
@@ -108,7 +162,8 @@ export class MailService {
       this.logger.log('SMTP connection verified successfully');
       return true;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown SMTP error';
+      const message =
+        error instanceof Error ? error.message : 'Unknown SMTP error';
       this.logger.error(`SMTP connection failed: ${message}`);
       return false;
     }
