@@ -29,7 +29,7 @@ export class AuthService {
       const result = await this.prisma.$transaction(async (tx) => {
         const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: false } });
         const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
-        const endDate = plan.period.trim().toLowerCase() === 'forever' ? new Date(FOREVER_DATE) : this.calculateEndDate(new Date(), plan.period);
+        const endDate = this.calculateEndDate(new Date(), plan.period);
         await tx.subscription.create({ data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency } });
         await tx.emailVerification.create({ data: { userId: user.id, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) } }); return { school, user };
       });
@@ -95,6 +95,20 @@ export class AuthService {
   async getCurrentUser(userId: string) { const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true, isActive: true, emailVerified: true } }); if (!user || !user.isActive) throw new UnauthorizedException('User account is unavailable'); return { user }; }
   async updateProfile(userId: string, dto: UpdateProfileDto) { return this.prisma.user.update({ where: { id: userId }, data: { name: dto.name.trim(), phone: dto.phone?.trim() || null }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true } }); }
   async changePassword(userId: string, dto: ChangePasswordDto) { const user = await this.prisma.user.findUnique({ where: { id: userId } }); if (!user || !(await bcrypt.compare(dto.currentPassword, user.passwordHash))) throw new UnauthorizedException('Current password is incorrect'); await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(dto.newPassword, 12) } }); await this.prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }); return { message: 'Password changed successfully. Please sign in again.' }; }
-  private calculateEndDate(start: Date, period: string): Date { const normalized = (period || '').trim().toLowerCase(); if (normalized === 'forever') return new Date(FOREVER_DATE); if (normalized === 'trial' || normalized === 'free trial' || normalized === 'free_trial') return new Date(start.getTime() + 3 * DAY_MS); const monthMatch = normalized.match(/(\d+)\s*month/); if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; } const dayMatch = normalized.match(/(\d+)\s*day/); if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS); if (normalized.includes('year')) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1)); return end; } throw new BadRequestException('Unsupported subscription period'); }
+  private calculateEndDate(start: Date, period: string): Date {
+    const normalized = (period || '').trim().toLowerCase();
+    if (!normalized) throw new BadRequestException('Subscription plan period is not configured');
+    if (normalized === 'forever' || normalized === 'unlimited') return new Date(FOREVER_DATE);
+    if (normalized.includes('trial') || normalized.includes('free_trial')) return new Date(start.getTime() + 3 * DAY_MS);
+    const monthMatch = normalized.match(/(\d+)\s*month/);
+    if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
+    if (normalized === 'monthly' || normalized === 'month') { const end = new Date(start); end.setMonth(end.getMonth() + 1); return end; }
+    const dayMatch = normalized.match(/(\d+)\s*day/);
+    if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
+    const yearMatch = normalized.match(/(\d+)\s*year/);
+    if (yearMatch) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(yearMatch[1])); return end; }
+    if (normalized === 'yearly' || normalized === 'annual' || normalized === 'year') { const end = new Date(start); end.setFullYear(end.getFullYear() + 1); return end; }
+    throw new BadRequestException(`Unsupported subscription period: ${period}`);
+  }
   private async generateTokens(userId: string, email: string, role: string, schoolId?: string) { const payload = { sub: userId, email, role, schoolId }; const accessToken = this.jwtService.sign(payload, { expiresIn: this.configService.get('JWT_EXPIRATION') || '15m' }); const refreshToken = uuidv4(); const expiresAt = new Date(Date.now() + 7 * DAY_MS); await this.prisma.refreshToken.create({ data: { token: refreshToken, userId, expiresAt } }); return { accessToken, refreshToken }; }
 }
