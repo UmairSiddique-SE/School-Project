@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type UserRole = "SUPER_ADMIN" | "SCHOOL_ADMIN" | "TEACHER" | "STUDENT";
+export type UserRole = "SUPER_ADMIN" | "SCHOOL_ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
 
 export interface User {
   id: string;
@@ -10,8 +10,11 @@ export interface User {
   schoolId?: string;
   schoolName?: string;
   schoolSlug?: string;
+  phone?: string;
+  avatarUrl?: string;
   activationStatus?: "ACTIVE" | "PAYMENT_PENDING" | "EXPIRED";
   plan?: string;
+  lastLoginAt?: string;
 }
 
 interface AuthContextType {
