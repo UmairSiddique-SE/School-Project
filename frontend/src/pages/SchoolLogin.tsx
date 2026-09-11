@@ -11,6 +11,9 @@ interface SchoolItem {
   city?: string | null;
   country?: string | null;
   logoUrl?: string | null;
+  isActive: boolean;
+  loginAvailable: boolean;
+  status: "ACTIVE" | "PENDING_APPROVAL" | string;
   subscription?: { plan?: string; status?: string; endDate?: string } | null;
 }
 
@@ -24,6 +27,8 @@ export default function SchoolLogin() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
+    setError("");
+
     apiClient
       .get("/public/schools")
       .then((res) => {
@@ -54,7 +59,10 @@ export default function SchoolLogin() {
     );
   }, [schools, search]);
 
-  const openLogin = (slug: string) => navigate(`/${slug}/login`);
+  const openLogin = (school: SchoolItem) => {
+    if (!school.loginAvailable) return;
+    navigate(`/${school.slug}/login`);
+  };
 
   return (
     <div className="min-h-screen bg-[#030817] text-white relative overflow-hidden">
@@ -81,7 +89,7 @@ export default function SchoolLogin() {
           </div>
           <h1 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight">Find your school</h1>
           <p className="mt-3 max-w-2xl mx-auto text-sm sm:text-base leading-7 text-slate-400">
-            Select your registered school. You will then sign in with the credentials created during school registration.
+            Your school appears here automatically after registration. Login becomes available after Super Admin approval and activation.
           </p>
         </motion.div>
 
@@ -91,7 +99,7 @@ export default function SchoolLogin() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search registered school by name, city, or school code..."
+              placeholder="Search your registered school by name, city, or school code..."
               className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-4 pl-12 pr-12 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/10"
               autoFocus
             />
@@ -104,9 +112,9 @@ export default function SchoolLogin() {
 
           <div className="mt-5 flex items-center justify-between gap-3">
             <p className="text-xs text-slate-500">
-              {loading ? "Checking registered schools..." : `${filteredSchools.length} active school${filteredSchools.length === 1 ? "" : "s"} available`}
+              {loading ? "Checking registered schools..." : `${filteredSchools.length} registered school${filteredSchools.length === 1 ? "" : "s"}`}
             </p>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Active schools only</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Live database</span>
           </div>
 
           {error && !loading && (
@@ -121,8 +129,13 @@ export default function SchoolLogin() {
                 <button
                   key={school.id || school.slug}
                   type="button"
-                  onClick={() => openLogin(school.slug)}
-                  className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
+                  disabled={!school.loginAvailable}
+                  onClick={() => openLogin(school)}
+                  className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
+                    school.loginAvailable
+                      ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
+                      : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"
+                  }`}
                 >
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
                     {school.logoUrl ? (
@@ -132,13 +145,22 @@ export default function SchoolLogin() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-white truncate group-hover:text-cyan-300">{school.name}</p>
+                    <p className="font-bold text-white truncate">{school.name}</p>
                     <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
                       <span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>
                       {school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}
                     </div>
                   </div>
-                  <ArrowRight size={17} className="shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-cyan-300" />
+                  <div className="shrink-0 text-right">
+                    {school.loginAvailable ? (
+                      <>
+                        <span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span>
+                        <ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" />
+                      </>
+                    ) : (
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -147,14 +169,14 @@ export default function SchoolLogin() {
           {!loading && filteredSchools.length === 0 && (
             <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
               <School size={35} className="mx-auto text-slate-600" />
-              <p className="mt-3 font-semibold text-slate-300">{schools.length ? "No school matches your search." : "No active school is available yet."}</p>
-              <p className="mt-1 text-xs text-slate-500">A school appears here only after its registration has been approved and activated.</p>
+              <p className="mt-3 font-semibold text-slate-300">No registered school found.</p>
+              <p className="mt-1 text-xs text-slate-500">Register your school first. It will appear here automatically from the database.</p>
             </div>
           )}
         </div>
 
         <p className="mt-6 text-center text-xs text-slate-500">
-          School Admin and Teachers sign in with their registered email. Students use their school-issued Login ID. The role is detected automatically.
+          School Admin and Teachers use their registered email. Students use their school-issued Login ID. The role is detected automatically.
         </p>
       </main>
     </div>
