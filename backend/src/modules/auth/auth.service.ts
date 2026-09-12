@@ -27,10 +27,11 @@ export class AuthService {
       if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable');
       const passwordHash = await bcrypt.hash(dto.adminPassword, 12); const otp = String(randomInt(100000, 1000000));
       const result = await this.prisma.$transaction(async (tx) => {
-        const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: false } });
+        const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: true } });
         const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
         const endDate = plan.period.trim().toLowerCase() === 'forever' ? new Date(FOREVER_DATE) : this.calculateEndDate(new Date(), plan.period);
         await tx.subscription.create({ data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency } });
+        await tx.schoolRequest.create({ data: { schoolName: school.name, ownerName: user.name, email: adminEmail, phone: dto.adminPhone || dto.schoolPhone || null, whatsapp: dto.adminPhone || null, city: dto.city || null, address: dto.schoolAddress || null, subdomain: schoolSlug, requestedPlan: plan.planKey, status: 'PENDING' } });
         await tx.emailVerification.create({ data: { userId: user.id, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) } }); return { school, user };
       });
       this.mailService.sendEmailVerification(result.user.email, otp).catch((error) => console.error('Failed to send verification email:', error));
