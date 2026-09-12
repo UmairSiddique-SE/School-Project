@@ -1,3 +1,4 @@
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateSchoolRequestDto } from './dto/create-school-request.dto';
@@ -25,15 +26,23 @@ export class SchoolRequestService {
 
   async findAll() {
     return this.prisma.schoolRequest.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
   async findOne(id: string) {
     const request = await this.prisma.schoolRequest.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
-    if (!request) throw new NotFoundException('School request not found');
+
+    if (!request) {
+      throw new NotFoundException('School request not found');
+    }
+
     return request;
   }
 }
