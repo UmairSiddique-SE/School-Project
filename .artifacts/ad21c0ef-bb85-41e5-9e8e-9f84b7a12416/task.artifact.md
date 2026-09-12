@@ -1,2 +1,2 @@
-- `[x]` Refactor `migration.sql` to avoid `ON CONFLICT` syntax
+- `[x]` Replace `RESTRICT` with `NO ACTION` in `20260710163617_add_school_request/migration.sql`
 - `[x]` Verify IDE errors are resolved

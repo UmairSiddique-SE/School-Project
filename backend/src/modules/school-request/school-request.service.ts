@@ -15,7 +15,6 @@ export class SchoolRequestService {
         phone: dto.phone || null,
         city: dto.city || null,
         address: dto.address || null,
-        expectedStudents: dto.expectedStudents,
         subdomain: dto.subdomain?.trim().toLowerCase() || null,
         requestedPlan: dto.plan || 'FREE_TRIAL',
         notes: dto.notes || null,
