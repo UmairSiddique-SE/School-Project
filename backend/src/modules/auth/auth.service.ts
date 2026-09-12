@@ -31,7 +31,7 @@ export class AuthService {
         const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
         const endDate = this.calculateEndDate(new Date(), plan.period);
         await tx.subscription.create({ data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency } });
-        await tx.schoolRequest.create({ data: { schoolName: school.name, ownerName: user.name, email: adminEmail, phone: dto.adminPhone || dto.schoolPhone || null, whatsapp: dto.adminPhone || null, city: dto.city || null, address: dto.schoolAddress || null, subdomain: schoolSlug, requestedPlan: plan.planKey, status: 'PENDING' } });
+        await tx.schoolRequest.create({ data: { schoolName: school.name, contactName: user.name, ownerName: user.name, email: adminEmail, phone: dto.adminPhone || dto.schoolPhone || null, whatsapp: dto.adminPhone || null, city: dto.city || null, address: dto.schoolAddress || null, subdomain: schoolSlug, requestedPlan: plan.planKey, status: 'PENDING' } });
         await tx.emailVerification.create({ data: { userId: user.id, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) } }); return { school, user };
       });
       this.mailService.sendEmailVerification(result.user.email, otp).catch((error) => console.error('Failed to send verification email:', error));

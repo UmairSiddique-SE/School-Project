@@ -24,11 +24,15 @@ export class SchoolRequestService {
   }
 
   async findAll() {
-    return this.prisma.schoolRequest.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.prisma.schoolRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
-    const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
+    const request = await this.prisma.schoolRequest.findUnique({
+      where: { id },
+    });
     if (!request) throw new NotFoundException('School request not found');
     return request;
   }
