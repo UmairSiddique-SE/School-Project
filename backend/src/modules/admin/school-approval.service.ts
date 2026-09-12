@@ -1,157 +1,95 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
-import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../database/prisma.service';
-import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class SchoolApprovalService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly mailService: MailService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async review(
-    id: string,
-    action: 'APPROVED' | 'REJECTED',
-    reviewNotes?: string,
-    reviewedBy?: string,
-    reviewerUserId?: string,
-  ) {
+  async review(id: string, action: 'APPROVED' | 'REJECTED', reviewNotes?: string, reviewedBy?: string, reviewerUserId?: string) {
     const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
     if (!request) throw new NotFoundException('School request not found');
     if (request.status !== 'PENDING') throw new ConflictException('This request has already been reviewed');
+
+    const existingSchool = request.subdomain
+      ? await this.prisma.school.findUnique({ where: { slug: request.subdomain } })
+      : await this.prisma.school.findFirst({ where: { email: request.email } });
 
     if (action === 'REJECTED') {
       return this.prisma.$transaction(async (tx) => {
         const updated = await tx.schoolRequest.update({
           where: { id },
-          data: {
-            status: 'REJECTED',
-            reviewNotes: reviewNotes || null,
-            reviewedBy: reviewedBy || 'Super Admin',
-            reviewedAt: new Date(),
-          },
+          data: { status: 'REJECTED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: new Date() },
         });
-
+        if (existingSchool) {
+          await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: false } });
+          await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: false } });
+        }
         if (reviewerUserId) {
           await tx.auditLog.create({
-            data: {
-              action: 'SCHOOL_REQUEST_REJECTED',
-              entity: 'SchoolRequest',
-              entityId: id,
-              userId: reviewerUserId,
-              after: `Rejected registration request for ${request.schoolName}`,
-            },
+            data: { action: 'SCHOOL_REQUEST_REJECTED', entity: 'SchoolRequest', entityId: id, userId: reviewerUserId, schoolId: existingSchool?.id, after: `Rejected registration request for ${request.schoolName}` },
           });
         }
-
         return updated;
       });
     }
 
-    const existingUser = await this.prisma.user.findUnique({ where: { email: request.email } });
-    if (existingUser) throw new ConflictException('The contact email is already registered to an existing user');
+    if (!existingSchool) {
+      throw new ConflictException('This request has no matching registered school account. Please ask the school to register again.');
+    }
 
-    let baseSlug = request.schoolName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    if (!baseSlug) baseSlug = 'school';
-
-    let slug = baseSlug;
-    let index = 1;
-    while (await this.prisma.school.findUnique({ where: { slug } })) slug = `${baseSlug}-${index++}`;
-
-    const tempPassword = randomBytes(9).toString('base64url');
-    const passwordHash = await bcrypt.hash(tempPassword, 12);
-    const planKey = request.requestedPlan || 'FREE_TRIAL';
-    const plan = await this.prisma.platformPlan.findUnique({ where: { planKey } });
-    if (!plan || !plan.isActive) throw new ConflictException('The requested subscription plan is unavailable');
-
-    const isFreeTrial = planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const subscriptionEnd = isFreeTrial ? trialEnd : now;
-
     const result = await this.prisma.$transaction(async (tx) => {
-      const school = await tx.school.create({
-        data: {
-          name: request.schoolName,
-          slug,
-          email: request.email,
-          phone: request.phone,
-          city: request.city,
-          address: request.address,
-          country: 'Pakistan',
-          isActive: true,
-        },
-      });
-
-      const user = await tx.user.create({
-        data: {
-          name: request.ownerName,
-          email: request.email,
-          passwordHash,
-          role: 'SCHOOL_ADMIN',
-          schoolId: school.id,
-          isActive: true,
-          mustChangePassword: true,
-          emailVerified: true,
-        },
-      });
-
-      const subscription = await tx.subscription.create({
-        data: {
-          schoolId: school.id,
-          plan: plan.planKey,
-          status: isFreeTrial ? 'ACTIVE' : 'PENDING',
-          endDate: subscriptionEnd,
-          amount: plan.price,
-          currency: plan.currency,
-        },
-      });
+      const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
+      const plan = await tx.platformPlan.findUnique({ where: { planKey: request.requestedPlan || subscription?.plan || 'FREE_TRIAL' } });
+      const isFreeTrial = !plan || plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
+      const approvedPayment = !isFreeTrial
+        ? await tx.onboardingPayment.findFirst({ where: { schoolId: existingSchool.id, plan: plan?.planKey || request.requestedPlan, status: 'APPROVED' }, select: { id: true } })
+        : null;
+      const canActivate = isFreeTrial || !!approvedPayment;
 
       const updatedRequest = await tx.schoolRequest.update({
         where: { id },
-        data: {
-          status: 'APPROVED',
-          reviewNotes: reviewNotes || null,
-          reviewedBy: reviewedBy || 'Super Admin',
-          reviewedAt: now,
-        },
+        data: { status: 'APPROVED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: now },
       });
 
-      let finalReviewerId = reviewerUserId;
-      if (!finalReviewerId) {
-        finalReviewerId = (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' } }))?.id;
-      }
+      await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: canActivate } });
+      await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: canActivate } });
 
-      if (finalReviewerId) {
-        await tx.auditLog.create({
-          data: {
-            action: 'CREATE',
-            entity: 'School',
-            entityId: school.id,
-            after: `Approved registration request for ${request.schoolName}. Created school ID: ${school.id}. ${isFreeTrial ? 'Free trial active.' : 'Paid plan awaiting payment approval.'}`,
-            userId: finalReviewerId,
-          },
+      if (subscription && isFreeTrial && plan) {
+        await tx.subscription.update({
+          where: { schoolId: existingSchool.id },
+          data: { plan: plan.planKey, status: 'ACTIVE', startDate: now, endDate: this.calculateEndDate(now, plan.period), amount: plan.price, currency: plan.currency },
         });
       }
 
-      return { school, user, subscription, updatedRequest };
+      const finalReviewerId = reviewerUserId || (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' }, select: { id: true } }))?.id;
+      if (finalReviewerId) {
+        await tx.auditLog.create({
+          data: { action: 'SCHOOL_REQUEST_APPROVED', entity: 'SchoolRequest', entityId: id, schoolId: existingSchool.id, userId: finalReviewerId, after: canActivate ? `Approved and activated registration request for ${request.schoolName}.` : `Approved registration request for ${request.schoolName}; payment is still pending, so login remains locked.` },
+        });
+      }
+
+      return { updatedRequest, subscription: await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } }), canActivate };
     });
 
-    this.mailService
-      .sendSchoolOnboarding(result.user.email, {
-        schoolName: result.school.name,
-        schoolSlug: result.school.slug,
-        adminName: result.user.name,
-        temporaryPassword: tempPassword,
-        plan: result.subscription.plan,
-      })
-      .catch((err: unknown) => console.error('Failed to send onboarding email:', err));
+    return {
+      ...result.updatedRequest,
+      school: { id: existingSchool.id, name: existingSchool.name, slug: existingSchool.slug },
+      loginPath: `/${existingSchool.slug}/login`,
+      activationStatus: result.canActivate ? 'ACTIVE' : 'PAYMENT_PENDING',
+    };
+  }
 
-    return result.updatedRequest;
+  private calculateEndDate(start: Date, period: string): Date {
+    const normalized = (period || '').trim().toLowerCase();
+    if (normalized === 'forever') return new Date('9999-12-31T23:59:59.999Z');
+    if (normalized === 'trial' || normalized === 'free trial' || normalized === 'free_trial') return new Date(start.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const monthMatch = normalized.match(/(\d+)\s*month/);
+    if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
+    const dayMatch = normalized.match(/(\d+)\s*day/);
+    if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * 24 * 60 * 60 * 1000);
+    if (normalized.includes('year')) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1)); return end; }
+    if (normalized === 'per month' || normalized === 'monthly' || normalized === 'month') { const end = new Date(start); end.setMonth(end.getMonth() + 1); return end; }
+    throw new ConflictException('Unsupported subscription period');
   }
 }

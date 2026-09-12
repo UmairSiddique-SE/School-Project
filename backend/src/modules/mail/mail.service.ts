@@ -5,14 +5,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private readonly transporter: Transporter;
+  private readonly transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
+
     const smtpUser = this.configService.get<string>('SMTP_USER');
     const smtpPass = this.configService.get<string>('SMTP_PASS');
     const smtpPort = Number(
@@ -37,19 +37,159 @@ export class MailService {
       auth: {
         user: smtpUser,
         pass: smtpPass,
+
+    const port = Number(this.configService.get<string>('SMTP_PORT') || '587');
+    const secure = (this.configService.get<string>('SMTP_SECURE') || 'false').toLowerCase() === 'true';
+    this.transporter = nodemailer.createTransport({
+      host: this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com',
+      port,
+      secure,
+      auth: {
+        user: this.configService.get<string>('SMTP_USER') || undefined,
+        pass: this.configService.get<string>('SMTP_PASS') || undefined,
+
       },
     });
   }
 
   private getSender(): string {
-    const sender =
+    return this.configService.get<string>('SMTP_FROM') || this.configService.get<string>('SMTP_USER') || 'noreply@edusphere.app';
+  }
+
+  async sendMail(to: string, subject: string, html: string, text?: string): Promise<void> {
+    await this.transporter.sendMail({ from: this.getSender(), to, subject, html, text });
+    this.logger.log(`Email sent to ${to}`);
+  }
+
+  async sendEmailVerification(to: string, otp: string): Promise<boolean> {
+    try {
+      await this.sendMail(to, 'EduSphere — Verify Your Email', `<h2>EduSphere</h2><p>Your verification code is:</p><h1>${otp}</h1><p>This code expires in 15 minutes.</p>`, `Your EduSphere verification code is ${otp}. It expires in 15 minutes.`);
+      return true;
+    } catch (error: unknown) {
+      this.logger.error(error instanceof Error ? error.message : 'Verification email failed');
+      return false;
+    }
+  }
+
+<<<<<<< HEAD
+  async sendSchoolApprovalEmail(
+    to: string,
+    schoolName: string,
+    loginUrl: string,
+  ): Promise<void> {
+    await this.sendMail(
+      to,
+      'Your EduSphere school has been approved',
+      `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h2>School Approved</h2><p>Your school <strong>${schoolName}</strong> has been approved.</p><p><a href="${loginUrl}">Open School Portal</a></p></div>`,
+      `Your school ${schoolName} has been approved.\n\n${loginUrl}`,
+    );
+  }
+  async sendVerificationEmail(to: string, name: string, verificationUrl: string): Promise<void> {
+    await this.sendMail(to, 'Verify your EduSphere email', `<h2>Welcome to EduSphere</h2><p>Hello ${name},</p><p><a href="${verificationUrl}">Verify Email</a></p>`, `Hello ${name}, verify your email: ${verificationUrl}`);
+  }
+
+  async sendPasswordReset(to: string, token: string): Promise<boolean> {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
+    await this.sendMail(to, 'EduSphere — Password Reset', `<h2>Password Reset</h2><p><a href="${resetUrl}">Reset Password</a></p>`, `Reset your password: ${resetUrl}`);
+    return true;
+  }
+
+  async sendPasswordResetEmail(to: string, name: string, resetUrl: string): Promise<void> {
+    await this.sendMail(to, 'Reset your EduSphere password', `<h2>Password Reset</h2><p>Hello ${name},</p><p><a href="${resetUrl}">Reset Password</a></p>`, `Hello ${name}, reset your password: ${resetUrl}`);
+  }
+
+  async sendSchoolOnboarding(to: string, details: { schoolName: string; schoolSlug: string; adminName: string; temporaryPassword: string; plan: string }): Promise<boolean> {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const loginUrl = `${frontendUrl}/${details.schoolSlug}/login`;
+    try {
+      await this.sendMail(to, `Your ${details.schoolName} EduSphere account is ready`, `<h2>School Approved</h2><p>Hello ${details.adminName},</p><p>Your school <strong>${details.schoolName}</strong> has been approved.</p><p>Login: <a href="${loginUrl}">${loginUrl}</a></p><p>Email: ${to}</p><p>Temporary password: ${details.temporaryPassword}</p><p>Plan: ${details.plan}</p><p>Please change the temporary password after signing in.</p>`, `Your school was approved. Login: ${loginUrl}. Email: ${to}. Temporary password: ${details.temporaryPassword}. Plan: ${details.plan}.`);
+      return true;
+    } catch (error: unknown) {
+      this.logger.error(error instanceof Error ? error.message : 'Onboarding email failed');
+      return false;
+    }
+  }
+
+  async sendSchoolApprovalEmail(to: string, schoolName: string, loginUrl: string): Promise<void> {
+    await this.sendMail(to, 'Your EduSphere school has been approved', `<h2>School Approved</h2><p>Your school <strong>${schoolName}</strong> has been approved.</p><p><a href="${loginUrl}">Open School Portal</a></p>`, `Your school ${schoolName} was approved. ${loginUrl}`);
+
+  }
+
+  async verifyConnection(): Promise<boolean> {
+    try {
+      await this.transporter.verify();
+
+      this.logger.log('SMTP connection verified successfully');
+      return true;
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown SMTP error';
+      this.logger.error(`SMTP connection failed: ${message}`);
+
+      return true;
+    } catch (error: unknown) {
+      this.logger.error(error instanceof Error ? error.message : 'SMTP verification failed');
+
+      return false;
+    }
+  }
+}
+```typescript
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+
+@Injectable()
+export class MailService {
+  private readonly logger = new Logger(MailService.name);
+  private readonly transporter: nodemailer.Transporter;
+
+  constructor(private readonly configService: ConfigService) {
+    const smtpUser =
+      this.configService.get<string>('SMTP_USER') || undefined;
+
+    const smtpPass =
+      this.configService.get<string>('SMTP_PASS') || undefined;
+
+    const smtpHost =
+      this.configService.get<string>('SMTP_HOST') ||
+      'smtp-relay.brevo.com';
+
+    const smtpPort = Number(
+      this.configService.get<string>('SMTP_PORT') || '587',
+    );
+
+    const smtpSecure =
+      (
+        this.configService.get<string>('SMTP_SECURE') || 'false'
+      ).toLowerCase() === 'true';
+
+    this.logger.log(`SMTP_HOST=${smtpHost}`);
+    this.logger.log(`SMTP_PORT=${smtpPort}`);
+    this.logger.log(`SMTP_SECURE=${smtpSecure}`);
+    this.logger.log(`SMTP_USER=${smtpUser}`);
+    this.logger.log(
+      `SMTP_PASS loaded=${!!smtpPass}, length=${smtpPass?.length ?? 0}`,
+    );
+
+    this.transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+  }
+
+  private getSender(): string {
+    return (
       this.configService.get<string>('SMTP_FROM') ||
       this.configService.get<string>('SMTP_USER') ||
-      'noreply@edusphere.app';
-    const senderName =
-      this.configService.get<string>('SMTP_FROM_NAME') || 'EduSphere';
-
-    return `"${senderName}" <${sender}>`;
+      'noreply@edusphere.app'
+    );
   }
 
   async sendMail(
@@ -58,31 +198,46 @@ export class MailService {
     html: string,
     text?: string,
   ): Promise<void> {
-    try {
-      await this.transporter.sendMail({
-        from: this.getSender(),
-        to,
-        subject,
-        text,
-        html,
-      });
-      this.logger.log(`Email sent successfully to ${to}`);
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Unknown mail error';
-      this.logger.error(`Failed to send email to ${to}: ${message}`);
-      throw error;
-    }
+    await this.transporter.sendMail({
+      from: this.getSender(),
+      to,
+      subject,
+      html,
+      text,
+    });
+
+    this.logger.log(`Email sent to ${to}`);
   }
 
-  async sendEmailVerification(to: string, otp: string): Promise<boolean> {
-    await this.sendMail(
-      to,
-      'EduSphere — Verify Your Email',
-      `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>EduSphere</h2><p>Use this OTP to verify your email:</p><div style="font-size:30px;font-weight:700;letter-spacing:8px;margin:24px 0">${otp}</div><p>This code expires in 15 minutes.</p></div>`,
-      `Your EduSphere verification OTP is: ${otp}. This code expires in 15 minutes.`,
-    );
-    return true;
+  async sendEmailVerification(
+    to: string,
+    otp: string,
+  ): Promise<boolean> {
+    try {
+      await this.sendMail(
+        to,
+        'EduSphere — Verify Your Email',
+        `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+            <h2>EduSphere</h2>
+            <p>Your verification code is:</p>
+            <h1>${otp}</h1>
+            <p>This code expires in 15 minutes.</p>
+          </div>
+        `,
+        `Your EduSphere verification code is ${otp}. It expires in 15 minutes.`,
+      );
+
+      return true;
+    } catch (error: unknown) {
+      this.logger.error(
+        error instanceof Error
+          ? error.message
+          : 'Verification email failed',
+      );
+
+      return false;
+    }
   }
 
   async sendVerificationEmail(
@@ -93,23 +248,91 @@ export class MailService {
     await this.sendMail(
       to,
       'Verify your EduSphere email',
-      `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h2>Welcome to EduSphere</h2><p>Hello ${name},</p><p>Please verify your email address:</p><p><a href="${verificationUrl}">Verify Email</a></p></div>`,
-      `Hello ${name},\n\nPlease verify your EduSphere email using this link:\n${verificationUrl}`,
+      `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+          <h2>Welcome to EduSphere</h2>
+          <p>Hello ${name},</p>
+          <p>
+            <a href="${verificationUrl}">
+              Verify Email
+            </a>
+          </p>
+        </div>
+      `,
+      `Hello ${name}, verify your email: ${verificationUrl}`,
     );
   }
 
-  async sendPasswordReset(to: string, token: string): Promise<boolean> {
-    const frontendUrl =
-      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
-    const resetLink = `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
-
+  async sendSchoolApprovalEmail(
+    to: string,
+    schoolName: string,
+    loginUrl: string,
+  ): Promise<void> {
     await this.sendMail(
       to,
-      'EduSphere — Password Reset Request',
-      `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>EduSphere</h2><p>You requested a password reset.</p><p><a href="${resetLink}">Reset Password</a></p><p>If you did not request this, ignore this email.</p></div>`,
-      `You requested a password reset. Reset your password here: ${resetLink}`,
+      'Your EduSphere school has been approved',
+      `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+          <h2>School Approved</h2>
+
+          <p>
+            Your school
+            <strong>${schoolName}</strong>
+            has been approved.
+          </p>
+
+          <p>
+            <a href="${loginUrl}">
+              Open School Portal
+            </a>
+          </p>
+        </div>
+      `,
+      `Your school ${schoolName} has been approved.
+
+${loginUrl}`,
     );
-    return true;
+  }
+
+  async sendPasswordReset(
+    to: string,
+    token: string,
+  ): Promise<boolean> {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      'http://localhost:5173';
+
+    const resetUrl =
+      `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
+
+    try {
+      await this.sendMail(
+        to,
+        'EduSphere — Password Reset',
+        `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+            <h2>Password Reset</h2>
+
+            <p>
+              <a href="${resetUrl}">
+                Reset Password
+              </a>
+            </p>
+          </div>
+        `,
+        `Reset your EduSphere password: ${resetUrl}`,
+      );
+
+      return true;
+    } catch (error: unknown) {
+      this.logger.error(
+        error instanceof Error
+          ? error.message
+          : 'Password reset email failed',
+      );
+
+      return false;
+    }
   }
 
   async sendPasswordResetEmail(
@@ -120,8 +343,20 @@ export class MailService {
     await this.sendMail(
       to,
       'Reset your EduSphere password',
-      `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h2>Password Reset</h2><p>Hello ${name},</p><p><a href="${resetUrl}">Reset Password</a></p></div>`,
-      `Hello ${name},\n\nReset your EduSphere password using this link:\n${resetUrl}`,
+      `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+          <h2>Password Reset</h2>
+
+          <p>Hello ${name},</p>
+
+          <p>
+            <a href="${resetUrl}">
+              Reset Password
+            </a>
+          </p>
+        </div>
+      `,
+      `Hello ${name}, reset your EduSphere password: ${resetUrl}`,
     );
   }
 
@@ -135,46 +370,101 @@ export class MailService {
       plan: string;
     },
   ): Promise<boolean> {
-    const appUrl =
-      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
-    const loginUrl = `${appUrl}/${details.schoolSlug}/login`;
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      'http://localhost:5173';
+
+    const loginUrl =
+      `${frontendUrl}/${details.schoolSlug}/login`;
 
     try {
       await this.sendMail(
         to,
         `Your ${details.schoolName} EduSphere account is ready`,
-        `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h2>EduSphere — School Approved</h2><p>Hello ${details.adminName},</p><p>Your <strong>${details.schoolName}</strong> account has been approved.</p><p><strong>Plan:</strong> ${details.plan}</p><p><strong>Email:</strong> ${to}</p><p><strong>Temporary password:</strong> ${details.temporaryPassword}</p><p><a href="${loginUrl}">Open School Portal</a></p><p>Please change your password after signing in.</p></div>`,
-        `Hello ${details.adminName},\n\nYour ${details.schoolName} account has been approved.\n\nLogin URL: ${loginUrl}\nEmail: ${to}\nTemporary password: ${details.temporaryPassword}\nPlan: ${details.plan}\n\nPlease change your password after signing in.`,
+        `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+            <h2>School Approved</h2>
+
+            <p>
+              Hello ${details.adminName},
+            </p>
+
+            <p>
+              Your school
+              <strong>${details.schoolName}</strong>
+              has been approved.
+            </p>
+
+            <p>
+              <strong>Login:</strong>
+              <a href="${loginUrl}">
+                ${loginUrl}
+              </a>
+            </p>
+
+            <p>
+              <strong>Email:</strong>
+              ${to}
+            </p>
+
+            <p>
+              <strong>Temporary Password:</strong>
+              ${details.temporaryPassword}
+            </p>
+
+            <p>
+              <strong>Plan:</strong>
+              ${details.plan}
+            </p>
+
+            <p>
+              Please change the temporary password after signing in.
+            </p>
+          </div>
+        `,
+        `
+Your school was approved.
+
+Login: ${loginUrl}
+Email: ${to}
+Temporary password: ${details.temporaryPassword}
+Plan: ${details.plan}
+        `,
       );
+
       return true;
-    } catch {
+    } catch (error: unknown) {
+      this.logger.error(
+        error instanceof Error
+          ? error.message
+          : 'Onboarding email failed',
+      );
+
       return false;
     }
-  }
-
-  async sendSchoolApprovalEmail(
-    to: string,
-    schoolName: string,
-    loginUrl: string,
-  ): Promise<void> {
-    await this.sendMail(
-      to,
-      'Your EduSphere school has been approved',
-      `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h2>School Approved</h2><p>Your school <strong>${schoolName}</strong> has been approved.</p><p><a href="${loginUrl}">Open School Portal</a></p></div>`,
-      `Your school ${schoolName} has been approved.\n\n${loginUrl}`,
-    );
   }
 
   async verifyConnection(): Promise<boolean> {
     try {
       await this.transporter.verify();
-      this.logger.log('SMTP connection verified successfully');
+
+      this.logger.log(
+        'SMTP connection verified successfully',
+      );
+
       return true;
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Unknown SMTP error';
-      this.logger.error(`SMTP connection failed: ${message}`);
+        error instanceof Error
+          ? error.message
+          : 'Unknown SMTP error';
+
+      this.logger.error(
+        `SMTP connection failed: ${message}`,
+      );
+
       return false;
     }
   }
 }
+```

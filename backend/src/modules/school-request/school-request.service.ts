@@ -1,54 +1,36 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-
 import { CreateSchoolRequestDto } from './dto/create-school-request.dto';
 
 @Injectable()
 export class SchoolRequestService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateSchoolRequestDto) {
     return this.prisma.schoolRequest.create({
       data: {
-        schoolName: dto.schoolName,
-        ownerName: dto.ownerName,
-        email: dto.email,
-        phone: dto.phone,
-        whatsapp: dto.whatsapp,
-        city: dto.city,
-        address: dto.address,
+        schoolName: dto.schoolName.trim(),
+        ownerName: dto.ownerName.trim(),
+        email: dto.email.trim().toLowerCase(),
+        phone: dto.phone || null,
+        city: dto.city || null,
+        address: dto.address || null,
         expectedStudents: dto.expectedStudents,
-        subdomain: dto.subdomain,
-        requestedPlan: dto.plan,
-        notes: dto.notes,
+        subdomain: dto.subdomain?.trim().toLowerCase() || null,
+        requestedPlan: dto.plan || 'FREE_TRIAL',
+        notes: dto.notes || null,
         status: 'PENDING',
       },
     });
   }
 
   async findAll() {
-    return this.prisma.schoolRequest.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return this.prisma.schoolRequest.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
   async findOne(id: string) {
-    const request = await this.prisma.schoolRequest.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!request) {
-      throw new NotFoundException('School request not found');
-    }
-
+    const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
+    if (!request) throw new NotFoundException('School request not found');
     return request;
   }
 }

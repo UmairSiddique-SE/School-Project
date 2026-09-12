@@ -27,10 +27,11 @@ export class AuthService {
       if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable');
       const passwordHash = await bcrypt.hash(dto.adminPassword, 12); const otp = String(randomInt(100000, 1000000));
       const result = await this.prisma.$transaction(async (tx) => {
-        const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: false } });
+        const school = await tx.school.create({ data: { name: dto.schoolName.trim(), slug: schoolSlug, type: dto.schoolType, logoUrl: dto.logoUrl, phone: dto.schoolPhone || dto.adminPhone, address: dto.schoolAddress, country: dto.country, city: dto.city, isActive: true } });
         const user = await tx.user.create({ data: { name: dto.adminName.trim(), email: adminEmail, passwordHash, role: 'SCHOOL_ADMIN', schoolId: school.id, phone: dto.adminPhone } });
         const endDate = this.calculateEndDate(new Date(), plan.period);
         await tx.subscription.create({ data: { schoolId: school.id, plan: plan.planKey, status: 'PENDING', endDate, amount: plan.price, currency: plan.currency } });
+        await tx.schoolRequest.create({ data: { schoolName: school.name, ownerName: user.name, email: adminEmail, phone: dto.adminPhone || dto.schoolPhone || null, whatsapp: dto.adminPhone || null, city: dto.city || null, address: dto.schoolAddress || null, subdomain: schoolSlug, requestedPlan: plan.planKey, status: 'PENDING' } });
         await tx.emailVerification.create({ data: { userId: user.id, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) } }); return { school, user };
       });
       this.mailService.sendEmailVerification(result.user.email, otp).catch((error) => console.error('Failed to send verification email:', error));
@@ -50,6 +51,10 @@ export class AuthService {
     if (user.role === 'PARENT') throw new UnauthorizedException('Parent accounts do not have portal login access');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
     if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended');
+    if (user.role === 'SCHOOL_ADMIN' && user.school) {
+      const pendingRequest = await this.prisma.schoolRequest.findFirst({ where: { email: user.email, status: 'PENDING' }, select: { id: true } });
+      if (pendingRequest) throw new UnauthorizedException('Your school registration is pending Super Admin approval. School login will be enabled after approval.');
+    }
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
     const subscription = user.school?.subscription;
@@ -66,6 +71,10 @@ export class AuthService {
     if (stored.user.role === 'PARENT') throw new UnauthorizedException('Parent accounts do not have portal login access');
     const subscription = stored.user.school?.subscription; const expired = subscription && subscription.status !== 'PENDING' && (subscription.status === 'EXPIRED' || subscription.endDate < new Date());
     if (!stored.user.isActive || stored.user.school && (!stored.user.school.isActive || expired)) throw new UnauthorizedException('Account or subscription is inactive');
+    if (stored.user.role === 'SCHOOL_ADMIN' && stored.user.schoolId) {
+      const pendingRequest = await this.prisma.schoolRequest.findFirst({ where: { email: stored.user.email, status: 'PENDING' }, select: { id: true } });
+      if (pendingRequest) throw new UnauthorizedException('School registration is still pending Super Admin approval');
+    }
     await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } });
     return this.generateTokens(stored.user.id, stored.user.email, stored.user.role, stored.user.schoolId ?? undefined);
   }
@@ -87,9 +96,23 @@ export class AuthService {
   async submitOnboardingPayment(dto: OnboardingPaymentDto, user: Pick<JwtPayload, 'schoolId' | 'role'>) {
     if (user.schoolId !== dto.schoolId || user.role !== 'SCHOOL_ADMIN') throw new UnauthorizedException('You can only submit payment for your school');
     const school = await this.prisma.school.findUnique({ where: { id: dto.schoolId }, include: { subscription: true } }); if (!school) throw new BadRequestException('School account not found');
-    const plan = await this.prisma.platformPlan.findUnique({ where: { planKey: dto.plan } }); if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable'); if (plan.price <= 0) throw new BadRequestException('This plan does not require a payment submission');
-    const amount = Number(dto.amount); if (!Number.isFinite(amount) || amount !== Number(plan.price)) throw new BadRequestException(`Payment amount must exactly match the ${plan.name} plan price`); if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) throw new BadRequestException('Payment screenshot must be 2 MB or smaller');
-    return this.prisma.$transaction(async (tx) => { const pendingPayment = await tx.onboardingPayment.findFirst({ where: { schoolId: dto.schoolId, status: 'PENDING' }, select: { id: true } }); if (pendingPayment) throw new ConflictException('A payment is already pending review for this school'); const payment = await tx.onboardingPayment.create({ data: { schoolId: dto.schoolId, plan: plan.planKey, amount: plan.price, method: dto.method, reference: dto.reference, screenshotUrl: dto.screenshotUrl || null } }); const now = new Date(); const currentSubscription = school.subscription; const activeUnexpired = school.isActive && currentSubscription?.status === 'ACTIVE' && currentSubscription.endDate > now; if (!activeUnexpired) await tx.subscription.update({ where: { schoolId: dto.schoolId }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'PENDING' } }); return payment; });
+    const plan = await this.prisma.platformPlan.findUnique({ where: { planKey: dto.plan } }); if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable');
+    if (Number(plan.price) <= 0) throw new BadRequestException('This plan does not require a payment submission');
+    const amount = dto.amount == null ? Number(plan.price) : Number(dto.amount);
+    if (!Number.isFinite(amount) || amount !== Number(plan.price)) throw new BadRequestException(`Payment amount must exactly match the ${plan.name} plan price`);
+    if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) throw new BadRequestException('Payment screenshot must be 2 MB or smaller');
+    return this.prisma.$transaction(async (tx) => {
+      const pendingPayment = await tx.onboardingPayment.findFirst({ where: { schoolId: dto.schoolId, status: 'PENDING' }, select: { id: true } });
+      if (pendingPayment) throw new ConflictException('A payment is already pending review for this school');
+      const payment = await tx.onboardingPayment.create({ data: { schoolId: dto.schoolId, plan: plan.planKey, amount: plan.price, method: dto.method, reference: dto.reference, screenshotUrl: dto.screenshotUrl || null } });
+      const now = new Date(); const currentSubscription = school.subscription; const activeUnexpired = school.isActive && currentSubscription?.status === 'ACTIVE' && currentSubscription.endDate > now;
+      if (!activeUnexpired) await tx.subscription.update({ where: { schoolId: dto.schoolId }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'PENDING' } });
+      await tx.school.update({ where: { id: dto.schoolId }, data: { isActive: false } });
+      const schoolUsers = await tx.user.findMany({ where: { schoolId: dto.schoolId }, select: { id: true } });
+      await tx.user.updateMany({ where: { schoolId: dto.schoolId, role: 'SCHOOL_ADMIN' }, data: { isActive: false } });
+      await tx.refreshToken.updateMany({ where: { userId: { in: schoolUsers.map((u) => u.id) }, revokedAt: null }, data: { revokedAt: now } });
+      return payment;
+    });
   }
 
   async getCurrentUser(userId: string) { const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true, role: true, phone: true, schoolId: true, lastLoginAt: true, isActive: true, emailVerified: true } }); if (!user || !user.isActive) throw new UnauthorizedException('User account is unavailable'); return { user }; }
