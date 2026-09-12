@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, fix/remove-dummy-data]
+    branches: [main, fix/remove-dummy-data, feat/super-admin-market-ready]
   pull_request:
-    branches: [main]
+    branches: [main, feat/super-admin-market-ready]
 
 jobs:
   backend:
