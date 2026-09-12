@@ -1,0 +1,15 @@
+ALTER TABLE "Student"
+  ADD COLUMN IF NOT EXISTS "bFormNumber" TEXT,
+  ADD COLUMN IF NOT EXISTS "currentAddress" TEXT,
+  ADD COLUMN IF NOT EXISTS "permanentAddress" TEXT,
+  ADD COLUMN IF NOT EXISTS "emergencyContact" TEXT,
+  ADD COLUMN IF NOT EXISTS "previousSchool" TEXT,
+  ADD COLUMN IF NOT EXISTS "previousClass" TEXT,
+  ADD COLUMN IF NOT EXISTS "leavingCertificateUrl" TEXT,
+  ADD COLUMN IF NOT EXISTS "admissionType" TEXT NOT NULL DEFAULT 'NEW',
+  ADD COLUMN IF NOT EXISTS "previousAcademicRecord" TEXT,
+  ADD COLUMN IF NOT EXISTS "medicalNotes" TEXT,
+  ADD COLUMN IF NOT EXISTS "specialRequirements" TEXT,
+  ADD COLUMN IF NOT EXISTS "transportRequired" BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS "hostelRequired" BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS "remarks" TEXT;
