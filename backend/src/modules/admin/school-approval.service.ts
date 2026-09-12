@@ -38,8 +38,9 @@ export class SchoolApprovalService {
     }
 
     const now = new Date();
-    const result = await this.prisma.$transaction(async (tx) => {
-      const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
+const result = await this.prisma.$transaction(
+  async (tx) => {
+          const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
       const plan = await tx.platformPlan.findUnique({ where: { planKey: request.requestedPlan || subscription?.plan || 'FREE_TRIAL' } });
       const isFreeTrial = !plan || plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
       const approvedPayment = !isFreeTrial
@@ -69,8 +70,19 @@ export class SchoolApprovalService {
         });
       }
 
-      return { updatedRequest, subscription: await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } }), canActivate };
-    });
+       return {
+        updatedRequest,
+        subscription: await tx.subscription.findUnique({
+          where: { schoolId: existingSchool.id },
+        }),
+        canActivate,
+      };
+    },
+    {
+      maxWait: 10000,
+      timeout: 15000,
+    },
+  );
 
     return {
       ...result.updatedRequest,
