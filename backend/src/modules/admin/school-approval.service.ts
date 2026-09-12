@@ -10,9 +10,6 @@ export class SchoolApprovalService {
     if (!request) throw new NotFoundException('School request not found');
     if (request.status !== 'PENDING') throw new ConflictException('This request has already been reviewed');
 
-    // Registration already creates the real School/User/Subscription. This
-    // request is only the Super Admin review record, so approval must never
-    // create a second school or a second admin account.
     const existingSchool = request.subdomain
       ? await this.prisma.school.findUnique({ where: { slug: request.subdomain } })
       : await this.prisma.school.findFirst({ where: { email: request.email } });
@@ -42,17 +39,23 @@ export class SchoolApprovalService {
 
     const now = new Date();
     const result = await this.prisma.$transaction(async (tx) => {
+      const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
+      const plan = await tx.platformPlan.findUnique({ where: { planKey: request.requestedPlan || subscription?.plan || 'FREE_TRIAL' } });
+      const isFreeTrial = !plan || plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
+      const approvedPayment = !isFreeTrial
+        ? await tx.onboardingPayment.findFirst({ where: { schoolId: existingSchool.id, plan: plan?.planKey || request.requestedPlan, status: 'APPROVED' }, select: { id: true } })
+        : null;
+      const canActivate = isFreeTrial || !!approvedPayment;
+
       const updatedRequest = await tx.schoolRequest.update({
         where: { id },
         data: { status: 'APPROVED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: now },
       });
 
-      await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: true } });
-      await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: true } });
+      await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: canActivate } });
+      await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: canActivate } });
 
-      const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
-      const plan = await tx.platformPlan.findUnique({ where: { planKey: request.requestedPlan || subscription?.plan || 'FREE_TRIAL' } });
-      if (subscription && plan && (Number(plan.price) === 0 || plan.planKey === 'FREE_TRIAL')) {
+      if (subscription && isFreeTrial && plan) {
         await tx.subscription.update({
           where: { schoolId: existingSchool.id },
           data: { plan: plan.planKey, status: 'ACTIVE', startDate: now, endDate: this.calculateEndDate(now, plan.period), amount: plan.price, currency: plan.currency },
@@ -62,18 +65,18 @@ export class SchoolApprovalService {
       const finalReviewerId = reviewerUserId || (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' }, select: { id: true } }))?.id;
       if (finalReviewerId) {
         await tx.auditLog.create({
-          data: { action: 'SCHOOL_REQUEST_APPROVED', entity: 'SchoolRequest', entityId: id, schoolId: existingSchool.id, userId: finalReviewerId, after: `Approved registration request for ${request.schoolName}. Existing school account retained.` },
+          data: { action: 'SCHOOL_REQUEST_APPROVED', entity: 'SchoolRequest', entityId: id, schoolId: existingSchool.id, userId: finalReviewerId, after: canActivate ? `Approved and activated registration request for ${request.schoolName}.` : `Approved registration request for ${request.schoolName}; payment is still pending, so login remains locked.` },
         });
       }
 
-      return { updatedRequest, subscription: await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } }) };
+      return { updatedRequest, subscription: await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } }), canActivate };
     });
 
     return {
       ...result.updatedRequest,
       school: { id: existingSchool.id, name: existingSchool.name, slug: existingSchool.slug },
       loginPath: `/${existingSchool.slug}/login`,
-      activationStatus: result.subscription?.status === 'ACTIVE' ? 'ACTIVE' : 'PAYMENT_PENDING',
+      activationStatus: result.canActivate ? 'ACTIVE' : 'PAYMENT_PENDING',
     };
   }
 
