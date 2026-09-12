@@ -51,12 +51,10 @@ export class AuthService {
     if (user.role === 'PARENT') throw new UnauthorizedException('Parent accounts do not have portal login access');
     if (!user.isActive) throw new UnauthorizedException('This account has been suspended');
     if (user.school && !user.school.isActive) throw new UnauthorizedException('This school account is suspended');
-
     if (user.role === 'SCHOOL_ADMIN' && user.school) {
       const pendingRequest = await this.prisma.schoolRequest.findFirst({ where: { email: user.email, status: 'PENDING' }, select: { id: true } });
       if (pendingRequest) throw new UnauthorizedException('Your school registration is pending Super Admin approval. School login will be enabled after approval.');
     }
-
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT') throw new UnauthorizedException('Please verify your email before signing in');
     const subscription = user.school?.subscription;
@@ -100,7 +98,7 @@ export class AuthService {
     const school = await this.prisma.school.findUnique({ where: { id: dto.schoolId }, include: { subscription: true } }); if (!school) throw new BadRequestException('School account not found');
     const plan = await this.prisma.platformPlan.findUnique({ where: { planKey: dto.plan } }); if (!plan || !plan.isActive) throw new BadRequestException('Selected subscription plan is unavailable');
     if (Number(plan.price) <= 0) throw new BadRequestException('This plan does not require a payment submission');
-    const amount = dto.amount === undefined || dto.amount === null || dto.amount === '' ? Number(plan.price) : Number(dto.amount);
+    const amount = dto.amount == null ? Number(plan.price) : Number(dto.amount);
     if (!Number.isFinite(amount) || amount !== Number(plan.price)) throw new BadRequestException(`Payment amount must exactly match the ${plan.name} plan price`);
     if (dto.screenshotUrl && dto.screenshotUrl.length > 2_800_000) throw new BadRequestException('Payment screenshot must be 2 MB or smaller');
     return this.prisma.$transaction(async (tx) => {
@@ -110,8 +108,9 @@ export class AuthService {
       const now = new Date(); const currentSubscription = school.subscription; const activeUnexpired = school.isActive && currentSubscription?.status === 'ACTIVE' && currentSubscription.endDate > now;
       if (!activeUnexpired) await tx.subscription.update({ where: { schoolId: dto.schoolId }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'PENDING' } });
       await tx.school.update({ where: { id: dto.schoolId }, data: { isActive: false } });
+      const schoolUsers = await tx.user.findMany({ where: { schoolId: dto.schoolId }, select: { id: true } });
       await tx.user.updateMany({ where: { schoolId: dto.schoolId, role: 'SCHOOL_ADMIN' }, data: { isActive: false } });
-      await tx.refreshToken.updateMany({ where: { userId: { in: (await tx.user.findMany({ where: { schoolId: dto.schoolId }, select: { id: true } })).map((u) => u.id) }, revokedAt: null }, data: { revokedAt: now } });
+      await tx.refreshToken.updateMany({ where: { userId: { in: schoolUsers.map((u) => u.id) }, revokedAt: null }, data: { revokedAt: now } });
       return payment;
     });
   }
