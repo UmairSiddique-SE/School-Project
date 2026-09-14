@@ -8,6 +8,21 @@ const FOREVER_DATE = new Date('9999-12-31T23:59:59.999Z');
 export class PaymentLifecycleService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async syncExpiredSubscriptions() {
+    const now = new Date();
+    const expired = await this.prisma.subscription.findMany({
+      where: { status: 'ACTIVE', endDate: { lte: now } },
+      select: { schoolId: true },
+    });
+    if (!expired.length) return { count: 0 };
+    const schoolIds = expired.map((s) => s.schoolId);
+    await this.prisma.$transaction([
+      this.prisma.subscription.updateMany({ where: { schoolId: { in: schoolIds }, status: 'ACTIVE', endDate: { lte: now } }, data: { status: 'EXPIRED' } }),
+      this.prisma.school.updateMany({ where: { id: { in: schoolIds }, deletedAt: null }, data: { isActive: false } }),
+    ]);
+    return { count: schoolIds.length };
+  }
+
   async approvePayment(id: string, actor?: any) {
     return this.prisma.$transaction(async (tx) => {
       const payment = await tx.onboardingPayment.findUnique({
@@ -33,6 +48,7 @@ export class PaymentLifecycleService {
       if (updatedPayment.count !== 1) throw new BadRequestException('Payment was already reviewed');
 
       await tx.school.update({ where: { id: payment.schoolId }, data: { isActive: true } });
+      await tx.user.updateMany({ where: { schoolId: payment.schoolId, role: 'SCHOOL_ADMIN' }, data: { isActive: true } });
       await tx.subscription.update({
         where: { schoolId: payment.schoolId },
         data: {
@@ -43,6 +59,13 @@ export class PaymentLifecycleService {
           amount: plan.price,
           currency: plan.currency,
         },
+      });
+
+      // Payment approval is the final approval step for paid onboarding.
+      // If a matching registration request is still pending, mark it approved too.
+      await tx.schoolRequest.updateMany({
+        where: { email: { equals: (await tx.user.findFirst({ where: { schoolId: payment.schoolId, role: 'SCHOOL_ADMIN' }, select: { email: true } }))?.email }, status: 'PENDING' },
+        data: { status: 'APPROVED', reviewedBy: actor?.name || 'Super Admin', reviewedAt: now, reviewNotes: 'Payment approved by Super Admin.' },
       });
 
       if (actor?.id) {
@@ -118,34 +141,19 @@ export class PaymentLifecycleService {
   private calculateEndDate(start: Date, period: string): Date {
     const normalized = (period || '').trim().toLowerCase();
     if (normalized === 'forever') return new Date(FOREVER_DATE);
-
-    // Accept both human-friendly catalogue values such as "per month"
-    // and explicit periods such as "1 month" / "30 days".
     if (normalized === 'per month' || normalized === 'monthly' || normalized === 'month') {
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
-      return end;
+      const end = new Date(start); end.setMonth(end.getMonth() + 1); return end;
     }
-
     const monthMatch = normalized.match(/(\d+)\s*month/);
     if (monthMatch) {
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + Number(monthMatch[1]));
-      return end;
+      const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end;
     }
-
     const dayMatch = normalized.match(/(\d+)\s*day/);
     if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
-
     if (normalized.includes('year')) {
-      const end = new Date(start);
-      end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1));
-      return end;
+      const end = new Date(start); end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1)); return end;
     }
-
-    // Free Trial is intentionally one day in the current launch catalogue.
-    if (normalized === 'free trial' || normalized === 'trial') return new Date(start.getTime() + DAY_MS);
-
+    if (normalized === 'free trial' || normalized === 'trial') return new Date(start.getTime() + 3 * DAY_MS);
     throw new BadRequestException('Unsupported subscription period');
   }
 }
