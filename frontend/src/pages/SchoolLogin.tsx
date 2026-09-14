@@ -61,7 +61,12 @@ export default function SchoolLogin() {
 
   const openLogin = (school: SchoolItem) => {
     if (!school.loginAvailable) return;
-    navigate(`/${school.slug}/login`);
+    const slug = String(school.slug || "").trim().replace(/^\/+|\/+$/g, "");
+    if (!slug) {
+      navigate("/school-login", { replace: true });
+      return;
+    }
+    navigate(`/${encodeURIComponent(slug)}/login`);
   };
 
   return (
