@@ -36,6 +36,7 @@ export class AdminController {
 
   @Get('overview')
   async getOverview(): Promise<OverviewDto> {
+    await this.paymentLifecycleService.syncExpiredSubscriptions();
     const now = Date.now();
     if (this.overviewCache && now - this.overviewCacheAt < this.overviewCacheMs) return this.overviewCache;
     if (!this.overviewInFlight) {
@@ -59,6 +60,8 @@ export class AdminController {
 
   @Get('requests')
   async getSchoolRequests(@Query('status') status?: string) {
+    const cleanupBefore = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    await this.prisma.schoolRequest.deleteMany({ where: { status: { in: ['APPROVED', 'REJECTED'] }, reviewedAt: { not: null, lt: cleanupBefore } } });
     const normalizedStatus = status?.trim().toUpperCase();
     const where = normalizedStatus && normalizedStatus !== 'ALL' ? { status: normalizedStatus } : undefined;
     return this.prisma.schoolRequest.findMany({
