@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsIn,
+  IsNumber,
 } from 'class-validator';
 
 export class LoginDto {
@@ -95,6 +96,12 @@ export class VerifyEmailDto {
   otp: string;
 }
 
+export class ResendOtpDto {
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+}
+
 export class OnboardingPaymentDto {
   @IsString()
   @IsNotEmpty()
@@ -109,15 +116,20 @@ export class OnboardingPaymentDto {
   method: string;
 
   @IsOptional()
+  @IsNumber()
   amount?: number;
 
-  @IsOptional()
   @IsString()
-  screenshotUrl?: string;
+  @IsNotEmpty()
+  screenshotUrl: string;
 
   @IsOptional()
   @IsString()
   reference?: string;
+
+  @IsOptional()
+  @IsString()
+  transactionId?: string;
 }
 
 export class RefreshTokenDto {
