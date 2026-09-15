@@ -41,12 +41,12 @@ export class AttendanceController {
   @Post()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendance(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user);
   }
 
   @Post('mark')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendanceAlias(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user);
   }
 }
