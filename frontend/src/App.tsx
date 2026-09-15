@@ -25,7 +25,7 @@ import NoticeBoard from "@/pages/NoticeBoard";
 import Transport from "@/pages/Transport";
 import Reports from "@/pages/Reports";
 import Subscription from "@/pages/Subscription";
-import AttendanceAdmin from "@/pages/AttendanceAdmin";
+import AttendanceAdmin from "@/pages/AttendanceLive";
 import Notifications from "@/pages/NotificationsLive";
 import BuildingManagement from "@/pages/BuildingManagement";
 import StudentPortal from "@/pages/StudentPortal";
