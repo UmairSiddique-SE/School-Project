@@ -8,6 +8,7 @@ import { OnboardingStatusController } from './onboarding-status.controller';
 import { OnboardingStatusService } from './onboarding-status.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PendingSchoolRegistrationService } from './pending-school-registration.service';
+import { SchoolRegistrationService } from './school-registration.service';
 import { MailModule } from '../mail/mail.module';
 
 @Module({
@@ -21,19 +22,13 @@ import { MailModule } from '../mail/mail.module';
         if (!secret && config.get<string>('NODE_ENV') === 'production') {
           throw new Error('JWT_SECRET is required in production.');
         }
-
-        return {
-          secret: secret || 'development-only-secret',
-          signOptions: {
-            expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any,
-          },
-        };
+        return { secret: secret || 'development-only-secret', signOptions: { expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any } };
       },
     }),
     MailModule,
   ],
   controllers: [AuthController, OnboardingStatusController],
-  providers: [AuthService, OnboardingStatusService, JwtStrategy, PendingSchoolRegistrationService],
+  providers: [AuthService, OnboardingStatusService, JwtStrategy, PendingSchoolRegistrationService, SchoolRegistrationService],
   exports: [AuthService, PassportModule],
 })
 export class AuthModule {}
