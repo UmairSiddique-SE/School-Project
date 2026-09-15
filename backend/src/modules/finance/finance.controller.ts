@@ -1,6 +1,4 @@
-import {
-  Controller, Get, Post, Body, UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -34,5 +32,23 @@ export class FinanceController {
   @Roles('SCHOOL_ADMIN')
   collectFee(@CurrentUser() user: any, @Body() dto: any) {
     return this.financeService.collectFee(user.schoolId, dto);
+  }
+
+  @Get('accounts')
+  @Roles('SCHOOL_ADMIN')
+  getAccounts(@CurrentUser() user: any, @Query() query: any) {
+    return this.financeService.getAccountEntries(user.schoolId, query);
+  }
+
+  @Post('accounts')
+  @Roles('SCHOOL_ADMIN')
+  createAccount(@CurrentUser() user: any, @Body() dto: any) {
+    return this.financeService.createAccountEntry(user.schoolId, dto);
+  }
+
+  @Get('summary')
+  @Roles('SCHOOL_ADMIN')
+  getSummary(@CurrentUser() user: any, @Query() query: any) {
+    return this.financeService.getFinanceSummary(user.schoolId, query);
   }
 }
