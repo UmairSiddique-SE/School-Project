@@ -3,6 +3,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
