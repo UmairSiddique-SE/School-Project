@@ -29,45 +29,20 @@ export class PeopleController {
       if (!account) return null;
       const parent = await this.prisma.parent.findFirst({
         where: { userId: account.id, schoolId: user.schoolId, deletedAt: null },
-        include: {
-          students: {
-            include: {
-              student: {
-                include: {
-                  section: { include: { class: true } },
-                  attendances: { orderBy: { date: 'desc' }, take: 100 },
-                  examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 },
-                  feePayments: { take: 50 },
-                  homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 50 },
-                },
-              },
-            },
-          },
-        },
+        include: { students: { include: { student: { include: { section: { include: { class: true } }, attendances: { orderBy: { date: 'desc' }, take: 100 }, examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 }, feePayments: { take: 50 }, homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 50 } } } } } },
       });
       return parent ? { ...parent, account } : { account, students: [] };
     }
-
-    if (user?.role !== 'STUDENT') {
-      return this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true } });
-    }
+    if (user?.role !== 'STUDENT') return this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true, phone: true, avatarUrl: true, schoolId: true } });
     const account = await this.prisma.user.findFirst({ where: { id: user.id, schoolId: user.schoolId, role: 'STUDENT', isActive: true, deletedAt: null }, select: { id: true, name: true, email: true, role: true } });
     if (!account) return null;
     const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: account.email, deletedAt: null }, include: { section: { include: { class: true } } } });
     return student ? { ...student, account } : null;
   }
 
-  @Get('stats')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
-  getStats(@CurrentUser() user: any) { return this.peopleService.getSchoolStats(user.schoolId); }
-
-  @Get('teachers')
-  @Roles('SCHOOL_ADMIN', 'TEACHER')
-  getTeachers(@CurrentUser() user: any) { return this.peopleService.getTeachers(user.schoolId); }
-
-  @Post('teachers')
-  @Roles('SCHOOL_ADMIN')
-  async createTeacher(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createTeacher(user.schoolId, dto); }
+  @Get('stats') @Roles('SCHOOL_ADMIN', 'TEACHER') getStats(@CurrentUser() user: any) { return this.peopleService.getSchoolStats(user.schoolId); }
+  @Get('teachers') @Roles('SCHOOL_ADMIN', 'TEACHER') getTeachers(@CurrentUser() user: any) { return this.peopleService.getTeachers(user.schoolId); }
+  @Post('teachers') @Roles('SCHOOL_ADMIN') async createTeacher(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createTeacher(user.schoolId, dto); }
   @Patch('teachers/:id') @Roles('SCHOOL_ADMIN') updateTeacher(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateTeacher(id, user.schoolId, dto); }
   @Delete('teachers/:id') @Roles('SCHOOL_ADMIN') deleteTeacher(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteTeacher(id, user.schoolId); }
 
@@ -89,9 +64,12 @@ export class PeopleController {
     this.validateStudentPayload(dto, true);
     await this.planLimitService.assertStudentCapacity(user.schoolId);
     await this.assertSectionCapacity(user.schoolId, dto.sectionId);
-    const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
+    if (dto.bFormNumber) {
+      const duplicate = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, bFormNumber: dto.bFormNumber, deletedAt: null }, select: { id: true } });
+      if (duplicate) throw new BadRequestException('A student with this B-Form / CNIC already exists');
+    }
+    const { password: _password, ...studentDto } = dto;
     void _password;
-    void _parentPassword;
     return this.peopleService.createStudent(user.schoolId, studentDto);
   }
 
@@ -100,8 +78,14 @@ export class PeopleController {
   async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
     if (!id?.trim()) throw new BadRequestException('Student ID is required');
     this.validateStudentPayload(dto, false);
+    if (dto.admissionNo !== undefined) throw new BadRequestException('Admission No cannot be changed after admission');
+    if (dto.email !== undefined) throw new BadRequestException('Student login email cannot be changed after admission');
     const current = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { sectionId: true } });
     if (!current) throw new BadRequestException('Student not found');
+    if (dto.bFormNumber) {
+      const duplicate = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, bFormNumber: dto.bFormNumber, deletedAt: null, NOT: { id } }, select: { id: true } });
+      if (duplicate) throw new BadRequestException('A student with this B-Form / CNIC already exists');
+    }
     if (dto.sectionId && current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId);
     return this.peopleService.updateStudent(id, user.schoolId, dto);
   }
@@ -117,7 +101,6 @@ export class PeopleController {
 
   @Get('parents') @Roles('SCHOOL_ADMIN') getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
   @Post('parents') @Roles('SCHOOL_ADMIN') createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
-
   @Get('staff') @Roles('SCHOOL_ADMIN') getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }
   @Post('staff') @Roles('SCHOOL_ADMIN') async createStaff(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createStaff(user.schoolId, dto); }
   @Patch('staff/:id') @Roles('SCHOOL_ADMIN') updateStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateStaff(id, user.schoolId, dto); }
@@ -125,15 +108,13 @@ export class PeopleController {
 
   private validateStudentPayload(dto: any, creating: boolean) {
     if (!dto || typeof dto !== 'object') throw new BadRequestException('Student data is required');
-    if (creating && (!dto.name || typeof dto.name !== 'string' || dto.name.trim().length < 2)) {
-      throw new BadRequestException('Student name is required and must contain at least 2 characters');
+    if (creating && (!dto.name || typeof dto.name !== 'string' || dto.name.trim().length < 2 || dto.name.trim().length > 150)) {
+      throw new BadRequestException('Student name is required and must contain 2-150 characters');
     }
-    if (!creating && dto.name !== undefined && (typeof dto.name !== 'string' || dto.name.trim().length < 2)) {
-      throw new BadRequestException('Student name must contain at least 2 characters');
+    if (!creating && dto.name !== undefined && (typeof dto.name !== 'string' || dto.name.trim().length < 2 || dto.name.trim().length > 150)) {
+      throw new BadRequestException('Student name must contain 2-150 characters');
     }
-    if (dto.sectionId !== undefined && dto.sectionId !== null && (typeof dto.sectionId !== 'string' || !dto.sectionId.trim())) {
-      throw new BadRequestException('A valid section must be selected');
-    }
+    if (dto.sectionId !== undefined && dto.sectionId !== null && (typeof dto.sectionId !== 'string' || !dto.sectionId.trim())) throw new BadRequestException('A valid section must be selected');
     if (dto.email !== undefined && dto.email !== null && dto.email !== '') {
       const email = String(dto.email).trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Please provide a valid student email address');
@@ -147,24 +128,21 @@ export class PeopleController {
     if (dto.bFormNumber !== undefined && dto.bFormNumber !== null && dto.bFormNumber !== '') {
       const bForm = String(dto.bFormNumber).trim();
       if (!/^\d{5}-\d{7}-\d$/.test(bForm)) throw new BadRequestException('B-Form / CNIC must use format 35202-1234567-1');
+      dto.bFormNumber = bForm;
     }
     if (dto.rollNo !== undefined && dto.rollNo !== null && dto.rollNo !== '') {
       const roll = String(dto.rollNo).trim();
       if (!/^\d+$/.test(roll) || Number(roll) < 1) throw new BadRequestException('Roll number must be a positive number');
       dto.rollNo = roll;
     }
-    if (dto.status !== undefined && !['ACTIVE', 'INACTIVE', 'LEFT', 'GRADUATED'].includes(String(dto.status))) {
-      throw new BadRequestException('Invalid student enrollment status');
-    }
-    if (dto.gender !== undefined && !['MALE', 'FEMALE', 'OTHER'].includes(String(dto.gender))) {
-      throw new BadRequestException('Invalid student gender');
-    }
+    if (dto.status !== undefined && !['ACTIVE', 'INACTIVE', 'LEFT', 'GRADUATED'].includes(String(dto.status))) throw new BadRequestException('Invalid student enrollment status');
+    if (dto.gender !== undefined && !['MALE', 'FEMALE', 'OTHER'].includes(String(dto.gender))) throw new BadRequestException('Invalid student gender');
+    if (dto.session !== undefined && dto.session !== null && dto.session !== '' && !/^\d{4}-\d{4}$/.test(String(dto.session))) throw new BadRequestException('Session must use YYYY-YYYY format');
+    if (dto.admissionType !== undefined && dto.admissionType !== null && dto.admissionType !== '' && !['NEW', 'TRANSFER'].includes(String(dto.admissionType))) throw new BadRequestException('Invalid admission type');
     for (const field of ['phone', 'studentMobile', 'emergencyContact']) {
-      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '' && String(dto[field]).length > 30) {
-        throw new BadRequestException(`${field} is too long`);
-      }
+      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '' && String(dto[field]).length > 30) throw new BadRequestException(`${field} is too long`);
     }
-    if (creating && dto.parentPassword !== undefined && dto.parentPassword !== null && String(dto.parentPassword).length < 12) {
+    if (creating && (dto.fatherName || dto.motherName || dto.guardianName) && (!dto.parentPassword || String(dto.parentPassword).length < 12)) {
       throw new BadRequestException('Parent password must contain at least 12 characters');
     }
   }
