@@ -21,7 +21,7 @@ const getLoginPath = (slug: string) => {
     .trim()
     .replace(/^\/+|\/+$/g, "")
     .split("/")[0];
-  return `/${encodeURIComponent(cleanSlug)}/login`;
+  return `/school-login/${encodeURIComponent(cleanSlug)}`;
 };
 
 export default function SchoolLogin() {
@@ -70,31 +70,18 @@ export default function SchoolLogin() {
             <School size={28} />
           </div>
           <h1 className="text-3xl font-bold text-slate-900">School Login</h1>
-          <p className="mt-2 text-slate-500">
-            Select your school to continue.
-          </p>
+          <p className="mt-2 text-slate-500">Select your school to continue.</p>
         </div>
 
         <div className="mx-auto mb-8 flex max-w-xl items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm">
           <Search size={20} className="text-slate-400" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search school..."
-            className="w-full bg-transparent outline-none"
-          />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search school..." className="w-full bg-transparent outline-none" />
         </div>
 
-        {loading && (
-          <div className="text-center text-slate-500">Loading schools...</div>
-        )}
-        {!loading && error && (
-          <div className="text-center text-red-600">{error}</div>
-        )}
+        {loading && <div className="text-center text-slate-500">Loading schools...</div>}
+        {!loading && error && <div className="text-center text-red-600">{error}</div>}
         {!loading && !error && filteredSchools.length === 0 && (
-          <div className="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">
-            No schools found.
-          </div>
+          <div className="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">No schools found.</div>
         )}
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,36 +98,18 @@ export default function SchoolLogin() {
               >
                 <div className="flex items-center gap-4">
                   {school.logoUrl ? (
-                    <img
-                      src={school.logoUrl}
-                      alt={school.name}
-                      className="h-14 w-14 rounded-xl object-cover"
-                    />
+                    <img src={school.logoUrl} alt={school.name} className="h-14 w-14 rounded-xl object-cover" />
                   ) : (
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                      <School size={26} />
-                    </div>
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><School size={26} /></div>
                   )}
                   <div className="min-w-0">
-                    <h2 className="truncate font-semibold text-slate-900">
-                      {school.name}
-                    </h2>
-                    <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
-                      <MapPin size={14} /> {school.city || ""}
-                    </div>
-                    <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
-                      <Globe2 size={14} /> {school.country || ""}
-                    </div>
+                    <h2 className="truncate font-semibold text-slate-900">{school.name}</h2>
+                    <div className="mt-1 flex items-center gap-1 text-sm text-slate-500"><MapPin size={14} /> {school.city || ""}</div>
+                    <div className="mt-1 flex items-center gap-1 text-sm text-slate-500"><Globe2 size={14} /> {school.country || ""}</div>
                   </div>
                 </div>
-                <div className="mt-5 text-sm font-medium text-blue-600">
-                  Open school login →
-                </div>
-                {!school.isActive && (
-                  <div className="mt-2 text-xs font-medium text-amber-600">
-                    Approval pending — portal remains locked
-                  </div>
-                )}
+                <div className="mt-5 text-sm font-medium text-blue-600">Open school login →</div>
+                {!school.isActive && <div className="mt-2 text-xs font-medium text-amber-600">Approval pending — portal remains locked</div>}
               </Link>
             );
           })}
