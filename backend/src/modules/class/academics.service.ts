@@ -40,7 +40,7 @@ export class AcademicsService {
     }
     if (!effectiveTeacherId) throw new BadRequestException('Teacher is required');
     return this.prisma.homework.create({ data: {
-      title: data.title.trim(), description: data.description?.trim() || null, dueDate,
+      title: data.title.trim(), description: data.description?.trim() || '', dueDate,
       attachmentUrl: data.attachmentUrl || null, schoolId, sectionId: data.sectionId,
       subjectId: data.subjectId, teacherId: effectiveTeacherId,
     } });
@@ -59,7 +59,7 @@ export class AcademicsService {
       if (!student?.sectionId) return [];
       where.sectionId = student.sectionId;
     }
-    return this.prisma.timetable.findMany({ where, include: { section: { include: { class: true } }, subject: true, teacher: true } });
+    return this.prisma.timetable.findMany({ where, include: { section: { include: { class: true } }, subject: true, teacher: true }, orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] });
   }
 
   async createTimetable(schoolId: string, data: any) {
@@ -83,5 +83,89 @@ export class AcademicsService {
       dayOfWeek, startTime: data.startTime, endTime: data.endTime, room: data.room || null,
       sectionId: data.sectionId, subjectId: data.subjectId, teacherId: data.teacherId,
     } });
+  }
+
+  async deleteTimetable(id: string, schoolId: string) {
+    const timetable = await this.prisma.timetable.findFirst({ where: { id, section: { class: { schoolId } } } });
+    if (!timetable) throw new NotFoundException('Timetable entry not found');
+    return this.prisma.timetable.delete({ where: { id } });
+  }
+
+  async getAnnouncements(schoolId: string, user?: any) {
+    const now = new Date();
+    const announcements = await this.prisma.announcement.findMany({
+      where: { schoolId, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
+    });
+    if (!user?.role || user.role === 'SCHOOL_ADMIN') return announcements;
+    return announcements.filter((a) => {
+      const targets = String(a.targetRoles || 'ALL').split(',').map((v) => v.trim().toUpperCase());
+      return targets.includes('ALL') || targets.includes(user.role);
+    });
+  }
+
+  async createAnnouncement(schoolId: string, data: any) {
+    if (!data.title?.trim() || !data.content?.trim()) throw new BadRequestException('Title and content are required');
+    const expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) throw new BadRequestException('Invalid expiry date');
+    return this.prisma.announcement.create({ data: {
+      title: data.title.trim(), content: data.content.trim(),
+      targetRoles: data.targetRoles ? String(data.targetRoles) : 'ALL',
+      isPinned: Boolean(data.isPinned), expiresAt, schoolId,
+    } });
+  }
+
+  async deleteAnnouncement(id: string, schoolId: string) {
+    const announcement = await this.prisma.announcement.findFirst({ where: { id, schoolId } });
+    if (!announcement) throw new NotFoundException('Announcement not found');
+    return this.prisma.announcement.delete({ where: { id } });
+  }
+
+  async getRoutes(schoolId: string) {
+    return this.prisma.transportRoute.findMany({ where: { schoolId }, include: { vehicles: true }, orderBy: { name: 'asc' } });
+  }
+
+  async createRoute(schoolId: string, data: any) {
+    if (!data.name?.trim() || !data.startPoint?.trim() || !data.endPoint?.trim()) throw new BadRequestException('Route name, start point and end point are required');
+    const distance = data.distance === undefined || data.distance === null || data.distance === '' ? null : Number(data.distance);
+    if (distance !== null && (!Number.isFinite(distance) || distance < 0)) throw new BadRequestException('Invalid route distance');
+    return this.prisma.transportRoute.create({ data: {
+      name: data.name.trim(), description: data.description?.trim() || null,
+      startPoint: data.startPoint.trim(), endPoint: data.endPoint.trim(),
+      stops: data.stops ? String(data.stops) : '', distance, schoolId,
+    } });
+  }
+
+  async deleteRoute(id: string, schoolId: string) {
+    const route = await this.prisma.transportRoute.findFirst({ where: { id, schoolId }, include: { vehicles: { select: { id: true } } } });
+    if (!route) throw new NotFoundException('Route not found');
+    if (route.vehicles.length) throw new BadRequestException('Remove vehicles from this route before deleting it');
+    return this.prisma.transportRoute.delete({ where: { id } });
+  }
+
+  async getVehicles(schoolId: string) {
+    return this.prisma.vehicle.findMany({ where: { route: { schoolId } }, include: { route: true }, orderBy: { vehicleNo: 'asc' } });
+  }
+
+  async createVehicle(schoolId: string, data: any) {
+    if (!data.vehicleNo?.trim() || !data.routeId) throw new BadRequestException('Vehicle number and route are required');
+    const capacity = Number(data.capacity);
+    if (!Number.isInteger(capacity) || capacity < 1) throw new BadRequestException('Vehicle capacity must be at least 1');
+    const route = await this.prisma.transportRoute.findFirst({ where: { id: data.routeId, schoolId } });
+    if (!route) throw new NotFoundException('Route not found');
+    const existing = await this.prisma.vehicle.findUnique({ where: { vehicleNo: data.vehicleNo.trim() }, select: { id: true } });
+    if (existing) throw new BadRequestException('Vehicle number already exists');
+    return this.prisma.vehicle.create({ data: {
+      vehicleNo: data.vehicleNo.trim(), type: data.type?.trim() || 'Bus', capacity,
+      driverName: data.driverName?.trim() || null, driverPhone: data.driverPhone?.trim() || null,
+      gpsTrackerCode: data.gpsTrackerCode?.trim() || null, routeId: data.routeId,
+    } });
+  }
+
+  async deleteVehicle(id: string, schoolId: string) {
+    const vehicle = await this.prisma.vehicle.findFirst({ where: { id, route: { schoolId } }, include: { assignments: { select: { id: true } } } });
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+    if (vehicle.assignments.length) throw new BadRequestException('Remove student transport assignments before deleting this vehicle');
+    return this.prisma.vehicle.delete({ where: { id } });
   }
 }
