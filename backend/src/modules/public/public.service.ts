@@ -16,9 +16,10 @@ export class PublicService {
   }
 
   /**
-   * School-login discovery is intentionally DB-only.
-   * Registered schools are visible here, while the frontend clearly marks
-   * inactive/pending schools and prevents opening their login portal.
+   * School-login discovery is DB-only.
+   * Registered schools remain discoverable before approval so the school
+   * admin can still reach the login page. Portal access is enforced by auth
+   * and route guards until Super Admin approval.
    */
   async getSchools() {
     const schools = await this.prisma.school.findMany({
@@ -40,7 +41,9 @@ export class PublicService {
 
     return schools.map((school) => ({
       ...school,
-      loginAvailable: school.isActive,
+      // Login page must remain reachable while approval is pending.
+      // Dashboard/module access is blocked separately after authentication.
+      loginAvailable: Boolean(school.slug),
       status: school.isActive ? 'ACTIVE' : 'PENDING_APPROVAL',
     }));
   }
