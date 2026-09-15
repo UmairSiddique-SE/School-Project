@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, School, MapPin, Globe2 } from "lucide-react";
-import apiClient from "../lib/apiClient";
+import apiClient from "@/api/apiClient";
 
 interface SchoolItem {
   id: string;
