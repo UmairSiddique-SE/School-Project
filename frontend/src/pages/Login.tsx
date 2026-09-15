@@ -1,26 +1,107 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, LockKeyhole, Loader2, ArrowRight, GraduationCap, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, GraduationCap, LockKeyhole, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const { schoolSlug: urlSchoolSlug } = useParams();
-  const [identifier, setIdentifier] = useState(""); const [password, setPassword] = useState(""); const [loading, setLoading] = useState(false);
-  const { login } = useAuth(); const navigate = useNavigate();
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const schoolName = urlSchoolSlug ? urlSchoolSlug.replace(/-/g, " ") : "your school";
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!identifier.trim() || !password) return; setLoading(true);
+    e.preventDefault();
+    if (!identifier.trim() || !password) return;
+    setLoading(true);
     try {
       const res = await apiClient.post("/auth/login", { email: identifier.trim().toLowerCase(), password });
       const { user, accessToken, refreshToken } = res.data;
-      if (!["SCHOOL_ADMIN", "TEACHER", "STUDENT"].includes(user.role)) { toast.error("This account does not have school portal access."); return; }
-      login(accessToken, user, refreshToken); toast.success(`Welcome back, ${user.name}!`);
+      if (!["SCHOOL_ADMIN", "TEACHER", "STUDENT"].includes(user.role)) {
+        toast.error("This account does not have school portal access.");
+        return;
+      }
+      login(accessToken, user, refreshToken);
+      toast.success(`Welcome back, ${user.name}!`);
       const slug = user.schoolSlug || urlSchoolSlug || "edusphere";
       navigate(user.role === "STUDENT" ? `/${slug}/student-portal` : `/${slug}/dashboard`, { replace: true });
-    } catch (err: any) { toast.error(err.response?.data?.message || "Invalid Login ID or password. Please check your credentials."); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Invalid Login ID or password. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
-  return <div className="min-h-screen bg-[#030817] flex items-center justify-center p-4 relative overflow-hidden text-white selection:bg-violet-500/30"><div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" /><div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" /><motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .5 }} className="w-full max-w-md relative z-10"><div className="text-center mb-6"><div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-3xl font-black mb-4 shadow-xl shadow-violet-600/30">E</div><h1 className="text-3xl font-black tracking-tight">EduSphere <span className="text-violet-400">ERP</span></h1><p className="text-slate-400 mt-1 text-sm">{urlSchoolSlug ? `Sign in to ${urlSchoolSlug.replace(/-/g, " ").toUpperCase()}` : "School Management System"}</p></div><div className="bg-[#090e24]/90 border border-white/15 rounded-3xl shadow-[0_0_60px_rgba(124,58,237,0.2)] overflow-hidden backdrop-blur-2xl"><div className="p-4 border-b border-white/10 bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-purple-950/40 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /><span className="text-xs font-bold text-slate-300">Secure School Access</span></div><form onSubmit={handleSubmit} className="p-6 space-y-4"><div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-slate-300">Login ID / Email</label><div className="relative"><div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><Mail size={16} /></div><input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} required autoFocus autoComplete="username" className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20" placeholder="admin@school.pk or student Login ID" /></div><div className="flex items-start gap-2 px-1 pt-1 text-[11px] text-slate-500 leading-relaxed"><GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" /><UsersRound className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" /><span>School Admin and Teachers use their registered email. Students use their school-issued Login ID. Access is detected automatically.</span></div></div><div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-slate-300">Password</label><div className="relative"><div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><LockKeyhole size={16} /></div><input type="password" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/10 bg-white/[0.05] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20" placeholder="Enter your password" /></div></div><button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 transition-all shadow-lg shadow-violet-600/30 disabled:opacity-70">{loading ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}<span>{loading ? "Signing in..." : "Sign In"}</span></button></form><div className="px-6 pb-5 text-center text-xs text-slate-400 border-t border-white/5 pt-4"><p>Secure access for School Admin, Teachers &amp; Students.</p></div></div></motion.div></div>;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white selection:bg-cyan-400/20">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute -right-40 bottom-[-120px] h-[520px] w-[520px] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.025)_1px,transparent_1px)] bg-[size:36px_36px]" />
+      </div>
+
+      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+        <Link to="/" className="group inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-3 py-2 backdrop-blur-xl transition hover:border-cyan-400/30 hover:bg-white/[.07]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-black shadow-lg shadow-cyan-500/20">E</span>
+          <span className="hidden text-sm font-black sm:block">EduSphere <span className="text-cyan-300">ERP</span></span>
+        </Link>
+        <Link to="/school-login" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3.5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-white/20 hover:text-white">
+          <ArrowLeft size={15} /> Back to Schools
+        </Link>
+      </header>
+
+      <main className="relative z-10 mx-auto flex min-h-[calc(100vh-86px)] w-full max-w-6xl items-center justify-center px-5 pb-10 sm:px-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .45 }} className="w-full max-w-md">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-2xl font-black shadow-2xl shadow-cyan-500/20">E</div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.18em] text-cyan-300">
+              <ShieldCheck size={13} /> Secure school portal
+            </div>
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Welcome back</h1>
+            <p className="mt-2 text-sm capitalize text-slate-400">Sign in to {schoolName}</p>
+          </div>
+
+          <div className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/85 shadow-2xl shadow-black/30 backdrop-blur-2xl">
+            <div className="border-b border-white/10 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-indigo-500/10 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-cyan-300"><GraduationCap size={20} /></div>
+                <div><p className="text-sm font-black text-white">School account</p><p className="text-[11px] text-slate-500">Your role is detected automatically.</p></div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5 p-6 sm:p-7">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-[.14em] text-slate-300">Login ID / Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
+                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="admin@school.pk or student Login ID" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
+                </div>
+                <p className="text-[11px] leading-5 text-slate-500">School Admin and Teachers use their registered email. Students use their school-issued Login ID.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-[.14em] text-slate-300">Password</label>
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" placeholder="Enter your password" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-black text-white shadow-xl shadow-cyan-500/15 transition hover:from-cyan-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+                {loading ? "Signing in..." : "Sign In to School Portal"}
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-5 text-center text-[11px] text-slate-600">EduSphere ERP · Secure multi-school access</p>
+        </motion.div>
+      </main>
+    </div>
+  );
 }
