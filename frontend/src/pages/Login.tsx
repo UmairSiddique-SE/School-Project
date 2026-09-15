@@ -29,7 +29,14 @@ export default function LoginPage() {
       login(accessToken, user, refreshToken);
       toast.success(`Welcome back, ${user.name}!`);
       const slug = user.schoolSlug || urlSchoolSlug || "edusphere";
-      navigate(user.role === "STUDENT" ? `/${slug}/student-portal` : `/${slug}/dashboard`, { replace: true });
+      if (user.role === "STUDENT") {
+        navigate(`/${slug}/student-portal`, { replace: true });
+      } else if (user.activationStatus === "ACTIVE") {
+        navigate(`/${slug}/dashboard`, { replace: true });
+      } else {
+        toast.info("Your school portal is locked until approval. You can continue from onboarding.");
+        navigate("/onboarding", { replace: true });
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Invalid Login ID or password. Please check your credentials.");
     } finally {
