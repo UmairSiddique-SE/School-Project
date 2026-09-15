@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProtectedRouteProps {
@@ -7,22 +7,16 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  allowedRoles,
-}) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) return null;
 
   if (!isAuthenticated) {
     return (
       <Navigate
-        to={
-          allowedRoles?.includes("SUPER_ADMIN")
-            ? "/admin/login"
-            : "/school-login"
-        }
+        to={allowedRoles?.includes("SUPER_ADMIN") ? "/admin/login" : "/school-login"}
         replace
       />
     );
@@ -32,13 +26,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // A newly verified paid school must stay inside onboarding/payment.
-  // No school portal route is available until Super Admin approval activates it.
-  if (
+  const onboardingLocked =
     user?.role === "SCHOOL_ADMIN" &&
-    user.activationStatus === "PAYMENT_PENDING"
-  ) {
-    return <Navigate to="/register-school" replace />;
+    user.activationStatus &&
+    user.activationStatus !== "ACTIVE";
+
+  if (onboardingLocked && !location.pathname.startsWith("/onboarding")) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
