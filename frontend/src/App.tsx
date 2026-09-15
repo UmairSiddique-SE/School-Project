@@ -9,7 +9,7 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import LandingPage from "@/pages/LandingPage";
 import PortalSelector from "@/pages/PortalSelector";
 import LoginPage from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
+import Dashboard from "@/pages/DashboardLive";
 import Classes from "@/pages/ClassesLive";
 import Students from "@/pages/Students";
 import Parents from "@/pages/Parents";
