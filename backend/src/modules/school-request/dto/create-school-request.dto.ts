@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength, IsInt, Min } from 'class-validator';
 
 export class CreateSchoolRequestDto {
   @IsString()
@@ -41,6 +41,11 @@ export class CreateSchoolRequestDto {
   @IsOptional()
   @IsString()
   plan?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  expectedStudents?: number;
 
   @IsOptional()
   @IsString()
