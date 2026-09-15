@@ -70,14 +70,19 @@ export class AuthController {
   async verifyEmail(@Body() dto: VerifyEmailDto) {
     const result = await this.authService.verifyEmail(dto);
 
-    // Email verification does not grant school portal access.
-    // A newly registered school must first be approved by Super Admin.
-    if (result.user?.role === 'SCHOOL_ADMIN' && result.user.activationStatus !== 'ACTIVE') {
+    // Pending school admins receive a valid auth session for onboarding/payment.
+    // This does NOT grant portal access: activationStatus and the tenant guards
+    // keep the school workspace locked until Super Admin approval.
+    if (
+      result.user?.role === 'SCHOOL_ADMIN' &&
+      result.user.activationStatus !== 'ACTIVE'
+    ) {
       return {
-        message: 'Email verified successfully. Your school registration is pending Super Admin approval.',
+        ...result,
+        message:
+          'Email verified successfully. Continue onboarding; school portal access remains locked until Super Admin approval.',
         verificationRequired: false,
         approvalRequired: true,
-        user: result.user,
       };
     }
 
