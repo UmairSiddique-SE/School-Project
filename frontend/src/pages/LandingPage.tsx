@@ -8,7 +8,7 @@ import { useTheme } from "@/context/ThemeContext";
 
 type PublicPlan = { id: string; planKey: string; name: string; price: number; period: string; maxStudents: number; maxTeachers: number; storageMb: number; supportTier: string; features: string[] };
 const fallbackPlans: PublicPlan[] = [
-  { id: "free-trial", planKey: "FREE_TRIAL", name: "Free Trial", price: 0, period: "1 day", maxStudents: 20, maxTeachers: 999999, storageMb: 1024, supportTier: "Standard", features: ["Up to 20 students", "All core modules", "Attendance & fees", "Exams & results", "Basic reports"] },
+  { id: "free-trial", planKey: "FREE_TRIAL", name: "Free Trial", price: 0, period: "3 days", maxStudents: 20, maxTeachers: 999999, storageMb: 1024, supportTier: "Standard", features: ["Up to 20 students", "All core modules", "Attendance & fees", "Exams & results", "Basic reports"] },
   { id: "professional", planKey: "PROFESSIONAL", name: "Professional", price: 3000, period: "per month", maxStudents: 500, maxTeachers: 999999, storageMb: 5120, supportTier: "Priority", features: ["Up to 500 students", "Unlimited staff", "All school modules", "Advanced reports", "Priority support"] },
   { id: "premium", planKey: "PREMIUM", name: "Premium", price: 5000, period: "per month", maxStudents: 999999, maxTeachers: 999999, storageMb: 51200, supportTier: "Premium", features: ["Unlimited students", "Unlimited staff", "All modules", "Advanced reports", "School website ready", "Custom domain ready"] },
 ];
