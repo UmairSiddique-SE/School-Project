@@ -16,13 +16,25 @@ export class FinanceService {
       where.isActive = true;
       const studentIds = await this.getStudentIdsForUser(user);
       if (!studentIds.length) return [];
-      const students = await this.prisma.student.findMany({ where: { id: { in: studentIds }, schoolId, deletedAt: null }, select: { sectionId: true } });
+      const students = await this.prisma.student.findMany({
+        where: { id: { in: studentIds }, schoolId, deletedAt: null },
+        select: { sectionId: true },
+      });
       const sectionIds = Array.from(new Set(students.map((student) => student.sectionId).filter((id): id is string => Boolean(id))));
-      const sections = sectionIds.length ? await this.prisma.section.findMany({ where: { id: { in: sectionIds }, class: { schoolId }, deletedAt: null }, select: { id: true, classId: true } }) : [];
+      const sections = sectionIds.length
+        ? await this.prisma.section.findMany({
+            where: { id: { in: sectionIds }, class: { schoolId }, deletedAt: null },
+            select: { id: true, classId: true },
+          })
+        : [];
       const classIds = Array.from(new Set(sections.map((section) => section.classId)));
       where.OR = [{ classId: null }, ...(classIds.length ? [{ classId: { in: classIds } }] : [])];
     }
-    return this.prisma.feeStructure.findMany({ where, include: { class: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+    return this.prisma.feeStructure.findMany({
+      where,
+      include: { class: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async createFeeStructure(schoolId: string, data: any) {
@@ -36,18 +48,34 @@ export class FinanceService {
       const schoolClass = await this.prisma.class.findFirst({ where: { id: data.classId, schoolId, deletedAt: null } });
       if (!schoolClass) throw new NotFoundException('Class not found in this school');
     }
-    return this.prisma.feeStructure.create({ data: { name, amount, frequency, description: data.description?.trim() || null, classId: data.classId || null, schoolId } });
+    return this.prisma.feeStructure.create({
+      data: { name, amount, frequency, description: data.description?.trim() || null, classId: data.classId || null, schoolId },
+    });
   }
 
   async getPaymentsForUser(user: any) {
     if (user?.role === 'SCHOOL_ADMIN') return this.getPayments(user.schoolId);
     const studentIds = await this.getStudentIdsForUser(user);
     if (!studentIds.length) return [];
-    return this.prisma.feePayment.findMany({ where: { schoolId: user.schoolId, studentId: { in: Array.from(new Set(studentIds)) } }, include: { student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } }, feeStructure: { select: { id: true, name: true } } } }, orderBy: { createdAt: 'desc' } });
+    return this.prisma.feePayment.findMany({
+      where: { schoolId: user.schoolId, studentId: { in: Array.from(new Set(studentIds)) } },
+      include: {
+        student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } },
+        feeStructure: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async getPayments(schoolId: string) {
-    return this.prisma.feePayment.findMany({ where: { schoolId }, include: { student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } }, feeStructure: { select: { id: true, name: true } } } }, orderBy: { createdAt: 'desc' } });
+    return this.prisma.feePayment.findMany({
+      where: { schoolId },
+      include: {
+        student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } },
+        feeStructure: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async collectFee(schoolId: string, data: any) {
@@ -59,7 +87,9 @@ export class FinanceService {
       structure = await this.prisma.feeStructure.findFirst({ where: { id: data.feeStructureId, schoolId, isActive: true } });
       if (!structure) throw new NotFoundException('Fee structure not found or inactive');
       if (structure.classId) {
-        const section = student.sectionId ? await this.prisma.section.findFirst({ where: { id: student.sectionId, class: { schoolId }, deletedAt: null }, select: { classId: true } }) : null;
+        const section = student.sectionId
+          ? await this.prisma.section.findFirst({ where: { id: student.sectionId, class: { schoolId }, deletedAt: null }, select: { classId: true } })
+          : null;
         if (!section || structure.classId !== section.classId) throw new BadRequestException("Selected fee structure is not assigned to this student's class");
       }
     }
@@ -77,21 +107,41 @@ export class FinanceService {
     if (totalPaid > payable) throw new BadRequestException('Amount paid cannot exceed the final payable amount');
     const status = totalPaid >= payable ? 'PAID' : totalPaid > 0 ? 'PARTIAL' : 'PENDING';
     let dueDate: Date | null = null;
-    if (data?.dueDate) { dueDate = new Date(data.dueDate); if (Number.isNaN(dueDate.getTime())) throw new BadRequestException('Invalid due date'); }
+    if (data?.dueDate) {
+      dueDate = new Date(data.dueDate);
+      if (Number.isNaN(dueDate.getTime())) throw new BadRequestException('Invalid due date');
+    }
     const receiptNo = `FEE-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`;
-    const payment = await this.prisma.feePayment.create({ data: { amount, discount, fine, totalPaid, method, status, dueDate, paidDate: totalPaid > 0 ? new Date() : null, receiptNo, remarks: data?.remarks?.trim() || null, schoolId, studentId: student.id, feeStructureId: structure?.id || null } });
-    if (totalPaid > 0) await this.prisma.accountEntry.create({ data: { type: 'INCOME', category: 'FEES', description: `Fee payment ${receiptNo}`, amount: totalPaid, date: new Date(), reference: receiptNo, schoolId } });
+    const payment = await this.prisma.feePayment.create({
+      data: { amount, discount, fine, totalPaid, method, status, dueDate, paidDate: totalPaid > 0 ? new Date() : null, receiptNo, remarks: data?.remarks?.trim() || null, schoolId, studentId: student.id, feeStructureId: structure?.id || null },
+    });
+    if (totalPaid > 0) {
+      await this.prisma.accountEntry.create({ data: { type: 'INCOME', category: 'FEES', description: `Fee payment ${receiptNo}`, amount: totalPaid, date: new Date(), reference: receiptNo, schoolId } });
+    }
     return payment;
   }
 
   async getAccountEntries(schoolId: string, query: any = {}) {
     const where: any = { schoolId };
-    if (query.type) { const type = String(query.type).toUpperCase(); if (!ACCOUNT_TYPES.has(type)) throw new BadRequestException('Invalid account entry type'); where.type = type; }
+    if (query.type) {
+      const type = String(query.type).toUpperCase();
+      if (!ACCOUNT_TYPES.has(type)) throw new BadRequestException('Invalid account entry type');
+      where.type = type;
+    }
     if (query.category) where.category = String(query.category).trim();
     if (query.from || query.to) {
       where.date = {};
-      if (query.from) { const from = new Date(query.from); if (Number.isNaN(from.getTime())) throw new BadRequestException('Invalid from date'); where.date.gte = from; }
-      if (query.to) { const to = new Date(query.to); if (Number.isNaN(to.getTime())) throw new BadRequestException('Invalid to date'); to.setHours(23, 59, 59, 999); where.date.lte = to; }
+      if (query.from) {
+        const from = new Date(query.from);
+        if (Number.isNaN(from.getTime())) throw new BadRequestException('Invalid from date');
+        where.date.gte = from;
+      }
+      if (query.to) {
+        const to = new Date(query.to);
+        if (Number.isNaN(to.getTime())) throw new BadRequestException('Invalid to date');
+        to.setHours(23, 59, 59, 999);
+        where.date.lte = to;
+      }
     }
     return this.prisma.accountEntry.findMany({ where, orderBy: { date: 'desc' } });
   }
@@ -112,18 +162,32 @@ export class FinanceService {
 
   async getFinanceSummary(schoolId: string, query: any = {}) {
     const entries = await this.getAccountEntries(schoolId, query);
-    const payments = await this.prisma.feePayment.findMany({ where: { schoolId, ...(query.from || query.to ? { createdAt: { ...(query.from ? { gte: new Date(query.from) } : {}), ...(query.to ? { lte: new Date(query.to + 'T23:59:59.999Z') } : {}) } } : {}) }, select: { totalPaid: true } });
-    const feeIncome = payments.reduce((sum, p) => sum + Number(p.totalPaid || 0), 0);
-    const incomeEntries = entries.filter((entry) => entry.type === 'INCOME').reduce((sum, entry) => sum + entry.amount, 0);
-    const expenses = entries.filter((entry) => entry.type === 'EXPENSE').reduce((sum, entry) => sum + entry.amount, 0);
+    const paymentWhere: any = { schoolId };
+    if (query.from || query.to) {
+      paymentWhere.createdAt = {};
+      if (query.from) paymentWhere.createdAt.gte = new Date(query.from);
+      if (query.to) paymentWhere.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+    }
+    const payments = await this.prisma.feePayment.findMany({ where: paymentWhere, select: { totalPaid: true } });
+    const feeIncome = payments.reduce((sum, payment) => sum + Number(payment.totalPaid || 0), 0);
+    const incomeEntries = entries.filter((entry) => entry.type === 'INCOME').reduce((sum, entry) => sum + Number(entry.amount), 0);
+    const expenses = entries.filter((entry) => entry.type === 'EXPENSE').reduce((sum, entry) => sum + Number(entry.amount), 0);
     const nonFeeIncome = Math.max(0, incomeEntries - feeIncome);
     return { feeIncome, otherIncome: nonFeeIncome, totalIncome: incomeEntries, totalExpenses: expenses, netBalance: incomeEntries - expenses, entryCount: entries.length };
   }
 
   private async getStudentIdsForUser(user: any): Promise<string[]> {
     if (!user?.schoolId) return [];
-    if (user.role === 'STUDENT') { const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } }); return student ? [student.id] : []; }
-    if (user.role === 'PARENT') { const parent = await this.prisma.parent.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } }); if (!parent) return []; const links = await this.prisma.studentParent.findMany({ where: { parentId: parent.id, student: { schoolId: user.schoolId, deletedAt: null } }, select: { studentId: true } }); return links.map((link) => link.studentId); }
+    if (user.role === 'STUDENT') {
+      const student = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
+      return student ? [student.id] : [];
+    }
+    if (user.role === 'PARENT') {
+      const parent = await this.prisma.parent.findFirst({ where: { schoolId: user.schoolId, email: user.email, deletedAt: null }, select: { id: true } });
+      if (!parent) return [];
+      const links = await this.prisma.studentParent.findMany({ where: { parentId: parent.id, student: { schoolId: user.schoolId, deletedAt: null } }, select: { studentId: true } });
+      return links.map((link) => link.studentId);
+    }
     return [];
   }
 }
