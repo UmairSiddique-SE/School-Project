@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 
@@ -32,12 +32,14 @@ export class AttendanceService {
     }));
   }
 
-  async getAttendanceForSection(schoolId: string, sectionId: string, dateStr: string) {
+  async getAttendanceForSection(schoolId: string, sectionId: string, dateStr: string, user?: any) {
+    if (!sectionId) throw new BadRequestException('Section is required');
     const section = await this.prisma.section.findFirst({
-      where: { id: sectionId, class: { schoolId } },
-      select: { id: true },
+      where: { id: sectionId, deletedAt: null, class: { schoolId, deletedAt: null } },
+      select: { id: true, teacherId: true },
     });
     if (!section) throw new BadRequestException('Section does not belong to this school');
+    await this.assertTeacherSectionAccess(schoolId, section.teacherId, user);
 
     const date = new Date(dateStr);
     if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid attendance date');
@@ -68,18 +70,33 @@ export class AttendanceService {
     });
   }
 
-  async markAttendance(schoolId: string, data: any) {
+  async markAttendance(schoolId: string, data: any, user?: any) {
     if (!data?.sectionId || !data?.date || !Array.isArray(data.records)) {
       throw new BadRequestException('sectionId, date and records are required');
     }
+    if (!data.records.length) throw new BadRequestException('At least one attendance record is required');
 
     const date = new Date(data.date);
     if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid attendance date');
+    const statusValues = new Set(['PRESENT', 'ABSENT', 'LATE', 'LEAVE']);
+    for (const record of data.records) {
+      if (!record?.studentId || typeof record.studentId !== 'string') {
+        throw new BadRequestException('Every attendance record must have a valid studentId');
+      }
+      if (!statusValues.has(String(record.status || 'PRESENT').toUpperCase())) {
+        throw new BadRequestException('Attendance status must be PRESENT, ABSENT, LATE, or LEAVE');
+      }
+      if (record.remarks !== undefined && record.remarks !== null && String(record.remarks).length > 500) {
+        throw new BadRequestException('Attendance remarks cannot exceed 500 characters');
+      }
+    }
+
     const section = await this.prisma.section.findFirst({
-      where: { id: data.sectionId, class: { schoolId } },
-      select: { id: true, name: true },
+      where: { id: data.sectionId, deletedAt: null, class: { schoolId, deletedAt: null } },
+      select: { id: true, name: true, teacherId: true },
     });
     if (!section) throw new BadRequestException('Section does not belong to this school');
+    await this.assertTeacherSectionAccess(schoolId, section.teacherId, user);
 
     const studentIds: string[] = Array.from(new Set(
       data.records
@@ -87,7 +104,7 @@ export class AttendanceService {
         .filter((id: any): id is string => typeof id === 'string' && id.length > 0),
     ));
     if (studentIds.length !== data.records.length) {
-      throw new BadRequestException('Every attendance record must have a valid studentId');
+      throw new BadRequestException('Duplicate or invalid student attendance records were supplied');
     }
 
     const students = await this.prisma.student.findMany({
@@ -104,21 +121,26 @@ export class AttendanceService {
     }
 
     const academicYear = await this.prisma.academicYear.findFirst({ where: { schoolId, isCurrent: true } });
+    const normalizedDate = data.date.length === 10 ? `${data.date}T00:00:00` : data.date;
+    const dateKey = String(data.date).slice(0, 10);
     const saved = await this.prisma.$transaction(
-      data.records.map((r: any) => this.prisma.attendance.upsert({
-        where: { id: `${data.sectionId}-${r.studentId}-${data.date}` },
-        create: {
-          id: `${data.sectionId}-${r.studentId}-${data.date}`,
-          date,
-          status: r.status,
-          remarks: r.remarks || null,
-          schoolId,
-          sectionId: data.sectionId,
-          studentId: r.studentId,
-          academicYearId: academicYear?.id || null,
-        },
-        update: { status: r.status, remarks: r.remarks || null },
-      })),
+      data.records.map((r: any) => {
+        const status = String(r.status || 'PRESENT').toUpperCase();
+        return this.prisma.attendance.upsert({
+          where: { id: `${data.sectionId}-${r.studentId}-${dateKey}` },
+          create: {
+            id: `${data.sectionId}-${r.studentId}-${dateKey}`,
+            date: new Date(normalizedDate),
+            status,
+            remarks: r.remarks ? String(r.remarks).trim() : null,
+            schoolId,
+            sectionId: data.sectionId,
+            studentId: r.studentId,
+            academicYearId: academicYear?.id || null,
+          },
+          update: { status, remarks: r.remarks ? String(r.remarks).trim() : null },
+        });
+      }),
     );
 
     const admins = await this.prisma.user.findMany({
@@ -146,7 +168,7 @@ export class AttendanceService {
         ...student.parents.map((parent) => parent.parent.email).filter((email): email is string => Boolean(email)),
       ];
       const userIds = emails.map((email) => byEmail.get(email.toLowerCase())).filter((id): id is string => Boolean(id));
-      return userIds.length ? [{ userIds: Array.from(new Set(userIds)), title: 'Attendance Updated', message: `${student.name}'s attendance was marked ${statusLabel} for ${data.date}.` }] : [];
+      return userIds.length ? [{ userIds: Array.from(new Set(userIds)), title: 'Attendance Updated', message: `${student.name}'s attendance was marked ${statusLabel} for ${dateKey}.` }] : [];
     });
 
     for (const job of notificationJobs) {
@@ -157,10 +179,22 @@ export class AttendanceService {
     if (admins.length) {
       await this.notificationService.createForUsers(admins.map((admin) => admin.id), schoolId, {
         type: 'ATTENDANCE', title: 'Attendance Published',
-        message: `Attendance for ${students.length} student(s) in Section ${section.name} was updated for ${data.date}.`,
+        message: `Attendance for ${students.length} student(s) in Section ${section.name} was updated for ${dateKey}.`,
         link: '/notifications',
       });
     }
     return saved;
+  }
+
+  private async assertTeacherSectionAccess(schoolId: string, sectionTeacherId: string | null, user?: any) {
+    if (!user || user.role === 'SCHOOL_ADMIN') return;
+    if (user.role !== 'TEACHER') throw new ForbiddenException('You are not allowed to manage attendance');
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { schoolId, email: user.email, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
+    if (!teacher || teacher.id !== sectionTeacherId) {
+      throw new ForbiddenException('Teachers can only manage attendance for their assigned section');
+    }
   }
 }
