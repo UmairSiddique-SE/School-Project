@@ -12,7 +12,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
 }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) return null;
+
   if (!isAuthenticated) {
     return (
       <Navigate
@@ -25,8 +27,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       />
     );
   }
+
   if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
     return <Navigate to="/unauthorized" replace />;
   }
+
+  // A newly verified paid school must stay inside onboarding/payment.
+  // No school portal route is available until Super Admin approval activates it.
+  if (
+    user?.role === "SCHOOL_ADMIN" &&
+    user.activationStatus === "PAYMENT_PENDING"
+  ) {
+    return <Navigate to="/register-school" replace />;
+  }
+
   return <>{children}</>;
 };
