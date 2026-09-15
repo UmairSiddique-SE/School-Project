@@ -25,7 +25,12 @@ export class AttendanceController {
     @Query('sectionId') sectionId: string,
     @Query('date') date: string,
   ) {
-    return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date);
+    return this.attendanceService.getAttendanceForSection(
+      user.schoolId,
+      sectionId,
+      date || new Date().toISOString().split('T')[0],
+      user,
+    );
   }
 
   @Get('section/:sectionId')
@@ -35,7 +40,12 @@ export class AttendanceController {
     @Param('sectionId') sectionId: string,
     @Query('date') date: string,
   ) {
-    return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date || new Date().toISOString().split('T')[0]);
+    return this.attendanceService.getAttendanceForSection(
+      user.schoolId,
+      sectionId,
+      date || new Date().toISOString().split('T')[0],
+      user,
+    );
   }
 
   @Post()
