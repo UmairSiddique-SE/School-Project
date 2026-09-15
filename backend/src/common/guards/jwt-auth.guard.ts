@@ -43,6 +43,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const rawPath = String(request.originalUrl || request.url || '').split('?')[0];
     const path = rawPath.replace(/^\/api(?=\/|$)/, '') || '/';
     const pendingAllowedPaths = new Set([
+      '/auth/onboarding/status',
       '/auth/onboarding-payment',
       '/auth/me',
       '/auth/profile',
