@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Building2, MapPin, Search, School, X } from "lucide-react";
 import apiClient from "@/api/apiClient";
@@ -22,7 +22,6 @@ export default function SchoolLogin() {
   const [schools, setSchools] = useState<SchoolItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -59,9 +58,12 @@ export default function SchoolLogin() {
     );
   }, [schools, search]);
 
-  const openLogin = (school: SchoolItem) => {
-    if (!school.loginAvailable) return;
-    navigate(`/${school.slug}/login`);
+  const getLoginPath = (slug: string) => {
+    const cleanSlug = String(slug || "")
+      .trim()
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")[0];
+    return `/${encodeURIComponent(cleanSlug)}/login`;
   };
 
   return (
@@ -125,44 +127,48 @@ export default function SchoolLogin() {
 
           {!loading && filteredSchools.length > 0 && (
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {filteredSchools.map((school) => (
-                <button
-                  key={school.id || school.slug}
-                  type="button"
-                  disabled={!school.loginAvailable}
-                  onClick={() => openLogin(school)}
-                  className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                    school.loginAvailable
-                      ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
-                      : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"
-                  }`}
-                >
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-                    {school.logoUrl ? (
-                      <img src={school.logoUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <School size={21} className="text-cyan-300" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-white truncate">{school.name}</p>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                      <span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>
-                      {school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}
+              {filteredSchools.map((school) => {
+                const loginPath = getLoginPath(school.slug);
+                return (
+                  <Link
+                    key={school.id || school.slug}
+                    to={school.loginAvailable ? loginPath : "#"}
+                    onClick={(e) => {
+                      if (!school.loginAvailable) e.preventDefault();
+                    }}
+                    className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
+                      school.loginAvailable
+                        ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
+                        : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"
+                    }`}
+                  >
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
+                      {school.logoUrl ? (
+                        <img src={school.logoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <School size={21} className="text-cyan-300" />
+                      )}
                     </div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {school.loginAvailable ? (
-                      <>
-                        <span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span>
-                        <ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" />
-                      </>
-                    ) : (
-                      <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-white truncate">{school.name}</p>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                        <span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>
+                        {school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {school.loginAvailable ? (
+                        <>
+                          <span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span>
+                          <ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" />
+                        </>
+                      ) : (
+                        <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
 
