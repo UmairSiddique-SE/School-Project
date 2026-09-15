@@ -242,20 +242,17 @@ return { school, user };
       throw new UnauthorizedException(
         'Parent accounts do not have portal login access',
       );
-    if (!user.isActive)
+    const pendingRequest =
+      user.role === 'SCHOOL_ADMIN' && user.school
+        ? await this.prisma.schoolRequest.findFirst({
+            where: { email: user.email, status: 'PENDING' },
+            select: { id: true },
+          })
+        : null;
+    if (!user.isActive && !pendingRequest)
       throw new UnauthorizedException('This account has been suspended');
-    if (user.school && !user.school.isActive)
+    if (user.school && !user.school.isActive && !pendingRequest)
       throw new UnauthorizedException('This school account is suspended');
-    if (user.role === 'SCHOOL_ADMIN' && user.school) {
-      const pendingRequest = await this.prisma.schoolRequest.findFirst({
-        where: { email: user.email, status: 'PENDING' },
-        select: { id: true },
-      });
-      if (pendingRequest)
-        throw new UnauthorizedException(
-          'Your school registration is pending Super Admin approval. School login will be enabled after approval.',
-        );
-    }
     if (!(await bcrypt.compare(dto.password, user.passwordHash)))
       throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT')
@@ -332,21 +329,19 @@ return { school, user };
       subscription &&
       subscription.status !== 'PENDING' &&
       (subscription.status === 'EXPIRED' || subscription.endDate < new Date());
-    if (
-      !stored.user.isActive ||
-      (stored.user.school && (!stored.user.school.isActive || expired))
-    )
+    const pendingRequest =
+      stored.user.role === 'SCHOOL_ADMIN' && stored.user.schoolId
+        ? await this.prisma.schoolRequest.findFirst({
+            where: { email: stored.user.email, status: 'PENDING' },
+            select: { id: true },
+          })
+        : null;
+    const inactiveAccount = !stored.user.isActive;
+    const inactiveSchool = Boolean(
+      stored.user.school && !stored.user.school.isActive,
+    );
+    if ((inactiveAccount || inactiveSchool || expired) && !pendingRequest)
       throw new UnauthorizedException('Account or subscription is inactive');
-    if (stored.user.role === 'SCHOOL_ADMIN' && stored.user.schoolId) {
-      const pendingRequest = await this.prisma.schoolRequest.findFirst({
-        where: { email: stored.user.email, status: 'PENDING' },
-        select: { id: true },
-      });
-      if (pendingRequest)
-        throw new UnauthorizedException(
-          'School registration is still pending Super Admin approval',
-        );
-    }
     await this.prisma.refreshToken.update({
       where: { id: stored.id },
       data: { revokedAt: new Date() },
