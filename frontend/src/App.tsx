@@ -19,7 +19,7 @@ import { MyClasses, Attendance as TeacherAttendance, Grades } from "@/pages/Teac
 import Attendance from "@/pages/Attendance";
 import Staff from "@/pages/Staff";
 import Homework from "@/pages/Homework";
-import Exams from "@/pages/Exams";
+import Exams from "@/pages/ExamsLive";
 import Timetable from "@/pages/Timetable";
 import NoticeBoard from "@/pages/NoticeBoard";
 import Transport from "@/pages/Transport";
