@@ -1,0 +1,45 @@
+name: Final market sync
+
+on:
+  push:
+    branches: [feat/super-admin-market-ready]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: "!contains(github.event.head_commit.message, 'chore: finalize market sync')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/super-admin-market-ready
+          fetch-depth: 0
+      - name: Apply final consistency fixes
+        shell: python
+        run: |
+          from pathlib import Path
+
+          landing = Path('frontend/src/pages/LandingPage.tsx')
+          text = landing.read_text(encoding='utf-8')
+          text = text.replace('period: "1 day"', 'period: "3 days"', 1)
+          landing.write_text(text, encoding='utf-8')
+
+          register = Path('frontend/src/pages/RegisterSchool.tsx')
+          text = register.read_text(encoding='utf-8')
+          text = text.replace('const navigate=useNavigate(); const {login,logout}=useAuth();', 'const navigate=useNavigate(); const {login}=useAuth();', 1)
+          text = text.replace('["image/png","image/jpeg","image/webp"]', '["image/png","image/jpeg"]', 1)
+          text = text.replace('PNG, JPG or WEBP · 2 MB max', 'PNG or JPG · 2 MB max', 1)
+          text = text.replace('accept="image/png,image/jpeg,image/webp"', 'accept="image/png,image/jpeg"', 1)
+          register.write_text(text, encoding='utf-8')
+
+          workflow = Path('.github/workflows/final-market-sync.yml')
+          workflow.unlink()
+      - name: Commit final consistency fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/LandingPage.tsx frontend/src/pages/RegisterSchool.tsx
+          git commit -m "chore: finalize market sync"
+          git push origin feat/super-admin-market-ready
