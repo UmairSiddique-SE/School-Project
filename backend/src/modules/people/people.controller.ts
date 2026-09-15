@@ -85,9 +85,35 @@ export class PeopleController {
 
   @Post('students')
   @Roles('SCHOOL_ADMIN')
-  async createStudent(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStudentCapacity(user.schoolId); await this.assertSectionCapacity(user.schoolId, dto.sectionId); const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto; void _password; void _parentPassword; return this.peopleService.createStudent(user.schoolId, studentDto); }
-  @Patch('students/:id') @Roles('SCHOOL_ADMIN') async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { if (dto.sectionId) { const current = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { sectionId: true } }); if (!current) throw new BadRequestException('Student not found'); if (current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId); } return this.peopleService.updateStudent(id, user.schoolId, dto); }
-  @Delete('students/:id') @Roles('SCHOOL_ADMIN') deleteStudent(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStudent(id, user.schoolId); }
+  async createStudent(@CurrentUser() user: any, @Body() dto: any) {
+    this.validateStudentPayload(dto, true);
+    await this.planLimitService.assertStudentCapacity(user.schoolId);
+    await this.assertSectionCapacity(user.schoolId, dto.sectionId);
+    const { password: _password, parentPassword: _parentPassword, ...studentDto } = dto;
+    void _password;
+    void _parentPassword;
+    return this.peopleService.createStudent(user.schoolId, studentDto);
+  }
+
+  @Patch('students/:id')
+  @Roles('SCHOOL_ADMIN')
+  async updateStudent(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (!id?.trim()) throw new BadRequestException('Student ID is required');
+    this.validateStudentPayload(dto, false);
+    const current = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { sectionId: true } });
+    if (!current) throw new BadRequestException('Student not found');
+    if (dto.sectionId && current.sectionId !== dto.sectionId) await this.assertSectionCapacity(user.schoolId, dto.sectionId);
+    return this.peopleService.updateStudent(id, user.schoolId, dto);
+  }
+
+  @Delete('students/:id')
+  @Roles('SCHOOL_ADMIN')
+  async deleteStudent(@CurrentUser() user: any, @Param('id') id: string) {
+    if (!id?.trim()) throw new BadRequestException('Student ID is required');
+    const student = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null }, select: { id: true } });
+    if (!student) throw new BadRequestException('Student not found or already archived');
+    return this.peopleService.deleteStudent(id, user.schoolId);
+  }
 
   @Get('parents') @Roles('SCHOOL_ADMIN') getParents(@CurrentUser() user: any) { return this.peopleService.getParents(user.schoolId); }
   @Post('parents') @Roles('SCHOOL_ADMIN') createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
@@ -96,6 +122,52 @@ export class PeopleController {
   @Post('staff') @Roles('SCHOOL_ADMIN') async createStaff(@CurrentUser() user: any, @Body() dto: any) { await this.planLimitService.assertStaffCapacity(user.schoolId); return this.peopleService.createStaff(user.schoolId, dto); }
   @Patch('staff/:id') @Roles('SCHOOL_ADMIN') updateStaff(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.peopleService.updateStaff(id, user.schoolId, dto); }
   @Delete('staff/:id') @Roles('SCHOOL_ADMIN') deleteStaff(@CurrentUser() user: any, @Param('id') id: string) { return this.peopleService.deleteStaff(id, user.schoolId); }
+
+  private validateStudentPayload(dto: any, creating: boolean) {
+    if (!dto || typeof dto !== 'object') throw new BadRequestException('Student data is required');
+    if (creating && (!dto.name || typeof dto.name !== 'string' || dto.name.trim().length < 2)) {
+      throw new BadRequestException('Student name is required and must contain at least 2 characters');
+    }
+    if (!creating && dto.name !== undefined && (typeof dto.name !== 'string' || dto.name.trim().length < 2)) {
+      throw new BadRequestException('Student name must contain at least 2 characters');
+    }
+    if (dto.sectionId !== undefined && dto.sectionId !== null && (typeof dto.sectionId !== 'string' || !dto.sectionId.trim())) {
+      throw new BadRequestException('A valid section must be selected');
+    }
+    if (dto.email !== undefined && dto.email !== null && dto.email !== '') {
+      const email = String(dto.email).trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Please provide a valid student email address');
+      dto.email = email;
+    }
+    if (dto.dateOfBirth !== undefined && dto.dateOfBirth !== null && dto.dateOfBirth !== '') {
+      const date = new Date(dto.dateOfBirth);
+      if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid date of birth');
+      if (date > new Date()) throw new BadRequestException('Date of birth cannot be in the future');
+    }
+    if (dto.bFormNumber !== undefined && dto.bFormNumber !== null && dto.bFormNumber !== '') {
+      const bForm = String(dto.bFormNumber).trim();
+      if (!/^\d{5}-\d{7}-\d$/.test(bForm)) throw new BadRequestException('B-Form / CNIC must use format 35202-1234567-1');
+    }
+    if (dto.rollNo !== undefined && dto.rollNo !== null && dto.rollNo !== '') {
+      const roll = String(dto.rollNo).trim();
+      if (!/^\d+$/.test(roll) || Number(roll) < 1) throw new BadRequestException('Roll number must be a positive number');
+      dto.rollNo = roll;
+    }
+    if (dto.status !== undefined && !['ACTIVE', 'INACTIVE', 'LEFT', 'GRADUATED'].includes(String(dto.status))) {
+      throw new BadRequestException('Invalid student enrollment status');
+    }
+    if (dto.gender !== undefined && !['MALE', 'FEMALE', 'OTHER'].includes(String(dto.gender))) {
+      throw new BadRequestException('Invalid student gender');
+    }
+    for (const field of ['phone', 'studentMobile', 'emergencyContact']) {
+      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '' && String(dto[field]).length > 30) {
+        throw new BadRequestException(`${field} is too long`);
+      }
+    }
+    if (creating && dto.parentPassword !== undefined && dto.parentPassword !== null && String(dto.parentPassword).length < 12) {
+      throw new BadRequestException('Parent password must contain at least 12 characters');
+    }
+  }
 
   private async assertSectionCapacity(schoolId: string, sectionId?: string) {
     if (!sectionId) return;
