@@ -10,7 +10,7 @@ import LandingPage from "@/pages/LandingPage";
 import PortalSelector from "@/pages/PortalSelector";
 import LoginPage from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
-import Classes from "@/pages/Classes";
+import Classes from "@/pages/ClassesLive";
 import Students from "@/pages/Students";
 import Parents from "@/pages/Parents";
 import Finance from "@/pages/Finance";
