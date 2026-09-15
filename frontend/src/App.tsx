@@ -11,7 +11,7 @@ import PortalSelector from "@/pages/PortalSelector";
 import LoginPage from "@/pages/Login";
 import Dashboard from "@/pages/DashboardLive";
 import Classes from "@/pages/ClassesLive";
-import Students from "@/pages/Students";
+import Students from "@/pages/StudentsLive";
 import Parents from "@/pages/Parents";
 import Finance from "@/pages/Finance";
 import Settings from "@/pages/Settings";
