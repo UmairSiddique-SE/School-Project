@@ -1,28 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+
 @Injectable()
 export class AcademicsService {
-constructor(private prisma: PrismaService) {}  // ─── Homework ───
-  async getHomework(schoolId: string) {
+  constructor(private prisma: PrismaService) {}
+
+  // ─── Homework ───
+  async getHomework(schoolId: string, _user?: any) {
     return this.prisma.homework.findMany({
       where: { schoolId },
-      include: {
-        subject: true,
-        section: { include: { class: true } },
-        teacher: true,
-      },
+      include: { subject: true, section: { include: { class: true } }, teacher: true },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async createHomework(schoolId: string, teacherId: string, data: any) {
-    // If user is admin and creating on behalf, teacherId might need to be provided, 
-    // but for mock/fast implementation we can just fetch the first teacher if not provided
+  async createHomework(schoolId: string, teacherId: string | null, data: any) {
     let tId = teacherId;
     if (!tId) {
       const teacher = await this.prisma.teacher.findFirst({ where: { schoolId } });
-      tId = teacher?.id || '';
+      tId = teacher?.id || null;
     }
+    if (!tId) throw new NotFoundException('No teacher found for this school');
 
     return this.prisma.homework.create({
       data: {
@@ -38,25 +36,21 @@ constructor(private prisma: PrismaService) {}  // ─── Homework ───
   }
 
   async deleteHomework(id: string, schoolId: string) {
-    return this.prisma.homework.deleteMany({
-      where: { id, schoolId },
-    });
+    return this.prisma.homework.deleteMany({ where: { id, schoolId } });
   }
 
   // ─── Timetable ───
-  async getTimetables(schoolId: string) {
+  async getTimetables(schoolId: string, _user?: any) {
     return this.prisma.timetable.findMany({
       where: { section: { class: { schoolId } } },
-      include: {
-        subject: true,
-        teacher: true,
-        section: { include: { class: true } },
-      },
+      include: { subject: true, teacher: true, section: { include: { class: true } } },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });
   }
 
   async createTimetable(schoolId: string, data: any) {
+    const section = await this.prisma.section.findFirst({ where: { id: data.sectionId, class: { schoolId } } });
+    if (!section) throw new NotFoundException('Section not found');
     return this.prisma.timetable.create({
       data: {
         dayOfWeek: parseInt(data.dayOfWeek, 10),
@@ -71,17 +65,12 @@ constructor(private prisma: PrismaService) {}  // ─── Homework ───
   }
 
   async deleteTimetable(id: string, schoolId: string) {
-    return this.prisma.timetable.deleteMany({
-      where: { id, section: { class: { schoolId } } },
-    });
+    return this.prisma.timetable.deleteMany({ where: { id, section: { class: { schoolId } } } });
   }
 
   // ─── Announcements (Notice Board) ───
-  async getAnnouncements(schoolId: string) {
-    return this.prisma.announcement.findMany({
-      where: { schoolId },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getAnnouncements(schoolId: string, _user?: any) {
+    return this.prisma.announcement.findMany({ where: { schoolId }, orderBy: { createdAt: 'desc' } });
   }
 
   async createAnnouncement(schoolId: string, data: any) {
@@ -91,23 +80,18 @@ constructor(private prisma: PrismaService) {}  // ─── Homework ───
         title: data.title,
         content: data.content,
         targetRoles: data.targetRoles || 'ALL',
-        isPinned: data.isPinned || false,
+        isPinned: Boolean(data.isPinned),
       },
     });
   }
 
   async deleteAnnouncement(id: string, schoolId: string) {
-    return this.prisma.announcement.deleteMany({
-      where: { id, schoolId },
-    });
+    return this.prisma.announcement.deleteMany({ where: { id, schoolId } });
   }
 
   // ─── Library (Books) ───
   async getBooks(schoolId: string) {
-    return this.prisma.book.findMany({
-      where: { schoolId, deletedAt: null },
-      orderBy: { title: 'asc' },
-    });
+    return this.prisma.book.findMany({ where: { schoolId, deletedAt: null }, orderBy: { title: 'asc' } });
   }
 
   async getBookIssues(schoolId: string) {
@@ -119,92 +103,50 @@ constructor(private prisma: PrismaService) {}  // ─── Homework ───
   }
 
   async createBook(schoolId: string, data: any) {
+    const copies = parseInt(data.copies, 10) || 1;
     return this.prisma.book.create({
-      data: {
-        schoolId,
-        title: data.title,
-        author: data.author,
-        isbn: data.isbn || null,
-        category: data.category || null,
-        copies: parseInt(data.copies, 10) || 1,
-        available: parseInt(data.copies, 10) || 1,
-      },
+      data: { schoolId, title: data.title, author: data.author, isbn: data.isbn || null, category: data.category || null, copies, available: copies },
     });
   }
 
   async issueBook(schoolId: string, data: any) {
     const book = await this.prisma.book.findFirst({ where: { id: data.bookId, schoolId } });
     if (!book || book.available < 1) throw new NotFoundException('Book not available');
+    const student = await this.prisma.student.findFirst({ where: { id: data.studentId, schoolId } });
+    if (!student) throw new NotFoundException('Student not found');
 
-    await this.prisma.book.update({
-      where: { id: book.id },
-      data: { available: book.available - 1 },
-    });
-
-    return this.prisma.bookIssue.create({
-      data: {
-        bookId: data.bookId,
-        studentId: data.studentId,
-        dueDate: new Date(data.dueDate),
-      },
-    });
+    await this.prisma.book.update({ where: { id: book.id }, data: { available: book.available - 1 } });
+    return this.prisma.bookIssue.create({ data: { bookId: data.bookId, studentId: data.studentId, dueDate: new Date(data.dueDate) } });
   }
 
   async deleteBook(id: string, schoolId: string) {
-    return this.prisma.book.updateMany({
-      where: { id, schoolId },
-      data: { deletedAt: new Date() },
-    });
+    return this.prisma.book.updateMany({ where: { id, schoolId }, data: { deletedAt: new Date() } });
   }
 
   // ─── Transport ───
   async getRoutes(schoolId: string) {
-    return this.prisma.transportRoute.findMany({
-      where: { schoolId },
-      include: { vehicles: true },
-    });
+    return this.prisma.transportRoute.findMany({ where: { schoolId }, include: { vehicles: true } });
   }
 
   async getVehicles(schoolId: string) {
-    return this.prisma.vehicle.findMany({
-      where: { route: { schoolId } },
-      include: { route: true },
-    });
+    return this.prisma.vehicle.findMany({ where: { route: { schoolId } }, include: { route: true } });
   }
 
   async createRoute(schoolId: string, data: any) {
-    return this.prisma.transportRoute.create({
-      data: {
-        schoolId,
-        name: data.name,
-        startPoint: data.startPoint,
-        endPoint: data.endPoint,
-        stops: data.stops || '[]',
-      },
-    });
+    return this.prisma.transportRoute.create({ data: { schoolId, name: data.name, startPoint: data.startPoint, endPoint: data.endPoint, stops: data.stops || '[]' } });
   }
 
   async createVehicle(schoolId: string, data: any) {
-    return this.prisma.vehicle.create({
-      data: {
-        vehicleNo: data.vehicleNo,
-        capacity: parseInt(data.capacity, 10) || 40,
-        driverName: data.driverName,
-        driverPhone: data.driverPhone,
-        routeId: data.routeId,
-      },
-    });
+    const route = await this.prisma.transportRoute.findFirst({ where: { id: data.routeId, schoolId } });
+    if (!route) throw new NotFoundException('Transport route not found');
+    return this.prisma.vehicle.create({ data: { vehicleNo: data.vehicleNo, capacity: parseInt(data.capacity, 10) || 40, driverName: data.driverName, driverPhone: data.driverPhone, routeId: data.routeId } });
   }
 
   async deleteRoute(id: string, schoolId: string) {
-    return this.prisma.transportRoute.deleteMany({
-      where: { id, schoolId },
-    });
+    return this.prisma.transportRoute.deleteMany({ where: { id, schoolId } });
   }
 
   async deleteVehicle(id: string, schoolId: string) {
-    return this.prisma.vehicle.deleteMany({
-      where: { id, route: { schoolId } },
-    });
+    return this.prisma.vehicle.deleteMany({ where: { id, route: { schoolId } } });
   }
 }
