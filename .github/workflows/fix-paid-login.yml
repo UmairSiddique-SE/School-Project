@@ -1,0 +1,38 @@
+name: Fix Paid Onboarding Login
+
+on:
+  push:
+    branches: [feat/super-admin-market-ready]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove onboarding logout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('frontend/src/pages/RegisterSchool.tsx')
+          s=p.read_text()
+          s=s.replace('setApprovalRef(ref);logout();toast.success(', 'setApprovalRef(ref);toast.success(')
+          s=s.replace('setApprovalRef(ref);logout();setFlowStep("pending");', 'setApprovalRef(ref);setFlowStep("pending");')
+          p.write_text(s)
+          PY
+      - name: Verify frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/RegisterSchool.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: keep paid school logged in pending approval [skip ci]"
+          git push origin feat/super-admin-market-ready
