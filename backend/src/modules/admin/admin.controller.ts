@@ -1,6 +1,4 @@
-import {
-  Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, Res, UseGuards, BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, Res, UseGuards, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { PaymentAccountingService } from './payment-accounting.service';
@@ -45,9 +43,7 @@ export class AdminController {
     return this.overviewInFlight;
   }
 
-  @Get('payment-accounting')
-  getPaymentAccounting() { return this.paymentAccountingService.getSummary(); }
-
+  @Get('payment-accounting') getPaymentAccounting() { return this.paymentAccountingService.getSummary(); }
   @Get('plans') getPlans() { return this.adminService.getPlans(); }
   @Put('plans/:id') updatePlan(@Param('id') id: string, @Body() dto: any) { return this.adminService.updatePlan(id, dto); }
   @Get('settings') getSettings() { return this.adminService.getSettings(); }
@@ -60,34 +56,53 @@ export class AdminController {
 
   @Get('requests')
   async getSchoolRequests(@Query('status') status?: string) {
-    const cleanupBefore = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    await this.prisma.schoolRequest.deleteMany({ where: { status: { in: ['APPROVED', 'REJECTED'] }, reviewedAt: { not: null, lt: cleanupBefore } } });
     const normalizedStatus = status?.trim().toUpperCase();
     const where = normalizedStatus && normalizedStatus !== 'ALL' ? { status: normalizedStatus } : undefined;
-    return this.prisma.schoolRequest.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        schoolName: true,
-        ownerName: true,
-        email: true,
-        phone: true,
-        city: true,
-        requestedPlan: true,
-        notes: true,
-        status: true,
-        createdAt: true,
+    return this.prisma.schoolRequest.findMany({ where, orderBy: { createdAt: 'desc' }, select: { id: true, schoolName: true, ownerName: true, email: true, phone: true, city: true, state: true, address: true, subdomain: true, requestedPlan: true, notes: true, status: true, createdAt: true, reviewNotes: true, reviewedBy: true, reviewedAt: true } });
+  }
+
+  @Get('requests/:id/details')
+  async getSchoolRequestDetails(@Param('id') id: string) {
+    const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
+    if (!request) throw new NotFoundException('School request not found');
+
+    const school = request.subdomain
+      ? await this.prisma.school.findUnique({ where: { slug: request.subdomain } })
+      : await this.prisma.school.findFirst({ where: { email: request.email } });
+
+    const [admins, payments, plan] = await Promise.all([
+      school ? this.prisma.user.findMany({ where: { schoolId: school.id, role: 'SCHOOL_ADMIN' }, select: { id: true, name: true, email: true, phone: true, role: true, isActive: true, emailVerified: true, lastLoginAt: true }, orderBy: { createdAt: 'asc' } }) : Promise.resolve([]),
+      school ? this.prisma.onboardingPayment.findMany({ where: { schoolId: school.id }, orderBy: { createdAt: 'desc' }, take: 10 }) : Promise.resolve([]),
+      this.prisma.platformPlan.findUnique({ where: { planKey: request.requestedPlan || 'FREE_TRIAL' } }),
+    ]);
+
+    const latestPayment = payments[0] as any;
+    const isFree = !plan || Number(plan.price) <= 0;
+    const paymentAmount = latestPayment ? Number(latestPayment.amount) : 0;
+    const expectedAmount = plan ? Number(plan.price) : 0;
+    return {
+      request,
+      school,
+      admins,
+      payments,
+      plan,
+      review: {
+        isFree,
+        expectedAmount,
+        paymentAmount,
+        amountMatches: isFree || Boolean(latestPayment && paymentAmount === expectedAmount),
+        paymentSubmitted: Boolean(latestPayment),
+        paymentPending: latestPayment?.status === 'PENDING',
+        paymentApproved: latestPayment?.status === 'APPROVED',
+        hasScreenshot: Boolean(latestPayment?.screenshotUrl),
+        paymentMethod: latestPayment?.method || null,
+        reference: latestPayment?.reference || null,
       },
-    });
+    };
   }
 
   @Post('requests') createSchoolRequest(@Body() dto: any) { return this.adminService.createSchoolRequest(dto); }
-
-  @Patch('requests/:id/review')
-  reviewSchoolRequest(@Param('id') id: string, @Body() dto: ReviewSchoolRequestDto, @CurrentUser() user: any) {
-    return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, user?.name, user?.id);
-  }
+  @Patch('requests/:id/review') reviewSchoolRequest(@Param('id') id: string, @Body() dto: ReviewSchoolRequestDto, @CurrentUser() user: any) { return this.schoolApprovalService.review(id, dto.action, dto.reviewNotes, user?.name, user?.id); }
 
   @Get('audit-logs')
   getAuditLogs(@Query('action') action?: string, @Query('search') search?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
@@ -99,29 +114,15 @@ export class AdminController {
     return this.adminService.getAuditLogs(action, search?.trim(), parsedPage, parsedLimit);
   }
 
-  @Get('payments')
-  getPayments(@Query('page') page?: string, @Query('limit') limit?: string, @Query('status') status?: string, @Query('type') type?: string, @Query('search') search?: string, @Query('date') date?: string) {
-    return this.paymentAccountingService.getPayments({ page: page ? parseInt(page, 10) : undefined, limit: limit ? parseInt(limit, 10) : undefined, status, type, search, date });
-  }
-
+  @Get('payments') getPayments(@Query('page') page?: string, @Query('limit') limit?: string, @Query('status') status?: string, @Query('type') type?: string, @Query('search') search?: string, @Query('date') date?: string) { return this.paymentAccountingService.getPayments({ page: page ? parseInt(page, 10) : undefined, limit: limit ? parseInt(limit, 10) : undefined, status, type, search, date }); }
   @Get('payments/manual-options') getManualPaymentOptions() { return this.manualPaymentService.getOptions(); }
   @Post('payments/manual') createManualPayment(@Body() dto: any, @CurrentUser() user: any) { return this.manualPaymentService.create(dto, user); }
   @Patch('payments/:id/approve') approvePayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.approvePayment(id, user); }
   @Patch('payments/:id/reject') rejectPayment(@Param('id') id: string, @CurrentUser() user: any) { return this.paymentLifecycleService.rejectPayment(id, user); }
-
   @Get('reports/:id/download')
-  async downloadReport(@Param('id') id: string, @Res() res: any) {
-    const csv = await this.adminService.getReportCsv(id);
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=${id}-${Date.now()}.csv`);
-    return res.send(csv);
-  }
-
+  async downloadReport(@Param('id') id: string, @Res() res: any) { const csv = await this.adminService.getReportCsv(id); res.setHeader('Content-Type', 'text/csv'); res.setHeader('Content-Disposition', `attachment; filename=${id}-${Date.now()}.csv`); return res.send(csv); }
   @Get('users') getUsers(@Query('search') search?: string, @Query('role') role?: string) { return this.adminService.getPlatformUsers(search, role); }
-  @Patch('users/:id/toggle-status') toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) {
-    if (!user?.id) throw new BadRequestException('Authenticated Super Admin context is required.');
-    return this.superAdminSecurityService.toggleUserActive(id, user.id);
-  }
+  @Patch('users/:id/toggle-status') toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) { if (!user?.id) throw new BadRequestException('Authenticated Super Admin context is required.'); return this.superAdminSecurityService.toggleUserActive(id, user.id); }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
   @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
   @Get('announcements') getAnnouncements() { return this.adminService.getAnnouncements(); }
