@@ -24,15 +24,19 @@ import {
 } from './dto/auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { PendingSchoolRegistrationService } from './pending-school-registration.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly pendingSchoolRegistrationService: PendingSchoolRegistrationService,
+  ) {}
 
   @Post('register-school')
   registerSchool(@Body() dto: RegisterSchoolDto) {
-    return this.authService.registerSchool(dto);
+    return this.pendingSchoolRegistrationService.register(dto);
   }
 
   @Post('login')
@@ -68,11 +72,10 @@ export class AuthController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() dto: VerifyEmailDto) {
-    const result = await this.authService.verifyEmail(dto);
+    const pendingResult = await this.pendingSchoolRegistrationService.verify(dto.userId, dto.otp);
+    if (pendingResult) return pendingResult;
 
-    // Pending school admins receive a valid auth session for onboarding/payment.
-    // This does NOT grant portal access: activationStatus and the tenant guards
-    // keep the school workspace locked until Super Admin approval.
+    const result = await this.authService.verifyEmail(dto);
     if (
       result.user?.role === 'SCHOOL_ADMIN' &&
       result.user.activationStatus !== 'ACTIVE'
@@ -85,8 +88,13 @@ export class AuthController {
         approvalRequired: true,
       };
     }
-
     return result;
+  }
+
+  @Post('resend-otp')
+  @HttpCode(HttpStatus.OK)
+  resendOtp(@Body() dto: { userId: string }) {
+    return this.pendingSchoolRegistrationService.resend(dto.userId);
   }
 
   @Post('onboarding-payment')
