@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query, UseGuards,
+  Controller, Get, Post, Body, Query, Patch, Param, UseGuards,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -21,6 +21,13 @@ export class ExamController {
   @Roles('SCHOOL_ADMIN')
   createExam(@CurrentUser() user: any, @Body() dto: any) {
     return this.examService.createExam(user.schoolId, dto);
+  }
+
+  @Patch(':id/publish')
+  @Roles('SCHOOL_ADMIN')
+  publishExam(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    const published = dto?.published === undefined ? true : Boolean(dto.published);
+    return this.examService.publishExam(user.schoolId, id, published);
   }
 
   @Get('my-results')
