@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 import { CheckCircle2, Clock3, CreditCard, FileImage, Loader2, LogOut, RefreshCw, ShieldCheck, Upload, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/api/apiClient";
