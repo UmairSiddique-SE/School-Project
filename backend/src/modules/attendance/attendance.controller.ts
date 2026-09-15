@@ -18,6 +18,12 @@ export class AttendanceController {
     return this.attendanceService.getStudentAttendance(user.schoolId, user.email);
   }
 
+  @Get('summary')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  getSummary(@CurrentUser() user: any) {
+    return this.attendanceService.getSchoolAttendanceSummary(user.schoolId);
+  }
+
   @Get()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getAttendance(
