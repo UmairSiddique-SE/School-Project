@@ -29,7 +29,7 @@ const BuildingManagement = lazy(() => import("@/pages/BuildingManagement"));
 const StudentPortal = lazy(() => import("@/pages/StudentPortal"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 const SchoolLogin = lazy(() => import("@/pages/SchoolLogin"));
-const RegisterSchool = lazy(() => import("@/pages/RegisterSchool"));
+const RegisterSchool = lazy(() => import("@/pages/RegisterSchoolPremium"));
 const SchoolPlanSelection = lazy(() => import("@/pages/SchoolPlanSelection"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
