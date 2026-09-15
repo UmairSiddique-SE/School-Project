@@ -32,6 +32,24 @@ export class AttendanceService {
     }));
   }
 
+  async getSchoolAttendanceSummary(schoolId: string) {
+    const grouped = await this.prisma.attendance.groupBy({
+      by: ['status'],
+      where: { schoolId },
+      _count: { _all: true },
+    });
+    const summary = { total: 0, present: 0, absent: 0, late: 0, leave: 0 };
+    for (const row of grouped) {
+      const count = row._count._all;
+      summary.total += count;
+      if (row.status === 'PRESENT') summary.present += count;
+      else if (row.status === 'ABSENT') summary.absent += count;
+      else if (row.status === 'LATE') summary.late += count;
+      else if (row.status === 'LEAVE') summary.leave += count;
+    }
+    return summary;
+  }
+
   async getAttendanceForSection(schoolId: string, sectionId: string, dateStr: string, user?: any) {
     if (!sectionId) throw new BadRequestException('Section is required');
     const section = await this.prisma.section.findFirst({
