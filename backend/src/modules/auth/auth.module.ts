@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { OnboardingStatusController } from './onboarding-status.controller';
 import { OnboardingStatusService } from './onboarding-status.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { PendingSchoolRegistrationService } from './pending-school-registration.service';
 import { MailModule } from '../mail/mail.module';
 
 @Module({
@@ -32,7 +33,7 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [AuthController, OnboardingStatusController],
-  providers: [AuthService, OnboardingStatusService, JwtStrategy],
+  providers: [AuthService, OnboardingStatusService, JwtStrategy, PendingSchoolRegistrationService],
   exports: [AuthService, PassportModule],
 })
 export class AuthModule {}
