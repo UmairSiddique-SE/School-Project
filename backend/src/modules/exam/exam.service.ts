@@ -31,6 +31,17 @@ export class ExamService {
     return this.prisma.exam.create({ data: { name: data.name.trim(), type: data.type || 'UNIT_TEST', startDate, endDate, totalMarks, passingMarks, description: data.description?.trim() || null, schoolId, academicYearId: academicYear?.id || null, sectionId } });
   }
 
+  async publishExam(schoolId: string, examId: string, published: boolean) {
+    if (!examId?.trim()) throw new BadRequestException('Exam ID is required');
+    const exam = await this.prisma.exam.findFirst({ where: { id: examId, schoolId, deletedAt: null }, select: { id: true, isPublished: true } });
+    if (!exam) throw new NotFoundException('Exam not found');
+    if (published && !exam.isPublished) {
+      const resultCount = await this.prisma.examResult.count({ where: { examId: exam.id } });
+      if (resultCount === 0) throw new BadRequestException('Add at least one result before publishing the exam');
+    }
+    return this.prisma.exam.update({ where: { id: exam.id }, data: { isPublished: published } });
+  }
+
   async getExamResults(schoolId: string, examId: string, subjectId: string, user?: any) {
     if (!examId || !subjectId) throw new BadRequestException('Exam and subject are required');
     const exam = await this.prisma.exam.findFirst({ where: { id: examId, schoolId, deletedAt: null } });
@@ -94,6 +105,15 @@ export class ExamService {
     const normalized = data.results.map((r: any) => ({ studentId: String(r.studentId || ''), subjectId: String(r.subjectId || ''), marksObtained: r.isAbsent ? 0 : Number(r.marksObtained), isAbsent: Boolean(r.isAbsent), grade: r.grade?.trim() || null, remarks: r.remarks?.trim() || null }));
     if (normalized.some((r: any) => !r.studentId || !r.subjectId)) throw new BadRequestException('Each result requires a student and subject');
     if (normalized.some((r: any) => !Number.isFinite(r.marksObtained) || r.marksObtained < 0 || r.marksObtained > exam.totalMarks)) throw new BadRequestException(`Marks must be between 0 and ${exam.totalMarks}`);
+    if (normalized.some((r: any) => r.remarks && r.remarks.length > 500)) throw new BadRequestException('Result remarks cannot exceed 500 characters');
+    if (normalized.some((r: any) => r.grade && r.grade.length > 20)) throw new BadRequestException('Result grade cannot exceed 20 characters');
+
+    const keys = new Set<string>();
+    for (const result of normalized) {
+      const key = `${result.studentId}:${result.subjectId}`;
+      if (keys.has(key)) throw new BadRequestException('Duplicate student and subject result in the same submission');
+      keys.add(key);
+    }
 
     const studentIds = Array.from(new Set(normalized.map((r: any) => r.studentId))) as string[];
     const subjectIds = Array.from(new Set(normalized.map((r: any) => r.subjectId))) as string[];
