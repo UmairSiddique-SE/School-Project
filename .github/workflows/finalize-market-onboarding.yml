@@ -1,0 +1,66 @@
+name: Finalize Market Onboarding
+
+on:
+  push:
+    branches: [feat/super-admin-market-ready]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/super-admin-market-ready
+          fetch-depth: 1
+
+      - name: Patch onboarding auth flow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('backend/src/modules/auth/auth.service.ts')
+          s = p.read_text()
+          old = '''    if (!user.isActive)\n      throw new UnauthorizedException('This account has been suspended');\n    if (user.school && !user.school.isActive)\n      throw new UnauthorizedException('This school account is suspended');\n    if (user.role === 'SCHOOL_ADMIN' && user.school) {\n      const pendingRequest = await this.prisma.schoolRequest.findFirst({\n        where: { email: user.email, status: 'PENDING' },\n        select: { id: true },\n      });\n      if (pendingRequest)\n        throw new UnauthorizedException(\n          'Your school registration is pending Super Admin approval. School login will be enabled after approval.',\n        );\n    }\n'''
+          new = '''    const pendingRequest =\n      user.role === 'SCHOOL_ADMIN' && user.school\n        ? await this.prisma.schoolRequest.findFirst({\n            where: { email: user.email, status: 'PENDING' },\n            select: { id: true },\n          })\n        : null;\n    if (!user.isActive && !pendingRequest)\n      throw new UnauthorizedException('This account has been suspended');\n    if (user.school && !user.school.isActive && !pendingRequest)\n      throw new UnauthorizedException('This school account is suspended');\n'''
+          if old not in s:
+              raise SystemExit('login block not found')
+          s = s.replace(old, new, 1)
+
+          old2 = '''    if (\n      !stored.user.isActive ||\n      (stored.user.school && (!stored.user.school.isActive || expired))\n    )\n      throw new UnauthorizedException('Account or subscription is inactive');\n    if (stored.user.role === 'SCHOOL_ADMIN' && stored.user.schoolId) {\n      const pendingRequest = await this.prisma.schoolRequest.findFirst({\n        where: { email: stored.user.email, status: 'PENDING' },\n        select: { id: true },\n      });\n      if (pendingRequest)\n        throw new UnauthorizedException(\n          'School registration is still pending Super Admin approval',\n        );\n    }\n'''
+          new2 = '''    const pendingRequest =\n      stored.user.role === 'SCHOOL_ADMIN' && stored.user.schoolId\n        ? await this.prisma.schoolRequest.findFirst({\n            where: { email: stored.user.email, status: 'PENDING' },\n            select: { id: true },\n          })\n        : null;\n    const inactiveAccount = !stored.user.isActive;\n    const inactiveSchool = Boolean(\n      stored.user.school && !stored.user.school.isActive,\n    );\n    if ((inactiveAccount || inactiveSchool || expired) && !pendingRequest)\n      throw new UnauthorizedException('Account or subscription is inactive');\n'''
+          if old2 not in s:
+              raise SystemExit('refresh block not found')
+          s = s.replace(old2, new2, 1)
+          p.write_text(s)
+
+          p = Path('frontend/src/pages/RegisterSchool.tsx')
+          s = p.read_text()
+          s2 = s.replace('setApprovalRef(`EDU-${Date.now().toString().slice(-8)}`);logout();setFlowStep("pending");', 'setApprovalRef(`EDU-${Date.now().toString().slice(-8)}`);setFlowStep("pending");')
+          s2 = s2.replace('setApprovalRef(ref);logout();setFlowStep("pending");', 'setApprovalRef(ref);setFlowStep("pending");')
+          if s2 == s:
+              raise SystemExit('RegisterSchool logout patterns not found')
+          p.write_text(s2)
+          PY
+
+      - name: TypeScript checks
+        run: |
+          cd backend
+          npm ci
+          npx tsc --noEmit
+          cd ../frontend
+          npm ci
+          npm run build
+
+      - name: Commit finalized flow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/modules/auth/auth.service.ts frontend/src/pages/RegisterSchool.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: finalize market onboarding login flow [skip ci]"
+          git push origin feat/super-admin-market-ready
