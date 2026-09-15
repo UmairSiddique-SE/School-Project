@@ -15,13 +15,13 @@ export class AcademicsController {
   @Get('homework')
   @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getHomework(@CurrentUser() user: any) {
-    return this.academicsService.getHomework(user.schoolId, user);
+    return this.academicsService.getHomework(user.schoolId);
   }
 
   @Post('homework')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   createHomework(@CurrentUser() user: any, @Body() dto: any) {
-    return this.academicsService.createHomework(user.schoolId, user.id, dto);
+    return this.academicsService.createHomework(user.schoolId, user.email, dto);
   }
 
   @Delete('homework/:id')
@@ -33,7 +33,7 @@ export class AcademicsController {
   @Get('timetables')
   @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getTimetables(@CurrentUser() user: any) {
-    return this.academicsService.getTimetables(user.schoolId, user);
+    return this.academicsService.getTimetables(user.schoolId);
   }
 
   @Post('timetables')
@@ -51,7 +51,7 @@ export class AcademicsController {
   @Get('announcements')
   @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getAnnouncements(@CurrentUser() user: any) {
-    return this.academicsService.getAnnouncements(user.schoolId, user);
+    return this.academicsService.getAnnouncements(user.schoolId);
   }
 
   @Post('announcements')
