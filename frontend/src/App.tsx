@@ -21,7 +21,7 @@ import Staff from "@/pages/Staff";
 import Homework from "@/pages/Homework";
 import Exams from "@/pages/ExamsLive";
 import Timetable from "@/pages/TimetableLive";
-import NoticeBoard from "@/pages/NoticeBoard";
+import NoticeBoard from "@/pages/NoticeBoardLive";
 import Transport from "@/pages/Transport";
 import Reports from "@/pages/Reports";
 import Subscription from "@/pages/Subscription";
