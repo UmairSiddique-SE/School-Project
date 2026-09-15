@@ -5,7 +5,7 @@ import { PrismaService } from '../database/prisma.service';
 export class OnboardingStatusService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStatus(user: { id?: string; schoolId?: string; role?: string }) {
+  async getStatus(user: { schoolId?: string; role?: string }) {
     if (user.role !== 'SCHOOL_ADMIN' || !user.schoolId) {
       throw new UnauthorizedException('School onboarding is only available to school administrators.');
     }
@@ -24,10 +24,6 @@ export class OnboardingStatusService {
     });
 
     if (!school) throw new UnauthorizedException('School account not found.');
-
-    const request = await this.prisma.schoolRequest.findFirst({
-      where: { email: (await this.prisma.user.findUnique({ where: { id: user.id }, select: { email: true } }))?.email ?? '', schoolRequest: undefined as never },
-    }).catch(() => null);
 
     const latestPayment = await this.prisma.onboardingPayment.findFirst({
       where: { schoolId: school.id },
@@ -54,12 +50,6 @@ export class OnboardingStatusService {
         ? 'APPROVAL_PENDING'
         : 'PAYMENT_REQUIRED';
 
-    return {
-      onboardingStatus,
-      school,
-      request: schoolRequest,
-      payment: latestPayment,
-      plan,
-    };
+    return { onboardingStatus, school, request: schoolRequest, payment: latestPayment, plan };
   }
 }
