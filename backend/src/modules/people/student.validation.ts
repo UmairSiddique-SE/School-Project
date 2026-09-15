@@ -6,6 +6,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CNIC_RE = /^\d{5}-\d{7}-\d$/;
 const PHONE_RE = /^(?:\+92|0)\d{10}$/;
 const SESSION_RE = /^\d{4}-\d{4}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function optionalString(value: unknown, field: string, maxLength = 255) {
   if (value === undefined || value === null || value === '') return;
@@ -28,11 +29,8 @@ function optionalBoolean(value: unknown, field: string) {
 
 export function validateStudentCreate(data: any) {
   if (!data || typeof data !== 'object') throw new BadRequestException('Student data is required');
-  if (typeof data.name !== 'string' || data.name.trim().length < 2) {
-    throw new BadRequestException('Student name is required and must contain at least 2 characters');
-  }
+  if (typeof data.name !== 'string' || data.name.trim().length < 2) throw new BadRequestException('Student name is required and must contain at least 2 characters');
   if (data.name.trim().length > 150) throw new BadRequestException('Student name is too long');
-
   optionalString(data.sectionId, 'Section ID', 100);
   optionalString(data.admissionNo, 'Admission No', 50);
   optionalString(data.rollNo, 'Roll No', 20);
@@ -48,7 +46,6 @@ export function validateStudentCreate(data: any) {
   optionalDate(data.admissionDate, 'Admission Date');
   optionalBoolean(data.transportRequired, 'Transport Required');
   optionalBoolean(data.hostelRequired, 'Hostel Required');
-
   if (data.email && !EMAIL_RE.test(String(data.email).trim())) throw new BadRequestException('Please provide a valid student email');
   const phone = data.phone ?? data.studentMobile;
   if (phone && !PHONE_RE.test(String(phone).replace(/[\s-]/g, ''))) throw new BadRequestException('Please provide a valid Pakistani phone number');
@@ -65,9 +62,7 @@ export function validateStudentUpdate(data: any) {
   for (const immutableField of ['id', 'schoolId', 'admissionNo', 'email']) {
     if (data[immutableField] !== undefined) throw new BadRequestException(`${immutableField} cannot be changed after admission`);
   }
-  if (data.name !== undefined && (typeof data.name !== 'string' || data.name.trim().length < 2 || data.name.trim().length > 150)) {
-    throw new BadRequestException('Student name must contain 2-150 characters');
-  }
+  if (data.name !== undefined && (typeof data.name !== 'string' || data.name.trim().length < 2 || data.name.trim().length > 150)) throw new BadRequestException('Student name must contain 2-150 characters');
   optionalString(data.sectionId, 'Section ID', 100);
   optionalString(data.rollNo, 'Roll No', 20);
   optionalString(data.phone, 'Phone', 30);
@@ -80,7 +75,6 @@ export function validateStudentUpdate(data: any) {
   optionalDate(data.dateOfBirth, 'Date of Birth');
   optionalBoolean(data.transportRequired, 'Transport Required');
   optionalBoolean(data.hostelRequired, 'Hostel Required');
-
   if (data.phone && !PHONE_RE.test(String(data.phone).replace(/[\s-]/g, ''))) throw new BadRequestException('Please provide a valid Pakistani phone number');
   if (data.bFormNumber && !CNIC_RE.test(String(data.bFormNumber))) throw new BadRequestException('B-Form / ID must use XXXXX-XXXXXXX-X format');
   if (data.session && !SESSION_RE.test(String(data.session))) throw new BadRequestException('Session must use YYYY-YYYY format');
@@ -90,5 +84,5 @@ export function validateStudentUpdate(data: any) {
 }
 
 export function validateStudentId(id: string) {
-  if (!id || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id)) throw new BadRequestException('Invalid student ID');
+  if (!UUID_RE.test(id)) throw new BadRequestException('Invalid student ID');
 }
