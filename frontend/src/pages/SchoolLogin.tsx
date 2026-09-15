@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Building2, MapPin, Search, School, X } from "lucide-react";
 import apiClient from "@/api/apiClient";
@@ -22,7 +22,6 @@ export default function SchoolLogin() {
   const [schools, setSchools] = useState<SchoolItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -59,16 +58,12 @@ export default function SchoolLogin() {
     );
   }, [schools, search]);
 
-  const openLogin = (school: SchoolItem) => {
-    if (!school.loginAvailable) return;
-    const slug = String(school.slug || "").trim().replace(/^\/+|\/+$/g, "");
-    if (!slug) {
-      navigate("/school-login", { replace: true });
-      return;
-    }
-    // Use a dedicated static prefix so the school-login flow cannot fall through
-    // to the generic /404 route on deployments with other dynamic routes.
-    navigate(`/school-login/${encodeURIComponent(slug)}`);
+  const getLoginPath = (slug: string) => {
+    const cleanSlug = String(slug || "")
+      .trim()
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")[0];
+    return `/${encodeURIComponent(cleanSlug)}/login`;
   };
 
   return (
@@ -103,40 +98,92 @@ export default function SchoolLogin() {
         <div className="rounded-3xl border border-white/10 bg-[#09111f]/90 p-5 sm:p-7 shadow-2xl backdrop-blur-xl">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-300" size={19} />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search your registered school by name, city, or school code..." className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-4 pl-12 pr-12 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/10" autoFocus />
-            {search && <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"><X size={17} /></button>}
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search your registered school by name, city, or school code..."
+              className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-4 pl-12 pr-12 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/10"
+              autoFocus
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                <X size={17} />
+              </button>
+            )}
           </div>
 
           <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">{loading ? "Checking registered schools..." : `${filteredSchools.length} registered school${filteredSchools.length === 1 ? "" : "s"}`}</p>
+            <p className="text-xs text-slate-500">
+              {loading ? "Checking registered schools..." : `${filteredSchools.length} registered school${filteredSchools.length === 1 ? "" : "s"}`}
+            </p>
             <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Live database</span>
           </div>
 
-          {error && !loading && <div className="mt-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{error}</div>}
-
-          {!loading && filteredSchools.length > 0 && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {filteredSchools.map((school) => (
-                <button key={school.id || school.slug} type="button" disabled={!school.loginAvailable} onClick={() => openLogin(school)} className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${school.loginAvailable ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]" : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"}`}>
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-                    {school.logoUrl ? <img src={school.logoUrl} alt="" className="h-full w-full object-cover" /> : <School size={21} className="text-cyan-300" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-white truncate">{school.name}</p>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500"><span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>{school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}</div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {school.loginAvailable ? <><span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span><ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" /></> : <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>}
-                  </div>
-                </button>
-              ))}
+          {error && !loading && (
+            <div className="mt-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+              {error}
             </div>
           )}
 
-          {!loading && filteredSchools.length === 0 && <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center"><School size={35} className="mx-auto text-slate-600" /><p className="mt-3 font-semibold text-slate-300">No registered school found.</p><p className="mt-1 text-xs text-slate-500">Register your school first. It will appear here automatically from the database.</p></div>}
+          {!loading && filteredSchools.length > 0 && (
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {filteredSchools.map((school) => {
+                const loginPath = getLoginPath(school.slug);
+                return (
+                  <Link
+                    key={school.id || school.slug}
+                    to={school.loginAvailable ? loginPath : "#"}
+                    onClick={(e) => {
+                      if (!school.loginAvailable) e.preventDefault();
+                    }}
+                    className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
+                      school.loginAvailable
+                        ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
+                        : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"
+                    }`}
+                  >
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
+                      {school.logoUrl ? (
+                        <img src={school.logoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <School size={21} className="text-cyan-300" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-white truncate">{school.name}</p>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                        <span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>
+                        {school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {school.loginAvailable ? (
+                        <>
+                          <span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span>
+                          <ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" />
+                        </>
+                      ) : (
+                        <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {!loading && filteredSchools.length === 0 && (
+            <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
+              <School size={35} className="mx-auto text-slate-600" />
+              <p className="mt-3 font-semibold text-slate-300">No registered school found.</p>
+              <p className="mt-1 text-xs text-slate-500">Register your school first. It will appear here automatically from the database.</p>
+            </div>
+          )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">School Admin and Teachers use their registered email. Students use their school-issued Login ID. The role is detected automatically.</p>
+        <p className="mt-6 text-center text-xs text-slate-500">
+          School Admin and Teachers use their registered email. Students use their school-issued Login ID. The role is detected automatically.
+        </p>
       </main>
     </div>
   );
