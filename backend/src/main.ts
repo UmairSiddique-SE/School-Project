@@ -27,11 +27,15 @@ async function bootstrap() {
     throw new Error('CORS_ORIGINS is required in production.');
   }
 
-  // Allow both common Vite development ports. If CORS_ORIGINS is set,
-  // those explicitly configured origins take precedence.
+  // Allow common Vite development ports plus the current temporary
+  // Cloudflare frontend tunnel used for end-to-end local testing.
   const corsOrigins = configuredOrigins.length
     ? configuredOrigins
-    : ['http://localhost:5173', 'http://localhost:5174'];
+    : [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://rebate-fabulous-tank-parameter.trycloudflare.com',
+      ];
 
   app.enableCors({
     origin: corsOrigins,
