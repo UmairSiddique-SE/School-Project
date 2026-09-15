@@ -108,7 +108,6 @@ export class AcademicsService {
     return this.prisma.announcement.delete({ where: { id } });
   }
 
-  // Library
   async getBooks(schoolId: string) {
     return this.prisma.book.findMany({ where: { schoolId, deletedAt: null }, orderBy: { title: 'asc' } });
   }
@@ -179,7 +178,6 @@ export class AcademicsService {
     return this.prisma.book.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
-  // Transport
   async getRoutes(schoolId: string) {
     return this.prisma.transportRoute.findMany({ where: { schoolId }, include: { vehicles: true }, orderBy: { name: 'asc' } });
   }
@@ -218,5 +216,75 @@ export class AcademicsService {
     if (!vehicle) throw new NotFoundException('Vehicle not found');
     if (vehicle.assignments.length) throw new BadRequestException('Remove student transport assignments before deleting this vehicle');
     return this.prisma.vehicle.delete({ where: { id } });
+  }
+
+  async getTransportAssignments(schoolId: string) {
+    return this.prisma.transportAssignment.findMany({
+      where: { vehicle: { route: { schoolId } } },
+      include: {
+        student: { select: { id: true, name: true, rollNo: true, admissionNo: true, schoolId: true } },
+        vehicle: { include: { route: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createTransportAssignment(schoolId: string, data: any) {
+    const studentId = String(data.studentId || '').trim();
+    const vehicleId = String(data.vehicleId || '').trim();
+    if (!studentId || !vehicleId) throw new BadRequestException('Student and vehicle are required');
+
+    const [student, vehicle, existing] = await Promise.all([
+      this.prisma.student.findFirst({ where: { id: studentId, schoolId, deletedAt: null }, select: { id: true } }),
+      this.prisma.vehicle.findFirst({ where: { id: vehicleId, route: { schoolId } }, include: { route: true, _count: { select: { assignments: true } } } }),
+      this.prisma.transportAssignment.findUnique({ where: { studentId }, select: { id: true } }),
+    ]);
+    if (!student) throw new NotFoundException('Student not found');
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+    if (existing) throw new BadRequestException('This student already has a transport assignment');
+    if (vehicle._count.assignments >= vehicle.capacity) throw new BadRequestException('Vehicle capacity is full');
+
+    return this.prisma.transportAssignment.create({
+      data: {
+        studentId,
+        vehicleId,
+        pickupStop: data.pickupStop?.trim() || null,
+        dropoffStop: data.dropoffStop?.trim() || null,
+      },
+      include: { student: true, vehicle: { include: { route: true } } },
+    });
+  }
+
+  async updateTransportAssignment(id: string, schoolId: string, data: any) {
+    const assignment = await this.prisma.transportAssignment.findFirst({
+      where: { id, vehicle: { route: { schoolId } } },
+      include: { vehicle: true, student: true },
+    });
+    if (!assignment) throw new NotFoundException('Transport assignment not found');
+
+    const nextVehicleId = data.vehicleId ? String(data.vehicleId).trim() : assignment.vehicleId;
+    if (!nextVehicleId) throw new BadRequestException('Vehicle is required');
+
+    if (nextVehicleId !== assignment.vehicleId) {
+      const vehicle = await this.prisma.vehicle.findFirst({ where: { id: nextVehicleId, route: { schoolId } }, include: { _count: { select: { assignments: true } } } });
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
+      if (vehicle._count.assignments >= vehicle.capacity) throw new BadRequestException('Vehicle capacity is full');
+    }
+
+    return this.prisma.transportAssignment.update({
+      where: { id },
+      data: {
+        vehicleId: nextVehicleId,
+        pickupStop: data.pickupStop === undefined ? assignment.pickupStop : String(data.pickupStop || '').trim() || null,
+        dropoffStop: data.dropoffStop === undefined ? assignment.dropoffStop : String(data.dropoffStop || '').trim() || null,
+      },
+      include: { student: true, vehicle: { include: { route: true } } },
+    });
+  }
+
+  async deleteTransportAssignment(id: string, schoolId: string) {
+    const assignment = await this.prisma.transportAssignment.findFirst({ where: { id, vehicle: { route: { schoolId } } }, select: { id: true } });
+    if (!assignment) throw new NotFoundException('Transport assignment not found');
+    return this.prisma.transportAssignment.delete({ where: { id } });
   }
 }
