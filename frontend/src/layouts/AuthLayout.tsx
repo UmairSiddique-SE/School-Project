@@ -1,26 +1,12 @@
 import React from 'react';
-import { Outlet, Navigate, useParams } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/context/AuthContext';
 import { GraduationCap } from 'lucide-react';
 
 export const AuthLayout: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
-  const { schoolSlug } = useParams();
-
-  // If already authenticated, redirect straight to dashboard
-  if (isAuthenticated) {
-    const destination = user?.role === 'SUPER_ADMIN'
-      ? '/platform/super-admin'
-      : `/${schoolSlug || user?.schoolSlug || 'demo'}/dashboard`;
-    return <Navigate to={destination} replace />;
-  }
-
   return (
     <div className="flex h-screen w-screen bg-background overflow-hidden">
-      {/* Left panel - Branding (Hidden on mobile) */}
       <div className="relative hidden w-1/2 flex-col justify-between bg-primary p-12 text-primary-foreground md:flex">
-        {/* Decorative background grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px] opacity-20 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-tr from-primary via-primary to-violet-500 opacity-90 pointer-events-none" />
 
@@ -31,7 +17,7 @@ export const AuthLayout: React.FC = () => {
           <span className="font-bold text-2xl tracking-tight">EduSphere ERP</span>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
@@ -51,7 +37,6 @@ export const AuthLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Right panel - Auth form */}
       <div className="flex w-full items-center justify-center p-8 md:w-1/2 bg-background/95 backdrop-blur-sm">
         <div className="w-full max-w-md">
           <Outlet />
