@@ -60,9 +60,6 @@ export class SchoolApprovalService {
 
       const isFreeTrial = plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
 
-      // One-click onboarding approval: a submitted paid payment is approved
-      // together with the school request. This keeps the intended flow:
-      // payment -> pending verification -> Super Admin approve -> dashboard.
       const payment = !isFreeTrial
         ? await tx.onboardingPayment.findFirst({
             where: { schoolId: existingSchool.id, plan: plan.planKey, status: { in: ['PENDING', 'APPROVED'] } },
@@ -136,6 +133,11 @@ export class SchoolApprovalService {
     const normalized = (period || '').trim().toLowerCase();
     if (normalized === 'forever') return new Date('9999-12-31T23:59:59.999Z');
     if (normalized === 'trial' || normalized === 'free trial' || normalized === 'free_trial') return new Date(start.getTime() + 3 * DAY_MS);
+    if (normalized === 'per month' || normalized === 'monthly' || normalized === 'month' || normalized === 'per_month') {
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+      return end;
+    }
     const monthMatch = normalized.match(/(\d+)\s*month/);
     if (monthMatch) {
       const end = new Date(start);
