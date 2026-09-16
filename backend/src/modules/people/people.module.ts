@@ -6,6 +6,7 @@ import { StudentRecordController } from './student-record.controller';
 import { PlanLimitService } from './plan-limit.service';
 import './people.service.compat';
 import './people.service.staff.compat';
+import './student-admission.compat';
 
 @Module({
   controllers: [PeopleController, StudentBulkController, StudentRecordController],
