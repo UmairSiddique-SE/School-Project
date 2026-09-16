@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+
 import { PrismaService } from '../database/prisma.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -14,108 +20,349 @@ export class SchoolApprovalService {
     reviewedBy?: string,
     reviewerUserId?: string,
   ) {
-    const request = await this.prisma.schoolRequest.findUnique({ where: { id } });
-    if (!request) throw new NotFoundException('School request not found');
-    if (request.status !== 'PENDING') throw new ConflictException('This request has already been reviewed');
+    const request = await this.prisma.schoolRequest.findUnique({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('School request not found');
+    }
+
+    if (request.status !== 'PENDING') {
+      throw new ConflictException(
+        'This request has already been reviewed',
+      );
+    }
 
     const existingSchool = request.subdomain
-      ? await this.prisma.school.findUnique({ where: { slug: request.subdomain } })
-      : await this.prisma.school.findFirst({ where: { email: request.email } });
+      ? await this.prisma.school.findUnique({
+          where: { slug: request.subdomain },
+        })
+      : await this.prisma.school.findFirst({
+          where: { email: request.email },
+        });
 
+    // =========================
+    // REJECT SCHOOL REQUEST
+    // =========================
     if (action === 'REJECTED') {
       return this.prisma.$transaction(async (tx) => {
         const updated = await tx.schoolRequest.update({
           where: { id },
-          data: { status: 'REJECTED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: new Date() },
+          data: {
+            status: 'REJECTED',
+            reviewNotes: reviewNotes || null,
+            reviewedBy: reviewedBy || 'Super Admin',
+            reviewedAt: new Date(),
+          },
         });
+
         if (existingSchool) {
-          await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: false } });
-          await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: false } });
+          await tx.school.update({
+            where: { id: existingSchool.id },
+            data: { isActive: false },
+          });
+
+          await tx.user.updateMany({
+            where: {
+              schoolId: existingSchool.id,
+              role: 'SCHOOL_ADMIN',
+            },
+            data: { isActive: false },
+          });
         }
+
         if (reviewerUserId) {
-          await tx.auditLog.create({ data: { action: 'SCHOOL_REQUEST_REJECTED', entity: 'SchoolRequest', entityId: id, userId: reviewerUserId, schoolId: existingSchool?.id, after: `Rejected registration request for ${request.schoolName}` } });
+          await tx.auditLog.create({
+            data: {
+              action: 'SCHOOL_REQUEST_REJECTED',
+              entity: 'SchoolRequest',
+              entityId: id,
+              userId: reviewerUserId,
+              schoolId: existingSchool?.id,
+              after: `Rejected registration request for ${request.schoolName}`,
+            },
+          });
         }
+
         return updated;
       });
     }
 
-    if (!existingSchool) throw new ConflictException('This request has no matching registered school account. Please ask the school to register again.');
+    // =========================
+    // APPROVE SCHOOL REQUEST
+    // =========================
+    if (!existingSchool) {
+      throw new ConflictException(
+        'This request has no matching registered school account. Please ask the school to register again.',
+      );
+    }
 
     const now = new Date();
-    const result = await this.prisma.$transaction(async (tx) => {
-      const subscription = await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } });
-      const planKey = request.requestedPlan || subscription?.plan || 'FREE_TRIAL';
-      const plan = await tx.platformPlan.findUnique({ where: { planKey } });
-      if (!plan || !plan.isActive) throw new BadRequestException('The selected subscription plan is unavailable');
 
-      const isFreeTrial = plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
-      const payment = !isFreeTrial
-        ? await tx.onboardingPayment.findFirst({
-            where: { schoolId: existingSchool.id, plan: plan.planKey, status: 'APPROVED' },
-            orderBy: { createdAt: 'desc' },
-          })
-        : null;
+    const result = await this.prisma.$transaction(
+      async (tx) => {
+        // Get existing subscription
+        const subscription = await tx.subscription.findUnique({
+          where: { schoolId: existingSchool.id },
+        });
 
-      // Paid registrations require a payment proof that has already been approved.
-      // Payment approval and school approval remain separate lifecycle steps.
-      if (!isFreeTrial && !payment) {
-        throw new BadRequestException('Approved payment is required before this paid school can be approved.');
-      }
+        // Determine requested plan
+        const planKey =
+          request.requestedPlan ||
+          subscription?.plan ||
+          'FREE_TRIAL';
 
-      if (!isFreeTrial && Number(payment.amount) !== Number(plan.price)) {
-        throw new BadRequestException(`Payment amount does not match the current ${plan.name} plan price`);
-      }
+        // Get plan
+        const plan = await tx.platformPlan.findUnique({
+          where: { planKey },
+        });
 
-      const startDate = now;
-      const endDate = this.calculateEndDate(startDate, plan.period);
+        if (!plan || !plan.isActive) {
+          throw new BadRequestException(
+            'The selected subscription plan is unavailable',
+          );
+        }
 
-      if (subscription) {
-        await tx.subscription.update({ where: { schoolId: existingSchool.id }, data: { plan: plan.planKey, status: 'ACTIVE', startDate, endDate, amount: plan.price, currency: plan.currency } });
-      } else {
-        await tx.subscription.create({ data: { schoolId: existingSchool.id, plan: plan.planKey, status: 'ACTIVE', startDate, endDate, amount: plan.price, currency: plan.currency } });
-      }
+        // =========================
+        // PAYMENT VALIDATION
+        // =========================
+        const isFreeTrial =
+          plan.planKey === 'FREE_TRIAL' ||
+          Number(plan.price) === 0;
 
-      await tx.school.update({ where: { id: existingSchool.id }, data: { isActive: true } });
-      await tx.user.updateMany({ where: { schoolId: existingSchool.id, role: 'SCHOOL_ADMIN' }, data: { isActive: true } });
+        const payment = !isFreeTrial
+          ? await tx.onboardingPayment.findFirst({
+              where: {
+                schoolId: existingSchool.id,
+                plan: plan.planKey,
+                status: 'APPROVED',
+              },
+              orderBy: {
+                createdAt: 'desc',
+              },
+            })
+          : null;
 
-      const updatedRequest = await tx.schoolRequest.update({
-        where: { id },
-        data: { status: 'APPROVED', reviewNotes: reviewNotes || null, reviewedBy: reviewedBy || 'Super Admin', reviewedAt: now },
-      });
+        /*
+         * Paid registrations require a payment proof
+         * that has already been approved.
+         *
+         * Payment approval and school approval remain
+         * separate lifecycle steps.
+         */
+        if (!isFreeTrial) {
+          if (!payment) {
+            throw new BadRequestException(
+              'Approved payment is required before this paid school can be approved.',
+            );
+          }
 
-      const finalReviewerId = reviewerUserId || (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' }, select: { id: true } }))?.id;
-      if (finalReviewerId) {
-        await tx.auditLog.create({
+          if (Number(payment.amount) !== Number(plan.price)) {
+            throw new BadRequestException(
+              `Payment amount does not match the current ${plan.name} plan price`,
+            );
+          }
+        }
+
+        // =========================
+        // SUBSCRIPTION DATES
+        // =========================
+        const startDate = now;
+
+        const endDate = this.calculateEndDate(
+          startDate,
+          plan.period,
+        );
+
+        // =========================
+        // CREATE / UPDATE SUBSCRIPTION
+        // =========================
+        if (subscription) {
+          await tx.subscription.update({
+            where: {
+              schoolId: existingSchool.id,
+            },
+            data: {
+              plan: plan.planKey,
+              status: 'ACTIVE',
+              startDate,
+              endDate,
+              amount: plan.price,
+              currency: plan.currency,
+            },
+          });
+        } else {
+          await tx.subscription.create({
+            data: {
+              schoolId: existingSchool.id,
+              plan: plan.planKey,
+              status: 'ACTIVE',
+              startDate,
+              endDate,
+              amount: plan.price,
+              currency: plan.currency,
+            },
+          });
+        }
+
+        // =========================
+        // ACTIVATE SCHOOL
+        // =========================
+        await tx.school.update({
+          where: {
+            id: existingSchool.id,
+          },
           data: {
-            action: 'SCHOOL_REQUEST_APPROVED',
-            entity: 'SchoolRequest',
-            entityId: id,
-            schoolId: existingSchool.id,
-            userId: finalReviewerId,
-            after: `Approved and activated ${request.schoolName}. ${plan.name} is active until ${endDate.toISOString().slice(0, 10)}.`,
+            isActive: true,
           },
         });
-      }
 
-      return { updatedRequest, subscription: await tx.subscription.findUnique({ where: { schoolId: existingSchool.id } }), canActivate: true };
-    }, { maxWait: 10000, timeout: 15000 });
+        // Activate School Admin accounts
+        await tx.user.updateMany({
+          where: {
+            schoolId: existingSchool.id,
+            role: 'SCHOOL_ADMIN',
+          },
+          data: {
+            isActive: true,
+          },
+        });
 
+        // =========================
+        // APPROVE REQUEST
+        // =========================
+        const updatedRequest = await tx.schoolRequest.update({
+          where: { id },
+          data: {
+            status: 'APPROVED',
+            reviewNotes: reviewNotes || null,
+            reviewedBy: reviewedBy || 'Super Admin',
+            reviewedAt: now,
+          },
+        });
+
+        // =========================
+        // AUDIT LOG
+        // =========================
+        const finalReviewerId =
+          reviewerUserId ||
+          (
+            await tx.user.findFirst({
+              where: {
+                role: 'SUPER_ADMIN',
+              },
+              select: {
+                id: true,
+              },
+            })
+          )?.id;
+
+        if (finalReviewerId) {
+          await tx.auditLog.create({
+            data: {
+              action: 'SCHOOL_REQUEST_APPROVED',
+              entity: 'SchoolRequest',
+              entityId: id,
+              schoolId: existingSchool.id,
+              userId: finalReviewerId,
+              after: `Approved and activated ${request.schoolName}. ${plan.name} is active until ${endDate
+                .toISOString()
+                .slice(0, 10)}.`,
+            },
+          });
+        }
+
+        return {
+          updatedRequest,
+          subscription: await tx.subscription.findUnique({
+            where: {
+              schoolId: existingSchool.id,
+            },
+          }),
+          canActivate: true,
+        };
+      },
+      {
+        maxWait: 10000,
+        timeout: 15000,
+      },
+    );
+
+    // =========================
+    // FINAL RESPONSE
+    // =========================
     return {
       ...result.updatedRequest,
-      school: { id: existingSchool.id, name: existingSchool.name, slug: existingSchool.slug },
+      school: {
+        id: existingSchool.id,
+        name: existingSchool.name,
+        slug: existingSchool.slug,
+      },
       loginPath: `/${existingSchool.slug}/login`,
-      activationStatus: result.canActivate ? 'ACTIVE' : 'PAYMENT_PENDING',
+      activationStatus: result.canActivate
+        ? 'ACTIVE'
+        : 'PAYMENT_PENDING',
     };
   }
 
-  private calculateEndDate(start: Date, period: string): Date {
-    const normalized = (period || '').trim().toLowerCase();
-    if (normalized === 'forever') return new Date('9999-12-31T23:59:59.999Z');
-    if (normalized === 'trial' || normalized === 'free trial' || normalized === 'free_trial') return new Date(start.getTime() + 3 * DAY_MS);
-    const monthMatch = normalized.match(/(\d+)\s*month/);
-    if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
-    const dayMatch = normalized.match(/(\d+)\s*day/);
-    if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
-    return new Date(start.getTime() + 30 * DAY_MS);
+  // =========================
+  // CALCULATE SUBSCRIPTION END DATE
+  // =========================
+  private calculateEndDate(
+    start: Date,
+    period: string,
+  ): Date {
+    const normalized = (period || '')
+      .trim()
+      .toLowerCase();
+
+    // Lifetime / forever
+    if (normalized === 'forever') {
+      return new Date('9999-12-31T23:59:59.999Z');
+    }
+
+    // Free Trial = 3 days
+    if (
+      normalized === 'trial' ||
+      normalized === 'free trial' ||
+      normalized === 'free_trial'
+    ) {
+      return new Date(
+        start.getTime() + 3 * DAY_MS,
+      );
+    }
+
+    // Example: 1 month, 3 months, 12 months
+    const monthMatch = normalized.match(
+      /(\d+)\s*month/,
+    );
+
+    if (monthMatch) {
+      const end = new Date(start);
+
+      end.setMonth(
+        end.getMonth() + Number(monthMatch[1]),
+      );
+
+      return end;
+    }
+
+    // Example: 7 days, 30 days
+    const dayMatch = normalized.match(
+      /(\d+)\s*day/,
+    );
+
+    if (dayMatch) {
+      return new Date(
+        start.getTime() +
+          Number(dayMatch[1]) * DAY_MS,
+      );
+    }
+
+    // Safe fallback = 30 days
+    return new Date(
+      start.getTime() + 30 * DAY_MS,
+    );
   }
 }
