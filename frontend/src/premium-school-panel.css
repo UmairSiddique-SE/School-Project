@@ -25,7 +25,6 @@ body { background: #ffffff; }
   box-shadow: 0 18px 44px rgba(15, 23, 42, .10), 0 0 0 1px rgba(99,102,241,.08);
 }
 
-/* ===== Executive dashboard KPI cards ===== */
 main .dashboard-kpi-card {
   min-height: 150px;
   border: 1px solid transparent !important;
@@ -42,7 +41,6 @@ main .dashboard-kpi-card:nth-child(3) { --kpi:#7c3aed; --kpi-soft:rgba(124,58,23
 main .dashboard-kpi-card:nth-child(4) { --kpi:#0284c7; --kpi-soft:rgba(14,165,233,.09); background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#22d3ee,#2563eb) border-box; }
 main .dashboard-kpi-card:nth-child(5) { --kpi:#e11d48; --kpi-soft:rgba(225,29,72,.09); background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#f472b6,#e11d48) border-box; }
 main .dashboard-kpi-card:nth-child(6) { --kpi:#d97706; --kpi-soft:rgba(217,119,6,.10); background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#fbbf24,#ea580c) border-box; }
-
 .dashboard-kpi-card .dashboard-kpi-glow { width:84px; height:84px; top:-28px; right:-22px; opacity:.06 !important; filter:blur(24px); }
 .dashboard-kpi-card .dashboard-kpi-label { color:#64748b !important; }
 .dashboard-kpi-card .dashboard-kpi-value { color:#0f172a !important; }
@@ -53,7 +51,6 @@ main .dashboard-kpi-card:nth-child(6) { --kpi:#d97706; --kpi-soft:rgba(217,119,6
 .dashboard-kpi-card .dashboard-kpi-icon svg { color:var(--kpi) !important; stroke:currentColor; }
 .dashboard-kpi-card .dashboard-kpi-icon > span { background:transparent !important; }
 
-/* Lower dashboard sections */
 main .glass-card {
   border-radius:20px;
   background:#f8fafc !important;
@@ -73,23 +70,42 @@ main .glass-card .bg-white\/\[0\.07\] { background:#ffffff !important; }
 
 .light main { background:#ffffff; }
 .light main > div::before { display:none; }
-
-/* Keep the executive banner readable in light mode while retaining the dark premium banner in dark mode. */
 .light main > div > div:first-child { background:#ffffff !important; background-image:none !important; border-color:#e2e8f0 !important; box-shadow:0 10px 30px rgba(15,23,42,.06) !important; }
 .light main > div > div:first-child h1.text-white { color:#0f172a !important; }
 .light main > div > div:first-child p.text-slate-300 { color:#64748b !important; }
 .light main > div > div:first-child .text-slate-400 { color:#64748b !important; }
 
+/* Legacy people-management pages use dark utility classes. Normalize them for light mode. */
+.light main .text-white { color:#0f172a !important; }
+.light main .text-slate-100 { color:#1e293b !important; }
+.light main .text-slate-200 { color:#334155 !important; }
+.light main .text-slate-300 { color:#475569 !important; }
+.light main .text-slate-400 { color:#64748b !important; }
+.light main .text-slate-500 { color:#64748b !important; }
+.light main .text-slate-600 { color:#475569 !important; }
+.light main [class*="border-white/"] { border-color:#e2e8f0 !important; }
+.light main [class*="bg-white/[0.02]"],
+.light main [class*="bg-white/[0.03]"],
+.light main [class*="bg-white/[0.025]"],
+.light main [class*="bg-white/[0.05]"],
+.light main [class*="bg-white/[0.07]"] { background:#ffffff !important; }
+.light main [class*="bg-slate-900"] { background:#ffffff !important; }
+.light main [class*="bg-slate-950"] { background:#ffffff !important; }
+.light main [class*="shadow-2xl"] { box-shadow:0 12px 34px rgba(15,23,42,.08) !important; }
+.light main input,
+.light main textarea,
+.light main select { color:#0f172a !important; background:#ffffff !important; border-color:#e2e8f0 !important; }
+.light main input::placeholder,
+.light main textarea::placeholder { color:#94a3b8 !important; }
+
 main .recharts-responsive-container { min-height:230px; }
 main .recharts-wrapper { overflow:visible; }
 main > div { position:relative; }
-
 main table { border-collapse:separate; border-spacing:0; }
 thead tr { background:rgba(241,245,249,.72); }
 thead th { font-size:10px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; color:#64748b; }
 tbody tr { transition:background-color .18s ease; }
 tbody tr:hover { background:rgba(99,102,241,.045); }
-
 input:not([type='checkbox']):not([type='radio']), textarea, select { transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease,transform .2s ease; }
 input:not([type='checkbox']):not([type='radio']):focus, textarea:focus, select:focus { border-color:rgba(99,102,241,.5) !important; box-shadow:0 0 0 3px rgba(99,102,241,.11),0 8px 25px rgba(15,23,42,.06); }
 button { transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease; }
@@ -102,32 +118,20 @@ header.glass { box-shadow:0 10px 30px rgba(15,23,42,.08); }
 .animate-fade-in { animation:panel-enter .42s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes panel-enter { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
 
-/* ===== DARK THEME ===== */
 .dark {
   --panel-border: rgba(255,255,255,.08);
 }
 .dark .glass-card,
 .dark .glass-elevated,
-.dark .stat-card {
-  border-color:rgba(255,255,255,.08) !important;
-  box-shadow:0 18px 45px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.025);
-}
-.dark main .dashboard-kpi-card {
-  background:#0b1220 !important;
-  border-color:color-mix(in srgb,var(--kpi,#64748b) 38%,rgba(255,255,255,.08)) !important;
-  box-shadow:0 14px 36px rgba(0,0,0,.24);
-}
+.dark .stat-card { border-color:rgba(255,255,255,.08) !important; box-shadow:0 18px 45px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.025); }
+.dark main .dashboard-kpi-card { background:#0b1220 !important; border-color:color-mix(in srgb,var(--kpi,#64748b) 38%,rgba(255,255,255,.08)) !important; box-shadow:0 14px 36px rgba(0,0,0,.24); }
 .dark .dashboard-kpi-card .dashboard-kpi-label { color:#94a3b8 !important; }
 .dark .dashboard-kpi-card .dashboard-kpi-value { color:#f8fafc !important; }
 .dark .dashboard-kpi-card .dashboard-kpi-subtitle { color:#64748b !important; }
 .dark .dashboard-kpi-card .dashboard-kpi-arrow { color:#64748b !important; }
 .dark .dashboard-kpi-card .dashboard-kpi-trend { border-color:rgba(255,255,255,.07) !important; background:rgba(255,255,255,.025) !important; }
 .dark .dashboard-kpi-card .dashboard-kpi-icon { background:color-mix(in srgb,var(--kpi,#64748b) 13%,transparent) !important; border-color:color-mix(in srgb,var(--kpi,#64748b) 28%,transparent); }
-.dark main .glass-card {
-  background:#0d1524 !important;
-  border-color:rgba(255,255,255,.08) !important;
-  box-shadow:0 18px 45px rgba(0,0,0,.18);
-}
+.dark main .glass-card { background:#0d1524 !important; border-color:rgba(255,255,255,.08) !important; box-shadow:0 18px 45px rgba(0,0,0,.18); }
 .dark main .glass-card .text-white,
 .dark main .glass-card .text-slate-100,
 .dark main .glass-card .text-slate-200 { color:#f8fafc !important; }
