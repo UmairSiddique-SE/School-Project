@@ -27,15 +27,9 @@ async function bootstrap() {
     throw new Error('CORS_ORIGINS is required in production.');
   }
 
-  // Allow common Vite development ports plus the current temporary
-  // Cloudflare frontend tunnel used for end-to-end local testing.
   const corsOrigins = configuredOrigins.length
     ? configuredOrigins
-    : [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://rebate-fabulous-tank-parameter.trycloudflare.com',
-      ];
+    : ['http://localhost:5173', 'http://localhost:5174'];
 
   app.enableCors({
     origin: corsOrigins,
@@ -44,8 +38,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
 
-  app.use(json({ limit: '10mb' }));
-  app.use(urlencoded({ limit: '10mb', extended: true }));
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ limit: '5mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({
