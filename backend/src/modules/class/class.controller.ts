@@ -13,6 +13,7 @@ export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
   @Get()
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   findAll(@CurrentUser() user: any) {
     return this.classService.findAll(user.schoolId, user.role, user.email);
   }
@@ -42,6 +43,7 @@ export class ClassController {
   }
 
   @Get('subjects')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getSubjects(@CurrentUser() user: any) {
     return this.classService.getSubjects(user.schoolId);
   }
