@@ -55,7 +55,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       select: {
         isActive: true,
         deletedAt: true,
-        subscription: { select: { status: true, endDate: true } },
+        subscription: { select: { id: true, status: true, endDate: true } },
       },
     });
 
@@ -74,13 +74,30 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       );
     }
 
-    if (
-      !subscription ||
-      subscription.status !== 'ACTIVE' ||
-      subscription.endDate.getTime() < Date.now()
-    ) {
+    if (!subscription || subscription.status !== 'ACTIVE') {
       throw new ForbiddenException(
         'School subscription is inactive or expired',
+      );
+    }
+
+    if (subscription.endDate.getTime() <= Date.now()) {
+      await this.prisma.$transaction([
+        this.prisma.subscription.update({
+          where: { id: subscription.id },
+          data: { status: 'EXPIRED' },
+        }),
+        this.prisma.school.update({
+          where: { id: user.schoolId },
+          data: { isActive: false },
+        }),
+        this.prisma.user.updateMany({
+          where: { schoolId: user.schoolId },
+          data: { isActive: false },
+        }),
+      ]);
+
+      throw new ForbiddenException(
+        'School subscription has expired and the account is now suspended',
       );
     }
 
