@@ -19,7 +19,6 @@ export class LoginDto {
 }
 
 export class RegisterSchoolDto {
-  // School Info
   @IsString()
   @IsNotEmpty()
   schoolName: string;
@@ -50,7 +49,6 @@ export class RegisterSchoolDto {
   @IsNotEmpty()
   city: string;
 
-  // Admin User Info
   @IsString()
   @IsNotEmpty()
   adminName: string;
