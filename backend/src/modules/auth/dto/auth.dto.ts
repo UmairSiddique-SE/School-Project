@@ -79,13 +79,6 @@ export class ResetPasswordDto {
   @IsNotEmpty()
   token: string;
 
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  otp: string;
-
   @IsString()
   @MinLength(8)
   newPassword: string;
@@ -154,10 +147,6 @@ export class UpdateProfileDto {
 }
 
 export class ChangePasswordDto {
-  @IsString()
-  @MinLength(8)
-  currentPassword: string;
-
   @IsString()
   @MinLength(8)
   currentPassword: string;
