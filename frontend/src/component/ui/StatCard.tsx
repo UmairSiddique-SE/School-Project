@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowUpRight } from 'lucide-react';
 
 interface StatCardProps {
   icon: React.ComponentType<any>;
@@ -8,8 +8,8 @@ interface StatCardProps {
   value: string | number;
   trend?: string;
   trendDir?: 'up' | 'down' | 'neutral';
-  gradient: string;           // Tailwind gradient class for icon bg
-  glowColor?: string;         // inline shadow color string
+  gradient: string;
+  glowColor?: string;
   delay?: number;
   subtitle?: string;
   onClick?: () => void;
@@ -35,53 +35,48 @@ const StatCard: React.FC<StatCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, type: 'spring' as const, damping: 22, stiffness: 200 }}
+      transition={{ delay, type: 'spring', damping: 22, stiffness: 200 }}
       onClick={onClick}
-      className="stat-card p-5 cursor-default group transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/30 hover:shadow-xl hover:shadow-violet-500/10"
-      style={glowColor ? ({ '--glow': glowColor } as any) : undefined}
+      className={`stat-card relative min-h-[150px] overflow-hidden rounded-2xl p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-1.5 ${onClick ? 'hover:shadow-2xl' : ''}`}
+      style={glowColor ? ({ '--glow': glowColor } as React.CSSProperties) : undefined}
     >
-      {/* Gradient blob bg */}
-      <div
-        className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-40 group-hover:scale-125 transition-all duration-500 ${gradient}`}
-      />
+      <div className={`absolute -top-14 -right-12 h-36 w-36 rounded-full blur-3xl opacity-15 group-hover:opacity-35 group-hover:scale-125 transition-all duration-500 ${gradient}`} />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-80" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <div className="relative flex items-start justify-between gap-3">
-        {/* Text */}
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1.5">
-            {label}
-          </p>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: delay + 0.1 }}
-            className="text-2xl font-black text-white leading-none tracking-tight"
-          >
-            {value}
-          </motion.p>
-
-          {subtitle && (
-            <p className="text-xs text-slate-500 mt-1.5 truncate">{subtitle}</p>
-          )}
+      <div className="relative z-10 flex items-start justify-between gap-4 h-full">
+        <div className="flex min-w-0 flex-1 flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400/90 truncate">
+                {label}
+              </span>
+              {onClick && <ArrowUpRight size={12} className="text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />}
+            </div>
+            <motion.p
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: delay + 0.1 }}
+              className="text-[30px] sm:text-[32px] font-black text-white leading-none tracking-[-0.04em]"
+            >
+              {value}
+            </motion.p>
+            {subtitle && <p className="text-[11px] text-slate-500 mt-2 truncate">{subtitle}</p>}
+          </div>
 
           {trend && (
-            <div className={`flex items-center gap-1 mt-2 ${trendColor}`}>
+            <div className={`inline-flex w-fit items-center gap-1.5 mt-3 rounded-lg border border-white/[0.06] bg-white/[0.025] px-2 py-1 ${trendColor}`}>
               <TrendIcon size={11} />
-              <span className="text-[11px] font-bold">{trend}</span>
+              <span className="text-[10px] font-bold truncate">{trend}</span>
             </div>
           )}
         </div>
 
-        {/* Icon badge */}
-        <div
-          className={`h-11 w-11 rounded-2xl ${gradient} flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
-        >
-          <Icon size={20} className="text-white" strokeWidth={2} />
+        <div className={`relative h-12 w-12 rounded-2xl ${gradient} flex items-center justify-center shrink-0 shadow-lg ring-1 ring-white/10 group-hover:scale-110 group-hover:rotate-1 transition-all duration-300`}>
+          <Icon size={21} className="text-white" strokeWidth={2.2} />
+          <span className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
-
-      {/* Bottom shimmer line on hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     </motion.div>
   );
 };
