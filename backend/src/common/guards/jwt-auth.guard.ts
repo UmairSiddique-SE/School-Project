@@ -38,7 +38,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
-    if (!user?.schoolId || user.role === 'SUPER_ADMIN') return true;
+    if (!user) {
+      throw new UnauthorizedException('Authentication credentials missing or invalid');
+    }
+
+    // Only the platform Super Admin is intentionally not attached to a school.
+    // Every school-scoped account must carry a schoolId before reaching any
+    // tenant-scoped service; otherwise Prisma can receive null and fail with
+    // a 500 instead of returning a controlled authentication error.
+    if (user.role === 'SUPER_ADMIN') return true;
+    if (!user.schoolId) {
+      throw new UnauthorizedException('School association missing for this account');
+    }
 
     const rawPath = String(request.originalUrl || request.url || '').split('?')[0];
     const path = rawPath.replace(/^\/api(?=\/|$)/, '') || '/';
