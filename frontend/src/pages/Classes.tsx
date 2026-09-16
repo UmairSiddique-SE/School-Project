@@ -260,7 +260,7 @@ function getStoredClasses(schoolSlug: string): ClassItem[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (_) {}
+  } catch {}
   localStorage.setItem(STORAGE_KEY(schoolSlug), JSON.stringify(DEFAULT_CLASSES));
   return DEFAULT_CLASSES;
 }
@@ -276,7 +276,7 @@ function getStoredStudents(schoolSlug: string, sectionId: string): Student[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (_) {}
+  } catch {}
   localStorage.setItem(STUDENTS_KEY(schoolSlug, sectionId), JSON.stringify(DEFAULT_SECTION_STUDENTS));
   return DEFAULT_SECTION_STUDENTS;
 }

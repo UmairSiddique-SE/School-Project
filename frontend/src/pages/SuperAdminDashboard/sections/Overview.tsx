@@ -64,7 +64,11 @@ export default function Overview() {
 
   const load = async (refresh = false) => {
     try {
-      refresh ? setRefreshing(true) : setLoading(true);
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const response = await apiClient.get<OverviewData>("/admin/overview");
       setData(response.data);
     } catch {

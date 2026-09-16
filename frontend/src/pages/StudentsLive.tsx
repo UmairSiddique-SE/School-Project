@@ -11,7 +11,7 @@ function csvCell(value: unknown) {
 }
 
 function parseCsv(text: string) {
-  const rows = text.trim().split(/\r?\n/).map(line => line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(v => v.replace(/^\"|\"$/g, '').replace(/\"\"/g, '\"').trim()));
+  const rows = text.trim().split(/\r?\n/).map(line => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"').trim()));
   if (rows.length < 2) return [];
   const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
   return rows.slice(1).filter(r => r.some(Boolean)).map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ''])));

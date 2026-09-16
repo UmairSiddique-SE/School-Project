@@ -93,12 +93,6 @@ export default function Attendance() {
   const [showRemarks, setShowRemarks] = useState<string | null>(null);
   const [remarksText, setRemarksText] = useState('');
 
-  useEffect(() => {
-    if (selectedClass) {
-      loadStudentsForClass(selectedClass);
-    }
-  }, [selectedClass]);
-
   const loadStudentsForClass = async (sectionId: string) => {
     setLoading(true);
     try {
@@ -133,6 +127,12 @@ export default function Attendance() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedClass) {
+      void loadStudentsForClass(selectedClass);
+    }
+  }, [selectedClass, selectedDate]);
 
   const handleStatusChange = (studentId: string, status: 'PRESENT' | 'ABSENT' | 'LATE' | 'LEAVE') => {
     setAttendance(prev => ({

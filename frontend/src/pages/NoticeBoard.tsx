@@ -41,7 +41,11 @@ export default function NoticeBoard() {
 
   const loadNotices = useCallback(async (silent = false) => {
     try {
-      silent ? setRefreshing(true) : setLoading(true);
+      if (silent) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const response = await apiClient.get('/academics/announcements');
       setNotices(Array.isArray(response.data) ? response.data : []);
     } catch (error) {

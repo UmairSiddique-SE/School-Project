@@ -63,7 +63,11 @@ export default function StudentLMS() {
 
   const load = async (silent = false) => {
     try {
-      silent ? setRefreshing(true) : setLoading(true);
+      if (silent) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const me = await apiClient.get('/people/me');
       const studentData = me.data as Student;
       setStudent(studentData);
