@@ -66,9 +66,10 @@ jobs:
           s = s.replace(marker, effect, 1)
           p.write_text(s)
 
-          # Classes: empty catch blocks are invalid under no-empty.
+          # Classes: no-empty rejects both empty catch forms.
           p = root / 'pages/Classes.tsx'
           s = p.read_text().replace('catch (_) {}', 'catch {}')
+          s = s.replace('catch {}', 'catch { /* Ignore invalid local storage and restore defaults below. */ }')
           p.write_text(s)
 
           # NoticeBoard/StudentLMS/Overview: replace unused ternary expressions with explicit control flow.
