@@ -5,15 +5,21 @@ import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
 
-const MAX_PROOF_BYTES = 2 * 1024 * 1024;
-const MAX_DATA_URL_LENGTH = 2_750_000;
+const MAX_INPUT_PROOF_BYTES = 2 * 1024 * 1024;
+const TARGET_PROOF_BYTES = 50 * 1024;
+
+function dataUrlByteLength(dataUrl: string) {
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0) return Infinity;
+  const base64 = dataUrl.slice(comma + 1);
+  return Math.ceil((base64.length * 3) / 4);
+}
 
 async function preparePaymentProof(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) throw new Error('Please select a valid image file.');
   const source = await fileToDataUrl(file);
-  if (file.size <= 1_800_000) return source;
   const image = await loadImage(source);
-  const maxDimension = 1800;
+  const maxDimension = 1400;
   const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(image.width * scale));
@@ -21,10 +27,25 @@ async function preparePaymentProof(file: File): Promise<string> {
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Unable to prepare the image.');
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
   let quality = 0.82;
   let result = canvas.toDataURL('image/jpeg', quality);
-  while (result.length > MAX_DATA_URL_LENGTH && quality > 0.5) { quality -= 0.08; result = canvas.toDataURL('image/jpeg', quality); }
-  if (result.length > MAX_DATA_URL_LENGTH) throw new Error('This screenshot is too large. Please choose a smaller image.');
+  while (dataUrlByteLength(result) > TARGET_PROOF_BYTES && quality > 0.25) {
+    quality -= 0.05;
+    result = canvas.toDataURL('image/jpeg', quality);
+  }
+  if (dataUrlByteLength(result) > TARGET_PROOF_BYTES) {
+    let smallerScale = 0.8;
+    while (dataUrlByteLength(result) > TARGET_PROOF_BYTES && smallerScale >= 0.4) {
+      canvas.width = Math.max(1, Math.round(image.width * scale * smallerScale));
+      canvas.height = Math.max(1, Math.round(image.height * scale * smallerScale));
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      quality = 0.35;
+      result = canvas.toDataURL('image/jpeg', quality);
+      smallerScale -= 0.1;
+    }
+  }
+  if (dataUrlByteLength(result) > TARGET_PROOF_BYTES) throw new Error('Screenshot could not be compressed below 50 KB. Please choose a simpler screenshot.');
   return result;
 }
 
@@ -54,9 +75,9 @@ export default function Subscription() {
 
   const handleProofChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
-    if (file.size > MAX_PROOF_BYTES) { toast.error('Screenshot must be 2 MB or smaller.'); return; }
+    if (file.size > MAX_INPUT_PROOF_BYTES) { toast.error('Screenshot must be 2 MB or smaller.'); return; }
     setProofBusy(true);
-    try { const prepared = await preparePaymentProof(file); setProof(prepared); setProofName(file.name); toast.success('Payment screenshot attached.'); }
+    try { const prepared = await preparePaymentProof(file); setProof(prepared); setProofName(file.name); toast.success('Payment screenshot compressed and attached.'); }
     catch (error) { setProof(''); setProofName(''); toast.error(error instanceof Error ? error.message : 'Unable to attach screenshot.'); }
     finally { setProofBusy(false); }
   };
@@ -70,14 +91,13 @@ export default function Subscription() {
     if (isCurrentActivePlan && isFreeTrial) return;
     if (user?.role !== 'SCHOOL_ADMIN' || !user.schoolId) { toast.info(`Selected ${plan.name} plan.`); return; }
     if (!isFreeTrial && !proof) { toast.error('Attach the actual payment screenshot before submitting.'); return; }
-    if (!isFreeTrial && !reference.trim()) { toast.error('Enter the real bank/mobile-wallet transaction or reference ID.'); return; }
     setSubmitting(true);
     try {
       await apiClient.post('/auth/onboarding-payment', {
         schoolId: user.schoolId,
         plan: planKey,
         method: isFreeTrial ? 'Free Trial' : method,
-        reference: isFreeTrial ? undefined : reference.trim(),
+        reference: isFreeTrial || !reference.trim() ? undefined : reference.trim(),
         amount: Number(plan.price) || 0,
         screenshotUrl: isFreeTrial ? undefined : proof,
       });
@@ -90,7 +110,7 @@ export default function Subscription() {
   };
 
   return <div className="space-y-8">
-    <div><h1 className="text-3xl font-black text-foreground">Subscription & Billing</h1><p className="mt-1 text-sm text-muted-foreground">Select a plan and submit the real payment reference and proof. Amount, school, plan, dates and approval status are recorded automatically.</p></div>
+    <div><h1 className="text-3xl font-black text-foreground">Subscription & Billing</h1><p className="mt-1 text-sm text-muted-foreground">Select a plan and submit payment proof. Reference ID is optional when your payment method does not provide one.</p></div>
 
     <div className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-6 text-white shadow-xl md:flex-row md:items-center md:justify-between md:p-8"><div><div className="flex items-center gap-2"><span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-widest">{user?.activationStatus === 'PAYMENT_PENDING' ? 'Payment Pending' : 'Active Plan'}</span><ShieldCheck size={18} /></div><h2 className="mt-3 text-3xl font-black">{activePlan} Plan</h2><p className="mt-1 text-sm text-white/70">Billing changes become active after Super Admin payment verification.</p></div><div className="flex items-center gap-2 text-sm font-bold text-white/80"><Calendar size={18} /> Live subscription status</div></div>
 
@@ -100,7 +120,7 @@ export default function Subscription() {
       <button onClick={() => handleUpgrade(plan)} disabled={(!isRenewableCurrent && isCurrent) || submitting || proofBusy} className="w-full rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:cursor-default disabled:bg-accent disabled:text-accent-foreground">{submitting ? 'Submitting...' : isRenewableCurrent ? 'Renew Plan' : isCurrent ? 'Current Active Plan' : 'Select Plan'}</button>
     </motion.div>; })}</div>
 
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm"><div className="flex items-center gap-2"><CreditCard size={17} className="text-primary" /><h3 className="font-black text-foreground">Payment details — entered once, stored automatically</h3></div><p className="mt-1 text-xs text-muted-foreground">For paid plans, enter the actual method and transaction/reference ID from your payment receipt. The system automatically records school, plan, amount, submission time and proof.</p><div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"><label className="text-xs font-bold text-foreground">Payment Method<select value={method} onChange={(e) => setMethod(e.target.value)} disabled={submitting} className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium outline-none"><option>Bank Transfer</option><option>JazzCash</option><option>Easypaisa</option><option>Raast QR</option><option>Other</option></select></label><label className="text-xs font-bold text-foreground">Transaction / Reference ID<input value={reference} onChange={(e) => setReference(e.target.value)} disabled={submitting} placeholder="Enter the actual transaction/reference ID" className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium outline-none" /></label></div><div className="mt-4"><label className="flex items-center gap-2 text-sm font-bold text-foreground"><Upload size={16} /> Payment Proof</label><p className="mt-1 text-xs text-muted-foreground">PNG/JPG/WebP, maximum 2 MB. Required for Professional and Premium.</p><input type="file" accept="image/png,image/jpeg,image/webp" disabled={proofBusy || submitting} onChange={handleProofChange} className="mt-3 block w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary-foreground" />{proofBusy && <p className="mt-2 text-xs text-primary">Preparing screenshot...</p>}{proof && !proofBusy && <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><div className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /><div><p className="max-w-[260px] truncate text-xs font-bold text-foreground">{proofName}</p><p className="text-[11px] text-emerald-600">Proof ready</p></div></div><button type="button" onClick={clearProof} className="rounded-lg p-2 text-muted-foreground hover:bg-accent"><X size={15} /></button></div>}</div></div>
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm"><div className="flex items-center gap-2"><CreditCard size={17} className="text-primary" /><h3 className="font-black text-foreground">Payment details — entered once, stored automatically</h3></div><p className="mt-1 text-xs text-muted-foreground">Enter the actual payment method and upload the receipt/screenshot. Transaction or reference ID is optional.</p><div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"><label className="text-xs font-bold text-foreground">Payment Method<select value={method} onChange={(e) => setMethod(e.target.value)} disabled={submitting} className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium outline-none"><option>Bank Transfer</option><option>JazzCash</option><option>Easypaisa</option><option>Raast QR</option><option>Other</option></select></label><label className="text-xs font-bold text-foreground">Transaction / Reference ID <span className="font-normal text-muted-foreground">(Optional)</span><input value={reference} onChange={(e) => setReference(e.target.value)} disabled={submitting} placeholder="Optional — leave blank if not provided" className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium outline-none" /></label></div><div className="mt-4"><label className="flex items-center gap-2 text-sm font-bold text-foreground"><Upload size={16} /> Payment Proof</label><p className="mt-1 text-xs text-muted-foreground">PNG/JPG/WebP. Upload up to 2 MB; EduSphere automatically compresses the proof to about 50 KB before submission. Required for Professional and Premium.</p><input type="file" accept="image/png,image/jpeg,image/webp" disabled={proofBusy || submitting} onChange={handleProofChange} className="mt-3 block w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary-foreground" />{proofBusy && <p className="mt-2 text-xs text-primary">Compressing screenshot...</p>}{proof && !proofBusy && <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><div className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /><div><p className="max-w-[260px] truncate text-xs font-bold text-foreground">{proofName}</p><p className="text-[11px] text-emerald-600">Proof compressed and ready</p></div></div><button type="button" onClick={clearProof} className="rounded-lg p-2 text-muted-foreground hover:bg-accent"><X size={15} /></button></div>}</div></div>
 
     <div className="rounded-2xl border border-border bg-card p-6 text-center"><ReceiptText className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="text-sm font-black text-foreground">Payment history is managed by Super Admin</p><p className="mt-1 text-xs text-muted-foreground">After approval, your payment is automatically recorded in the platform ledger and the subscription expiry is calculated from the plan period.</p></div>
   </div>;
