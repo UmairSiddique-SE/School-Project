@@ -11,7 +11,7 @@ const PortalSelector = lazy(() => import("@/pages/PortalSelector"));
 const LoginPage = lazy(() => import("@/pages/Login"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Classes = lazy(() => import("@/pages/ClassesLive"));
-const Students = lazy(() => import("@/pages/StudentsPremium"));
+const Students = lazy(() => import("@/pages/StudentsFull"));
 const Teachers = lazy(() => import("@/pages/Teachers"));
 const Parents = lazy(() => import("@/pages/Parents"));
 const ParentPortal = lazy(() => import("@/pages/ParentPortal"));
