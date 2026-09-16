@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { PeopleService } from './people.service';
 
 // Staff is intentionally separate from Teachers.
@@ -8,4 +9,12 @@ PeopleService.prototype.getStaff = async function (schoolId: string) {
     where: { schoolId, deletedAt: null },
     orderBy: { name: 'asc' },
   });
+};
+
+const originalCreateStaff = PeopleService.prototype.createStaff;
+PeopleService.prototype.createStaff = async function (schoolId: string, data: any) {
+  if (String(data?.designation || '').trim().toLowerCase() === 'teacher') {
+    throw new BadRequestException('Teachers must be created and managed from the Teachers module');
+  }
+  return originalCreateStaff.call(this, schoolId, data);
 };
