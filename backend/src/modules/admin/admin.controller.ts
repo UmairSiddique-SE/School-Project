@@ -58,7 +58,7 @@ export class AdminController {
   async getSchoolRequests(@Query('status') status?: string) {
     const normalizedStatus = status?.trim().toUpperCase();
     const where = normalizedStatus && normalizedStatus !== 'ALL' ? { status: normalizedStatus } : undefined;
-    return this.prisma.schoolRequest.findMany({ where, orderBy: { createdAt: 'desc' }, select: { id: true, schoolName: true, ownerName: true, email: true, phone: true, city: true, state: true, address: true, subdomain: true, requestedPlan: true, notes: true, status: true, createdAt: true, reviewNotes: true, reviewedBy: true, reviewedAt: true } });
+    return this.prisma.schoolRequest.findMany({ where, orderBy: { createdAt: 'desc' }, select: { id: true, schoolName: true, ownerName: true, email: true, phone: true, city: true, address: true, subdomain: true, requestedPlan: true, notes: true, status: true, createdAt: true, reviewNotes: true, reviewedBy: true, reviewedAt: true } });
   }
 
   @Get('requests/:id/details')
