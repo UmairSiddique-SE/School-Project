@@ -5,6 +5,15 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
+  constructor() {
+    super({
+      transactionOptions: {
+        maxWait: 10000,
+        timeout: 30000,
+      },
+    });
+  }
+
   async onModuleInit() {
     const databaseUrl = process.env.DATABASE_URL || '';
     const isProduction = process.env.NODE_ENV === 'production';
