@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -6,6 +6,7 @@ export class ClassService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(schoolId: string, role?: string, teacherEmail?: string) {
+    if (!schoolId) throw new UnauthorizedException('School association missing for class data');
     const isTeacher = role === 'TEACHER' && Boolean(teacherEmail);
     return this.prisma.class.findMany({
       where: {
