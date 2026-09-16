@@ -1,28 +1,20 @@
-/* EduSphere School Panel — premium visual layer */
+/* EduSphere School Panel — premium enterprise visual layer */
 
 :root {
-  --panel-violet: #8b5cf6;
-  --panel-indigo: #6366f1;
-  --panel-cyan: #22d3ee;
-  --panel-border: rgba(255,255,255,.075);
+  --panel-violet: #7c3aed;
+  --panel-indigo: #4f46e5;
+  --panel-cyan: #0891b2;
+  --panel-border: #e2e8f0;
 }
 
 #root { min-height: 100vh; }
 
 body {
-  background:
-    radial-gradient(900px 520px at 8% -5%, rgba(99,102,241,.12), transparent 60%),
-    radial-gradient(760px 500px at 100% 0%, rgba(34,211,238,.075), transparent 58%),
-    radial-gradient(800px 500px at 65% 100%, rgba(139,92,246,.06), transparent 62%),
-    hsl(var(--background));
+  background: #ffffff;
 }
 
 .dark body {
-  background:
-    radial-gradient(900px 520px at 8% -5%, rgba(99,102,241,.16), transparent 60%),
-    radial-gradient(760px 500px at 100% 0%, rgba(34,211,238,.09), transparent 58%),
-    radial-gradient(800px 500px at 65% 100%, rgba(139,92,246,.08), transparent 62%),
-    #060a14;
+  background: #060a14;
 }
 
 /* Shared premium surfaces */
@@ -30,42 +22,144 @@ body {
 .glass-elevated,
 .stat-card {
   border-color: var(--panel-border) !important;
-  box-shadow: 0 18px 45px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.025);
+  box-shadow: 0 12px 34px rgba(15, 23, 42, .06), inset 0 1px 0 rgba(255,255,255,.8);
 }
 
 .glass-card:hover,
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 55px rgba(0,0,0,.22), 0 0 0 1px rgba(139,92,246,.08);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, .10), 0 0 0 1px rgba(99,102,241,.08);
 }
 
-/* Executive dashboard KPI treatment */
-main .stat-card {
+/* ===== Executive dashboard KPI cards ===== */
+main .dashboard-kpi-card {
   min-height: 150px;
+  border: 1px solid transparent !important;
   border-radius: 18px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018) 48%, rgba(99,102,241,.018)),
-    rgba(10,15,28,.72);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, #cbd5e1, #e2e8f0) border-box;
+  box-shadow: 0 10px 28px rgba(15,23,42,.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-.light main .stat-card {
-  background: rgba(255,255,255,.92);
+main .dashboard-kpi-card:nth-child(1) {
+  --kpi: #4f46e5;
+  --kpi-soft: rgba(79,70,229,.09);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#60a5fa,#4f46e5) border-box;
 }
 
-/* Main dashboard analytics cards */
+main .dashboard-kpi-card:nth-child(2) {
+  --kpi: #0f766e;
+  --kpi-soft: rgba(13,148,136,.09);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#34d399,#0f766e) border-box;
+}
+
+main .dashboard-kpi-card:nth-child(3) {
+  --kpi: #7c3aed;
+  --kpi-soft: rgba(124,58,237,.09);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#a78bfa,#7c3aed) border-box;
+}
+
+main .dashboard-kpi-card:nth-child(4) {
+  --kpi: #0284c7;
+  --kpi-soft: rgba(14,165,233,.09);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#22d3ee,#2563eb) border-box;
+}
+
+main .dashboard-kpi-card:nth-child(5) {
+  --kpi: #e11d48;
+  --kpi-soft: rgba(225,29,72,.09);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#f472b6,#e11d48) border-box;
+}
+
+main .dashboard-kpi-card:nth-child(6) {
+  --kpi: #d97706;
+  --kpi-soft: rgba(217,119,6,.10);
+  background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#fbbf24,#ea580c) border-box;
+}
+
+.dashboard-kpi-card .dashboard-kpi-glow {
+  width: 84px;
+  height: 84px;
+  top: -28px;
+  right: -22px;
+  opacity: .06 !important;
+  filter: blur(24px);
+}
+
+.dashboard-kpi-card .dashboard-kpi-label {
+  color: #64748b !important;
+}
+
+.dashboard-kpi-card .dashboard-kpi-value {
+  color: #0f172a !important;
+}
+
+.dashboard-kpi-card .dashboard-kpi-subtitle {
+  color: #64748b !important;
+}
+
+.dashboard-kpi-card .dashboard-kpi-arrow {
+  color: #94a3b8 !important;
+}
+
+.dashboard-kpi-card .dashboard-kpi-trend {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+}
+
+.dashboard-kpi-card .dashboard-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--kpi-soft) !important;
+  box-shadow: none !important;
+  border: 1px solid color-mix(in srgb, var(--kpi) 18%, transparent);
+}
+
+.dashboard-kpi-card .dashboard-kpi-icon svg {
+  color: var(--kpi) !important;
+  stroke: currentColor;
+}
+
+.dashboard-kpi-card .dashboard-kpi-icon > span {
+  background: transparent !important;
+}
+
+/* Lower dashboard sections: airy light-grey enterprise surfaces */
 main .glass-card {
-  border-radius: 22px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012)),
-    rgba(10,15,28,.62);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-radius: 20px;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.045);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-.light main .glass-card {
-  background: rgba(255,255,255,.9);
+main .glass-card .text-white,
+main .glass-card .text-slate-100,
+main .glass-card .text-slate-200 {
+  color: #0f172a !important;
+}
+
+main .glass-card .text-slate-300,
+main .glass-card .text-slate-400 {
+  color: #64748b !important;
+}
+
+main .glass-card .bg-white\/\[0\.03\],
+main .glass-card .bg-white\/\[0\.025\],
+main .glass-card .bg-white\/\[0\.07\] {
+  background: #ffffff !important;
+}
+
+/* Keep page canvas pure white in light mode */
+.light main {
+  background: #ffffff;
+}
+
+.light main > div::before {
+  display: none;
 }
 
 /* Chart canvas breathing room */
@@ -82,22 +176,12 @@ main > div {
   position: relative;
 }
 
-main > div::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 260px;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(124,58,237,.06), transparent 80%);
-  opacity: .9;
-}
-
 /* Better data density */
 main table { border-collapse: separate; border-spacing: 0; }
-thead tr { background: rgba(255,255,255,.025); }
-thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: rgba(148,163,184,.78); }
+thead tr { background: rgba(241,245,249,.72); }
+thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: #64748b; }
 tbody tr { transition: background-color .18s ease; }
-tbody tr:hover { background: rgba(124,58,237,.045); }
+tbody tr:hover { background: rgba(99,102,241,.045); }
 
 /* Modern controls */
 input:not([type='checkbox']):not([type='radio']), textarea, select {
@@ -107,8 +191,8 @@ input:not([type='checkbox']):not([type='radio']), textarea, select {
 input:not([type='checkbox']):not([type='radio']):focus,
 textarea:focus,
 select:focus {
-  border-color: rgba(139,92,246,.55) !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,.12), 0 8px 25px rgba(0,0,0,.08);
+  border-color: rgba(99,102,241,.5) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.11), 0 8px 25px rgba(15,23,42,.06);
 }
 
 button { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease; }
@@ -116,11 +200,11 @@ button:not(:disabled):hover { transform: translateY(-1px); }
 
 /* Sidebar + top bar depth */
 aside.glass { box-shadow: 18px 0 50px rgba(0,0,0,.18), inset -1px 0 rgba(255,255,255,.025); }
-header.glass { box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+header.glass { box-shadow: 0 10px 30px rgba(15,23,42,.08); }
 
 /* Scrollbars */
 .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148,163,184,.18); border-radius: 99px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(100,116,139,.22); border-radius: 99px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 
 .animate-fade-in { animation: panel-enter .42s cubic-bezier(.2,.8,.2,1) both; }
