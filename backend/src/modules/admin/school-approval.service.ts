@@ -51,27 +51,23 @@ export class SchoolApprovalService {
       const isFreeTrial = plan.planKey === 'FREE_TRIAL' || Number(plan.price) === 0;
       const payment = !isFreeTrial
         ? await tx.onboardingPayment.findFirst({
-            where: { schoolId: existingSchool.id, plan: plan.planKey, status: { in: ['PENDING', 'APPROVED'] } },
+            where: { schoolId: existingSchool.id, plan: plan.planKey, status: 'APPROVED' },
             orderBy: { createdAt: 'desc' },
           })
         : null;
 
-      // Paid registrations must have payment proof before Super Admin approval.
-      // Keep the request PENDING and leave login/onboarding available when proof is missing.
+      // Paid registrations require a payment proof that has already been approved.
+      // Payment approval and school approval remain separate lifecycle steps.
       if (!isFreeTrial && !payment) {
-        throw new BadRequestException('Payment proof is required before this paid school can be approved.');
+        throw new BadRequestException('Approved payment is required before this paid school can be approved.');
       }
 
-      if (!isFreeTrial && payment && Number(payment.amount) !== Number(plan.price)) {
+      if (!isFreeTrial && Number(payment.amount) !== Number(plan.price)) {
         throw new BadRequestException(`Payment amount does not match the current ${plan.name} plan price`);
       }
 
       const startDate = now;
       const endDate = this.calculateEndDate(startDate, plan.period);
-
-      if (!isFreeTrial && payment?.status === 'PENDING') {
-        await tx.onboardingPayment.update({ where: { id: payment.id }, data: { status: 'APPROVED', reviewedAt: now } });
-      }
 
       if (subscription) {
         await tx.subscription.update({ where: { schoolId: existingSchool.id }, data: { plan: plan.planKey, status: 'ACTIVE', startDate, endDate, amount: plan.price, currency: plan.currency } });
