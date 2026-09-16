@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { ArrowRight, BadgeCheck, Building2, Check, ChevronLeft, Eye, EyeOff, Globe2, ImagePlus, Loader2, LockKeyhole, Mail, MapPin, RefreshCw, ShieldCheck, Sparkles, UserRound } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Building2, Check, ChevronLeft, Eye, EyeOff, Globe2, ImagePlus, Loader2, LockKeyhole, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
