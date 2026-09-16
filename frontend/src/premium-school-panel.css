@@ -7,9 +7,7 @@
   --panel-border: rgba(255,255,255,.075);
 }
 
-#root {
-  min-height: 100vh;
-}
+#root { min-height: 100vh; }
 
 body {
   background:
@@ -27,7 +25,7 @@ body {
     #060a14;
 }
 
-/* Shared panel surfaces */
+/* Shared premium surfaces */
 .glass-card,
 .glass-elevated,
 .stat-card {
@@ -41,6 +39,44 @@ body {
   box-shadow: 0 22px 55px rgba(0,0,0,.22), 0 0 0 1px rgba(139,92,246,.08);
 }
 
+/* Executive dashboard KPI treatment */
+main .stat-card {
+  min-height: 150px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018) 48%, rgba(99,102,241,.018)),
+    rgba(10,15,28,.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.light main .stat-card {
+  background: rgba(255,255,255,.92);
+}
+
+/* Main dashboard analytics cards */
+main .glass-card {
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012)),
+    rgba(10,15,28,.62);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.light main .glass-card {
+  background: rgba(255,255,255,.9);
+}
+
+/* Chart canvas breathing room */
+main .recharts-responsive-container {
+  min-height: 230px;
+}
+
+main .recharts-wrapper {
+  overflow: visible;
+}
+
 /* Page content rhythm */
 main > div {
   position: relative;
@@ -50,16 +86,21 @@ main > div::before {
   content: '';
   position: absolute;
   inset: 0 0 auto;
-  height: 220px;
+  height: 260px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(124,58,237,.055), transparent 78%);
+  background: linear-gradient(180deg, rgba(124,58,237,.06), transparent 80%);
   opacity: .9;
 }
 
-/* Modern form controls across modules */
-input:not([type='checkbox']):not([type='radio']),
-textarea,
-select {
+/* Better data density */
+main table { border-collapse: separate; border-spacing: 0; }
+thead tr { background: rgba(255,255,255,.025); }
+thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: rgba(148,163,184,.78); }
+tbody tr { transition: background-color .18s ease; }
+tbody tr:hover { background: rgba(124,58,237,.045); }
+
+/* Modern controls */
+input:not([type='checkbox']):not([type='radio']), textarea, select {
   transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease, transform .2s ease;
 }
 
@@ -70,68 +111,27 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(139,92,246,.12), 0 8px 25px rgba(0,0,0,.08);
 }
 
-/* Buttons feel more premium without changing functionality */
-button {
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
-}
+button { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease; }
+button:not(:disabled):hover { transform: translateY(-1px); }
 
-button:not(:disabled):hover {
-  transform: translateY(-1px);
-}
+/* Sidebar + top bar depth */
+aside.glass { box-shadow: 18px 0 50px rgba(0,0,0,.18), inset -1px 0 rgba(255,255,255,.025); }
+header.glass { box-shadow: 0 10px 30px rgba(0,0,0,.14); }
 
-/* Dense data tables */
-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-thead tr {
-  background: rgba(255,255,255,.025);
-}
-
-thead th {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  font-weight: 800;
-  color: rgba(148,163,184,.78);
-}
-
-tbody tr {
-  transition: background-color .18s ease;
-}
-
-tbody tr:hover {
-  background: rgba(124,58,237,.045);
-}
-
-/* Sidebar premium depth */
-aside.glass {
-  box-shadow: 18px 0 50px rgba(0,0,0,.18), inset -1px 0 rgba(255,255,255,.025);
-}
-
-/* Topbar polish */
-header.glass {
-  box-shadow: 0 10px 30px rgba(0,0,0,.14);
-}
-
-/* Hide the scrollbars while preserving scroll */
+/* Scrollbars */
 .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148,163,184,.18); border-radius: 99px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 
-/* Empty/loading areas */
-.animate-fade-in {
-  animation: panel-enter .42s cubic-bezier(.2,.8,.2,1) both;
-}
+.animate-fade-in { animation: panel-enter .42s cubic-bezier(.2,.8,.2,1) both; }
 
 @keyframes panel-enter {
   from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Small-screen density */
 @media (max-width: 640px) {
   .glass-card { border-radius: 1.1rem; }
   main > div { padding-left: .9rem !important; padding-right: .9rem !important; }
+  main .stat-card { min-height: 138px; }
 }
