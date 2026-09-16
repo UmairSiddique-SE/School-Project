@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PendingSchoolRegistrationService } from './pending-school-registration.service';
 import { SchoolRegistrationService } from './school-registration.service';
+import { PrismaService } from '../database/prisma.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -14,6 +15,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly pendingSchoolRegistrationService: PendingSchoolRegistrationService,
     private readonly schoolRegistrationService: SchoolRegistrationService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post('register-school')
@@ -50,6 +52,76 @@ export class AuthController {
 
   @Post('onboarding-payment') @UseGuards(JwtAuthGuard) @ApiBearerAuth() @HttpCode(HttpStatus.OK)
   submitOnboardingPayment(@Body() dto: OnboardingPaymentDto, @CurrentUser() user: any) { return this.authService.submitOnboardingPayment(dto, user); }
+
+  @Get('onboarding/status') @UseGuards(JwtAuthGuard) @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the current school onboarding/approval status' })
+  async onboardingStatus(@CurrentUser() user: any) {
+    const dbUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        schoolId: true,
+        school: {
+          select: {
+            name: true,
+            slug: true,
+            isActive: true,
+            subscription: { select: { plan: true, status: true, endDate: true } },
+          },
+        },
+      },
+    });
+
+    if (!dbUser) throw new ForbiddenException('User account is no longer available');
+
+    const request = dbUser.schoolId
+      ? await this.prisma.schoolRequest.findFirst({
+          where: { email: dbUser.email },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, status: true, requestedPlan: true, createdAt: true },
+        })
+      : null;
+
+    const payment = dbUser.schoolId
+      ? await this.prisma.onboardingPayment.findFirst({
+          where: { schoolId: dbUser.schoolId },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, status: true, plan: true, amount: true, method: true, reference: true, createdAt: true },
+        })
+      : null;
+
+    const subscription = dbUser.school?.subscription;
+    const status =
+      subscription?.status === 'ACTIVE' && dbUser.school?.isActive
+        ? 'APPROVED'
+        : payment?.status === 'PENDING' || subscription?.status === 'PENDING'
+          ? 'PENDING_APPROVAL'
+          : request?.status === 'APPROVED'
+            ? 'APPROVED'
+            : request?.status === 'REJECTED'
+              ? 'REJECTED'
+              : 'PENDING';
+
+    return {
+      status,
+      user: {
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role,
+        schoolId: dbUser.schoolId,
+        isActive: dbUser.isActive,
+      },
+      school: dbUser.school,
+      request,
+      payment,
+      subscription,
+    };
+  }
 
   @Get('me') @UseGuards(JwtAuthGuard) @ApiBearerAuth() @ApiOperation({ summary: 'Get current authenticated user from database' })
   me(@CurrentUser() user: any) { return this.authService.getCurrentUser(user.id); }
