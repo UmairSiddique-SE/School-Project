@@ -47,7 +47,18 @@ export class PeopleService {
   }
 
   async getStudents(schoolId: string) {
-    return this.prisma.student.findMany({ where: { schoolId, deletedAt: null }, include: { section: { include: { class: true } } }, orderBy: { name: 'asc' } });
+    return this.prisma.student.findMany({
+      where: { schoolId, deletedAt: null },
+      include: {
+        section: {
+          include: {
+            class: true,
+            teacher: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 
   async createStudent(schoolId: string, data: any) {
@@ -82,9 +93,6 @@ export class PeopleService {
     const admissionSuffix = String(admissionNo).match(/(\d+)$/)?.[1];
     if (!admissionSuffix) throw new BadRequestException('Admission No must end with a numeric value for Student Login ID generation');
     const loginId = `${firstName}${admissionSuffix}@student.${school.slug}.pk`;
-
-    // Generate the password once during admission. Only the bcrypt hash is persisted.
-    // The plaintext password is returned in this creation response so the School Admin can record it.
     const generatedPassword = randomBytes(9).toString('base64url').slice(0, 12) + '!';
     const passwordHash = await bcrypt.hash(generatedPassword, 12);
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
@@ -162,37 +170,7 @@ export class PeopleService {
       this.prisma.staff.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } }),
       this.prisma.teacher.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } }),
     ]);
-    const teacherRows = teachers.map((t) => ({ id: t.id, employeeNo: t.employeeNo, name: t.name, email: t.email, phone: t.phone, designation: 'Teacher', department: 'Academics', salary: t.salary, qualification: t.qualification, gender: t.gender, experience: t.experience, personType: 'teacher' as const, joiningDate: t.joiningDate, isActive: t.isActive }));
-    const staffRows = staffMembers.map((s) => ({ ...s, personType: 'staff' as const }));
-    return [...teacherRows, ...staffRows].sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  async createStaff(schoolId: string, data: any) {
-    if (data.designation === 'Teacher') return this.createTeacher(schoolId, { ...data, password: data.password });
-    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    if (existingStaff || existingTeacher) throw new ConflictException('Staff with this Employee No or Email already exists');
-    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
-    const passwordHash = await bcrypt.hash(data.password, 12);
-    return this.prisma.$transaction(async (tx) => {
-      await tx.user.create({ data: { name: data.name, email: data.email, passwordHash, role: 'STAFF', schoolId } });
-      return tx.staff.create({ data: { employeeNo: data.employeeNo, name: data.name, email: data.email, phone: data.phone || null, designation: data.designation, department: data.department || null, salary: data.salary ? parseFloat(data.salary) : null, schoolId } });
-    });
-  }
-
-  async updateStaff(id: string, schoolId: string, data: any) {
-    const staff = await this.prisma.staff.findFirst({ where: { id, schoolId, deletedAt: null } });
-    if (staff) return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.staff.update({ where: { id }, data: { name: data.name ?? undefined, phone: data.phone ?? undefined, designation: data.designation ?? undefined, department: data.department ?? undefined, salary: data.salary !== undefined && data.salary !== '' ? parseFloat(data.salary) : undefined, isActive: data.isActive ?? undefined } });
-      if (data.name || data.isActive !== undefined) await tx.user.updateMany({ where: { email: staff.email, schoolId }, data: { ...(data.name ? { name: data.name } : {}), ...(data.isActive !== undefined ? { isActive: data.isActive } : {}) } });
-      return updated;
-    });
-    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
-    if (teacher) {
-      const updated = await this.updateTeacher(id, schoolId, data);
-      if (data.name || data.isActive !== undefined) await this.prisma.user.updateMany({ where: { email: teacher.email, schoolId }, data: { ...(data.name ? { name: data.name } : {}), ...(data.isActive !== undefined ? { isActive: data.isActive } : {}) } });
-      return updated;
-    }
-    throw new NotFoundException('Staff member not found');
+    const teacherRows = teachers.map((t) => ({ id: t.id, employeeNo: t.employeeNo, name: t.name, email: t.email, phone: t.phone, gender: t.gender, designation: 'Teacher', qualification: t.qualification, experience: t.experience, salary: t.salary, isActive: t.isActive, deletedAt: t.deletedAt }));
+    return [...staffMembers, ...teacherRows];
   }
 }
