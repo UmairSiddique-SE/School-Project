@@ -7,6 +7,33 @@ const apiClient = axios.create({
 const getStoredToken = () => typeof window === "undefined" ? null : window.localStorage.getItem("auth_token");
 const getStoredRefreshToken = () => typeof window === "undefined" ? null : window.localStorage.getItem("auth_refresh_token");
 
+const normalizePublicPlans = (data: unknown) => {
+  if (!Array.isArray(data)) return data;
+  const fallbackPrices: Record<string, number> = {
+    FREE_TRIAL: 0,
+    PROFESSIONAL: 3000,
+    PREMIUM: 5000,
+  };
+  const fallbackPeriods: Record<string, string> = {
+    FREE_TRIAL: "trial",
+    PROFESSIONAL: "per month",
+    PREMIUM: "per month",
+  };
+  return data.map((plan: any) => {
+    const planKey = String(plan?.planKey || "").toUpperCase();
+    if (!(planKey in fallbackPrices)) return plan;
+    const rawPrice = Number(plan?.price);
+    return {
+      ...plan,
+      planKey,
+      price: Number.isFinite(rawPrice) && (planKey === "FREE_TRIAL" || rawPrice > 0)
+        ? rawPrice
+        : fallbackPrices[planKey],
+      period: String(plan?.period || "").trim() || fallbackPeriods[planKey],
+    };
+  });
+};
+
 apiClient.interceptors.request.use((config) => {
   const token = getStoredToken();
   if (token) {
@@ -50,6 +77,11 @@ apiClient.interceptors.response.use(
   (response) => {
     const method = String(response.config.method || "").toLowerCase();
     const url = String(response.config.url || "");
+
+    if (method === "get" && /\/public\/plans\/?$/.test(url)) {
+      response.data = normalizePublicPlans(response.data);
+    }
+
     const credentials = response.data?.credentials;
     if (method === "post" && /\/people\/students\/?$/.test(url) && credentials?.loginId && credentials?.password) {
       window.dispatchEvent(new CustomEvent("edusphere:student-credentials", {
