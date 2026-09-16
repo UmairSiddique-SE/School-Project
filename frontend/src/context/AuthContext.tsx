@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 
-type UserRole = "SUPER_ADMIN" | "SCHOOL_ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
+export type UserRole = "SUPER_ADMIN" | "SCHOOL_ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
 export type ActivationStatus = "ACTIVE" | "PAYMENT_REQUIRED" | "PAYMENT_PENDING" | "APPROVAL_PENDING" | "EXPIRED";
 
 export interface User {
@@ -71,8 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setRefreshToken(storedRefreshToken);
         setUser(parsedUser);
 
-        // Revalidate the persisted session after a full browser refresh.
-        // apiClient automatically rotates the access token when it receives 401.
         try {
           const response = await apiClient.get("/auth/me");
           const freshUser = response.data?.user ?? response.data;
@@ -86,8 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (active && nextAccessToken) setToken(nextAccessToken);
           if (active) setRefreshToken(nextRefreshToken);
         } catch {
-          // A real authorization failure should not be turned into a 403 loop.
-          // Keep the locally stored session so ProtectedRoute can make the normal decision.
+          // Preserve the stored session; ProtectedRoute handles access decisions.
         }
       } catch {
         clearSession();
