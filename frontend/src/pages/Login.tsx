@@ -6,6 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
+function normalizeLoginIdentifier(value: string) {
+  const identifier = value.trim().toLowerCase();
+  const match = identifier.match(/^(.+)@student\.edu\.pk$/i);
+  return match ? match[1] : identifier;
+}
+
 export default function LoginPage() {
   const { schoolSlug: urlSchoolSlug } = useParams();
   const [identifier, setIdentifier] = useState("");
@@ -20,7 +26,8 @@ export default function LoginPage() {
     if (!identifier.trim() || !password) return;
     setLoading(true);
     try {
-      const res = await apiClient.post("/auth/login", { email: identifier.trim().toLowerCase(), password });
+      const loginIdentifier = normalizeLoginIdentifier(identifier);
+      const res = await apiClient.post("/auth/login", { email: loginIdentifier, password });
       const { user, accessToken, refreshToken } = res.data;
       if (!["SCHOOL_ADMIN", "TEACHER", "STUDENT"].includes(user.role)) {
         toast.error("This account does not have school portal access.");
@@ -86,9 +93,9 @@ export default function LoginPage() {
                 <label className="text-xs font-black uppercase tracking-[.14em] text-slate-300">Login ID / Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
-                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="admin@school.pk or student Login ID" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
+                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="admin@school.pk or ADM-2026-0001@student.edu.pk" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
                 </div>
-                <p className="text-[11px] leading-5 text-slate-500">School Admin and Teachers use their registered email. Students use their school-issued Login ID.</p>
+                <p className="text-[11px] leading-5 text-slate-500">Students use Admission No@student.edu.pk. The portal converts that ID to the school-issued Admission No automatically.</p>
               </div>
 
               <div className="space-y-2">
