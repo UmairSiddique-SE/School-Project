@@ -153,16 +153,71 @@ export default function SchoolRequests() {
     { label: 'All', value: 'ALL' }, { label: 'Pending', value: 'PENDING' }, { label: 'Approved', value: 'APPROVED' }, { label: 'Rejected', value: 'REJECTED' },
   ];
 
+  const stats = {
+    pending: requests.filter(r => r.status === 'PENDING').length,
+    approved: requests.filter(r => r.status === 'APPROVED').length,
+    rejected: requests.filter(r => r.status === 'REJECTED').length,
+    total: requests.length,
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2"><ShieldCheck className="text-primary" size={23} /><h2 className="text-2xl font-black text-foreground">School Requests</h2></div>
-          <p className="text-muted-foreground text-sm mt-1">Verify school identity, payment proof and subscription before activation.</p>
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden rounded-[30px] border border-border bg-gradient-to-br from-indigo-600/10 via-card to-cyan-600/10 p-6 md:p-8 shadow-sm">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">
+              <ShieldCheck size={13} />
+              <span>Campus Registration Verification Engine</span>
+            </div>
+            <h2 className="text-3xl font-black text-foreground tracking-tight md:text-4xl">
+              School Requests Hub
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1.5 max-w-2xl">
+              Verify institution credentials, validate bank payment proofs, review subdomain allocations, and approve new campus activations.
+            </p>
+          </div>
+
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={fetchRequests}
+              className="p-3.5 rounded-2xl border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground transition-all shadow-sm"
+              title="Refresh"
+            >
+              <RefreshCw size={16} />
+            </button>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider hover:shadow-lg transition-all"
+            >
+              <Plus size={16} /> Add Campus Request
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={fetchRequests} className="p-2.5 rounded-xl border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-all"><RefreshCw size={16} /></button>
-          <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20"><Plus size={16} /> Add Request</button>
+      </section>
+
+      {/* Top KPI Metrics Strip */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Pending Review</p>
+          <p className="text-2xl font-black text-amber-500 mt-1">{stats.pending}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Awaiting manual approval</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Approved Campuses</p>
+          <p className="text-2xl font-black text-emerald-500 mt-1">{stats.approved}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Activated on platform</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Rejected Requests</p>
+          <p className="text-2xl font-black text-rose-500 mt-1">{stats.rejected}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Declined verification</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Total Submitted</p>
+          <p className="text-2xl font-black text-foreground mt-1">{stats.total}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Historical request submissions</p>
         </div>
       </div>
 

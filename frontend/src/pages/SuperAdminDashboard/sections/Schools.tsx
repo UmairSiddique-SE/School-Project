@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -314,30 +314,100 @@ export default function Schools() {
     return mSearch && mStatus && mPlan;
   });
 
+  const kpiStats = useMemo(() => {
+    const total = schools.length;
+    const active = schools.filter(s => s.isActive).length;
+    const suspended = schools.filter(s => !s.isActive).length;
+    const expiring = schools.filter(s => {
+      if (!s.subscription?.endDate) return false;
+      const end = new Date(s.subscription.endDate);
+      const now = new Date();
+      return end > now && end <= new Date(Date.now() + 30 * 24 * 3600 * 1000);
+    }).length;
+
+    const totalStudents = schools.reduce((sum, s) => sum + Number(s._count?.students || s.totalStudents || 0), 0);
+    const totalTeachers = schools.reduce((sum, s) => sum + Number(s._count?.teachers || s.totalTeachers || 0), 0);
+
+    return { total, active, suspended, expiring, totalStudents, totalTeachers };
+  }, [schools]);
+
   return (
     <div className="space-y-6">
-      {/* â”€â”€ Header â”€â”€ */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2 text-[10px] font-black text-violet-400 uppercase tracking-[0.2em] mb-1.5">
-            <Shield size={12} />
-            <span>Multi-School Tenant Registry</span>
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden rounded-[30px] border border-border bg-gradient-to-br from-violet-600/10 via-card to-indigo-600/10 p-6 md:p-8 shadow-sm">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
+
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">
+              <Shield size={13} />
+              <span>Multi-School Tenant Registry & Governance</span>
+            </div>
+            <h2 className="text-3xl font-black text-foreground tracking-tight md:text-4xl">
+              Registered Institutions
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1.5 max-w-2xl">
+              Manage all enterprise campuses, subscription tiers, active tenant billing, user capacity limits, and system controls.
+            </p>
           </div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">
-            Registered Institutions
-          </h2>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            View and manage all schools, plans, subscriptions, payments, and
-            school actions.
-          </p>
+
+          <button
+            onClick={() => openModal("create")}
+            className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider
+              hover:shadow-[0_0_25px_rgba(124,58,237,0.4)] transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+          >
+            <Plus size={18} /> Register New Campus
+          </button>
         </div>
-        <button
-          onClick={() => openModal("create")}
-          className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider
-            hover:shadow-[0_0_25px_rgba(124,58,237,0.4)] transition-all hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <Plus size={16} /> Register New Campus
-        </button>
+      </section>
+
+      {/* Top KPI Metrics Strip */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Total Campuses</span>
+            <div className="h-8 w-8 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center"><Globe size={16} /></div>
+          </div>
+          <p className="text-2xl font-black text-foreground">{kpiStats.total}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1">{kpiStats.active} Active operational</p>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Active Campuses</span>
+            <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><CheckCircle size={16} /></div>
+          </div>
+          <p className="text-2xl font-black text-emerald-500">{kpiStats.active}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1">{kpiStats.suspended} Suspended</p>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Total Students</span>
+            <div className="h-8 w-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><GraduationCap size={16} /></div>
+          </div>
+          <p className="text-2xl font-black text-foreground">{kpiStats.totalStudents.toLocaleString()}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1">Enrolled across schools</p>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Teachers & Staff</span>
+            <div className="h-8 w-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center"><Users size={16} /></div>
+          </div>
+          <p className="text-2xl font-black text-foreground">{kpiStats.totalTeachers.toLocaleString()}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1">Active faculty</p>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Expiring Soon</span>
+            <div className="h-8 w-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><Clock size={16} /></div>
+          </div>
+          <p className="text-2xl font-black text-amber-500">{kpiStats.expiring}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1">Within 30 days</p>
+        </div>
       </div>
 
       {/* â”€â”€ Sub-Tabs â”€â”€ */}
