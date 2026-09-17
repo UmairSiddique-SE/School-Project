@@ -287,6 +287,18 @@ export default function Schools() {
     }
   };
 
+  const handleToggleStatus = async (school: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const action = school.isActive ? "suspend" : "activate";
+    try {
+      await apiClient.patch(`/schools/${school.id}/${action}`, { reason: `Quick status toggle (${action})` });
+      toast.success(`School ${school.name} is now ${school.isActive ? "Suspended" : "Active"}.`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || `Failed to ${action} school.`);
+    }
+  };
+
   const enterCampus = (slug: string) => {
     window.open(`/${slug}/dashboard`, "_blank");
   };
@@ -498,10 +510,11 @@ export default function Schools() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`group relative rounded-3xl border ${isSuspended ? "border-rose-500/20 bg-rose-500/5" : "border-border bg-card"} p-6 shadow-sm
+                onClick={() => openModal("view", s)}
+                className={`group relative rounded-3xl border cursor-pointer ${isSuspended ? "border-rose-500/20 bg-rose-500/5" : "border-border bg-card"} p-6 shadow-sm
                   hover:border-primary/40 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between`}
               >
-                {/* Active/Suspended Tag */}
+                {/* Active/Suspended Tag & Direct On/Off Toggle Switch */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 flex items-center justify-center text-violet-300 font-black text-lg">
@@ -517,18 +530,22 @@ export default function Schools() {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tight flex items-center gap-1 ${
+
+                  {/* Direct On/Off Toggle Switch */}
+                  <button
+                    onClick={(e) => handleToggleStatus(s, e)}
+                    title={s.isActive ? "Click to Suspend (Turn OFF)" : "Click to Activate (Turn ON)"}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
                       s.isActive
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-500 hover:bg-rose-500/15 hover:border-rose-500/30 hover:text-rose-500"
+                        : "bg-rose-500/15 border-rose-500/30 text-rose-500 hover:bg-emerald-500/15 hover:border-emerald-500/30 hover:text-emerald-500"
                     }`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${s.isActive ? "bg-emerald-400" : "bg-rose-400"}`}
-                    />
-                    {s.isActive ? "Active" : "Suspended"}
-                  </span>
+                    <div className={`w-7 h-3.5 rounded-full transition-colors relative ${s.isActive ? "bg-emerald-500" : "bg-rose-500"}`}>
+                      <div className={`w-2.5 h-2.5 rounded-full bg-white absolute top-0.5 transition-all ${s.isActive ? "left-3.5" : "left-0.5"}`} />
+                    </div>
+                    <span>{s.isActive ? "ON" : "OFF"}</span>
+                  </button>
                 </div>
 
                 {/* Campus Metrics */}
