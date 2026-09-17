@@ -68,7 +68,7 @@ const STATUS_OPTIONS = [
 
 export default function Attendance() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || 'edusphere';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sectionIdParam = searchParams.get('sectionId');

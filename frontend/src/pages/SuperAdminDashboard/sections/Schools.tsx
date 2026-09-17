@@ -989,7 +989,7 @@ export default function Schools() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0b1020] border border-violet-500/20 rounded-3xl p-6 w-full max-w-md shadow-2xl"
+              className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
                 <h3 className="text-base font-black text-foreground">
@@ -1085,7 +1085,7 @@ export default function Schools() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0b1020] border border-violet-500/20 rounded-3xl p-8 w-full max-w-3xl shadow-2xl max-h-[95vh] overflow-y-auto"
+              className="bg-card border border-border rounded-3xl p-8 w-full max-w-3xl shadow-2xl max-h-[95vh] overflow-y-auto"
             >
               {/* Header */}
               <div className="flex items-start justify-between pb-6 border-b border-white/10 mb-6">
