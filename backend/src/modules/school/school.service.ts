@@ -66,6 +66,7 @@ export class SchoolService {
         subscription: true,
         users: { where: { role: 'SCHOOL_ADMIN' }, select: { id: true, name: true, email: true, phone: true, isActive: true }, take: 1 },
         onboardingPayments: { orderBy: { createdAt: 'desc' }, take: 20 },
+        alerts: { orderBy: { createdAt: 'desc' }, take: 20 },
         auditLogs: { orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, action: true, after: true, createdAt: true } },
         _count: { select: { users: true, students: true, teachers: true, staff: true, classes: true } },
       },

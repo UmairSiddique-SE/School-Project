@@ -52,9 +52,31 @@ model School {
   users          User[]
   buildings      Building[]
   onboardingPayments OnboardingPayment[]
+  alerts         SchoolAlert[]
 
   @@index([slug])
   @@index([deletedAt])
+}
+
+model SchoolAlert {
+  id          String    @id @default(uuid())
+  schoolId    String
+  type        String    @default("INFO") // INFO | WARNING | PAYMENT | MAINTENANCE | SUSPENSION | CUSTOM
+  title       String
+  message     String
+  actionType  String?   // RENEW_PAYMENT | OPEN_LINK | ACKNOWLEDGE
+  actionUrl   String?
+  isActive    Boolean   @default(true)
+  isDismissed Boolean   @default(false)
+  priority    String    @default("NORMAL") // LOW | NORMAL | HIGH | CRITICAL
+  createdBy   String    @default("Super Admin")
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId, isActive])
+  @@index([type])
 }
 
 model Subscription {
