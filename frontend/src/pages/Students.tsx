@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import Modal, { ModalHeader } from '@/component/ui/Modal';
 import { useAuth } from '@/context/AuthContext';
 
-type Student = { id:string; name:string; email?:string; admissionNo:string; rollNo?:string|number; gender?:string; dateOfBirth?:string; session?:string; status?:string; phone?:string; bFormNumber?:string; avatarUrl?:string; sectionId?:string; section?:{id?:string;name?:string;class?:{id?:string;name?:string}}; [key:string]:any };
+type Student = { id:string; name:string; email?:string; admissionNo:string; rollNo?:string|number; gender?:string; dateOfBirth?:string; session?:string; status?:string; phone?:string; bFormNumber?:string; avatarUrl?:string; sectionId?:string; section?:{id?:string;name?:string;classId?:string;class?:{id?:string;name?:string}}; [key:string]:any };
 type Section = { id:string; name:string; classId?:string; class?:{id:string;name:string}; capacity?:number };
 type SchoolClass = { id:string; name:string; sections?:Section[] };
 const emptyForm:any={name:'',email:'',studentMobile:'',gender:'MALE',dateOfBirth:'',bloodGroup:'',religion:'',bFormNumber:'',sectionId:'',session:'2026-2027',status:'ACTIVE',fatherName:'',fatherMobile1:'',fatherCnic:'',motherName:'',motherMobile:'',guardianName:'',guardianMobile:'',country:'Pakistan',province:'Punjab',city:'',currentAddress:'',permanentAddress:'',emergencyContact:'',previousSchool:'',previousClass:'',admissionType:'NEW',remarks:'',transportRequired:false,hostelRequired:false};
