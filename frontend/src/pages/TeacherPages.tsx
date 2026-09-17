@@ -9,6 +9,8 @@ import {
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
+const MOCK_TEACHER_CLASSES: any[] = [];
+
 /* =========================================================================
    1. MY CLASSES & SUBJECT MAPPING COMPONENT
    ========================================================================= */
@@ -28,7 +30,7 @@ function MyClasses() {
           setClasses([]);
         }
       })
-      .catch(() => setClasses(MOCK_TEACHER_CLASSES))
+      .catch(() => setClasses([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -134,7 +136,7 @@ function MyClasses() {
               </div>
 
               <div className="space-y-2">
-                {(selectedClass.students || MOCK_TEACHER_CLASSES[0].students).map((st: any, idx: number) => (
+                {(selectedClass.students || []).map((st: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
                     <div className="flex items-center gap-3">
                       <span className="w-6 h-6 rounded-md bg-primary/10 text-primary text-xs font-mono font-bold flex items-center justify-center">

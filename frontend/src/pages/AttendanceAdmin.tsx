@@ -6,7 +6,7 @@ import { Calendar, CheckCircle, XCircle, Clock, Users, BarChart3, Download, Plus
 
 const CLASSES: any[] = [];
 
-function generateMockData() {
+function generateMockData(): any[] {
   return [];
 }
 
@@ -20,14 +20,14 @@ export default function AttendanceAdmin() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState('2026-07');
   const [filter, setFilter] = useState('all');
-  const data = generateMockData();
+  const data: any[] = generateMockData();
 
-  const totalStudents = data.reduce((s, c) => s + c.total, 0);
-  const totalPresent = data.reduce((s, c) => s + c.present, 0);
-  const totalAbsent = data.reduce((s, c) => s + c.absent, 0);
-  const totalLate = data.reduce((s, c) => s + c.late, 0);
-  const totalLeave = data.reduce((s, c) => s + (c.leave || 0), 0);
-  const overallPercentage = Math.round((totalPresent / totalStudents) * 100);
+  const totalStudents = data.reduce((s: number, c: any) => s + (c.total || 0), 0);
+  const totalPresent = data.reduce((s: number, c: any) => s + (c.present || 0), 0);
+  const totalAbsent = data.reduce((s: number, c: any) => s + (c.absent || 0), 0);
+  const totalLate = data.reduce((s: number, c: any) => s + (c.late || 0), 0);
+  const totalLeave = data.reduce((s: number, c: any) => s + (c.leave || 0), 0);
+  const overallPercentage = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0;
 
   return (
     <div className="space-y-6">
