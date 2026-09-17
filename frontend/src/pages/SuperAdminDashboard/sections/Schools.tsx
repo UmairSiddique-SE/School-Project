@@ -323,10 +323,10 @@ export default function Schools() {
             <Shield size={12} />
             <span>Multi-School Tenant Registry</span>
           </div>
-          <h2 className="text-2xl font-black text-white tracking-tight">
+          <h2 className="text-2xl font-black text-foreground tracking-tight">
             Registered Institutions
           </h2>
-          <p className="text-slate-400 text-sm mt-0.5">
+          <p className="text-muted-foreground text-sm mt-0.5">
             View and manage all schools, plans, subscriptions, payments, and
             school actions.
           </p>
@@ -341,7 +341,7 @@ export default function Schools() {
       </div>
 
       {/* ── Sub-Tabs ── */}
-      <div className="flex items-center gap-2 border-b border-white/5 pb-2 flex-wrap">
+      <div className="flex items-center gap-2 border-b border-border pb-1 flex-wrap">
         {[
           { id: "ALL", label: "All Schools", icon: Globe },
           { id: "ACTIVE", label: "Active", icon: CheckCircle },
@@ -353,8 +353,8 @@ export default function Schools() {
             onClick={() => setStatusFilter(t.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === t.id
-                ? "bg-violet-600/20 border border-violet-500/40 text-white"
-                : "text-slate-400 hover:text-white hover:bg-white/5"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
             }`}
           >
             <t.icon size={13} />
@@ -365,28 +365,28 @@ export default function Schools() {
 
       {/* ── Advanced Filters ── */}
       <div className="flex flex-col md:flex-row gap-3 items-center">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-[20px] border border-white/[0.05] bg-slate-900/40 backdrop-blur-xl flex-1 w-full group focus-within:border-violet-500/40 transition-all">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border bg-card flex-1 w-full group focus-within:border-violet-500/40 transition-all shadow-sm">
           <Search
             size={16}
-            className="text-slate-500 group-focus-within:text-violet-400 transition-colors"
+            className="text-muted-foreground group-focus-within:text-violet-400 transition-colors shrink-0"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search campuses by name, slug, email, or city..."
-            className="bg-transparent border-none text-sm outline-none flex-1 text-white placeholder:text-slate-600"
+            className="bg-transparent border-none text-sm outline-none flex-1 text-foreground placeholder:text-muted-foreground/50"
           />
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:flex-none">
             <Layers
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <select
               value={planFilter}
               onChange={(e) => setPlanFilter(e.target.value)}
-              className="pl-9 pr-8 py-3 rounded-[18px] border border-white/[0.05] bg-slate-900/40 text-white text-[12px] font-bold appearance-none cursor-pointer focus:outline-none focus:border-violet-500/40 min-w-[140px]"
+              className="pl-9 pr-8 py-3 rounded-2xl border border-border bg-card text-foreground text-[12px] font-bold appearance-none cursor-pointer focus:outline-none focus:border-primary/40 min-w-[160px] shadow-sm"
             >
               <option value="ALL">All Service Tiers</option>
               {PLANS.map((p) => (
@@ -395,7 +395,7 @@ export default function Schools() {
                 </option>
               ))}
             </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" />
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
         </div>
       </div>
@@ -406,10 +406,10 @@ export default function Schools() {
           <Loader2 size={32} className="animate-spin text-violet-500" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-12 text-center rounded-[28px] border border-white/[0.06] bg-slate-900/30">
-          <Shield size={36} className="mx-auto text-slate-600 mb-3" />
-          <p className="text-white font-bold text-base">No Schools Found</p>
-          <p className="text-slate-500 text-xs mt-1">
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground rounded-3xl border border-dashed border-border">
+          <Shield size={32} className="opacity-40" />
+          <p className="font-bold text-base text-foreground">No Schools Found</p>
+          <p className="text-xs">
             Try adjusting your search criteria or register a new campus.
           </p>
         </div>
@@ -428,8 +428,8 @@ export default function Schools() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`group relative rounded-[28px] border ${isSuspended ? "border-rose-500/20 bg-rose-950/10" : "border-white/[0.06] bg-slate-900/40"} p-6 backdrop-blur-xl
-                  hover:border-violet-500/40 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between`}
+                className={`group relative rounded-3xl border ${isSuspended ? "border-rose-500/20 bg-rose-500/5" : "border-border bg-card"} p-6 shadow-sm
+                  hover:border-primary/40 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between`}
               >
                 {/* Active/Suspended Tag */}
                 <div className="flex items-start justify-between gap-3 mb-4">
@@ -438,10 +438,10 @@ export default function Schools() {
                       {s.name.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-base font-black text-white truncate leading-tight">
+                      <h3 className="text-base font-black text-foreground truncate leading-tight">
                         {s.name}
                       </h3>
-                      <p className="text-[11px] text-slate-500 font-bold tracking-tight mt-0.5 flex items-center gap-1">
+                      <p className="text-[11px] text-muted-foreground font-bold tracking-tight mt-0.5 flex items-center gap-1">
                         <Globe size={11} className="text-violet-400" />
                         {s.slug}
                       </p>
