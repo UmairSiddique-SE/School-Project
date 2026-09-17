@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Param, Patch, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -9,6 +9,96 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @Controller('people/students')
 export class StudentRecordController {
   constructor(private readonly prisma: PrismaService) {}
+
+  @Get(':id/profile')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  async getProfile(@CurrentUser() user: any, @Param('id') id: string) {
+    if (!user?.schoolId) throw new BadRequestException('School association is missing');
+    if (!id?.trim()) throw new BadRequestException('Student ID is required');
+
+    const student = await this.prisma.student.findFirst({
+      where: { id, schoolId: user.schoolId, deletedAt: null },
+      include: {
+        section: { include: { class: true, teacher: { select: { id: true, name: true, email: true } } } },
+        parents: {
+          include: {
+            parent: {
+              select: {
+                id: true, name: true, email: true, phone: true, relation: true,
+                fatherName: true, fatherMobile1: true, fatherMobile2: true, fatherWhatsapp: true,
+                fatherCnic: true, fatherOccupation: true, fatherStatus: true,
+                motherName: true, motherMobile: true, motherCnic: true, motherOccupation: true,
+                guardianName: true, guardianRelation: true, guardianMobile: true,
+                addressCountry: true, addressProvince: true, addressCity: true, addressLine: true,
+              },
+            },
+          },
+        },
+        attendances: { orderBy: { date: 'desc' }, take: 100 },
+        feePayments: { orderBy: { id: 'desc' }, take: 100 },
+        examResults: {
+          include: { exam: true, subject: true },
+          orderBy: { id: 'desc' },
+          take: 100,
+        },
+        homeworkSubmissions: {
+          include: { homework: true },
+          orderBy: { id: 'desc' },
+          take: 100,
+        },
+        documents: { orderBy: { id: 'desc' } },
+        transportAssignment: true,
+      },
+    });
+
+    if (!student) throw new BadRequestException('Student not found');
+
+    // Teachers can only open students belonging to their assigned sections.
+    if (user.role === 'TEACHER') {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
+        select: { id: true },
+      });
+      if (!teacher || !student.sectionId) throw new BadRequestException('Student is not assigned to your section');
+      const assigned = await this.prisma.section.findFirst({
+        where: { id: student.sectionId, teacherId: teacher.id, deletedAt: null, class: { schoolId: user.schoolId, deletedAt: null } },
+        select: { id: true },
+      });
+      if (!assigned) throw new BadRequestException('Student is not assigned to your section');
+    }
+
+    return student;
+  }
+
+  @Post(':id/restore')
+  @Roles('SCHOOL_ADMIN')
+  async restore(@CurrentUser() user: any, @Param('id') id: string) {
+    if (!user?.schoolId) throw new BadRequestException('School association is missing');
+    if (!id?.trim()) throw new BadRequestException('Student ID is required');
+
+    const student = await this.prisma.student.findFirst({
+      where: { id, schoolId: user.schoolId, deletedAt: { not: null } },
+      select: { id: true, email: true },
+    });
+    if (!student) throw new BadRequestException('Archived student not found');
+
+    return this.prisma.$transaction(async tx => {
+      const restored = await tx.student.update({
+        where: { id: student.id },
+        data: { deletedAt: null, isActive: true, status: 'ACTIVE' },
+        include: { section: { include: { class: true } } },
+      });
+
+      if (student.email) {
+        await tx.user.updateMany({
+          where: { email: student.email, schoolId: user.schoolId, role: 'STUDENT' },
+          data: { isActive: true, deletedAt: null },
+        });
+      }
+
+      return restored;
+    });
+  }
 
   @Patch(':id/avatar')
   @Roles('SCHOOL_ADMIN')
