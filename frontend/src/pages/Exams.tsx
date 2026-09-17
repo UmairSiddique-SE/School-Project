@@ -185,12 +185,12 @@ export default function Exams() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         {[
-          ['Exam Sessions', exams.length, ClipboardList, 'amber'],
-          ['Published', publishedCount, CheckCircle2, 'emerald'],
-          ['Average Result', `${average}%`, Trophy, 'violet'],
-          ['Pass Rate', `${passRate}%`, BarChart4, 'cyan'],
-        ].map(([label, value, Icon, tone]) => (
-          <div key={String(label)} className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
+          { label: 'Exam Sessions', value: exams.length, icon: ClipboardList, tone: 'amber' },
+          { label: 'Published', value: publishedCount, icon: CheckCircle2, tone: 'emerald' },
+          { label: 'Average Result', value: `${average}%`, icon: Trophy, tone: 'violet' },
+          { label: 'Pass Rate', value: `${passRate}%`, icon: BarChart4, tone: 'cyan' },
+        ].map(({ label, value, icon: Icon, tone }) => (
+          <div key={label} className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
             <div className={`h-11 w-11 rounded-2xl bg-${tone}-500/10 border border-${tone}-500/20 text-${tone}-400 flex items-center justify-center shrink-0`}><Icon size={20} /></div>
             <div><p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p><p className="text-2xl font-black text-foreground">{value}</p></div>
           </div>
