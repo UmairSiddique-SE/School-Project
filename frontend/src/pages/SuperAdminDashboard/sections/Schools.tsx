@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -34,7 +34,7 @@ import {
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
-/* ── Pakistan Location Data ── */
+/* â”€â”€ Pakistan Location Data â”€â”€ */
 const PAKISTAN_LOCATIONS: Record<string, Record<string, string[]>> = {
   Punjab: {
     Lahore: ["Model Town", "Gulberg", "DHA", "Cantonment", "Johar Town"],
@@ -316,7 +316,7 @@ export default function Schools() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 text-[10px] font-black text-violet-400 uppercase tracking-[0.2em] mb-1.5">
@@ -340,7 +340,7 @@ export default function Schools() {
         </button>
       </div>
 
-      {/* ── Sub-Tabs ── */}
+      {/* â”€â”€ Sub-Tabs â”€â”€ */}
       <div className="flex items-center gap-2 border-b border-border pb-1 flex-wrap">
         {[
           { id: "ALL", label: "All Schools", icon: Globe },
@@ -363,7 +363,7 @@ export default function Schools() {
         ))}
       </div>
 
-      {/* ── Advanced Filters ── */}
+      {/* â”€â”€ Advanced Filters â”€â”€ */}
       <div className="flex flex-col md:flex-row gap-3 items-center">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border bg-card flex-1 w-full group focus-within:border-violet-500/40 transition-all shadow-sm">
           <Search
@@ -400,7 +400,7 @@ export default function Schools() {
         </div>
       </div>
 
-      {/* ── Cards Grid ── */}
+      {/* â”€â”€ Cards Grid â”€â”€ */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 size={32} className="animate-spin text-violet-500" />
@@ -464,7 +464,7 @@ export default function Schools() {
                 {/* Campus Metrics */}
                 <div className="grid grid-cols-3 gap-2 py-3 px-3.5 rounded-2xl bg-white/[0.02] border border-white/5 mb-4 text-center">
                   <div>
-                    <p className="text-sm font-black text-white">
+                    <p className="text-sm font-black text-foreground">
                       {s._count?.students ?? 0}
                     </p>
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">
@@ -472,7 +472,7 @@ export default function Schools() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-black text-white">
+                    <p className="text-sm font-black text-foreground">
                       {s._count?.teachers ?? 0}
                     </p>
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">
@@ -480,7 +480,7 @@ export default function Schools() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-black text-white">
+                    <p className="text-sm font-black text-foreground">
                       {s._count?.users ?? 0}
                     </p>
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">
@@ -506,7 +506,7 @@ export default function Schools() {
                     />
                     <span>
                       Expiry:{" "}
-                      <strong className="text-white font-bold">
+                      <strong className="text-foreground font-bold">
                         {expiryDate}
                       </strong>
                     </span>
@@ -541,7 +541,7 @@ export default function Schools() {
                     <button
                       onClick={() => openModal("view", s)}
                       title="View Details"
-                      className="p-2 rounded-xl bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+                      className="p-2 rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                     >
                       <Eye size={13} />
                     </button>
@@ -549,7 +549,7 @@ export default function Schools() {
                     <button
                       onClick={() => openModal("edit", s)}
                       title="Edit School"
-                      className="p-2 rounded-xl bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+                      className="p-2 rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                     >
                       <Edit2 size={13} />
                     </button>
@@ -559,7 +559,7 @@ export default function Schools() {
                         onClick={() =>
                           setOpenMenu(openMenu === s.id ? null : s.id)
                         }
-                        className="p-2 rounded-xl bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+                        className="p-2 rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                       >
                         <MoreVertical size={13} />
                       </button>
@@ -579,7 +579,7 @@ export default function Schools() {
                             >
                               <button
                                 onClick={() => openModal("extend", s)}
-                                className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/5 hover:text-white transition-all"
+                                className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-foreground hover:bg-accent transition-all"
                               >
                                 <Calendar
                                   size={13}
@@ -589,7 +589,7 @@ export default function Schools() {
                               </button>
                               <button
                                 onClick={() => openModal("plan", s)}
-                                className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/5 hover:text-white transition-all"
+                                className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-foreground hover:bg-accent transition-all"
                               >
                                 <CreditCard
                                   size={13}
@@ -643,7 +643,7 @@ export default function Schools() {
         </div>
       )}
 
-      {/* ── MODALS ── */}
+      {/* â”€â”€ MODALS â”€â”€ */}
       <AnimatePresence>
         {/* 1. Register School Modal */}
         {modal === "create" && (
@@ -656,7 +656,7 @@ export default function Schools() {
             >
               <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
                 <div>
-                  <h3 className="text-lg font-black text-white">
+                  <h3 className="text-lg font-black text-foreground">
                     Register New Institution
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">
@@ -665,7 +665,7 @@ export default function Schools() {
                 </div>
                 <button
                   onClick={() => setModal(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white"
+                  className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
                 >
                   <X size={18} />
                 </button>
@@ -674,7 +674,7 @@ export default function Schools() {
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Campus Name *
                     </label>
                     <input
@@ -683,11 +683,11 @@ export default function Schools() {
                       placeholder="e.g. Beaconhouse Model Town"
                       value={form.name}
                       onChange={(e) => handleNameChange(e.target.value)}
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Portal Slug (URL) *
                     </label>
                     <input
@@ -698,14 +698,14 @@ export default function Schools() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, slug: e.target.value }))
                       }
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Province
                     </label>
                     <select
@@ -720,7 +720,7 @@ export default function Schools() {
                             )[0] || "",
                         }))
                       }
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-slate-900 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     >
                       {PROVINCES.map((pr) => (
                         <option key={pr} value={pr}>
@@ -730,7 +730,7 @@ export default function Schools() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       City / District
                     </label>
                     <select
@@ -738,7 +738,7 @@ export default function Schools() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, district: e.target.value }))
                       }
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-slate-900 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     >
                       {districts.map((d) => (
                         <option key={d} value={d}>
@@ -750,7 +750,7 @@ export default function Schools() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     Address
                   </label>
                   <input
@@ -760,7 +760,7 @@ export default function Schools() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))
                     }
-                    className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white text-sm focus:outline-none focus:border-violet-500"
+                    className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -780,7 +780,7 @@ export default function Schools() {
                         onChange={(e) =>
                           setForm((p) => ({ ...p, adminName: e.target.value }))
                         }
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                       />
                     </div>
                     <div>
@@ -795,7 +795,7 @@ export default function Schools() {
                         onChange={(e) =>
                           setForm((p) => ({ ...p, adminEmail: e.target.value }))
                         }
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                       />
                     </div>
                   </div>
@@ -811,7 +811,7 @@ export default function Schools() {
                         onChange={(e) =>
                           setForm((p) => ({ ...p, adminPhone: e.target.value }))
                         }
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                       />
                     </div>
                     <div>
@@ -828,7 +828,7 @@ export default function Schools() {
                             adminPassword: e.target.value,
                           }))
                         }
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                       />
                     </div>
                   </div>
@@ -836,7 +836,7 @@ export default function Schools() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Initial Subscription Plan
                     </label>
                     <select
@@ -844,7 +844,7 @@ export default function Schools() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, plan: e.target.value }))
                       }
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-slate-900 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     >
                       {PLANS.map((p) => (
                         <option key={p} value={p}>
@@ -854,7 +854,7 @@ export default function Schools() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Fee Amount (PKR / USD)
                     </label>
                     <input
@@ -864,7 +864,7 @@ export default function Schools() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, amount: e.target.value }))
                       }
-                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white text-sm focus:outline-none focus:border-violet-500"
+                      className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                     />
                   </div>
                 </div>
@@ -873,7 +873,7 @@ export default function Schools() {
                   <button
                     type="button"
                     onClick={() => setModal(null)}
-                    className="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white font-semibold text-xs"
+                    className="px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground font-semibold text-xs hover:bg-accent transition-all"
                   >
                     Cancel
                   </button>
@@ -905,12 +905,12 @@ export default function Schools() {
               className="bg-[#0b1020] border border-violet-500/20 rounded-3xl p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-                <h3 className="text-base font-black text-white">
+                <h3 className="text-base font-black text-foreground">
                   Edit Campus Profile
                 </h3>
                 <button
                   onClick={() => setModal(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <X size={16} />
                 </button>
@@ -918,7 +918,7 @@ export default function Schools() {
 
               <form onSubmit={handleEditSave} className="space-y-3.5">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">
+                  <label className="text-[11px] font-bold text-muted-foreground">
                     School Name
                   </label>
                   <input
@@ -927,11 +927,11 @@ export default function Schools() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, name: e.target.value }))
                     }
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">
+                  <label className="text-[11px] font-bold text-muted-foreground">
                     Official Email
                   </label>
                   <input
@@ -940,11 +940,11 @@ export default function Schools() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, adminEmail: e.target.value }))
                     }
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">
+                  <label className="text-[11px] font-bold text-muted-foreground">
                     Phone
                   </label>
                   <input
@@ -953,11 +953,11 @@ export default function Schools() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, adminPhone: e.target.value }))
                     }
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">
+                  <label className="text-[11px] font-bold text-muted-foreground">
                     Address / City
                   </label>
                   <input
@@ -966,7 +966,7 @@ export default function Schools() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))
                     }
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs focus:outline-none focus:border-violet-500"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -1007,7 +1007,7 @@ export default function Schools() {
                     {selected.name?.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-white leading-tight">
+                    <h3 className="text-2xl font-black text-foreground leading-tight">
                       {selected.name}
                     </h3>
                     <div className="flex items-center gap-3 mt-1.5">
@@ -1029,7 +1029,7 @@ export default function Schools() {
                 </div>
                 <button
                   onClick={() => setModal(null)}
-                  className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-all"
+                  className="p-2 rounded-xl bg-white/5 text-muted-foreground hover:text-foreground transition-all"
                 >
                   <X size={20} />
                 </button>
@@ -1047,7 +1047,7 @@ export default function Schools() {
                               <GraduationCap size={16} className="text-violet-400" />
                               <span className="text-[10px] font-black text-slate-500 uppercase">Students</span>
                            </div>
-                           <p className="text-2xl font-black text-white leading-none">
+                           <p className="text-2xl font-black text-foreground leading-none">
                               {selected._count?.students ?? 0}
                            </p>
                            <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-tighter">
@@ -1059,7 +1059,7 @@ export default function Schools() {
                               <Briefcase size={16} className="text-blue-400" />
                               <span className="text-[10px] font-black text-slate-500 uppercase">Staff</span>
                            </div>
-                           <p className="text-2xl font-black text-white leading-none">
+                           <p className="text-2xl font-black text-foreground leading-none">
                               {selected._count?.teachers ?? 0}
                            </p>
                            <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-tighter">
@@ -1077,20 +1077,20 @@ export default function Schools() {
                               <User size={18} />
                            </div>
                            <div>
-                              <p className="text-sm font-bold text-white leading-none">{selected.adminName || 'Primary Admin'}</p>
+                              <p className="text-sm font-bold text-foreground leading-none">{selected.adminName || 'Primary Admin'}</p>
                               <p className="text-[11px] text-slate-500 mt-1 uppercase font-bold tracking-tight">Managing Director</p>
                            </div>
                         </div>
                         <div className="space-y-2 pt-2">
-                           <div className="flex items-center gap-2 text-xs text-slate-300">
+                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Mail size={13} className="text-violet-400" />
                               <span>{selected.email || 'N/A'}</span>
                            </div>
-                           <div className="flex items-center gap-2 text-xs text-slate-300">
+                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Phone size={13} className="text-violet-400" />
                               <span>{selected.phone || 'N/A'}</span>
                            </div>
-                           <div className="flex items-center gap-2 text-xs text-slate-300">
+                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <MapPin size={13} className="text-violet-400" />
                               <span className="truncate">{selected.address}, {selected.city}</span>
                            </div>
@@ -1112,13 +1112,13 @@ export default function Schools() {
                              {selected.subscription?.plan || 'PROFESSIONAL'} Tier
                           </span>
                           <div className="mt-4 flex items-baseline gap-1.5">
-                             <p className="text-3xl font-black text-white">PKR {selected.subscription?.amount?.toLocaleString() || '0'}</p>
+                             <p className="text-3xl font-black text-foreground">PKR {selected.subscription?.amount?.toLocaleString() || '0'}</p>
                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">per month</p>
                           </div>
                           <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
                              <div>
                                 <p className="text-[10px] font-black text-slate-500 uppercase">License Start</p>
-                                <p className="text-xs font-bold text-white mt-1">
+                                <p className="text-xs font-bold text-foreground mt-1">
                                    {selected.subscription?.startDate ? new Date(selected.subscription.startDate).toLocaleDateString('en-PK') : 'N/A'}
                                 </p>
                              </div>
@@ -1140,7 +1140,7 @@ export default function Schools() {
                            <div key={act.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                               <div className="flex items-center gap-3">
                                  <Activity size={13} className="text-slate-500" />
-                                 <span className="text-xs text-slate-300 font-medium">{act.after || act.action}</span>
+                                 <span className="text-xs text-muted-foreground font-medium">{act.after || act.action}</span>
                               </div>
                               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{new Date(act.createdAt).toLocaleDateString('en-PK')}</span>
                            </div>
@@ -1155,13 +1155,13 @@ export default function Schools() {
                 <div className="flex items-center gap-2">
                    <button
                      onClick={() => openModal('extend', selected)}
-                     className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10"
+                     className="px-4 py-2 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all"
                    >
                      Extend License
                    </button>
                    <button
                      onClick={() => openModal('plan', selected)}
-                     className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10"
+                     className="px-4 py-2 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all"
                    >
                      Modify Tier
                    </button>
@@ -1188,12 +1188,12 @@ export default function Schools() {
               className="bg-[#0b1020] border border-violet-500/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
             >
               <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <h3 className="text-sm font-black text-white">
+                <h3 className="text-sm font-black text-foreground">
                   Extend Subscription
                 </h3>
                 <button
                   onClick={() => setModal(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <X size={16} />
                 </button>
@@ -1202,7 +1202,7 @@ export default function Schools() {
               <form onSubmit={handleExtendExpiry} className="space-y-4">
                 <p className="text-xs text-slate-400">
                   Extending subscription for{" "}
-                  <strong className="text-white">{selected.name}</strong>.
+                  <strong className="text-foreground">{selected.name}</strong>.
                 </p>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -1213,7 +1213,7 @@ export default function Schools() {
                       onClick={() => setExtendDays(d)}
                       className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                         extendDays === d
-                          ? "border-violet-500 bg-violet-600/20 text-white"
+                          ? "border-primary bg-primary/20 text-primary"
                           : "border-white/10 text-slate-400 hover:bg-white/5"
                       }`}
                     >
@@ -1231,7 +1231,7 @@ export default function Schools() {
                     min="1"
                     value={extendDays}
                     onChange={(e) => setExtendDays(Number(e.target.value))}
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -1266,12 +1266,12 @@ export default function Schools() {
               className="bg-[#0b1020] border border-violet-500/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
             >
               <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <h3 className="text-sm font-black text-white">
+                <h3 className="text-sm font-black text-foreground">
                   Change Service Tier
                 </h3>
                 <button
                   onClick={() => setModal(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <X size={16} />
                 </button>
@@ -1280,7 +1280,7 @@ export default function Schools() {
               <form onSubmit={handleChangePlan} className="space-y-4">
                 <p className="text-xs text-slate-400">
                   Update plan tier for{" "}
-                  <strong className="text-white">{selected.name}</strong>.
+                  <strong className="text-foreground">{selected.name}</strong>.
                 </p>
 
                 <div>
@@ -1290,7 +1290,7 @@ export default function Schools() {
                   <select
                     value={newPlan}
                     onChange={(e) => setNewPlan(e.target.value)}
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-slate-900 text-white text-xs"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   >
                     {PLANS.map((p) => (
                       <option key={p} value={p}>
@@ -1308,7 +1308,7 @@ export default function Schools() {
                     type="number"
                     value={newPlanAmount}
                     onChange={(e) => setNewPlanAmount(e.target.value)}
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -1337,10 +1337,10 @@ export default function Schools() {
         {actionDialog && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
             <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} className="w-full max-w-md rounded-3xl border border-violet-500/20 bg-[#0b1020] p-6 shadow-2xl">
-              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-300">Sensitive platform action</p><h3 className="mt-1 text-lg font-black text-white">{actionDialog.action[0].toUpperCase() + actionDialog.action.slice(1)} {actionDialog.schoolName}</h3></div><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"><X size={17} /></button></div>
-              <p className="mt-4 text-sm text-slate-300">This action will be recorded in the platform audit log. {actionDialog.action === 'archive' ? 'Archived schools are removed from normal platform access.' : ''}</p>
-              <label className="mt-5 block text-xs font-bold text-slate-200">Reason {actionDialog.action === 'activate' ? '(optional)' : '(required)'}<textarea value={actionReason} onChange={(event) => setActionReason(event.target.value)} rows={3} placeholder={actionDialog.action === 'suspend' ? 'e.g. Overdue subscription or policy violation' : 'Describe why this action is being taken'} className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-violet-400" /></label>
-              <div className="mt-6 flex justify-end gap-2"><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-xl border border-white/10 px-4 py-2.5 text-xs font-bold text-slate-300">Cancel</button><button onClick={() => void confirmAction()} disabled={saving} className={`rounded-xl px-4 py-2.5 text-xs font-black text-white disabled:opacity-60 ${actionDialog.action === 'activate' ? 'bg-emerald-600' : 'bg-rose-600'}`}>{saving ? 'Saving…' : `Confirm ${actionDialog.action}`}</button></div>
+              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-300">Sensitive platform action</p><h3 className="mt-1 text-lg font-black text-foreground">{actionDialog.action[0].toUpperCase() + actionDialog.action.slice(1)} {actionDialog.schoolName}</h3></div><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-lg p-2 text-slate-400 hover:bg-accent hover:text-foreground"><X size={17} /></button></div>
+              <p className="mt-4 text-sm text-muted-foreground">This action will be recorded in the platform audit log. {actionDialog.action === 'archive' ? 'Archived schools are removed from normal platform access.' : ''}</p>
+              <label className="mt-5 block text-xs font-bold text-muted-foreground">Reason {actionDialog.action === 'activate' ? '(optional)' : '(required)'}<textarea value={actionReason} onChange={(event) => setActionReason(event.target.value)} rows={3} placeholder={actionDialog.action === 'suspend' ? 'e.g. Overdue subscription or policy violation' : 'Describe why this action is being taken'} className="mt-2 w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50" /></label>
+              <div className="mt-6 flex justify-end gap-2"><button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent rounded-xl transition-all">Cancel</button><button onClick={() => void confirmAction()} disabled={saving} className={`rounded-xl px-4 py-2.5 text-xs font-black text-white disabled:opacity-60 ${actionDialog.action === 'activate' ? 'bg-emerald-600' : 'bg-rose-600'}`}>{saving ? 'Savingâ€¦' : `Confirm ${actionDialog.action}`}</button></div>
             </motion.div>
           </motion.div>
         )}
@@ -1348,3 +1348,5 @@ export default function Schools() {
     </div>
   );
 }
+
+
