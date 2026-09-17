@@ -66,11 +66,7 @@ export default function Subscription() {
   useEffect(() => setActivePlan(user?.plan || 'FREE_TRIAL'), [user?.plan]);
   useEffect(() => { apiClient.get('/public/plans').then(({ data }) => setPlans(Array.isArray(data) ? data.filter((plan: any) => plan.isActive) : [])).catch(() => toast.error('Unable to load subscription plans')); }, []);
 
-  const fallbackPlans = [
-    { planKey: 'FREE_TRIAL', name: 'Free Trial', price: 0, period: '3 days', features: ['Up to 20 students', 'Core modules', 'Attendance & fees', 'Basic reports'] },
-    { planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, period: 'per month', features: ['Up to 500 students', 'Unlimited staff', 'Full reports', 'Fee management', 'Exams + results'], badge: 'Most Popular', star: true },
-    { planKey: 'PREMIUM', name: 'Premium', price: 5000, period: 'per month', features: ['Unlimited students', 'Unlimited staff', 'All modules', 'Advanced reports', 'School website', 'Custom domain'], badge: 'Best Value' },
-  ];
+  const fallbackPlans: any[] = [];
   const visiblePlans = plans.length ? plans : fallbackPlans;
 
   const handleProofChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
