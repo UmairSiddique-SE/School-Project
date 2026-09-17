@@ -1,0 +1,286 @@
+/* EduSphere Premium UI Refresh
+   A visual-only layer: no business logic or API behavior changes.
+   Goal: calmer hierarchy, stronger spacing, modern SaaS surfaces, and consistent interaction states.
+*/
+
+:root {
+  --erp-primary: #14b8a6;
+  --erp-primary-strong: #0d9488;
+  --erp-secondary: #06b6d4;
+  --erp-violet: #6366f1;
+  --erp-bg: #070b16;
+  --erp-surface: rgba(15, 23, 42, .78);
+  --erp-surface-2: rgba(17, 24, 39, .92);
+  --erp-line: rgba(148, 163, 184, .12);
+  --erp-text: #f8fafc;
+  --erp-muted: #94a3b8;
+}
+
+/* ---------- App canvas ---------- */
+body {
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(20,184,166,.12), transparent 58%),
+    radial-gradient(800px 520px at 100% 0%, rgba(99,102,241,.13), transparent 60%),
+    linear-gradient(145deg, #050814 0%, #09101e 48%, #07141b 100%) !important;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 70%);
+}
+
+/* ---------- Sidebar ---------- */
+aside {
+  background:
+    linear-gradient(180deg, rgba(8,13,27,.97) 0%, rgba(8,15,25,.94) 100%) !important;
+  border-right-color: rgba(148,163,184,.10) !important;
+  box-shadow: 18px 0 60px rgba(0,0,0,.20) !important;
+}
+
+aside > div:first-child {
+  background: linear-gradient(90deg, rgba(20,184,166,.055), transparent 70%);
+}
+
+aside .group.relative {
+  min-height: 42px;
+  border-radius: 13px !important;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+}
+
+aside .group.relative:hover {
+  transform: translateX(2px);
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(45,212,191,.12) !important;
+}
+
+aside .group.relative[class*="bg-violet-500/12"] {
+  background: linear-gradient(100deg, rgba(20,184,166,.18), rgba(6,182,212,.09), rgba(99,102,241,.08)) !important;
+  border-color: rgba(45,212,191,.22) !important;
+  box-shadow: inset 3px 0 0 #2dd4bf, 0 8px 24px rgba(20,184,166,.08) !important;
+}
+
+aside .group.relative[class*="bg-violet-500/12"] svg { color: #5eead4 !important; }
+
+/* ---------- Top bar ---------- */
+header.glass {
+  background: rgba(7, 12, 24, .78) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom-color: rgba(148,163,184,.10) !important;
+}
+
+header .btn-ghost,
+header button[class*="border-white"] {
+  border-radius: 12px !important;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+}
+
+header .btn-ghost:hover,
+header button[class*="border-white"]:hover {
+  transform: translateY(-1px);
+  background: rgba(20,184,166,.07) !important;
+  border-color: rgba(45,212,191,.24) !important;
+  box-shadow: 0 8px 24px rgba(20,184,166,.08);
+}
+
+/* ---------- Main page rhythm ---------- */
+main > div {
+  max-width: 1680px;
+  margin-inline: auto;
+}
+
+main h1 {
+  letter-spacing: -.035em;
+}
+
+main h2 {
+  letter-spacing: -.025em;
+}
+
+/* Generic content surfaces used throughout the existing pages. */
+main .glass-card,
+main .stat-card,
+main .register-card,
+main [class*="rounded-2xl"][class*="border"],
+main [class*="rounded-3xl"][class*="border"] {
+  border-color: rgba(148,163,184,.12) !important;
+  box-shadow: 0 12px 35px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.035);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+main .glass-card:hover,
+main .stat-card:hover {
+  border-color: rgba(45,212,191,.18) !important;
+  box-shadow: 0 16px 42px rgba(0,0,0,.16), 0 0 0 1px rgba(20,184,166,.035);
+}
+
+/* Don't lift interactive dialogs/forms just because they use rounded cards. */
+main button[class*="rounded"],
+main input,
+main textarea,
+main select {
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+/* ---------- Stat cards ---------- */
+main .stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+main .stat-card::after {
+  content: '';
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  right: -55px;
+  top: -65px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(20,184,166,.15), transparent 68%);
+  pointer-events: none;
+}
+
+/* ---------- Buttons ---------- */
+main button[class*="bg-violet-500"],
+main button[class*="bg-violet-600"],
+main a[class*="bg-violet-500"],
+main a[class*="bg-violet-600"] {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 52%, #0891b2 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 22px rgba(20,184,166,.16);
+}
+
+main button[class*="bg-violet-500"]:hover,
+main button[class*="bg-violet-600"]:hover,
+main a[class*="bg-violet-500"]:hover,
+main a[class*="bg-violet-600"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(20,184,166,.23);
+}
+
+main button[class*="bg-emerald"],
+main button[class*="bg-cyan"] {
+  box-shadow: 0 7px 20px rgba(6,182,212,.10);
+}
+
+/* ---------- Form controls ---------- */
+main input,
+main textarea,
+main select {
+  border-radius: 12px !important;
+  border-color: rgba(148,163,184,.15) !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+main input:focus,
+main textarea:focus,
+main select:focus {
+  border-color: rgba(45,212,191,.45) !important;
+  box-shadow: 0 0 0 3px rgba(20,184,166,.10) !important;
+}
+
+/* ---------- Tables ---------- */
+main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+main thead th {
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: #94a3b8 !important;
+}
+
+main tbody tr {
+  transition: background .16s ease;
+}
+
+main tbody tr:hover {
+  background: rgba(20,184,166,.035) !important;
+}
+
+/* ---------- Badges / pills ---------- */
+main [class*="rounded-full"][class*="border"] {
+  backdrop-filter: blur(8px);
+}
+
+/* ---------- Scrollbar ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100,116,139,.45) transparent;
+}
+
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(100,116,139,.38); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(45,212,191,.42); }
+
+/* ---------- Motion ---------- */
+@keyframes erp-fade-up {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+main > div { animation: erp-fade-up .35s ease both; }
+
+/* ---------- Light theme ---------- */
+.light body {
+  background:
+    radial-gradient(850px 500px at 8% -8%, rgba(20,184,166,.08), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(99,102,241,.07), transparent 62%),
+    linear-gradient(145deg, #f4f8fb 0%, #ffffff 52%, #f1fbfa 100%) !important;
+}
+
+.light aside {
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,250,252,.96)) !important;
+  border-right-color: rgba(15,23,42,.08) !important;
+  box-shadow: 12px 0 38px rgba(15,23,42,.055) !important;
+}
+
+.light header.glass {
+  background: rgba(255,255,255,.84) !important;
+  border-bottom-color: rgba(15,23,42,.08) !important;
+}
+
+.light main .glass-card,
+.light main .stat-card,
+.light main .register-card,
+.light main [class*="rounded-2xl"][class*="border"],
+.light main [class*="rounded-3xl"][class*="border"] {
+  border-color: rgba(15,23,42,.09) !important;
+  box-shadow: 0 12px 32px rgba(15,23,42,.055), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.light main input,
+.light main textarea,
+.light main select {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(15,23,42,.13) !important;
+}
+
+.light aside .group.relative:hover {
+  background: rgba(20,184,166,.055) !important;
+  border-color: rgba(13,148,136,.14) !important;
+}
+
+.light aside .group.relative[class*="bg-violet-500/12"] {
+  background: linear-gradient(100deg, rgba(20,184,166,.12), rgba(6,182,212,.06)) !important;
+  border-color: rgba(13,148,136,.18) !important;
+  box-shadow: inset 3px 0 0 #0d9488, 0 7px 22px rgba(13,148,136,.07) !important;
+}
+
+@media (max-width: 768px) {
+  main > div { padding-left: 1rem !important; padding-right: 1rem !important; }
+  main .stat-card { border-radius: 18px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
