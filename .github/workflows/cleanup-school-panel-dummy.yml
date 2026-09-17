@@ -24,8 +24,6 @@ jobs:
           import subprocess
 
           root = Path('frontend/src/pages')
-
-          # Remove only known mock/default data declarations. Real API state is kept.
           targets = {
             'Students.tsx': [r'\n  const MOCK_STUDENTS = \[.*?\n  \];\n\n  const MOCK_CLASSES = \[.*?\n  \];\n'],
             'Attendance.tsx': [r'\nconst MOCK_CLASSES: ClassSection\[\] = \[.*?\n\];\n', r'\nconst MOCK_STUDENTS: Student\[\] = \[.*?\n\];\n'],
@@ -41,8 +39,6 @@ jobs:
               original = text
               for pattern in patterns:
                   text = re.sub(pattern, '\n', text, flags=re.S)
-
-              # Never fall back to mock arrays after an API failure.
               text = text.replace('setStudents(MOCK_STUDENTS);', 'setStudents([]);')
               text = text.replace('setClasses(MOCK_CLASSES);', 'setClasses([]);')
               text = text.replace('setClasses(MOCK_TEACHER_CLASSES);', 'setClasses([]);')
@@ -51,7 +47,6 @@ jobs:
               if text != original:
                   p.write_text(text, encoding='utf-8')
 
-          # Remove known hardcoded student/profile fallback values while keeping the UI.
           p = root / 'Students.tsx'
           if p.exists():
               text = p.read_text(encoding='utf-8')
@@ -82,7 +77,6 @@ jobs:
                   text = text.replace(a, b)
               p.write_text(text, encoding='utf-8')
 
-          # AttendanceAdmin is a legacy static overview; remove its generated demo rows.
           p = root / 'AttendanceAdmin.tsx'
           if p.exists():
               text = p.read_text(encoding='utf-8')
@@ -90,14 +84,6 @@ jobs:
               text = text.replace("const schoolSlug = user?.schoolSlug || 'demo';", "const schoolSlug = user?.schoolSlug || '';" )
               p.write_text(text, encoding='utf-8')
 
-          # Remove demo routing fallback without altering authenticated routing behavior.
-          for rel in ['AttendanceAdmin.tsx']:
-              p = root / rel
-              if p.exists():
-                  text = p.read_text(encoding='utf-8').replace("user?.schoolSlug || 'demo'", "user?.schoolSlug || ''")
-                  p.write_text(text, encoding='utf-8')
-
-          # Commit only if something changed.
           subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
           subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
           subprocess.run(['git', 'add', 'frontend/src/pages'], check=True)
