@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards,
 } from '@nestjs/common';
 import { BuildingService } from './building.service';
+import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -10,7 +11,10 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('buildings')
 export class BuildingController {
-  constructor(private readonly buildingService: BuildingService) {}
+  constructor(
+    private readonly buildingService: BuildingService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Get()
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
@@ -28,8 +32,22 @@ export class BuildingController {
 
   @Post()
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
-  create(@CurrentUser() user: any, @Body() dto: any) {
-    const schoolId = user.role === 'SUPER_ADMIN' ? (dto.schoolId || user.schoolId) : user.schoolId;
+  async create(@CurrentUser() user: any, @Body() dto: any) {
+    let schoolId = user.role === 'SUPER_ADMIN' ? (dto.schoolId || user.schoolId) : user.schoolId;
+
+    // The building form does not expose schoolId. When a super admin has no
+    // school attached to the session, use the single active school in the
+    // current installation instead of sending an undefined value downstream.
+    if (!schoolId && user.role === 'SUPER_ADMIN') {
+      const activeSchools = await this.prisma.school.findMany({
+        where: { isActive: true },
+        select: { id: true },
+        orderBy: { createdAt: 'asc' },
+        take: 2,
+      });
+      if (activeSchools.length === 1) schoolId = activeSchools[0].id;
+    }
+
     return this.buildingService.createBuilding({
       ...dto,
       schoolId,
@@ -85,7 +103,7 @@ export class BuildingController {
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
   deleteRoom(
     @CurrentUser() user: any,
-    @Param('buildingId') buildingId: string,
+    @Param('id') buildingId: string,
     @Param('roomId') roomId: string,
   ) {
     const effectiveSchoolId = user.role === 'SUPER_ADMIN' ? undefined : user.schoolId;
