@@ -1,209 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Award, BookOpen, Briefcase, Edit3, Loader2, Mail, Phone, Plus, RefreshCw, Search, Trash2, UserCheck, Users, X } from 'lucide-react';
+import { Award, Briefcase, Calendar, Edit3, FileText, GraduationCap, Loader2, Mail, Phone, Plus, RefreshCw, Search, Shield, Trash2, User, UserCheck, Users, X } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
-interface Teacher {
-  id: string;
-  employeeNo: string;
-  name: string;
-  email: string;
-  phone?: string | null;
-  gender?: string | null;
-  qualification?: string | null;
-  experience?: number | null;
-  salary?: number | null;
-  joiningDate?: string;
-  isActive?: boolean;
-}
+interface Teacher { id:string; employeeNo:string; name:string; email:string; phone?:string|null; gender?:string|null; qualification?:string|null; experience?:number|null; salary?:number|null; joiningDate?:string; isActive?:boolean; }
+const initialForm={name:'',email:'',employeeNo:'',phone:'',gender:'MALE',qualification:'',experience:'',salary:'',password:''};
+const phoneFormat=(v:string)=>{const d=v.replace(/\D/g,'').slice(0,11);return d.length<=4?d:`${d.slice(0,4)}-${d.slice(4)}`};
+const money=(v?:number|null)=>v==null?'—':`PKR ${Number(v).toLocaleString('en-PK')}`;
+const dateText=(v?:string)=>v?new Date(v).toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}):'—';
+function Detail({label,value,icon:Icon}:{label:string;value:unknown;icon?:any}){return <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5"><div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{Icon&&<Icon size={13}/>} {label}</div><p className="mt-2 break-words text-sm font-bold text-white">{String(value??'—')||'—'}</p></div>}
 
-const initialForm = {
-  name: '', email: '', employeeNo: '', phone: '', gender: 'MALE',
-  qualification: '', experience: '', salary: '', password: '',
-};
-
-const phoneFormat = (value: string) => {
-  const digits = value.replace(/\D/g, '').slice(0, 11);
-  return digits.length <= 4 ? digits : `${digits.slice(0, 4)}-${digits.slice(4)}`;
-};
-
-const money = (value?: number | null) => value == null ? '—' : `PKR ${Number(value).toLocaleString('en-PK')}`;
-const dateText = (value?: string) => value ? new Date(value).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-
-export default function Teachers() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState<Teacher | null>(null);
-  const [form, setForm] = useState({ ...initialForm });
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const { data } = await apiClient.get('/people/teachers');
-      setTeachers(Array.isArray(data) ? data : []);
-    } catch (error: any) {
-      setTeachers([]);
-      toast.error(error?.response?.data?.message || 'Unable to load teachers');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { void load(); }, []);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return teachers;
-    return teachers.filter((teacher) => [teacher.name, teacher.email, teacher.employeeNo, teacher.phone, teacher.qualification]
-      .some((value) => String(value ?? '').toLowerCase().includes(q)));
-  }, [teachers, query]);
-
-  const activeCount = teachers.filter((teacher) => teacher.isActive !== false).length;
-  const qualifiedCount = teachers.filter((teacher) => Boolean(teacher.qualification)).length;
-  const payroll = teachers.reduce((sum, teacher) => sum + Number(teacher.salary || 0), 0);
-
-  const openAdd = () => {
-    setEditing(null);
-    const nextNo = `TCH-${String(teachers.length + 1).padStart(3, '0')}`;
-    setForm({ ...initialForm, employeeNo: nextNo });
-    setShowForm(true);
-  };
-
-  const openEdit = (teacher: Teacher) => {
-    setEditing(teacher);
-    setForm({
-      name: teacher.name || '', email: teacher.email || '', employeeNo: teacher.employeeNo || '',
-      phone: teacher.phone || '', gender: teacher.gender || 'MALE', qualification: teacher.qualification || '',
-      experience: teacher.experience == null ? '' : String(teacher.experience),
-      salary: teacher.salary == null ? '' : String(teacher.salary), password: '',
-    });
-    setShowForm(true);
-  };
-
-  const save = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setSaving(true);
-    try {
-      if (editing) {
-        await apiClient.patch(`/people/teachers/${editing.id}`, {
-          name: form.name,
-          phone: form.phone,
-          gender: form.gender,
-          qualification: form.qualification,
-          experience: form.experience ? Number(form.experience) : undefined,
-          salary: form.salary ? Number(form.salary) : undefined,
-        });
-        toast.success('Teacher profile updated');
-      } else {
-        if (form.password.length < 12) throw new Error('Teacher portal password must be at least 12 characters');
-        await apiClient.post('/people/teachers', {
-          ...form,
-          experience: form.experience ? Number(form.experience) : undefined,
-          salary: form.salary ? Number(form.salary) : undefined,
-        });
-        toast.success('Teacher added successfully');
-      }
-      setShowForm(false);
-      setEditing(null);
-      setForm({ ...initialForm });
-      await load();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || 'Unable to save teacher');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const remove = async (teacher: Teacher) => {
-    if (!window.confirm(`Archive ${teacher.name}?`)) return;
-    try {
-      await apiClient.delete(`/people/teachers/${teacher.id}`);
-      toast.success('Teacher archived');
-      await load();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Unable to archive teacher');
-    }
-  };
-
-  return (
-    <div className="mx-auto max-w-screen-2xl space-y-6 pb-10">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
-              <Award size={12} /> Faculty Management
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Teachers</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">Live teacher records, portal credentials and faculty profiles for this school.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-muted-foreground"><RefreshCw size={15} className={loading ? 'animate-spin' : ''}/> Refresh</button>
-            <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"><Plus size={15}/> Add Teacher</button>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[['Total Teachers', teachers.length, Users], ['Active Faculty', activeCount, UserCheck], ['Qualified Profiles', qualifiedCount, Award], ['Monthly Payroll', money(payroll), Briefcase]].map(([label, value, Icon]: any) => (
-          <div key={label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><Icon size={16}/></span></div>
-            <p className="mt-3 text-2xl font-black text-foreground">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-muted-foreground" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search teacher, employee ID, email, phone or qualification…" className="h-10 w-full rounded-xl border-0 bg-background pl-9 pr-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-primary/30" />
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left">
-            <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              <tr><th className="px-5 py-4">Teacher</th><th className="px-5 py-4">Employee</th><th className="px-5 py-4">Contact</th><th className="px-5 py-4">Qualification</th><th className="px-5 py-4">Experience</th><th className="px-5 py-4">Salary</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Actions</th></tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? <tr><td colSpan={8} className="p-12 text-center"><Loader2 className="mx-auto animate-spin text-primary"/></td></tr> : filtered.length === 0 ? <tr><td colSpan={8} className="p-14 text-center"><Users className="mx-auto mb-3 text-muted-foreground/50" size={28}/><p className="text-sm font-semibold text-muted-foreground">No teacher records found in the live database.</p><p className="mt-1 text-xs text-muted-foreground/70">Add a teacher and the record will appear here automatically.</p></td></tr> : filtered.map((teacher) => (
-                <tr key={teacher.id} className="transition-colors hover:bg-muted/30">
-                  <td className="px-5 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 font-black text-violet-600 dark:text-violet-400"><BookOpen size={17}/></span><div><p className="text-sm font-bold text-foreground">{teacher.name}</p><p className="text-[11px] text-muted-foreground">Joined {dateText(teacher.joiningDate)}</p></div></div></td>
-                  <td className="px-5 py-4 font-mono text-xs text-muted-foreground">{teacher.employeeNo || '—'}</td>
-                  <td className="px-5 py-4"><div className="space-y-1 text-xs text-muted-foreground"><div className="flex items-center gap-1.5"><Mail size={12}/>{teacher.email}</div><div className="flex items-center gap-1.5"><Phone size={12}/>{teacher.phone || '—'}</div></div></td>
-                  <td className="px-5 py-4 text-xs font-semibold text-foreground">{teacher.qualification || 'Not added'}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{teacher.experience == null ? '—' : `${teacher.experience} yrs`}</td>
-                  <td className="px-5 py-4 text-xs font-bold text-foreground">{money(teacher.salary)}</td>
-                  <td className="px-5 py-4"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${teacher.isActive === false ? 'border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>{teacher.isActive === false ? 'Inactive' : 'Active'}</span></td>
-                  <td className="px-5 py-4"><div className="flex gap-1.5"><button onClick={() => openEdit(teacher)} className="rounded-xl border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title="Edit"><Edit3 size={14}/></button><button onClick={() => void remove(teacher)} className="rounded-xl border border-border p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-600" title="Archive"><Trash2 size={14}/></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {showForm && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <form onSubmit={save} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-2xl">
-          <div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">Live faculty record</p><h2 className="mt-1 text-2xl font-black text-foreground">{editing ? 'Edit Teacher' : 'Add Teacher'}</h2><p className="mt-1 text-xs text-muted-foreground">Changes are written directly to this school's database.</p></div><button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border p-2 text-muted-foreground"><X size={18}/></button></div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <input required disabled={Boolean(editing)} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Full name *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input required type="email" disabled={Boolean(editing)} value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Work email *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input required disabled={Boolean(editing)} value={form.employeeNo} onChange={(e) => setForm((p) => ({ ...p, employeeNo: e.target.value }))} placeholder="Employee No *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: phoneFormat(e.target.value) }))} placeholder="0300-0000000" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <select value={form.gender} onChange={(e) => setForm((p) => ({ ...p, gender: e.target.value }))} className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select>
-            <input value={form.qualification} onChange={(e) => setForm((p) => ({ ...p, qualification: e.target.value }))} placeholder="Qualification" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input type="number" min="0" value={form.experience} onChange={(e) => setForm((p) => ({ ...p, experience: e.target.value }))} placeholder="Experience (years)" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input type="number" min="0" value={form.salary} onChange={(e) => setForm((p) => ({ ...p, salary: e.target.value }))} placeholder="Monthly salary (PKR)" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            {!editing && <input required minLength={12} value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} placeholder="Portal password (12+ chars) *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none md:col-span-2" />}
-          </div>
-          <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground">Cancel</button><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground">{saving && <Loader2 size={14} className="animate-spin"/>}{editing ? 'Save Changes' : 'Create Teacher'}</button></div>
-        </form>
-      </div>}
-    </div>
-  );
+export default function Teachers(){
+ const[teachers,setTeachers]=useState<Teacher[]>([]); const[loading,setLoading]=useState(true); const[query,setQuery]=useState(''); const[selectedTeacher,setSelectedTeacher]=useState<Teacher|null>(null); const[profileTab,setProfileTab]=useState('primary'); const[showForm,setShowForm]=useState(false); const[saving,setSaving]=useState(false); const[editing,setEditing]=useState<Teacher|null>(null); const[form,setForm]=useState({...initialForm});
+ const load=async()=>{setLoading(true);try{const{data}=await apiClient.get('/people/teachers');const records=Array.isArray(data)?data:[];setTeachers(records);if(selectedTeacher)setSelectedTeacher(records.find((t:Teacher)=>t.id===selectedTeacher.id)||null)}catch(error:any){setTeachers([]);toast.error(error?.response?.data?.message||'Unable to load teachers')}finally{setLoading(false)}};
+ useEffect(()=>{void load()},[]);
+ const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return teachers;return teachers.filter(t=>[t.name,t.email,t.employeeNo,t.phone,t.qualification].some(v=>String(v??'').toLowerCase().includes(q)))},[teachers,query]);
+ const activeCount=teachers.filter(t=>t.isActive!==false).length, qualifiedCount=teachers.filter(t=>Boolean(t.qualification)).length, payroll=teachers.reduce((s,t)=>s+Number(t.salary||0),0);
+ const openAdd=()=>{setEditing(null);setForm({...initialForm,employeeNo:`TCH-${String(teachers.length+1).padStart(3,'0')}`});setShowForm(true)};
+ const openEdit=(t:Teacher)=>{setEditing(t);setForm({name:t.name||'',email:t.email||'',employeeNo:t.employeeNo||'',phone:t.phone||'',gender:t.gender||'MALE',qualification:t.qualification||'',experience:t.experience==null?'':String(t.experience),salary:t.salary==null?'':String(t.salary),password:''});setShowForm(true)};
+ const save=async(e:React.FormEvent)=>{e.preventDefault();setSaving(true);try{if(editing){await apiClient.patch(`/people/teachers/${editing.id}`,{name:form.name,phone:form.phone,gender:form.gender,qualification:form.qualification,experience:form.experience?Number(form.experience):undefined,salary:form.salary?Number(form.salary):undefined});toast.success('Teacher profile updated')}else{if(form.password.length<12)throw new Error('Teacher portal password must be at least 12 characters');await apiClient.post('/people/teachers',{...form,experience:form.experience?Number(form.experience):undefined,salary:form.salary?Number(form.salary):undefined});toast.success('Teacher added successfully')}setShowForm(false);setEditing(null);setForm({...initialForm});await load()}catch(error:any){toast.error(error?.response?.data?.message||error?.message||'Unable to save teacher')}finally{setSaving(false)}};
+ const remove=async(t:Teacher)=>{if(!window.confirm(`Archive ${t.name}?`))return;try{await apiClient.delete(`/people/teachers/${t.id}`);setSelectedTeacher(null);toast.success('Teacher archived');await load()}catch(error:any){toast.error(error?.response?.data?.message||'Unable to archive teacher')}};
+ const tabs=[['primary','Primary Data',User],['academic','Academic Profile',GraduationCap],['attendance','Presence Log',Calendar],['financials','Financials',Briefcase],['access','System Access',Shield],['timeline','Event Log',FileText]] as const;
+ return <div className="mx-auto max-w-screen-2xl space-y-6 pb-10">
+  <motion.div initial={{opacity:0,y:-10}} animate={{opacity:1,y:0}} className="glass-elevated rounded-[32px] p-7 sm:p-9"><div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-violet-500"><Award size={12}/> Faculty Management</div><h1 className="text-3xl font-black tracking-tight text-foreground">Teachers</h1><p className="mt-2 text-sm text-muted-foreground">Premium faculty profiles connected to the live school database.</p></div><div className="flex flex-wrap gap-2"><button onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-muted-foreground hover:text-foreground"><RefreshCw size={15} className={loading?'animate-spin':''}/> Refresh</button><button onClick={openAdd} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-xs font-black text-primary-foreground shadow-lg shadow-primary/20"><Plus size={15}/> Add Teacher</button></div></div></motion.div>
+  <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[['Total Teachers',teachers.length,Users],['Active Faculty',activeCount,UserCheck],['Qualified Profiles',qualifiedCount,Award],['Monthly Payroll',money(payroll),Briefcase]].map(([label,value,Icon]:any)=><div key={label} className="stat-card rounded-2xl p-5"><div className="flex items-center justify-between"><span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{label}</span><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500"><Icon size={17}/></span></div><p className="mt-3 text-2xl font-black text-foreground">{value}</p></div>)}</div>
+  <div className="glass-card rounded-2xl p-3"><div className="relative"><Search size={16} className="absolute left-3 top-3 text-muted-foreground"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search teacher, employee ID, email, phone or qualification…" className="h-10 w-full rounded-xl border-0 bg-background pl-9 pr-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-primary/30"/></div></div>
+  <div className="glass-elevated overflow-hidden rounded-[32px]"><div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left"><thead className="border-b border-border bg-muted/40 text-[10px] uppercase tracking-[0.16em] text-muted-foreground"><tr><th className="px-7 py-5">Identity & Portal</th><th className="px-7 py-5">Employee ID</th><th className="px-7 py-5">Contact</th><th className="px-7 py-5">Academic</th><th className="px-7 py-5">Experience</th><th className="px-7 py-5">Status</th><th className="px-7 py-5"/></tr></thead><tbody>{loading?<tr><td colSpan={7} className="p-14 text-center"><Loader2 className="mx-auto animate-spin text-primary"/></td></tr>:filtered.length===0?<tr><td colSpan={7} className="p-14 text-center"><Users className="mx-auto mb-3 text-muted-foreground/50" size={30}/><p className="text-sm font-semibold text-muted-foreground">No teacher records found in the live database.</p></td></tr>:filtered.map((t,i)=><motion.tr key={t.id} initial={{opacity:0,x:-12}} animate={{opacity:1,x:0}} transition={{delay:i*.02}} onClick={()=>{setSelectedTeacher(t);setProfileTab('primary')}} className="group cursor-pointer border-b border-border/60 transition-all hover:bg-primary/[0.035]"><td className="px-7 py-5"><div className="flex items-center gap-4"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 text-xl font-black text-white shadow-xl transition-transform group-hover:scale-105 group-hover:rotate-2">{t.name?.charAt(0)?.toUpperCase()||'?'}</div><div className="min-w-0"><p className="truncate text-base font-black text-foreground group-hover:text-primary">{t.name}</p><p className="mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"><Mail size={11}/>{t.email||'No portal email'}</p></div></div></td><td className="px-7 py-5"><span className="rounded-xl border border-violet-500/15 bg-violet-500/5 px-3 py-1.5 font-mono text-xs font-black tracking-widest text-violet-500">{t.employeeNo||'—'}</span></td><td className="px-7 py-5"><div className="space-y-1 text-xs text-muted-foreground"><div className="flex items-center gap-2"><Mail size={12}/>{t.email||'—'}</div><div className="flex items-center gap-2"><Phone size={12}/>{t.phone||'—'}</div></div></td><td className="px-7 py-5"><p className="text-sm font-bold text-foreground">{t.qualification||'—'}</p><p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">Joined {dateText(t.joiningDate)}</p></td><td className="px-7 py-5 text-xs font-semibold text-muted-foreground">{t.experience==null?'—':`${t.experience} yrs`}</td><td className="px-7 py-5"><span className={`rounded-full border px-3 py-1.5 text-[9px] font-black uppercase tracking-widest ${t.isActive===false?'border-rose-500/20 bg-rose-500/10 text-rose-500':'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'}`}>{t.isActive===false?'Inactive':'Active'}</span></td><td className="px-7 py-5" onClick={e=>e.stopPropagation()}><div className="flex justify-end gap-2"><button onClick={()=>openEdit(t)} className="h-10 w-10 rounded-xl border border-border bg-background text-muted-foreground hover:bg-primary hover:text-white"><Edit3 size={15}/></button><button onClick={()=>void remove(t)} className="h-10 w-10 rounded-xl border border-border bg-background text-muted-foreground hover:bg-rose-500 hover:text-white"><Trash2 size={15}/></button></div></td></motion.tr>)}</tbody></table></div></div>
+  {selectedTeacher&&<div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-3 backdrop-blur-md sm:p-5" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTeacher(null)}}><div className="flex h-[92vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-[36px] border border-white/[0.08] bg-slate-950/95 shadow-[0_0_100px_rgba(0,0,0,.75)] lg:flex-row">
+   <aside className="relative flex w-full shrink-0 flex-col justify-between overflow-hidden border-b border-white/[0.06] bg-white/[0.02] p-7 lg:w-80 lg:border-b-0 lg:border-r lg:p-9"><div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/15 blur-[80px]"/><div className="relative text-center"><div className="mx-auto flex h-36 w-36 rotate-3 items-center justify-center rounded-[44px] border-4 border-white/10 bg-gradient-to-br from-violet-500 via-indigo-600 to-primary text-6xl font-black text-white shadow-2xl transition-transform hover:rotate-0">{selectedTeacher.name?.charAt(0)?.toUpperCase()||'?'}</div><h2 className="mt-7 text-2xl font-black leading-tight tracking-tight text-white">{selectedTeacher.name}</h2><p className="mt-2 rounded-lg border border-primary/20 bg-primary/10 py-1.5 font-mono text-[10px] font-black tracking-widest text-primary">{selectedTeacher.employeeNo||'NO EMPLOYEE ID'}</p><span className={`mt-4 inline-flex rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-widest ${selectedTeacher.isActive===false?'border-rose-500/20 bg-rose-500/10 text-rose-400':'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'}`}>{selectedTeacher.isActive===false?'Inactive Faculty':'Active Faculty'}</span><div className="mt-7 grid grid-cols-2 gap-3"><button onClick={()=>openEdit(selectedTeacher)} className="flex flex-col items-center gap-2 rounded-3xl border border-primary/20 bg-primary/10 p-4 text-primary hover:bg-primary hover:text-white"><Edit3 size={19}/><span className="text-[9px] font-black uppercase">Edit</span></button><button onClick={()=>void remove(selectedTeacher)} className="flex flex-col items-center gap-2 rounded-3xl border border-white/10 bg-white/5 p-4 text-slate-300 hover:bg-rose-600 hover:text-white"><Trash2 size={19}/><span className="text-[9px] font-black uppercase">Archive</span></button></div></div><div className="relative space-y-3"><div className="rounded-3xl border border-white/10 bg-white/5 p-4"><p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Portal Email</p><p className="mt-1 truncate text-xs font-bold text-white">{selectedTeacher.email||'N/A'}</p></div><button onClick={()=>setSelectedTeacher(null)} className="w-full rounded-2xl border border-white/10 bg-slate-900 py-3.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-400">Exit Profile</button></div></aside>
+   <section className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-950/60"><div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-white/[0.06] bg-black/20 px-5 py-4 no-scrollbar sm:px-8">{tabs.map(([id,label,Icon])=><button key={id} onClick={()=>setProfileTab(id)} className={`flex shrink-0 items-center gap-2 rounded-2xl px-5 py-3 text-[9px] font-black uppercase tracking-widest transition-all ${profileTab===id?'bg-primary text-white shadow-lg shadow-primary/20':'text-slate-500 hover:bg-white/5 hover:text-white'}`}><Icon size={15}/>{label}</button>)}</div><div className="flex-1 overflow-y-auto bg-white/[0.01] p-5 text-sm custom-scrollbar sm:p-8 lg:p-12">
+    {profileTab==='primary'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Faculty Dossier</p><h3 className="mt-2 text-3xl font-black tracking-tight text-white">Primary Information</h3></div><div className="grid gap-4 md:grid-cols-2"><Detail label="Full Name" value={selectedTeacher.name} icon={User}/><Detail label="Employee Number" value={selectedTeacher.employeeNo}/><Detail label="Email" value={selectedTeacher.email} icon={Mail}/><Detail label="Phone" value={selectedTeacher.phone} icon={Phone}/><Detail label="Gender" value={selectedTeacher.gender}/><Detail label="Joining Date" value={dateText(selectedTeacher.joiningDate)} icon={Calendar}/></div></div>}
+    {profileTab==='academic'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Academic Tier</p><h3 className="mt-2 text-3xl font-black text-white">Professional Profile</h3></div><div className="grid gap-4 md:grid-cols-2"><Detail label="Qualification" value={selectedTeacher.qualification} icon={GraduationCap}/><Detail label="Teaching Experience" value={selectedTeacher.experience==null?'—':`${selectedTeacher.experience} years`}/><Detail label="Faculty Status" value={selectedTeacher.isActive===false?'Inactive':'Active'}/><Detail label="Joined" value={dateText(selectedTeacher.joiningDate)}/></div></div>}
+    {profileTab==='attendance'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Presence Log</p><h3 className="mt-2 text-3xl font-black text-white">Attendance</h3></div><div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-8"><Calendar className="mb-4 text-primary" size={28}/><p className="font-bold text-white">Teacher attendance area</p><p className="mt-2 text-sm text-slate-500">Profile identity is live. Attendance records can be viewed from the Attendance module.</p></div></div>}
+    {profileTab==='financials'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Financials</p><h3 className="mt-2 text-3xl font-black text-white">Compensation</h3></div><div className="grid gap-4 md:grid-cols-2"><Detail label="Monthly Salary" value={money(selectedTeacher.salary)} icon={Briefcase}/><Detail label="Employee Status" value={selectedTeacher.isActive===false?'Inactive':'Active'}/></div></div>}
+    {profileTab==='access'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">System Access</p><h3 className="mt-2 text-3xl font-black text-white">Teacher Portal</h3></div><div className="grid gap-4 md:grid-cols-2"><Detail label="Portal Email" value={selectedTeacher.email} icon={Mail}/><Detail label="Account Status" value={selectedTeacher.isActive===false?'Inactive':'Active'} icon={Shield}/></div></div>}
+    {profileTab==='timeline'&&<div className="space-y-8"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Event Log</p><h3 className="mt-2 text-3xl font-black text-white">Faculty Timeline</h3></div><div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-6"><div className="flex items-center gap-3"><FileText size={18} className="text-primary"/><p className="font-bold text-white">Teacher record</p></div><p className="mt-2 text-xs text-slate-500">Joining date: {dateText(selectedTeacher.joiningDate)}</p></div></div>}
+   </div></section></div></div>}
+  {showForm&&<div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"><form onSubmit={save} className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[32px] border border-white/10 bg-slate-950 p-6 shadow-2xl sm:p-8"><div className="mb-7 flex items-start justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Live faculty record</p><h2 className="mt-2 text-2xl font-black text-white">{editing?'Edit Teacher':'Add Teacher'}</h2></div><button type="button" onClick={()=>setShowForm(false)} className="rounded-xl border border-white/10 p-2 text-slate-400 hover:text-white"><X size={18}/></button></div><div className="grid gap-4 md:grid-cols-2"><input required disabled={Boolean(editing)} value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="Full name *" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><input required type="email" disabled={Boolean(editing)} value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Work email *" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><input required disabled={Boolean(editing)} value={form.employeeNo} onChange={e=>setForm(p=>({...p,employeeNo:e.target.value}))} placeholder="Employee No *" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><input value={form.phone} onChange={e=>setForm(p=>({...p,phone:phoneFormat(e.target.value)}))} placeholder="0300-0000000" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><select value={form.gender} onChange={e=>setForm(p=>({...p,gender:e.target.value}))} className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select><input value={form.qualification} onChange={e=>setForm(p=>({...p,qualification:e.target.value}))} placeholder="Qualification" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><input type="number" min="0" value={form.experience} onChange={e=>setForm(p=>({...p,experience:e.target.value}))} placeholder="Experience (years)" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/><input type="number" min="0" value={form.salary} onChange={e=>setForm(p=>({...p,salary:e.target.value}))} placeholder="Monthly salary (PKR)" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600"/>{!editing&&<input required minLength={12} value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))} placeholder="Portal password (12+ chars) *" className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-slate-600 md:col-span-2"/>}</div><div className="mt-7 flex justify-end gap-3 border-t border-white/[0.06] pt-6"><button type="button" onClick={()=>setShowForm(false)} className="rounded-xl border border-white/10 px-5 py-3 text-xs font-bold text-slate-400">Cancel</button><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-black text-white disabled:opacity-60">{saving&&<Loader2 size={15} className="animate-spin"/>}{editing?'Save Changes':'Save Teacher'}</button></div></form></div>}
+ </div>;
 }
