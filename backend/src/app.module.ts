@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './modules/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SchoolModule } from './modules/school/school.module';
@@ -16,6 +17,7 @@ import { SchoolRequestModule } from './modules/school-request/school-request.mod
 import { PublicModule } from './modules/public/public.module';
 import { BuildingModule } from './modules/building/building.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { StudentAccountInterceptor } from './common/interceptors/student-account-interceptor';
 
 @Module({
   imports: [
@@ -36,6 +38,9 @@ import { NotificationModule } from './modules/notification/notification.module';
     NotificationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_INTERCEPTOR, useClass: StudentAccountInterceptor },
+  ],
 })
 export class AppModule {}
