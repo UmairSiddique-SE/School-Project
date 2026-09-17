@@ -4,33 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Calendar, CheckCircle, XCircle, Clock, Users, BarChart3, Download, Plus } from 'lucide-react';
 
-const CLASSES = [
-  { id: '1', name: 'Class 1-A', total: 35 },
-  { id: '2', name: 'Class 2-A', total: 38 },
-  { id: '3', name: 'Class 3-A', total: 40 },
-  { id: '4', name: 'Class 5-B', total: 32 },
-  { id: '5', name: 'Class 8-A', total: 36 },
-  { id: '6', name: 'Class 9-A', total: 42 },
-  { id: '7', name: 'Class 10-A', total: 45 },
-  { id: '8', name: 'Class 10-B', total: 40 },
-];
+const CLASSES: any[] = [];
 
 function generateMockData() {
-  return CLASSES.map(c => {
-    const present = Math.floor(c.total * (0.82 + Math.random() * 0.15));
-    const absentRaw = c.total - present;
-    const leave = Math.floor(absentRaw * 0.2);
-    const late = Math.floor((absentRaw - leave) * 0.3);
-    const absent = absentRaw - leave - late;
-    return { ...c, present, absent, late, leave, percentage: Math.round((present / c.total) * 100) };
-  });
+  return [];
 }
 
 const MONTHLY_DAYS = Array.from({ length: 26 }, (_, i) => i + 1);
 
 export default function AttendanceAdmin() {
   const { user } = useAuth();
-  const schoolSlug = user?.schoolSlug || 'demo';
+  const schoolSlug = user?.schoolSlug || '';
   const navigate = useNavigate();
   const [view, setView] = useState<'daily' | 'monthly'>('daily');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);

@@ -18,68 +18,6 @@ function MyClasses() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const navigate = useNavigate();
 
-  const MOCK_TEACHER_CLASSES = [
-    {
-      id: 'c1',
-      name: 'Class 10-A',
-      subject: 'Mathematics',
-      subjectCode: 'MTH-101',
-      room: 'Room 204',
-      totalStudents: 42,
-      schedule: 'Mon, Wed, Fri (08:00 AM)',
-      sections: [{ id: 's1', name: 'Section A', capacity: 45, studentsCount: 42 }],
-      students: [
-        { rollNo: '01', name: 'Aarav Sharma', attendance: '98%', performance: 'A+' },
-        { rollNo: '02', name: 'Alina Fatima', attendance: '95%', performance: 'A' },
-        { rollNo: '03', name: 'Bilal Hussain', attendance: '92%', performance: 'B+' },
-        { rollNo: '04', name: 'Fatima Zahra', attendance: '99%', performance: 'A+' },
-        { rollNo: '05', name: 'Hamza Tariq', attendance: '88%', performance: 'B' },
-      ],
-    },
-    {
-      id: 'c2',
-      name: 'Class 9-B',
-      subject: 'Mathematics',
-      subjectCode: 'MTH-092',
-      room: 'Room 102',
-      totalStudents: 38,
-      schedule: 'Tue, Thu (09:40 AM)',
-      sections: [{ id: 's2', name: 'Section B', capacity: 40, studentsCount: 38 }],
-      students: [
-        { rollNo: '01', name: 'Zaid Khan', attendance: '94%', performance: 'A' },
-        { rollNo: '02', name: 'Sara Ahmed', attendance: '96%', performance: 'A+' },
-        { rollNo: '03', name: 'Rayyan Malik', attendance: '90%', performance: 'B+' },
-      ],
-    },
-    {
-      id: 'c3',
-      name: 'Class 11-A',
-      subject: 'Physics Lab',
-      subjectCode: 'PHY-111',
-      room: 'Science Lab 2',
-      totalStudents: 35,
-      schedule: 'Daily (10:45 AM)',
-      sections: [{ id: 's3', name: 'Science Wing', capacity: 40, studentsCount: 35 }],
-      students: [
-        { rollNo: '01', name: 'Hassan Ali', attendance: '97%', performance: 'A+' },
-        { rollNo: '02', name: 'Zoya Fatima', attendance: '93%', performance: 'A' },
-      ],
-    },
-    {
-      id: 'c4',
-      name: 'Class 8-C',
-      subject: 'General Science',
-      subjectCode: 'SCI-083',
-      room: 'Room 108',
-      totalStudents: 36,
-      schedule: 'Mon, Wed (12:30 PM)',
-      sections: [{ id: 's4', name: 'Section C', capacity: 40, studentsCount: 36 }],
-      students: [
-        { rollNo: '01', name: 'Usman Ghani', attendance: '91%', performance: 'B+' },
-        { rollNo: '02', name: 'Mariam Bibi', attendance: '95%', performance: 'A' },
-      ],
-    },
-  ];
 
   useEffect(() => {
     apiClient.get('/classes')
@@ -87,7 +25,7 @@ function MyClasses() {
         if (Array.isArray(r.data) && r.data.length > 0) {
           setClasses(r.data);
         } else {
-          setClasses(MOCK_TEACHER_CLASSES);
+          setClasses([]);
         }
       })
       .catch(() => setClasses(MOCK_TEACHER_CLASSES))
