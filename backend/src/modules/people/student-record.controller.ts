@@ -10,6 +10,17 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class StudentRecordController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get('archived')
+  @Roles('SCHOOL_ADMIN')
+  async getArchived(@CurrentUser() user: any) {
+    if (!user?.schoolId) throw new BadRequestException('School association is missing');
+    return this.prisma.student.findMany({
+      where: { schoolId: user.schoolId, deletedAt: { not: null } },
+      include: { section: { include: { class: true } } },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   @Get(':id/profile')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   async getProfile(@CurrentUser() user: any, @Param('id') id: string) {
@@ -36,16 +47,8 @@ export class StudentRecordController {
         },
         attendances: { orderBy: { date: 'desc' }, take: 100 },
         feePayments: { orderBy: { id: 'desc' }, take: 100 },
-        examResults: {
-          include: { exam: true, subject: true },
-          orderBy: { id: 'desc' },
-          take: 100,
-        },
-        homeworkSubmissions: {
-          include: { homework: true },
-          orderBy: { id: 'desc' },
-          take: 100,
-        },
+        examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 },
+        homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 100 },
         documents: { orderBy: { id: 'desc' } },
         transportAssignment: true,
       },
@@ -88,13 +91,8 @@ export class StudentRecordController {
           select: { id: true, capacity: true },
         });
         if (!section) throw new BadRequestException('Student section is no longer available');
-
-        const activeCount = await tx.student.count({
-          where: { sectionId: section.id, deletedAt: null, id: { not: student.id } },
-        });
-        if (section.capacity != null && activeCount >= section.capacity) {
-          throw new BadRequestException('Cannot restore student because the assigned section is full');
-        }
+        const activeCount = await tx.student.count({ where: { sectionId: section.id, deletedAt: null, id: { not: student.id } } });
+        if (section.capacity != null && activeCount >= section.capacity) throw new BadRequestException('Cannot restore student because the assigned section is full');
       }
 
       const restored = await tx.student.update({
@@ -104,12 +102,8 @@ export class StudentRecordController {
       });
 
       if (student.email) {
-        await tx.user.updateMany({
-          where: { email: student.email, schoolId: user.schoolId, role: 'STUDENT' },
-          data: { isActive: true, deletedAt: null },
-        });
+        await tx.user.updateMany({ where: { email: student.email, schoolId: user.schoolId, role: 'STUDENT' }, data: { isActive: true, deletedAt: null } });
       }
-
       return restored;
     });
   }
@@ -133,21 +127,18 @@ export class StudentRecordController {
     if (!existing) throw new BadRequestException('Student not found');
 
     if (data.sectionId && String(data.sectionId) !== String(existing.sectionId)) {
-      const section = await this.prisma.section.findFirst({
-        where: { id: String(data.sectionId), deletedAt: null, class: { schoolId: user.schoolId, deletedAt: null } },
-        select: { id: true, capacity: true },
-      });
+      const section = await this.prisma.section.findFirst({ where: { id: String(data.sectionId), deletedAt: null, class: { schoolId: user.schoolId, deletedAt: null } }, select: { id: true, capacity: true } });
       if (!section) throw new BadRequestException('Selected section does not belong to this school');
-
-      const activeCount = await this.prisma.student.count({
-        where: { sectionId: section.id, deletedAt: null, id: { not: id } },
-      });
-      if (section.capacity != null && activeCount >= section.capacity) {
-        throw new BadRequestException('Selected section is full');
-      }
+      const activeCount = await this.prisma.student.count({ where: { sectionId: section.id, deletedAt: null, id: { not: id } } });
+      if (section.capacity != null && activeCount >= section.capacity) throw new BadRequestException('Selected section is full');
     }
 
-    const student = await this.prisma.$transaction(async (tx) => {
+    if (data.bFormNumber && data.bFormNumber !== existing.bFormNumber) {
+      const duplicate = await this.prisma.student.findFirst({ where: { schoolId: user.schoolId, bFormNumber: String(data.bFormNumber), deletedAt: null, id: { not: id } }, select: { id: true } });
+      if (duplicate) throw new BadRequestException('A student with this B-Form/CNIC already exists');
+    }
+
+    const student = await this.prisma.$transaction(async tx => {
       const updated = await tx.student.update({
         where: { id },
         data: {
@@ -186,29 +177,17 @@ export class StudentRecordController {
         await tx.parent.update({
           where: { id: link.parentId },
           data: {
-            fatherName: data.fatherName ?? undefined,
-            fatherMobile1: data.fatherMobile1 ?? undefined,
-            fatherMobile2: data.fatherMobile2 ?? undefined,
-            fatherWhatsapp: data.fatherWhatsapp ?? undefined,
-            fatherCnic: data.fatherCnic ?? undefined,
-            fatherOccupation: data.fatherOccupation ?? undefined,
-            motherName: data.motherName ?? undefined,
-            motherMobile: data.motherMobile ?? undefined,
-            motherCnic: data.motherCnic ?? undefined,
-            motherOccupation: data.motherOccupation ?? undefined,
-            guardianName: data.guardianName ?? undefined,
-            guardianRelation: data.guardianRelation ?? undefined,
-            guardianMobile: data.guardianMobile ?? undefined,
-            addressCountry: data.country ?? undefined,
-            addressProvince: data.province ?? undefined,
-            addressCity: data.city ?? data.district ?? undefined,
+            fatherName: data.fatherName ?? undefined, fatherMobile1: data.fatherMobile1 ?? undefined, fatherMobile2: data.fatherMobile2 ?? undefined,
+            fatherWhatsapp: data.fatherWhatsapp ?? undefined, fatherCnic: data.fatherCnic ?? undefined, fatherOccupation: data.fatherOccupation ?? undefined,
+            motherName: data.motherName ?? undefined, motherMobile: data.motherMobile ?? undefined, motherCnic: data.motherCnic ?? undefined, motherOccupation: data.motherOccupation ?? undefined,
+            guardianName: data.guardianName ?? undefined, guardianRelation: data.guardianRelation ?? undefined, guardianMobile: data.guardianMobile ?? undefined,
+            addressCountry: data.country ?? undefined, addressProvince: data.province ?? undefined, addressCity: data.city ?? data.district ?? undefined,
             addressLine: data.currentAddress ?? data.address ?? undefined,
           },
         });
       }
       return updated;
     });
-
     return student;
   }
 }
