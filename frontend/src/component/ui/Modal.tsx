@@ -4,46 +4,42 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface ModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  open?: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  /** Max width class e.g. 'max-w-md', 'max-w-2xl', 'max-w-4xl' */
   maxWidth?: string;
-  /** Whether clicking the backdrop closes the modal */
   closeOnBackdrop?: boolean;
 }
 
-/**
- * Portal-based modal that renders at document.body level,
- * bypassing any overflow-hidden ancestor containers in the layout.
- */
 const Modal: React.FC<ModalProps> = ({
   isOpen,
+  open,
   onClose,
   children,
   maxWidth = 'max-w-2xl',
   closeOnBackdrop = true,
 }) => {
-  // Lock body scroll when modal is open
+  const visible = isOpen ?? open ?? false;
+
   useEffect(() => {
-    if (isOpen) {
+    if (visible) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => { document.body.style.overflow = prev; };
     }
-  }, [isOpen]);
+  }, [visible]);
 
-  // Close on Escape key
   useEffect(() => {
-    if (!isOpen) return;
+    if (!visible) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, onClose]);
+  }, [visible, onClose]);
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
+      {visible && (
         <motion.div
           key="modal-overlay"
           initial={{ opacity: 0 }}
@@ -72,7 +68,6 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-/** Reusable modal header with title + close button */
 export const ModalHeader: React.FC<{
   icon?: React.ReactNode;
   title: string;
@@ -91,10 +86,7 @@ export const ModalHeader: React.FC<{
         {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
     </div>
-    <button
-      onClick={onClose}
-      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
-    >
+    <button onClick={onClose} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all">
       <X size={18} />
     </button>
   </div>
