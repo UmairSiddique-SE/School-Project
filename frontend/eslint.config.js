@@ -16,10 +16,7 @@ export default defineConfig([
       reactRefresh.configs.vite,
     ],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-        React: 'readonly',
-      },
+      globals: globals.browser,
     },
     rules: {
       // Allow 'any' type — needed widely in this codebase
