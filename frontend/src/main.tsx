@@ -5,6 +5,7 @@ import './theme-overrides.css'
 import './premium-ui.css'
 import './school-panel-consistency.css'
 import './student-academic-history.css'
+import './student-profile-legacy.css'
 import App from './App.tsx'
 import StudentCredentialsBridge from './components/students/StudentCredentialsBridge'
 
