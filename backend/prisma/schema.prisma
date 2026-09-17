@@ -192,13 +192,13 @@ model PasswordResetToken {
 }
 
 model EmailVerification {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   otp       String
   userId    String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -290,55 +290,55 @@ model ClassSubject {
 }
 
 model Student {
-  id                  String               @id @default(uuid())
-  admissionNo         String               @unique
-  name                String
-  dateOfBirth         DateTime?
-  gender              String?
-  bloodGroup          String?
-  religion            String?
-  nationality         String?
-  phone               String?
-  email               String?
-  address             String?
-  avatarUrl           String?
-  isActive            Boolean              @default(true)
-  isAlumni            Boolean              @default(false)
-  status              String               @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED, LEFT
-  admissionDate       DateTime             @default(now())
-  session             String?              // e.g., 2026-2027
-  bFormNumber         String?              // National ID / B-Form
-  currentAddress      String?
-  permanentAddress    String?
-  emergencyContact    String?
-  previousSchool      String?
-  previousClass       String?
+  id                    String               @id @default(uuid())
+  admissionNo           String               @unique
+  name                  String
+  dateOfBirth           DateTime?
+  gender                String?
+  bloodGroup            String?
+  religion              String?
+  nationality           String?
+  phone                 String?
+  email                 String?
+  address               String?
+  avatarUrl             String?
+  isActive              Boolean              @default(true)
+  isAlumni              Boolean              @default(false)
+  status                String               @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED, LEFT
+  admissionDate         DateTime             @default(now())
+  session               String?              // e.g., 2026-2027
+  bFormNumber           String?              // National ID / B-Form
+  currentAddress        String?
+  permanentAddress      String?
+  emergencyContact      String?
+  previousSchool        String?
+  previousClass        String?
   leavingCertificateUrl String?
-  admissionType       String               @default("NEW") // NEW, TRANSFER
+  admissionType         String               @default("NEW") // NEW, TRANSFER
   previousAcademicRecord String?
-  medicalNotes        String?
-  specialRequirements String?
-  transportRequired   Boolean              @default(false)
-  hostelRequired      Boolean              @default(false)
-  remarks             String?
-  leavingDate         DateTime?
-  rollNo              String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  deletedAt           DateTime?
-  schoolId            String
-  sectionId           String?
-  attendances         Attendance[]
-  bookIssues          BookIssue[]
-  documents           Document[]
-  examResults         ExamResult[]
-  feePayments         FeePayment[]
-  homeworkSubmissions HomeworkSubmission[]
-  hostelAllocation    HostelAllocation?
-  section             Section?             @relation(fields: [sectionId], references: [id])
-  school              School               @relation(fields: [schoolId], references: [id])
-  parents             StudentParent[]
-  transportAssignment TransportAssignment?
+  medicalNotes          String?
+  specialRequirements   String?
+  transportRequired     Boolean              @default(false)
+  hostelRequired        Boolean              @default(false)
+  remarks               String?
+  leavingDate           DateTime?
+  rollNo                String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  deletedAt             DateTime?
+  schoolId              String
+  sectionId             String?
+  attendances           Attendance[]
+  bookIssues            BookIssue[]
+  documents             Document[]
+  examResults           ExamResult[]
+  feePayments           FeePayment[]
+  homeworkSubmissions   HomeworkSubmission[]
+  hostelAllocation      HostelAllocation?
+  section               Section?             @relation(fields: [sectionId], references: [id])
+  school                School               @relation(fields: [schoolId], references: [id])
+  parents               StudentParent[]
+  transportAssignment   TransportAssignment?
 
   @@index([schoolId])
   @@index([sectionId])
@@ -393,6 +393,7 @@ model Parent {
   fatherWhatsapp   String?
   fatherCnic       String?
   fatherOccupation String?
+  fatherStatus     String?
   motherName       String?
   motherMobile     String?
   motherCnic       String?
@@ -504,7 +505,7 @@ model Exam {
   sectionId      String?
   section        Section?      @relation(fields: [sectionId], references: [id])
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
-  school         School        @relation(fields: [schoolId], references: [id])
+  school         School         @relation(fields: [schoolId], references: [id])
   results        ExamResult[]
 
   @@index([schoolId])
