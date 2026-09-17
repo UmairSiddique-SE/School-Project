@@ -1,5 +1,15 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { PeopleService } from './people.service';
+import * as bcrypt from 'bcryptjs';
+
+// These methods are implemented as a compatibility extension because the
+// Staff module is intentionally kept separate from the Teacher module.
+declare module './people.service' {
+  interface PeopleService {
+    createStaff(schoolId: string, data: any): Promise<any>;
+    updateStaff(id: string, schoolId: string, data: any): Promise<any>;
+  }
+}
 
 // Staff is intentionally separate from Teachers.
 // Keep /people/staff limited to the Staff table only.
@@ -28,7 +38,7 @@ PeopleService.prototype.createStaff = async function (schoolId: string, data: an
   }
 
   const existingStaff = await service.prisma.staff.findFirst({
-    where: { OR: [{ employeeNo }, { email }], deletedAt: null },
+    where: { schoolId, OR: [{ employeeNo }, { email }], deletedAt: null },
     select: { id: true },
   });
   if (existingStaff) throw new ConflictException('A staff member with this employee no or email already exists');
@@ -36,8 +46,10 @@ PeopleService.prototype.createStaff = async function (schoolId: string, data: an
   const existingUser = await service.prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (existingUser) throw new ConflictException('A user with this email already exists');
 
-  const password = String(data?.password || 'staffpassword');
-  const bcrypt = await import('bcrypt');
+  const password = String(data?.password || '');
+  if (!password || password.length < 12) {
+    throw new BadRequestException('A password of at least 12 characters is required');
+  }
   const passwordHash = await bcrypt.hash(password, 12);
 
   const result = await service.prisma.$transaction(async (tx: any) => {
@@ -98,6 +110,8 @@ PeopleService.prototype.updateStaff = async function (id: string, schoolId: stri
 
   if (data?.email && String(data.email).trim().toLowerCase() !== staff.email.toLowerCase()) {
     const email = String(data.email).trim().toLowerCase();
+    const duplicate = await service.prisma.user.findFirst({ where: { email, schoolId, NOT: { id: staff.id } }, select: { id: true } }).catch(() => null);
+    if (duplicate) throw new ConflictException('A user with this email already exists');
     await service.prisma.user.updateMany({ where: { email: staff.email, schoolId }, data: { email } });
     await service.prisma.staff.update({ where: { id }, data: { email } });
   }
