@@ -1,0 +1,50 @@
+name: Persist Student Photo
+on:
+  push:
+    branches: [feat/super-admin-market-ready]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Patch backend student photo persistence
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('backend/src/modules/people/people.service.ts')
+          text = path.read_text(encoding='utf-8')
+          old_create = "data: { admissionNo, name: data.name, rollNo, email, phone: data.phone || data.studentMobile || null,"
+          new_create = "data: { admissionNo, name: data.name, avatarUrl: data.avatarUrl || null, rollNo, email, phone: data.phone || data.studentMobile || null,"
+          if old_create not in text:
+              raise SystemExit('Student create payload anchor not found')
+          text = text.replace(old_create, new_create, 1)
+          old_update = "data: { name: data.name ?? undefined, rollNo: data.rollNo ?? undefined, phone: data.phone ?? undefined,"
+          new_update = "data: { name: data.name ?? undefined, avatarUrl: data.avatarUrl ?? undefined, rollNo: data.rollNo ?? undefined, phone: data.phone ?? undefined,"
+          if old_update not in text:
+              raise SystemExit('Student update payload anchor not found')
+          text = text.replace(old_update, new_update, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          rm -f .github/workflows/fix-student-photo-persistence.yml
+      - name: Verify backend
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npm run lint:check
+          npm run build
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/modules/people/people.service.ts .github/workflows/fix-student-photo-persistence.yml
+          git commit -m "fix: persist student photo on admission" || exit 0
+          git push
