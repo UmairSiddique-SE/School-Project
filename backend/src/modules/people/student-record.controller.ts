@@ -53,7 +53,6 @@ export class StudentRecordController {
 
     if (!student) throw new BadRequestException('Student not found');
 
-    // Teachers can only open students belonging to their assigned sections.
     if (user.role === 'TEACHER') {
       const teacher = await this.prisma.teacher.findFirst({
         where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
@@ -78,11 +77,26 @@ export class StudentRecordController {
 
     const student = await this.prisma.student.findFirst({
       where: { id, schoolId: user.schoolId, deletedAt: { not: null } },
-      select: { id: true, email: true },
+      select: { id: true, email: true, sectionId: true },
     });
     if (!student) throw new BadRequestException('Archived student not found');
 
     return this.prisma.$transaction(async tx => {
+      if (student.sectionId) {
+        const section = await tx.section.findFirst({
+          where: { id: student.sectionId, deletedAt: null, class: { schoolId: user.schoolId, deletedAt: null } },
+          select: { id: true, capacity: true },
+        });
+        if (!section) throw new BadRequestException('Student section is no longer available');
+
+        const activeCount = await tx.student.count({
+          where: { sectionId: section.id, deletedAt: null, id: { not: student.id } },
+        });
+        if (section.capacity != null && activeCount >= section.capacity) {
+          throw new BadRequestException('Cannot restore student because the assigned section is full');
+        }
+      }
+
       const restored = await tx.student.update({
         where: { id: student.id },
         data: { deletedAt: null, isActive: true, status: 'ACTIVE' },
@@ -118,9 +132,19 @@ export class StudentRecordController {
     const existing = await this.prisma.student.findFirst({ where: { id, schoolId: user.schoolId, deletedAt: null } });
     if (!existing) throw new BadRequestException('Student not found');
 
-    if (data.sectionId) {
-      const section = await this.prisma.section.findFirst({ where: { id: String(data.sectionId), class: { schoolId: user.schoolId } } });
+    if (data.sectionId && String(data.sectionId) !== String(existing.sectionId)) {
+      const section = await this.prisma.section.findFirst({
+        where: { id: String(data.sectionId), deletedAt: null, class: { schoolId: user.schoolId, deletedAt: null } },
+        select: { id: true, capacity: true },
+      });
       if (!section) throw new BadRequestException('Selected section does not belong to this school');
+
+      const activeCount = await this.prisma.student.count({
+        where: { sectionId: section.id, deletedAt: null, id: { not: id } },
+      });
+      if (section.capacity != null && activeCount >= section.capacity) {
+        throw new BadRequestException('Selected section is full');
+      }
     }
 
     const student = await this.prisma.$transaction(async (tx) => {
