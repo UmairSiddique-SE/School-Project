@@ -103,7 +103,8 @@ export class BuildingController {
   @Roles('SUPER_ADMIN', 'SCHOOL_ADMIN')
   deleteRoom(
     @CurrentUser() user: any,
-    @Param('id') buildingId: string,
+    @Param('buildingId') buildingId: string,
+    @Param('buildingId') buildingId: string,
     @Param('roomId') roomId: string,
   ) {
     const effectiveSchoolId = user.role === 'SUPER_ADMIN' ? undefined : user.schoolId;
