@@ -81,6 +81,16 @@ export class PeopleController {
     return this.peopleService.getSchoolStats(user.schoolId);
   }
 
+  @Get('student-facilities')
+  @Roles('SCHOOL_ADMIN')
+  async getStudentFacilities(@CurrentUser() user: any) {
+    const [transportRoutes, hostels] = await Promise.all([
+      this.prisma.transportRoute.count({ where: { schoolId: user.schoolId, isActive: true } }),
+      this.prisma.hostel.count({ where: { schoolId: user.schoolId, isActive: true } }),
+    ]);
+    return { transport: transportRoutes > 0, hostel: hostels > 0 };
+  }
+
   @Get('teachers')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getTeachers(@CurrentUser() user: any) {
@@ -211,30 +221,15 @@ export class PeopleController {
     if (students.length !== ids.length) throw new BadRequestException('One or more selected students do not belong to this school');
 
     const moving = students.filter(s => s.sectionId !== target.id).length;
-    const enrolled = await this.prisma.student.count({
-      where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null },
-    });
-    if (enrolled + moving > target.capacity) {
-      throw new BadRequestException(`Target section capacity exceeded. Capacity is ${target.capacity}.`);
-    }
+    const enrolled = await this.prisma.student.count({ where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null } });
+    if (enrolled + moving > target.capacity) throw new BadRequestException(`Target section capacity exceeded. Capacity is ${target.capacity}.`);
 
     return this.prisma.$transaction(async tx => {
       for (const student of students) {
         if (student.sectionId === target.id) continue;
-        const last = await tx.student.findFirst({
-          where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null },
-          orderBy: { rollNo: 'desc' },
-          select: { rollNo: true },
-        });
+        const last = await tx.student.findFirst({ where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null }, orderBy: { rollNo: 'desc' }, select: { rollNo: true } });
         const n = last?.rollNo ? parseInt(last.rollNo, 10) : 0;
-        await tx.student.update({
-          where: { id: student.id },
-          data: {
-            sectionId: target.id,
-            rollNo: Number.isFinite(n) ? String(n + 1) : undefined,
-            ...(dto.session ? { session: String(dto.session).trim() } : {}),
-          },
-        });
+        await tx.student.update({ where: { id: student.id }, data: { sectionId: target.id, rollNo: Number.isFinite(n) ? String(n + 1) : undefined, ...(dto.session ? { session: String(dto.session).trim() } : {}) } });
       }
       return { updated: students.length, sectionId: target.id, classId: target.classId };
     });
@@ -253,37 +248,19 @@ export class PeopleController {
     });
     if (!target) throw new BadRequestException('Target section does not belong to this school');
 
-    const students = await this.prisma.student.findMany({
-      where: { id: { in: ids }, schoolId: user.schoolId, deletedAt: null },
-      select: { id: true, sectionId: true },
-    });
+    const students = await this.prisma.student.findMany({ where: { id: { in: ids }, schoolId: user.schoolId, deletedAt: null }, select: { id: true, sectionId: true } });
     if (students.length !== ids.length) throw new BadRequestException('One or more selected students do not belong to this school');
 
     const moving = students.filter(s => s.sectionId !== target.id).length;
-    const enrolled = await this.prisma.student.count({
-      where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null },
-    });
-    if (enrolled + moving > target.capacity) {
-      throw new BadRequestException(`Target section capacity exceeded. Capacity is ${target.capacity}.`);
-    }
+    const enrolled = await this.prisma.student.count({ where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null } });
+    if (enrolled + moving > target.capacity) throw new BadRequestException(`Target section capacity exceeded. Capacity is ${target.capacity}.`);
 
     return this.prisma.$transaction(async tx => {
       for (const student of students) {
         if (student.sectionId === target.id) continue;
-        const last = await tx.student.findFirst({
-          where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null },
-          orderBy: { rollNo: 'desc' },
-          select: { rollNo: true },
-        });
+        const last = await tx.student.findFirst({ where: { schoolId: user.schoolId, sectionId: target.id, deletedAt: null }, orderBy: { rollNo: 'desc' }, select: { rollNo: true } });
         const n = last?.rollNo ? parseInt(last.rollNo, 10) : 0;
-        await tx.student.update({
-          where: { id: student.id },
-          data: {
-            sectionId: target.id,
-            rollNo: Number.isFinite(n) ? String(n + 1) : undefined,
-            ...(dto.reason ? { remarks: `Transfer: ${String(dto.reason).trim()}` } : {}),
-          },
-        });
+        await tx.student.update({ where: { id: student.id }, data: { sectionId: target.id, rollNo: Number.isFinite(n) ? String(n + 1) : undefined, ...(dto.reason ? { remarks: `Transfer: ${String(dto.reason).trim()}` } : {}) } });
       }
       return { updated: students.length, sectionId: target.id, classId: target.classId };
     });
@@ -363,10 +340,24 @@ export class PeopleController {
     if (dto.admissionType !== undefined && dto.admissionType !== null && dto.admissionType !== '' && !['NEW', 'TRANSFER'].includes(String(dto.admissionType))) {
       throw new BadRequestException('Invalid admission type');
     }
-    for (const field of ['phone', 'studentMobile', 'emergencyContact']) {
-      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '' && String(dto[field]).length > 30) {
-        throw new BadRequestException(`${field} is too long`);
+    const phoneFields = ['phone', 'studentMobile', 'fatherMobile1', 'fatherWhatsapp', 'motherMobile', 'guardianMobile'];
+    for (const field of phoneFields) {
+      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '') {
+        const phone = String(dto[field]).trim();
+        if (!/^\d{4}-\d{7}$/.test(phone)) throw new BadRequestException(`${field} must use format 0300-1234567`);
+        dto[field] = phone;
       }
+    }
+    if (dto.fatherCnic !== undefined && dto.fatherCnic !== null && dto.fatherCnic !== '') {
+      const cnic = String(dto.fatherCnic).trim();
+      if (!/^\d{5}-\d{7}-\d$/.test(cnic)) throw new BadRequestException('Father CNIC must use format 35202-1234567-1');
+      dto.fatherCnic = cnic;
+    }
+    if (dto.fatherStatus !== undefined && !['ALIVE', 'DECEASED'].includes(String(dto.fatherStatus))) {
+      throw new BadRequestException('Invalid father status');
+    }
+    if (dto.guardianRelation !== undefined && dto.guardianRelation !== null && dto.guardianRelation !== '' && !['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'].includes(String(dto.guardianRelation))) {
+      throw new BadRequestException('Invalid guardian relation');
     }
     if (creating && (dto.fatherName || dto.motherName || dto.guardianName) && (!dto.parentPassword || String(dto.parentPassword).length < 12)) {
       throw new BadRequestException('Parent password must contain at least 12 characters');
@@ -381,11 +372,7 @@ export class PeopleController {
     });
     if (!section) throw new BadRequestException('Selected section does not belong to this school');
 
-    const enrolled = await this.prisma.student.count({
-      where: { schoolId, sectionId, deletedAt: null },
-    });
-    if (enrolled >= section.capacity) {
-      throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
-    }
+    const enrolled = await this.prisma.student.count({ where: { schoolId, sectionId, deletedAt: null } });
+    if (enrolled >= section.capacity) throw new BadRequestException(`Section capacity reached. This section allows ${section.capacity} active students.`);
   }
 }
