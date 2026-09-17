@@ -1,0 +1,107 @@
+name: Remove School Panel Dummy Data
+
+on:
+  push:
+    branches: [feat/super-admin-market-ready]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Remove mock/demo UI data without changing layout
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          import subprocess
+
+          root = Path('frontend/src/pages')
+
+          # Remove only known mock/default data declarations. Real API state is kept.
+          targets = {
+            'Students.tsx': [r'\n  const MOCK_STUDENTS = \[.*?\n  \];\n\n  const MOCK_CLASSES = \[.*?\n  \];\n'],
+            'Attendance.tsx': [r'\nconst MOCK_CLASSES: ClassSection\[\] = \[.*?\n\];\n', r'\nconst MOCK_STUDENTS: Student\[\] = \[.*?\n\];\n'],
+            'TeacherPages.tsx': [r'\n  const MOCK_TEACHER_CLASSES = \[.*?\n  \];\n'],
+            'Transport.tsx': [r'\nconst MOCK_ROUTES: TransportRoute\[\] = \[.*?\n\];\n', r'\nconst MOCK_VEHICLES: Vehicle\[\] = \[.*?\n\];\n'],
+          }
+
+          for name, patterns in targets.items():
+              p = root / name
+              if not p.exists():
+                  continue
+              text = p.read_text(encoding='utf-8-sig')
+              original = text
+              for pattern in patterns:
+                  text = re.sub(pattern, '\n', text, flags=re.S)
+
+              # Never fall back to mock arrays after an API failure.
+              text = text.replace('setStudents(MOCK_STUDENTS);', 'setStudents([]);')
+              text = text.replace('setClasses(MOCK_CLASSES);', 'setClasses([]);')
+              text = text.replace('setClasses(MOCK_TEACHER_CLASSES);', 'setClasses([]);')
+              text = text.replace('setRoutes(MOCK_ROUTES);', 'setRoutes([]);')
+              text = text.replace('setVehicles(MOCK_VEHICLES);', 'setVehicles([]);')
+              if text != original:
+                  p.write_text(text, encoding='utf-8')
+
+          # Remove known hardcoded student/profile fallback values while keeping the UI.
+          p = root / 'Students.tsx'
+          if p.exists():
+              text = p.read_text(encoding='utf-8')
+              replacements = {
+                  "|| Math.floor(students.length * 0.52)": "",
+                  "|| Math.floor(students.length * 0.48)": "",
+                  "{s.section?.class?.name || 'Class 10'}": "{s.section?.class?.name || '—'}",
+                  "Section {s.section?.name || 'Alpha'}": "Section {s.section?.name || '—'}",
+                  "{selectedStudent.section?.class?.name || 'Class 10'}": "{selectedStudent.section?.class?.name || '—'}",
+                  "{selectedStudent.section?.class?.numeric || '10'}": "{selectedStudent.section?.class?.numeric || '—'}",
+                  "{selectedStudent.section?.name || 'A'}": "{selectedStudent.section?.name || '—'}",
+                  "Section {selectedStudent.section?.name || 'Alpha'}": "Section {selectedStudent.section?.name || '—'}",
+                  "{selectedStudent.session || '2026-2027'}": "{selectedStudent.session || '—'}",
+                  "{selectedStudent.fatherName || 'Robert Mercer'}": "{selectedStudent.fatherName || 'Not provided'}",
+                  "{selectedStudent.motherName || 'Emma Mercer'}": "{selectedStudent.motherName || 'Not provided'}",
+                  "{selectedStudent.fatherOccupation || 'Service'}": "{selectedStudent.fatherOccupation || 'Not provided'}",
+                  "{selectedStudent.motherOccupation || 'Housewife'}": "{selectedStudent.motherOccupation || 'Not provided'}",
+                  "parentPassword || 'parent123'": "parentPassword",
+                  "toast.success('Mock Excel parsed successfully: 12 students imported!');": "toast.success('Import processed successfully');",
+                  "{selectedStudent ? selectedStudent.name : 'Alex Mercer'}": "{selectedStudent?.name || '—'}",
+                  "{selectedStudent ? selectedStudent.admissionNo : 'STD001'}": "{selectedStudent?.admissionNo || '—'}",
+                  "{selectedStudent ? selectedStudent.rollNo : '01'}": "{selectedStudent?.rollNo || '—'}",
+                  "{selectedStudent?.bloodGroup || 'O+'}": "{selectedStudent?.bloodGroup || '—'}",
+                  "{selectedStudent?.phone || '+1 555 456 7890'}": "{selectedStudent?.phone || '—'}",
+                  "<p className=\"text-2xl font-black text-emerald-400\">12</p>": "<p className=\"text-2xl font-black text-emerald-400\">{students.filter(s => s.admissionDate && s.admissionDate === new Date().toISOString().split('T')[0]).length}</p>",
+              }
+              for a, b in replacements.items():
+                  text = text.replace(a, b)
+              p.write_text(text, encoding='utf-8')
+
+          # AttendanceAdmin is a legacy static overview; remove its generated demo rows.
+          p = root / 'AttendanceAdmin.tsx'
+          if p.exists():
+              text = p.read_text(encoding='utf-8')
+              text = re.sub(r'const CLASSES = \[.*?\n\];\n\nfunction generateMockData\(\) \{.*?\n\}\n', "const CLASSES: any[] = [];\n\nfunction generateMockData() {\n  return [];\n}\n", text, flags=re.S)
+              text = text.replace("const schoolSlug = user?.schoolSlug || 'demo';", "const schoolSlug = user?.schoolSlug || '';" )
+              p.write_text(text, encoding='utf-8')
+
+          # Remove demo routing fallback without altering authenticated routing behavior.
+          for rel in ['AttendanceAdmin.tsx']:
+              p = root / rel
+              if p.exists():
+                  text = p.read_text(encoding='utf-8').replace("user?.schoolSlug || 'demo'", "user?.schoolSlug || ''")
+                  p.write_text(text, encoding='utf-8')
+
+          # Commit only if something changed.
+          subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+          subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+          subprocess.run(['git', 'add', 'frontend/src/pages'], check=True)
+          result = subprocess.run(['git', 'diff', '--cached', '--quiet'])
+          if result.returncode != 0:
+              subprocess.run(['git', 'commit', '-m', 'fix: remove school panel dummy data'], check=True)
+              subprocess.run(['git', 'push'], check=True)
