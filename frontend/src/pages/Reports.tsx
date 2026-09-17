@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -6,181 +6,285 @@ import {
 } from 'recharts';
 import {
   FileBarChart2, TrendingUp, DollarSign, Award, Users, Calendar,
-  Download, Printer, Filter, CheckCircle, AlertTriangle, ArrowUpRight,
-  ArrowDownRight, Layers, Sparkles, BookOpen, GraduationCap, X, Eye
+  Download, Printer, CheckCircle, AlertTriangle, ArrowUpRight,
+  Layers, Sparkles, BookOpen, GraduationCap, X, RefreshCw,
+  CircleDashed
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 import Modal from '@/component/ui/Modal';
 
-// ─── Realistic Analytics Data ──────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const ATTENDANCE_WEEKLY = [
-  { name: 'Monday', rate: 96.4, boys: 95.8, girls: 97.1 },
-  { name: 'Tuesday', rate: 94.8, boys: 94.2, girls: 95.5 },
-  { name: 'Wednesday', rate: 97.2, boys: 96.9, girls: 97.6 },
-  { name: 'Thursday', rate: 95.1, boys: 94.5, girls: 95.8 },
-  { name: 'Friday', rate: 91.5, boys: 90.2, girls: 93.0 },
-  { name: 'Saturday', rate: 89.2, boys: 88.0, girls: 90.5 },
-];
+interface PeopleStats {
+  studentsCount: number;
+  teachersCount: number;
+  parentsCount: number;
+  staffCount: number;
+  classesCount: number;
+  totalRevenue: number;
+  pendingFees: number;
+  pendingFeePaymentsCount: number;
+  todayAttendancePercentage: number;
+  presentToday: number;
+  absentToday: number;
+  announcements: { id: string; title: string; publishedAt: string }[];
+}
 
-const MONTHLY_REVENUE = [
-  { month: 'Jan', collected: 245000, expected: 260000, expenses: 140000 },
-  { month: 'Feb', collected: 252000, expected: 260000, expenses: 145000 },
-  { month: 'Mar', collected: 268000, expected: 275000, expenses: 150000 },
-  { month: 'Apr', collected: 285000, expected: 290000, expenses: 155000 },
-  { month: 'May', collected: 295000, expected: 300000, expenses: 160000 },
-  { month: 'Jun', collected: 275000, expected: 300000, expenses: 158000 },
-  { month: 'Jul', collected: 310000, expected: 320000, expenses: 165000 },
-];
+interface FinanceSummary {
+  totalCollected: number;
+  totalExpected: number;
+  totalExpenses: number;
+  collectionRate: number;
+  monthlyBreakdown?: { month: string; collected: number; expected: number; expenses: number }[];
+  feeTypeBreakdown?: { name: string; value: number; color: string }[];
+}
 
-const FEE_BREAKDOWN = [
-  { name: 'Tuition Fees', value: 68, color: '#8b5cf6' },
-  { name: 'Transport', value: 16, color: '#3b82f6' },
-  { name: 'Lab & Library', value: 9, color: '#10b981' },
-  { name: 'Admission & Reg', value: 7, color: '#f59e0b' },
-];
+interface AttendanceSummary {
+  schoolId: string;
+  totalStudents: number;
+  presentToday: number;
+  absentToday: number;
+  attendanceRate: number;
+  weeklyTrend?: { name: string; rate: number; boys?: number; girls?: number }[];
+}
 
-const GRADE_DISTRIBUTION = [
-  { grade: 'A+ (90-100%)', count: 48, percentage: '29%' },
-  { grade: 'A (80-89%)', count: 56, percentage: '34%' },
-  { grade: 'B (70-79%)', count: 35, percentage: '21%' },
-  { grade: 'C (60-69%)', count: 18, percentage: '11%' },
-  { grade: 'D (50-59%)', count: 6, percentage: '4%' },
-  { grade: 'F (<50%)', count: 2, percentage: '1%' },
-];
+interface ClassRow {
+  id: string;
+  name: string;
+  sections?: { id: string; name: string; students?: unknown[] }[];
+}
 
-const CLASS_PERFORMANCE = [
-  { className: 'Class 10-A', avgMarks: 88.4, passRate: 98, attendance: 96 },
-  { className: 'Class 10-B', avgMarks: 84.1, passRate: 95, attendance: 93 },
-  { className: 'Class 9-A', avgMarks: 86.7, passRate: 96, attendance: 95 },
-  { className: 'Class 9-B', avgMarks: 79.8, passRate: 91, attendance: 91 },
-  { className: 'Class 8-A', avgMarks: 82.5, passRate: 94, attendance: 94 },
-  { className: 'Class 7-A', avgMarks: 85.0, passRate: 97, attendance: 96 },
-];
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const REPORT_TEMPLATES = [
-  { id: 'rep-1', title: 'Monthly Fee Realization & Dues Summary', category: 'Finance', type: 'Financial Ledger', records: '165 Students', updated: 'Today, 02:00 PM' },
-  { id: 'rep-2', title: 'Academic Term Examination Merit Matrix', category: 'Academics', type: 'Result Gazette', records: '6 Classes', updated: 'Yesterday' },
-  { id: 'rep-3', title: 'Student Attendance & Defaulter Audit', category: 'Attendance', type: 'Compliance', records: 'Daily Matrix', updated: 'Today, 09:00 AM' },
-  { id: 'rep-4', title: 'Faculty Workload & Staff Roster Report', category: 'Staff', type: 'HR Directory', records: '28 Faculty', updated: '3 days ago' },
-  { id: 'rep-5', title: 'Transport Route Occupancy & Fleet Safety', category: 'Operations', type: 'Logistics', records: '8 Routes', updated: 'Weekly' },
-];
+const money = (v: number) =>
+  `PKR ${Number(v || 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`;
+
+const pct = (v: number) => `${Number(v || 0).toFixed(1)}%`;
+
+const CHART_COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+const EmptyChart = ({ label }: { label: string }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[200px] gap-3 text-muted-foreground">
+    <CircleDashed size={28} className="opacity-40" />
+    <p className="text-xs font-semibold text-center">{label}</p>
+    <p className="text-[11px] opacity-60">Data will appear as records are added.</p>
+  </div>
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Reports() {
   const { user } = useAuth();
-  const schoolName = user?.schoolName || 'Edusphere Model School';
-  
-  const [activeTab, setActiveTab] = useState<'overview' | 'finance' | 'academic' | 'attendance' | 'exports'>('overview');
-  const [timeRange, setTimeRange] = useState<'month' | 'quarter' | 'session'>('month');
-  const [showPrintModal, setShowPrintModal] = useState(false);
+  const schoolName = user?.schoolName || 'Your School';
 
-  // Quick export function
+  const [activeTab, setActiveTab] = useState<'overview' | 'finance' | 'academic' | 'attendance' | 'exports'>('overview');
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Live state
+  const [stats, setStats] = useState<PeopleStats | null>(null);
+  const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(null);
+  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
+  const [classes, setClasses] = useState<ClassRow[]>([]);
+
+  // ─── Load Data ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [peopleRes, financeRes, attendanceRes, classesRes] = await Promise.allSettled([
+          apiClient.get<PeopleStats>('/people/stats'),
+          apiClient.get<FinanceSummary>('/finance/summary'),
+          apiClient.get<AttendanceSummary>('/attendance/summary'),
+          apiClient.get<ClassRow[]>('/classes'),
+        ]);
+
+        if (peopleRes.status === 'fulfilled') setStats(peopleRes.value.data);
+        if (financeRes.status === 'fulfilled') setFinanceSummary(financeRes.value.data);
+        if (attendanceRes.status === 'fulfilled') setAttendanceSummary(attendanceRes.value.data);
+        if (classesRes.status === 'fulfilled') {
+          const raw = classesRes.value.data;
+          setClasses(Array.isArray(raw) ? raw : []);
+        }
+      } catch (e) {
+        // Individual errors handled by allSettled
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
+  }, [user?.schoolId, refreshKey]);
+
+  // ─── Derived Data ──────────────────────────────────────────────────────────
+
+  const collectionRate = financeSummary
+    ? financeSummary.collectionRate ?? (
+        financeSummary.totalExpected > 0
+          ? (financeSummary.totalCollected / financeSummary.totalExpected) * 100
+          : 0
+      )
+    : 0;
+
+  // Build monthly breakdown chart data from finance summary or attendance
+  const revenueChartData = financeSummary?.monthlyBreakdown ?? [];
+  const attendanceTrend = attendanceSummary?.weeklyTrend ?? [];
+
+  // Classes performance matrix (use live class data: student counts per section)
+  const classPerformance = classes.slice(0, 8).map(cls => {
+    const totalStudents = cls.sections?.reduce((s, sec) => s + (sec.students?.length ?? 0), 0) ?? 0;
+    const sectionCount = cls.sections?.length ?? 0;
+    return {
+      className: cls.name,
+      sections: sectionCount,
+      students: totalStudents,
+    };
+  });
+
+  // Fee type breakdown
+  const feeBreakdown = financeSummary?.feeTypeBreakdown ?? [];
+
+  // ─── Export Helpers ─────────────────────────────────────────────────────────
+
   const handleExportCSV = (reportName: string) => {
-    const csvContent = `data:text/csv;charset=utf-8,Report Name: ${reportName}\nGenerated On: ${new Date().toLocaleString()}\nSchool: ${schoolName}\n\nMetric,Value\nTotal Enrollment,165\nAverage Attendance,95.2%\nRevenue Collected,Rs 310,000\nAcademic Pass Rate,96.4%`;
-    const encodedUri = encodeURI(csvContent);
+    const rows = [
+      ['Metric', 'Value'],
+      ['School', schoolName],
+      ['Generated', new Date().toLocaleString()],
+      ['Total Students', stats?.studentsCount ?? '—'],
+      ['Total Teachers', stats?.teachersCount ?? '—'],
+      ['Total Classes', stats?.classesCount ?? '—'],
+      ['Today Attendance', stats ? `${stats.todayAttendancePercentage}%` : '—'],
+      ['Fee Collected', money(stats?.totalRevenue ?? 0)],
+      ['Pending Fees', money(stats?.pendingFees ?? 0)],
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', encodeURI(csvContent));
     link.setAttribute('download', `${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`Exported "${reportName}" to CSV successfully!`);
+    toast.success(`Exported "${reportName}" to CSV`);
   };
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-7 max-w-screen-2xl mx-auto pb-12">
+
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
             <span className="text-[11px] font-black uppercase tracking-widest text-violet-400">
-              Executive Analytics & Business Intelligence
+              Executive Analytics &amp; Business Intelligence
             </span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">System Reports & Insights</h1>
+          <h1 className="text-3xl font-black text-foreground tracking-tight">System Reports &amp; Insights</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Real-time visual telemetry, financial ledgers, academic audits, and instant multi-format data exports.
+            Live telemetry, financial ledgers, academic audits, and instant data exports.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center bg-card border border-border p-1 rounded-xl shadow-sm text-xs font-bold">
-            {(['month', 'quarter', 'session'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setTimeRange(t)}
-                className={`px-3 py-1.5 rounded-lg transition-all capitalize ${
-                  timeRange === t ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t === 'month' ? 'This Month' : t === 'quarter' ? 'Quarter' : 'Full Session'}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setRefreshKey(k => k + 1)}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
 
           <button
             onClick={() => setShowPrintModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm"
           >
-            <Printer size={15} /> Print Executive Dossier
+            <Printer size={15} /> Print Dossier
           </button>
 
           <button
             onClick={() => handleExportCSV('Master_School_Report')}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:scale-105 transition-all"
           >
-            <Download size={16} /> Export Master CSV
+            <Download size={16} /> Export CSV
           </button>
         </div>
       </div>
 
-      {/* 2. Top Metric KPI Row */}
+      {/* 2. KPI Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        {/* Fee Collection */}
         <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
             <DollarSign size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Monthly Collection</p>
-            <p className="text-2xl font-black text-foreground">Rs 310K</p>
-            <p className="text-[10px] text-emerald-400 font-semibold mt-0.5 flex items-center gap-1">
-              <ArrowUpRight size={12} /> +12.4% vs last mo
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Fee Collected</p>
+            <p className="text-xl font-black text-foreground">
+              {loading ? '—' : money(stats?.totalRevenue ?? 0)}
             </p>
+            {stats?.totalRevenue ? (
+              <p className="text-[10px] text-emerald-400 font-semibold mt-0.5 flex items-center gap-1">
+                <ArrowUpRight size={12} /> Live finance data
+              </p>
+            ) : (
+              <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">No payments yet</p>
+            )}
           </div>
         </div>
 
+        {/* Attendance */}
         <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
             <TrendingUp size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Avg Attendance</p>
-            <p className="text-2xl font-black text-foreground">95.2%</p>
-            <p className="text-[10px] text-blue-400 font-semibold mt-0.5">High Stability</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Today Attendance</p>
+            <p className="text-xl font-black text-foreground">
+              {loading ? '—' : pct(stats?.todayAttendancePercentage ?? 0)}
+            </p>
+            <p className="text-[10px] text-blue-400 font-semibold mt-0.5">
+              {stats ? `${stats.presentToday} present · ${stats.absentToday} absent` : 'No records yet'}
+            </p>
           </div>
         </div>
 
+        {/* Pending Fees */}
         <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-            <Award size={20} />
+            <AlertTriangle size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Academic Pass Rate</p>
-            <p className="text-2xl font-black text-foreground">96.4%</p>
-            <p className="text-[10px] text-amber-400 font-semibold mt-0.5">Midterm Benchmark</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Pending Fees</p>
+            <p className="text-xl font-black text-foreground">
+              {loading ? '—' : money(stats?.pendingFees ?? 0)}
+            </p>
+            <p className="text-[10px] text-amber-400 font-semibold mt-0.5">
+              {stats?.pendingFeePaymentsCount ? `${stats.pendingFeePaymentsCount} invoices` : 'All clear'}
+            </p>
           </div>
         </div>
 
+        {/* Total Students */}
         <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center shrink-0">
             <Users size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Active Roster</p>
-            <p className="text-2xl font-black text-foreground">165</p>
-            <p className="text-[10px] text-violet-400 font-semibold mt-0.5">91% Seat Capacity</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Active Students</p>
+            <p className="text-xl font-black text-foreground">
+              {loading ? '—' : (stats?.studentsCount ?? 0)}
+            </p>
+            <p className="text-[10px] text-violet-400 font-semibold mt-0.5">
+              {stats?.classesCount ? `${stats.classesCount} classes` : 'No classes yet'}
+            </p>
           </div>
         </div>
       </div>
@@ -192,14 +296,14 @@ export default function Reports() {
           { id: 'finance', label: 'Financial Realization', icon: DollarSign },
           { id: 'academic', label: 'Academic & Grades', icon: Award },
           { id: 'attendance', label: 'Attendance Telemetry', icon: TrendingUp },
-          { id: 'exports', label: 'Report Generator & Exports', icon: Download },
+          { id: 'exports', label: 'Report Generator', icon: Download },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
@@ -215,6 +319,8 @@ export default function Reports() {
 
       {/* 4. Tab Contents */}
       <AnimatePresence mode="wait">
+
+        {/* ── OVERVIEW ─────────────────────────────────────────────────────── */}
         {activeTab === 'overview' && (
           <motion.div
             key="overview"
@@ -224,127 +330,165 @@ export default function Reports() {
             className="space-y-6"
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Revenue vs Expenses Chart */}
+
+              {/* Revenue Chart */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                      <DollarSign size={18} className="text-emerald-500" /> Revenue vs Operating Expenses
+                      <DollarSign size={18} className="text-emerald-500" /> Revenue vs Expenses
                     </h3>
-                    <p className="text-xs text-muted-foreground">Monthly cash flow and profit margins (PKR)</p>
+                    <p className="text-xs text-muted-foreground">Monthly cash flow (PKR)</p>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                    Net Surplus: +46%
-                  </span>
+                  {collectionRate > 0 && (
+                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                      {pct(collectionRate)} collected
+                    </span>
+                  )}
                 </div>
                 <div className="h-72 w-full text-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={MONTHLY_REVENUE}>
-                      <defs>
-                        <linearGradient id="colRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colExpenses" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v/1000}k`} />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                      <Area type="monotone" dataKey="collected" name="Fee Revenue" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colRevenue)" />
-                      <Area type="monotone" dataKey="expenses" name="Expenditures" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colExpenses)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  {revenueChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={revenueChartData}>
+                        <defs>
+                          <linearGradient id="colRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="colExpenses" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v / 1000}k`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                        <Area type="monotone" dataKey="collected" name="Fee Revenue" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colRevenue)" />
+                        <Area type="monotone" dataKey="expenses" name="Expenditures" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colExpenses)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <EmptyChart label="No monthly revenue data yet" />
+                  )}
                 </div>
               </div>
 
-              {/* Attendance Breakdown */}
+              {/* Attendance Trend */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                      <TrendingUp size={18} className="text-violet-500" /> Weekly Attendance Distribution
+                      <TrendingUp size={18} className="text-violet-500" /> Attendance Distribution
                     </h3>
-                    <p className="text-xs text-muted-foreground">Gender-wise daily attendance comparison</p>
+                    <p className="text-xs text-muted-foreground">Weekly attendance trend</p>
                   </div>
-                  <span className="text-xs font-bold text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">
-                    Average: 95.2%
-                  </span>
+                  {stats?.todayAttendancePercentage ? (
+                    <span className="text-xs font-bold text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">
+                      Today: {pct(stats.todayAttendancePercentage)}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="h-72 w-full text-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={ATTENDANCE_WEEKLY}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis domain={[80, 100]} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                      <Bar dataKey="boys" name="Boys Attendance %" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="girls" name="Girls Attendance %" fill="#ec4899" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {attendanceTrend.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={attendanceTrend}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                        <Bar dataKey="rate" name="Attendance %" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    // Show today's snapshot as a simple bar when no weekly trend
+                    stats && (stats.presentToday + stats.absentToday) > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[
+                          { name: 'Present', value: stats.presentToday },
+                          { name: 'Absent', value: stats.absentToday },
+                        ]}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                          <Bar dataKey="value" name="Students" fill="#8b5cf6" radius={[6, 6, 0, 0]}>
+                            <Cell fill="#10b981" />
+                            <Cell fill="#ef4444" />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <EmptyChart label="No attendance records yet" />
+                    )
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Performance Matrix Table */}
+            {/* Class Performance Matrix */}
             <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                    <GraduationCap size={18} className="text-primary" /> Grade-wise Performance Benchmarks
+                    <GraduationCap size={18} className="text-primary" /> Grade-wise Academic Overview
                   </h3>
-                  <p className="text-xs text-muted-foreground">Classroom comparative rankings and exam readiness</p>
+                  <p className="text-xs text-muted-foreground">Class roster and section enrollment</p>
                 </div>
                 <button
                   onClick={() => handleExportCSV('Class_Performance_Report')}
                   className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
                 >
-                  <Download size={13} /> Export Table
+                  <Download size={13} /> Export
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-border text-muted-foreground font-black uppercase text-[10px] tracking-wider">
-                      <th className="py-3 px-4">Class & Section</th>
-                      <th className="py-3 px-4">Average Exam Score</th>
-                      <th className="py-3 px-4">Pass Rate</th>
-                      <th className="py-3 px-4">Attendance Average</th>
-                      <th className="py-3 px-4 text-right">Academic Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {CLASS_PERFORMANCE.map(c => (
-                      <tr key={c.className} className="hover:bg-accent/20 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-foreground">{c.className}</td>
-                        <td className="py-3.5 px-4 font-mono font-bold text-foreground">{c.avgMarks}%</td>
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
-                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${c.passRate}%` }} />
-                            </div>
-                            <span className="font-bold text-emerald-400">{c.passRate}%</span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-muted-foreground">{c.attendance}%</td>
-                        <td className="py-3.5 px-4 text-right">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Exemplary
-                          </span>
-                        </td>
+              {classPerformance.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground font-black uppercase text-[10px] tracking-wider">
+                        <th className="py-3 px-4">Class</th>
+                        <th className="py-3 px-4">Sections</th>
+                        <th className="py-3 px-4">Enrolled Students</th>
+                        <th className="py-3 px-4 text-right">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {classPerformance.map(c => (
+                        <tr key={c.className} className="hover:bg-accent/20 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-foreground">{c.className}</td>
+                          <td className="py-3.5 px-4 font-mono text-muted-foreground">{c.sections}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+                                <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(c.students * 3, 100)}%` }} />
+                              </div>
+                              <span className="font-bold text-foreground">{c.students}</span>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Active
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+                  <CircleDashed size={28} className="opacity-40" />
+                  <p className="text-xs font-semibold">No classes found</p>
+                  <p className="text-[11px] opacity-60">Add classes to see academic overview.</p>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
 
+        {/* ── FINANCE ──────────────────────────────────────────────────────── */}
         {activeTab === 'finance' && (
           <motion.div
             key="finance"
@@ -353,70 +497,123 @@ export default function Reports() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                {
+                  label: 'Total Collected',
+                  value: money(financeSummary?.totalCollected ?? stats?.totalRevenue ?? 0),
+                  color: 'text-emerald-400',
+                  bg: 'bg-emerald-500/10 border-emerald-500/20',
+                  icon: CheckCircle,
+                },
+                {
+                  label: 'Total Expected',
+                  value: money(financeSummary?.totalExpected ?? 0),
+                  color: 'text-blue-400',
+                  bg: 'bg-blue-500/10 border-blue-500/20',
+                  icon: Layers,
+                },
+                {
+                  label: 'Pending Collection',
+                  value: money(stats?.pendingFees ?? 0),
+                  color: 'text-amber-400',
+                  bg: 'bg-amber-500/10 border-amber-500/20',
+                  icon: AlertTriangle,
+                },
+              ].map(card => {
+                const Icon = card.icon;
+                return (
+                  <div key={card.label} className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                    <div className={`h-12 w-12 rounded-2xl ${card.bg} border flex items-center justify-center shrink-0 ${card.color}`}>
+                      <Icon size={22} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                      <p className="text-lg font-black text-foreground">{loading ? '—' : card.value}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Fee Streams Donut */}
+              {/* Fee Breakdown Donut */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm flex flex-col justify-between">
                 <div>
                   <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
-                    <DollarSign size={18} className="text-emerald-500" /> Revenue Stream Composition
+                    <DollarSign size={18} className="text-emerald-500" /> Revenue Streams
                   </h3>
-                  <p className="text-xs text-muted-foreground mb-4">Percentage breakdown by billing type</p>
+                  <p className="text-xs text-muted-foreground mb-4">Fee type composition</p>
                 </div>
                 <div className="h-56 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={FEE_BREAKDOWN} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
-                        {FEE_BREAKDOWN.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {feeBreakdown.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={feeBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
+                          {feeBreakdown.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color ?? CHART_COLORS[index % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <EmptyChart label="No fee breakdown data yet" />
+                  )}
                 </div>
-                <div className="space-y-2 pt-2 border-t border-border">
-                  {FEE_BREAKDOWN.map(item => (
-                    <div key={item.name} className="flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                        {item.name}
-                      </span>
-                      <span className="font-black text-foreground font-mono">{item.value}%</span>
-                    </div>
-                  ))}
-                </div>
+                {feeBreakdown.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    {feeBreakdown.map((item, i) => (
+                      <div key={item.name} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color ?? CHART_COLORS[i % CHART_COLORS.length] }} />
+                          {item.name}
+                        </span>
+                        <span className="font-black text-foreground font-mono">{item.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Monthly Realization Trend */}
+              {/* Monthly Realization Chart */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm lg:col-span-2">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                      <TrendingUp size={18} className="text-primary" /> Target vs Actual Fee Realization
+                      <TrendingUp size={18} className="text-primary" /> Target vs Actual Realization
                     </h3>
-                    <p className="text-xs text-muted-foreground">Expected revenue invoices vs settled student dues</p>
+                    <p className="text-xs text-muted-foreground">Expected invoices vs settled dues</p>
                   </div>
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-                    96.8% Collection Index
-                  </span>
+                  {collectionRate > 0 && (
+                    <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                      {pct(collectionRate)} Index
+                    </span>
+                  )}
                 </div>
                 <div className="h-72 w-full text-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={MONTHLY_REVENUE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v/1000}k`} />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                      <Bar dataKey="expected" name="Expected Dues (PKR)" fill="#64748b" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="collected" name="Settled Collections (PKR)" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {revenueChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={revenueChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v / 1000}k`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                        <Bar dataKey="expected" name="Expected (PKR)" fill="#64748b" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="collected" name="Collected (PKR)" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <EmptyChart label="No monthly breakdown available" />
+                  )}
                 </div>
               </div>
             </div>
           </motion.div>
         )}
 
+        {/* ── ACADEMIC ─────────────────────────────────────────────────────── */}
         {activeTab === 'academic' && (
           <motion.div
             key="academic"
@@ -426,50 +623,82 @@ export default function Reports() {
             className="space-y-6"
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Grade Bell Curve */}
+              {/* Class Enrollment Chart */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
                 <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
-                  <Award size={18} className="text-amber-400" /> Exam Grade Distribution
+                  <GraduationCap size={18} className="text-primary" /> Class Enrollment Distribution
                 </h3>
-                <p className="text-xs text-muted-foreground mb-6">Student performance curve across latest examinations</p>
+                <p className="text-xs text-muted-foreground mb-6">Students enrolled per class</p>
                 <div className="h-64 w-full text-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={GRADE_DISTRIBUTION}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                      <XAxis dataKey="grade" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                      <Bar dataKey="count" name="Total Students" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
-                        {GRADE_DISTRIBUTION.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : index === 1 ? '#8b5cf6' : index === 2 ? '#3b82f6' : '#f59e0b'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {classPerformance.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={classPerformance}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis dataKey="className" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                        <Bar dataKey="students" name="Students" radius={[8, 8, 0, 0]}>
+                          {classPerformance.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <EmptyChart label="No class data yet" />
+                  )}
                 </div>
               </div>
 
-              {/* Subject Proficiency Matrix */}
+              {/* School Summary Panel */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
                 <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
-                  <BookOpen size={18} className="text-violet-500" /> Key Subject Proficiency Index
+                  <Sparkles size={18} className="text-violet-500" /> School Snapshot
                 </h3>
-                <p className="text-xs text-muted-foreground mb-5">Average student mastery across core curriculum</p>
-                <div className="space-y-4 text-xs">
+                <p className="text-xs text-muted-foreground mb-5">Live institutional metrics</p>
+                <div className="space-y-5">
                   {[
-                    { subject: 'Mathematics & Algebra', score: 88, color: 'bg-violet-500' },
-                    { subject: 'Physics & Applied Mechanics', score: 84, color: 'bg-blue-500' },
-                    { subject: 'Chemistry & Lab Work', score: 81, color: 'bg-emerald-500' },
-                    { subject: 'Computer Science & Python', score: 92, color: 'bg-indigo-500' },
-                    { subject: 'English Literature & Grammar', score: 86, color: 'bg-pink-500' },
-                  ].map(sub => (
-                    <div key={sub.subject} className="space-y-1.5">
+                    {
+                      label: 'Total Students',
+                      value: stats?.studentsCount ?? 0,
+                      max: Math.max(stats?.studentsCount ?? 1, 1),
+                      color: 'bg-violet-500',
+                    },
+                    {
+                      label: 'Total Teachers',
+                      value: stats?.teachersCount ?? 0,
+                      max: Math.max(stats?.studentsCount ?? 1, 1),
+                      color: 'bg-blue-500',
+                    },
+                    {
+                      label: 'Total Staff',
+                      value: stats?.staffCount ?? 0,
+                      max: Math.max(stats?.studentsCount ?? 1, 1),
+                      color: 'bg-emerald-500',
+                    },
+                    {
+                      label: 'Total Parents',
+                      value: stats?.parentsCount ?? 0,
+                      max: Math.max(stats?.studentsCount ?? 1, 1),
+                      color: 'bg-pink-500',
+                    },
+                    {
+                      label: 'Total Classes',
+                      value: stats?.classesCount ?? 0,
+                      max: Math.max(stats?.classesCount ?? 1, 1),
+                      color: 'bg-amber-500',
+                    },
+                  ].map(row => (
+                    <div key={row.label} className="space-y-1.5 text-xs">
                       <div className="flex justify-between font-bold">
-                        <span className="text-foreground">{sub.subject}</span>
-                        <span className="font-mono text-primary">{sub.score}% Mastery</span>
+                        <span className="text-foreground">{row.label}</span>
+                        <span className="font-mono text-primary">{loading ? '—' : row.value}</span>
                       </div>
                       <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                        <div className={`h-full ${sub.color} rounded-full`} style={{ width: `${sub.score}%` }} />
+                        <div
+                          className={`h-full ${row.color} rounded-full transition-all duration-700`}
+                          style={{ width: `${row.max > 0 ? Math.min((row.value / row.max) * 100, 100) : 0}%` }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -479,6 +708,7 @@ export default function Reports() {
           </motion.div>
         )}
 
+        {/* ── ATTENDANCE ───────────────────────────────────────────────────── */}
         {activeTab === 'attendance' && (
           <motion.div
             key="attendance"
@@ -487,26 +717,83 @@ export default function Reports() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                {
+                  label: 'Total Students',
+                  value: attendanceSummary?.totalStudents ?? stats?.studentsCount ?? 0,
+                  color: 'text-violet-400',
+                  bg: 'bg-violet-500/10 border-violet-500/20',
+                },
+                {
+                  label: 'Present Today',
+                  value: attendanceSummary?.presentToday ?? stats?.presentToday ?? 0,
+                  color: 'text-emerald-400',
+                  bg: 'bg-emerald-500/10 border-emerald-500/20',
+                },
+                {
+                  label: 'Absent Today',
+                  value: attendanceSummary?.absentToday ?? stats?.absentToday ?? 0,
+                  color: 'text-red-400',
+                  bg: 'bg-red-500/10 border-red-500/20',
+                },
+                {
+                  label: 'Attendance Rate',
+                  value: pct(attendanceSummary?.attendanceRate ?? stats?.todayAttendancePercentage ?? 0),
+                  color: 'text-blue-400',
+                  bg: 'bg-blue-500/10 border-blue-500/20',
+                },
+              ].map(card => (
+                <div key={card.label} className={`bg-card border rounded-2xl p-5 shadow-sm ${card.bg.split(' ')[1]}`}>
+                  <p className={`text-[11px] font-bold uppercase tracking-wider ${card.color} mb-1`}>{card.label}</p>
+                  <p className="text-2xl font-black text-foreground">{loading ? '—' : card.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Attendance Line Chart */}
             <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
               <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
-                <TrendingUp size={18} className="text-blue-500" /> Daily School Attendance Trend (Last 7 Days)
+                <TrendingUp size={18} className="text-blue-500" /> Daily Attendance Trend
               </h3>
-              <p className="text-xs text-muted-foreground mb-6">Percentage of active students present in morning assembly</p>
+              <p className="text-xs text-muted-foreground mb-6">Weekly attendance percentage</p>
               <div className="h-80 w-full text-xs">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={ATTENDANCE_WEEKLY}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis domain={[80, 100]} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
-                    <Line type="monotone" dataKey="rate" name="Overall Rate %" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {attendanceTrend.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={attendanceTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                      <Line type="monotone" dataKey="rate" name="Attendance %" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (stats && (stats.presentToday + stats.absentToday) > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[
+                      { name: 'Present', value: stats.presentToday },
+                      { name: 'Absent', value: stats.absentToday },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }} />
+                      <Bar dataKey="value" name="Students" radius={[6, 6, 0, 0]}>
+                        <Cell fill="#10b981" />
+                        <Cell fill="#ef4444" />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <EmptyChart label="No attendance records yet. Mark attendance to see the trend." />
+                ))}
               </div>
             </div>
           </motion.div>
         )}
 
+        {/* ── EXPORTS ──────────────────────────────────────────────────────── */}
         {activeTab === 'exports' && (
           <motion.div
             key="exports"
@@ -516,23 +803,63 @@ export default function Reports() {
             className="space-y-6"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {REPORT_TEMPLATES.map(rep => (
-                <div key={rep.id} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/40 transition-all flex flex-col justify-between gap-4 shadow-sm">
+              {[
+                {
+                  id: 'rpt-1',
+                  title: 'Student Enrollment & Roster',
+                  category: 'Academic',
+                  description: `${stats?.studentsCount ?? 0} students across ${stats?.classesCount ?? 0} classes`,
+                },
+                {
+                  id: 'rpt-2',
+                  title: 'Fee Collection Ledger',
+                  category: 'Finance',
+                  description: `Collected ${money(stats?.totalRevenue ?? 0)} · Pending ${money(stats?.pendingFees ?? 0)}`,
+                },
+                {
+                  id: 'rpt-3',
+                  title: 'Attendance Summary Report',
+                  category: 'Attendance',
+                  description: `Today: ${stats?.presentToday ?? 0} present, ${stats?.absentToday ?? 0} absent`,
+                },
+                {
+                  id: 'rpt-4',
+                  title: 'Faculty & Staff Directory',
+                  category: 'HR',
+                  description: `${stats?.teachersCount ?? 0} teachers · ${stats?.staffCount ?? 0} staff members`,
+                },
+                {
+                  id: 'rpt-5',
+                  title: 'Parent & Guardian Registry',
+                  category: 'Admin',
+                  description: `${stats?.parentsCount ?? 0} registered parents`,
+                },
+                {
+                  id: 'rpt-6',
+                  title: 'Full School Analytics Export',
+                  category: 'Master',
+                  description: 'All metrics combined in one master CSV',
+                },
+              ].map(rep => (
+                <div
+                  key={rep.id}
+                  className="bg-card border border-border rounded-2xl p-5 hover:border-primary/40 transition-all flex flex-col justify-between gap-4 shadow-sm"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                         {rep.category}
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground">{rep.updated}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground">Live data</span>
                     </div>
                     <h4 className="font-extrabold text-sm text-foreground mb-1">{rep.title}</h4>
-                    <p className="text-xs text-muted-foreground">{rep.type} · {rep.records}</p>
+                    <p className="text-xs text-muted-foreground">{rep.description}</p>
                   </div>
 
                   <div className="flex gap-2 pt-2 border-t border-border">
                     <button
                       onClick={() => handleExportCSV(rep.title)}
-                      className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-sm hover:scale-102 transition-all flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
                     >
                       <Download size={13} /> Export CSV
                     </button>
@@ -551,99 +878,103 @@ export default function Reports() {
         )}
       </AnimatePresence>
 
-      {/* 5. Print Modal (Executive Dossier Preview) */}
+      {/* 5. Print Modal */}
       <Modal isOpen={showPrintModal} onClose={() => setShowPrintModal(false)} maxWidth="max-w-2xl">
         <div className="bg-white text-slate-900 rounded-3xl p-8">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-6">
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">{schoolName}</h2>
-                  <p className="text-xs text-slate-600 font-semibold mt-0.5">EXECUTIVE PERFORMANCE AUDIT & AUDIT DOSSIER</p>
-                </div>
-                <button onClick={() => setShowPrintModal(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600">
-                  <X size={20} />
-                </button>
-              </div>
+          <div className="flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-6">
+            <div>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">{schoolName}</h2>
+              <p className="text-xs text-slate-600 font-semibold mt-0.5">EXECUTIVE PERFORMANCE DOSSIER</p>
+            </div>
+            <button onClick={() => setShowPrintModal(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600">
+              <X size={20} />
+            </button>
+          </div>
 
-              {/* Metadata */}
-              <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-100 mb-6 text-xs">
-                <div>
-                  <span className="block text-slate-500 font-bold uppercase text-[10px]">Reporting Period</span>
-                  <strong className="text-slate-900">Academic Term Fall 2026</strong>
-                </div>
-                <div>
-                  <span className="block text-slate-500 font-bold uppercase text-[10px]">Generated Date</span>
-                  <strong className="text-slate-900">{new Date().toLocaleDateString('en-PK')}</strong>
-                </div>
-                <div>
-                  <span className="block text-slate-500 font-bold uppercase text-[10px]">Security Status</span>
-                  <strong className="text-emerald-700">Official Certified</strong>
-                </div>
-              </div>
+          <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-100 mb-6 text-xs">
+            <div>
+              <span className="block text-slate-500 font-bold uppercase text-[10px]">Generated</span>
+              <strong className="text-slate-900">{new Date().toLocaleDateString('en-PK')}</strong>
+            </div>
+            <div>
+              <span className="block text-slate-500 font-bold uppercase text-[10px]">Total Students</span>
+              <strong className="text-slate-900">{stats?.studentsCount ?? '—'}</strong>
+            </div>
+            <div>
+              <span className="block text-slate-500 font-bold uppercase text-[10px]">Status</span>
+              <strong className="text-emerald-700">Live Data</strong>
+            </div>
+          </div>
 
-              {/* Table */}
-              <table className="w-full text-left text-xs mb-6 border border-slate-200">
-                <thead className="bg-slate-900 text-white font-bold">
-                  <tr>
-                    <th className="p-2.5">Key Performance Indicator</th>
-                    <th className="p-2.5 text-right">Achieved Metric</th>
-                    <th className="p-2.5 text-right">Target Benchmark</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  <tr>
-                    <td className="p-2.5 font-bold">Student Enrollment</td>
-                    <td className="p-2.5 text-right font-mono font-bold">165 Active</td>
-                    <td className="p-2.5 text-right text-slate-500 font-mono">180 Capacity</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2.5 font-bold">Average Daily Attendance</td>
-                    <td className="p-2.5 text-right font-mono font-bold text-emerald-700">95.2%</td>
-                    <td className="p-2.5 text-right text-slate-500 font-mono">90.0% Minimum</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2.5 font-bold">Fee Collection Realization</td>
-                    <td className="p-2.5 text-right font-mono font-bold text-emerald-700">Rs 310,000</td>
-                    <td className="p-2.5 text-right text-slate-500 font-mono">Rs 320,000 Target</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2.5 font-bold">Midterm Academic Pass Index</td>
-                    <td className="p-2.5 text-right font-mono font-bold text-emerald-700">96.4%</td>
-                    <td className="p-2.5 text-right text-slate-500 font-mono">92.0% Standard</td>
-                  </tr>
-                </tbody>
-              </table>
+          <table className="w-full text-left text-xs mb-6 border border-slate-200">
+            <thead className="bg-slate-900 text-white font-bold">
+              <tr>
+                <th className="p-2.5">Key Performance Indicator</th>
+                <th className="p-2.5 text-right">Achieved Metric</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              <tr>
+                <td className="p-2.5 font-bold">Student Enrollment</td>
+                <td className="p-2.5 text-right font-mono font-bold">{stats?.studentsCount ?? '—'} Active</td>
+              </tr>
+              <tr>
+                <td className="p-2.5 font-bold">Today Attendance Rate</td>
+                <td className="p-2.5 text-right font-mono font-bold text-emerald-700">
+                  {stats?.todayAttendancePercentage ? pct(stats.todayAttendancePercentage) : '—'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2.5 font-bold">Fee Collection</td>
+                <td className="p-2.5 text-right font-mono font-bold text-emerald-700">
+                  {money(stats?.totalRevenue ?? 0)}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2.5 font-bold">Pending Fees</td>
+                <td className="p-2.5 text-right font-mono font-bold text-amber-700">
+                  {money(stats?.pendingFees ?? 0)}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2.5 font-bold">Total Teachers</td>
+                <td className="p-2.5 text-right font-mono font-bold">{stats?.teachersCount ?? '—'}</td>
+              </tr>
+              <tr>
+                <td className="p-2.5 font-bold">Total Classes</td>
+                <td className="p-2.5 text-right font-mono font-bold">{stats?.classesCount ?? '—'}</td>
+              </tr>
+            </tbody>
+          </table>
 
-              {/* Signatures */}
-              <div className="flex justify-between items-end pt-12 text-xs border-t border-slate-200">
-                <div className="text-center">
-                  <div className="w-40 border-b border-slate-400 mb-1" />
-                  <span className="text-slate-600 font-bold uppercase text-[10px]">Academic Coordinator</span>
-                </div>
-                <div className="text-center">
-                  <div className="w-40 border-b border-slate-400 mb-1" />
-                  <span className="text-slate-600 font-bold uppercase text-[10px]">Principal Signature & Stamp</span>
-                </div>
-              </div>
+          <div className="flex justify-between items-end pt-12 text-xs border-t border-slate-200">
+            <div className="text-center">
+              <div className="w-40 border-b border-slate-400 mb-1" />
+              <span className="text-slate-600 font-bold uppercase text-[10px]">Academic Coordinator</span>
+            </div>
+            <div className="text-center">
+              <div className="w-40 border-b border-slate-400 mb-1" />
+              <span className="text-slate-600 font-bold uppercase text-[10px]">Principal &amp; Stamp</span>
+            </div>
+          </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-200">
-                <button
-                  onClick={() => setShowPrintModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100"
-                >
-                  Close Preview
-                </button>
-                <button
-                  onClick={() => {
-                    window.print();
-                    toast.success('Printing executive dossier...');
-                  }}
-                  className="px-6 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-lg hover:bg-slate-800 flex items-center gap-2"
-                >
-                  <Printer size={15} /> Print Now
-                </button>
-              </div>
+          <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-200">
+            <button
+              onClick={() => setShowPrintModal(false)}
+              className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                window.print();
+                toast.success('Printing executive dossier…');
+              }}
+              className="px-6 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-lg hover:bg-slate-800 flex items-center gap-2"
+            >
+              <Printer size={15} /> Print Now
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

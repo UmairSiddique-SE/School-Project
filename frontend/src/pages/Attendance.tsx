@@ -5,7 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import {
   CheckCircle, XCircle, Clock, Calendar, Users, Save, Download, Search,
   ChevronLeft, ChevronRight, AlertCircle, CheckSquare, XSquare, Timer,
-  FileText, RotateCcw, X, ShieldCheck, RefreshCw, Printer, Sparkles
+  FileText, RotateCcw, X, ShieldCheck, RefreshCw, Printer, Sparkles,
+  BookOpen, Plus
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
@@ -65,29 +66,6 @@ const STATUS_OPTIONS = [
   },
 ];
 
-const MOCK_CLASSES: ClassSection[] = [
-  { id: 'sec-1', name: 'Section A (Alpha)', classId: 'cls-10', className: 'Class 10', totalStudents: 45 },
-  { id: 'sec-2', name: 'Section B (Beta)', classId: 'cls-10', className: 'Class 10', totalStudents: 42 },
-  { id: 'sec-3', name: 'Section C (Gamma)', classId: 'cls-10', className: 'Class 10', totalStudents: 40 },
-  { id: 'sec-4', name: 'Section A (Alpha)', classId: 'cls-9', className: 'Class 9', totalStudents: 38 },
-  { id: 'sec-5', name: 'Section B (Beta)', classId: 'cls-9', className: 'Class 9', totalStudents: 36 },
-];
-
-const MOCK_STUDENTS: Student[] = [
-  { id: 'st-1', name: 'Aarav Sharma', rollNo: '01', admissionNo: 'STD001', sectionId: 'sec-1' },
-  { id: 'st-2', name: 'Ayesha Siddiqui', rollNo: '02', admissionNo: 'STD002', sectionId: 'sec-1' },
-  { id: 'st-3', name: 'Bilal Hussain', rollNo: '03', admissionNo: 'STD003', sectionId: 'sec-1' },
-  { id: 'st-4', name: 'Fatima Noor', rollNo: '04', admissionNo: 'STD004', sectionId: 'sec-1' },
-  { id: 'st-5', name: 'Hamza Tariq', rollNo: '05', admissionNo: 'STD005', sectionId: 'sec-1' },
-  { id: 'st-6', name: 'Zoya Khan', rollNo: '06', admissionNo: 'STD006', sectionId: 'sec-1' },
-  { id: 'st-7', name: 'Daniyal Khan', rollNo: '07', admissionNo: 'STD007', sectionId: 'sec-1' },
-  { id: 'st-8', name: 'Maham Ali', rollNo: '08', admissionNo: 'STD008', sectionId: 'sec-1' },
-  { id: 'st-9', name: 'Usman Farooq', rollNo: '09', admissionNo: 'STD009', sectionId: 'sec-1' },
-  { id: 'st-10', name: 'Sana Malik', rollNo: '10', admissionNo: 'STD010', sectionId: 'sec-1' },
-  { id: 'st-11', name: 'Rohan Mehmood', rollNo: '11', admissionNo: 'STD011', sectionId: 'sec-1' },
-  { id: 'st-12', name: 'Sara Qasim', rollNo: '12', admissionNo: 'STD012', sectionId: 'sec-1' },
-];
-
 export default function Attendance() {
   const { user } = useAuth();
   const schoolSlug = user?.schoolSlug || 'demo';
@@ -95,13 +73,14 @@ export default function Attendance() {
   const [searchParams] = useSearchParams();
   const sectionIdParam = searchParams.get('sectionId');
 
-  const [classes, setClasses] = useState<ClassSection[]>(MOCK_CLASSES);
+  const [classes, setClasses] = useState<ClassSection[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
   const [loading, setLoading] = useState(false);
+  const [classesLoading, setClassesLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [selectedClass, setSelectedClass] = useState<string>(sectionIdParam || 'sec-1');
+  const [selectedClass, setSelectedClass] = useState<string>(sectionIdParam || '');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -109,45 +88,48 @@ export default function Attendance() {
   const [remarksText, setRemarksText] = useState('');
 
   // Fetch real classes from API
-  useEffect(() => {
-    apiClient
-      .get('/classes')
-      .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        const extracted: ClassSection[] = [];
-        data.forEach((c: any) => {
-          if (Array.isArray(c.sections)) {
-            c.sections.forEach((s: any) => {
-              extracted.push({
-                id: s.id,
-                name: s.name,
-                classId: c.id,
-                className: c.name,
-                totalStudents: s.enrolledCount || s.students?.length || 35,
-              });
+  const fetchClasses = async () => {
+    setClassesLoading(true);
+    try {
+      const res = await apiClient.get('/classes');
+      const data = Array.isArray(res.data) ? res.data : [];
+      const extracted: ClassSection[] = [];
+      data.forEach((c: any) => {
+        if (Array.isArray(c.sections)) {
+          c.sections.forEach((s: any) => {
+            extracted.push({
+              id: s.id,
+              name: s.name,
+              classId: c.id,
+              className: c.name,
+              totalStudents: s.enrolledCount || s.students?.length || 0,
             });
-          }
-        });
-        if (extracted.length > 0) {
-          setClasses(extracted);
-          if (!sectionIdParam && !extracted.some((s) => s.id === selectedClass)) {
-            setSelectedClass(extracted[0].id);
-          }
+          });
         }
-      })
-      .catch(() => {
-        // Fallback to mock classes
       });
+      setClasses(extracted);
+      if (extracted.length > 0) {
+        if (!selectedClass || !extracted.some((s) => s.id === selectedClass)) {
+          setSelectedClass(sectionIdParam || extracted[0].id);
+        }
+      }
+    } catch (err) {
+      setClasses([]);
+    } finally {
+      setClassesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchClasses();
   }, [sectionIdParam]);
 
   const loadStudentsForClass = async (sectionId: string) => {
+    if (!sectionId) return;
     setLoading(true);
     try {
       const res = await apiClient.get(`/attendance/section/${sectionId}?date=${selectedDate}`);
-      const studentsData = Array.isArray(res.data?.students)
-        ? res.data.students
-        : MOCK_STUDENTS.filter((s) => s.sectionId === sectionId || sectionId.startsWith('sec-'));
-
+      const studentsData: Student[] = Array.isArray(res.data?.students) ? res.data.students : [];
       setStudents(studentsData);
 
       const initialAttendance: Record<string, AttendanceRecord> = {};
@@ -161,17 +143,8 @@ export default function Attendance() {
       });
       setAttendance(initialAttendance);
     } catch {
-      const mockStudents = MOCK_STUDENTS.filter((s) => s.sectionId === sectionId || sectionId.startsWith('sec-'));
-      setStudents(mockStudents);
-      const initialAttendance: Record<string, AttendanceRecord> = {};
-      mockStudents.forEach((student) => {
-        initialAttendance[student.id] = {
-          studentId: student.id,
-          status: 'PRESENT',
-          remarks: '',
-        };
-      });
-      setAttendance(initialAttendance);
+      setStudents([]);
+      setAttendance({});
     } finally {
       setLoading(false);
     }
@@ -206,6 +179,14 @@ export default function Attendance() {
   };
 
   const handleSave = async () => {
+    if (!selectedClass) {
+      toast.error('Please select a class section first');
+      return;
+    }
+    if (students.length === 0) {
+      toast.error('No students in this section to save attendance for');
+      return;
+    }
     setSaving(true);
     try {
       const records = Object.values(attendance);
@@ -260,8 +241,8 @@ export default function Attendance() {
       (s) =>
         !q ||
         s.name.toLowerCase().includes(q) ||
-        s.rollNo.toLowerCase().includes(q) ||
-        s.admissionNo.toLowerCase().includes(q)
+        s.rollNo?.toLowerCase().includes(q) ||
+        s.admissionNo?.toLowerCase().includes(q)
     );
   }, [students, searchQuery]);
 
@@ -271,7 +252,7 @@ export default function Attendance() {
     const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = filteredStudents.map((s) => {
       const rec = attendance[s.id] || { status: 'PRESENT', remarks: '' };
-      return [s.rollNo, s.name, s.admissionNo, rec.status, rec.remarks || ''].map(escape).join(',');
+      return [s.rollNo || '', s.name, s.admissionNo || '', rec.status, rec.remarks || ''].map(escape).join(',');
     });
     const csv = ['Roll No,Student Name,Admission No,Status,Remarks', ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -294,7 +275,7 @@ export default function Attendance() {
               <ShieldCheck size={12} /> Live Roll Call
             </span>
             <span className="text-xs text-muted-foreground">
-              • {selectedClassData ? `${selectedClassData.className} — ${selectedClassData.name}` : 'Section'}
+              {selectedClassData ? `• ${selectedClassData.className} — ${selectedClassData.name}` : ''}
             </span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight">Attendance Center</h1>
@@ -304,29 +285,33 @@ export default function Attendance() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={() => handleBulkStatus('PRESENT')}
-            className="px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all active:scale-95"
-          >
-            <CheckSquare size={14} /> All Present
-          </button>
-          <button
-            onClick={() => handleBulkStatus('ABSENT')}
-            className="px-3.5 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 text-xs font-bold flex items-center gap-1.5 hover:bg-rose-500/20 transition-all active:scale-95"
-          >
-            <XSquare size={14} /> All Absent
-          </button>
-          <button
-            onClick={exportCsv}
-            disabled={!filteredStudents.length}
-            className="px-3.5 py-2 rounded-xl border border-border bg-card text-foreground text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all active:scale-95"
-          >
-            <Download size={14} /> Export CSV
-          </button>
+          {students.length > 0 && (
+            <>
+              <button
+                onClick={() => handleBulkStatus('PRESENT')}
+                className="px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all active:scale-95"
+              >
+                <CheckSquare size={14} /> All Present
+              </button>
+              <button
+                onClick={() => handleBulkStatus('ABSENT')}
+                className="px-3.5 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 text-xs font-bold flex items-center gap-1.5 hover:bg-rose-500/20 transition-all active:scale-95"
+              >
+                <XSquare size={14} /> All Absent
+              </button>
+              <button
+                onClick={exportCsv}
+                className="px-3.5 py-2 rounded-xl border border-border bg-card text-foreground text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all active:scale-95"
+              >
+                <Download size={14} /> Export CSV
+              </button>
+            </>
+          )}
+
           <button
             onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 transition-all active:scale-95 disabled:opacity-60"
+            disabled={saving || students.length === 0}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 transition-all active:scale-95 disabled:opacity-50"
           >
             {saving ? <Clock size={15} className="animate-spin" /> : <Save size={15} />}
             {saving ? 'Saving...' : 'Save Attendance'}
@@ -342,7 +327,7 @@ export default function Attendance() {
             <Users size={16} className="text-primary" />
           </div>
           <p className="mt-2.5 text-2xl font-black text-foreground">{stats.total}</p>
-          <span className="text-[11px] text-muted-foreground font-semibold">Active roster</span>
+          <span className="text-[11px] text-muted-foreground font-semibold">In this section</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
@@ -386,17 +371,26 @@ export default function Attendance() {
       <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {/* Section dropdown */}
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-xs font-bold outline-none focus:border-primary"
-          >
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.className} — {c.name} ({c.totalStudents} students)
-              </option>
-            ))}
-          </select>
+          {classes.length > 0 ? (
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-xs font-bold outline-none focus:border-primary"
+            >
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.className} — {c.name} ({c.totalStudents} students)
+                </option>
+              ))}
+            </select>
+          ) : (
+            <button
+              onClick={() => navigate(`/${schoolSlug}/classes`)}
+              className="px-3 py-1.5 rounded-xl border border-dashed border-primary text-primary text-xs font-bold flex items-center gap-1.5"
+            >
+              <Plus size={14} /> Create Section in Classes
+            </button>
+          )}
 
           {/* Date Selector with Next / Prev */}
           <div className="flex items-center gap-1 bg-background border border-border rounded-xl p-1">
@@ -443,19 +437,45 @@ export default function Attendance() {
         </div>
       </div>
 
-      {/* ─── Student Roll Call Table ──────────────────────────────────────────── */}
-      {loading ? (
+      {/* ─── Student Roll Call Table or Empty State ────────────────────────────── */}
+      {classesLoading || loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Clock size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Loading class roster...</p>
+          <p className="text-xs text-muted-foreground font-semibold">Loading class roster from database...</p>
         </div>
-      ) : filteredStudents.length === 0 ? (
+      ) : classes.length === 0 ? (
+        <div className="py-20 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
+          <BookOpen size={46} className="mx-auto text-muted-foreground/30 mb-3" />
+          <h3 className="font-bold text-lg text-foreground">No Academic Classes Found</h3>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+            Your school database does not have any classes or sections registered yet. Create your first academic class to start recording attendance.
+          </p>
+          <button
+            onClick={() => navigate(`/${schoolSlug}/classes`)}
+            className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1.5"
+          >
+            <Plus size={14} /> Setup Classes & Sections
+          </button>
+        </div>
+      ) : students.length === 0 ? (
         <div className="py-20 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
           <Users size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-          <h3 className="font-bold text-lg text-foreground">No Students Found</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            No students found matching your search in this section.
+          <h3 className="font-bold text-lg text-foreground">No Students in this Section</h3>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+            There are currently no students enrolled in {selectedClassData?.className} — {selectedClassData?.name}. Enroll students to record daily roll call.
           </p>
+          <button
+            onClick={() => navigate(`/${schoolSlug}/students`)}
+            className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1.5"
+          >
+            <Plus size={14} /> Enroll Students
+          </button>
+        </div>
+      ) : filteredStudents.length === 0 ? (
+        <div className="py-16 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
+          <Search size={40} className="mx-auto text-muted-foreground/30 mb-2" />
+          <h3 className="font-bold text-foreground">No matching students</h3>
+          <p className="text-xs text-muted-foreground mt-1">Try adjusting your search query.</p>
         </div>
       ) : (
         <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
@@ -495,18 +515,18 @@ export default function Attendance() {
                   return (
                     <tr key={s.id} className="hover:bg-accent/30 transition-colors duration-150">
                       <td className="px-5 py-3.5 text-xs font-mono font-bold text-foreground">
-                        {s.rollNo}
+                        {s.rollNo || '—'}
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">
-                            {s.name.charAt(0)}
+                            {s.name ? s.name.charAt(0).toUpperCase() : 'S'}
                           </div>
                           <p className="text-xs font-bold text-foreground">{s.name}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-xs font-mono text-muted-foreground">
-                        {s.admissionNo}
+                        {s.admissionNo || '—'}
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1.5">
