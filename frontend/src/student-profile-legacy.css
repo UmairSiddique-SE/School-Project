@@ -1,0 +1,29 @@
+/* EduSphere legacy premium student profile restoration */
+@media (min-width: 1024px) {
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) {
+    display: grid !important;
+    grid-template-columns: 270px minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 16px !important;
+    height: calc(100vh - 112px) !important;
+    min-height: 620px !important;
+    overflow: hidden !important;
+    padding-bottom: 0 !important;
+  }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div:first-child { grid-column: 2 !important; grid-row: 1 !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] { grid-column: 1 !important; grid-row: 1 / span 2 !important; height: 100% !important; min-height: 0 !important; padding: 18px !important; border-radius: 24px !important; overflow-y: auto !important; scrollbar-width: thin !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] > div.relative { flex-direction: column !important; align-items: stretch !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] > div.relative > div:first-child { width: 100% !important; height: 150px !important; margin: 0 auto !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] h1 { font-size: 20px !important; text-align: center !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] p { text-align: center !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] .grid.grid-cols-2 { grid-template-columns: 1fr !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > section.relative.overflow-hidden.rounded-\[28px\] .absolute { display: none !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 { grid-column: 2 !important; grid-row: 2 !important; display: block !important; min-height: 0 !important; overflow: hidden !important; margin: 0 !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 > aside { display: flex !important; flex-direction: row !important; overflow-x: auto !important; padding: 8px !important; height: auto !important; border-radius: 18px !important; scrollbar-width: thin !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 > aside p { display: none !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 > aside button { flex: 0 0 auto !important; margin: 0 3px !important; padding: 10px 14px !important; }
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 > main { height: calc(100% - 62px) !important; overflow-y: auto !important; margin-top: 12px !important; scrollbar-width: thin !important; padding: 20px !important; }
+}
+@media (max-width: 1023px) {
+  body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) > div.grid.gap-5 > main { max-height: 65vh !important; overflow-y: auto !important; scrollbar-width: thin !important; }
+}

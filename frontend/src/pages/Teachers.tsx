@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Award, BookOpen, Briefcase, Edit3, Loader2, Mail, Phone, Plus, RefreshCw, Search, Trash2, UserCheck, Users, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Award, BookOpen, Briefcase, Edit2, Loader2, Mail, Phone, Plus, RefreshCw,
+  Search, Trash2, UserCheck, Users, X, Check, ArrowUpRight, Shield,
+  GraduationCap, Fingerprint, Calendar, Save, CheckCircle, AlertCircle, User
+} from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
@@ -16,20 +20,32 @@ interface Teacher {
   salary?: number | null;
   joiningDate?: string;
   isActive?: boolean;
+  specialization?: string | null;
+  dateOfBirth?: string | null;
+  cnic?: string | null;
+  address?: string | null;
 }
 
 const initialForm = {
   name: '', email: '', employeeNo: '', phone: '', gender: 'MALE',
   qualification: '', experience: '', salary: '', password: '',
+  specialization: '', cnic: '', address: '', dateOfBirth: '',
 };
 
 const phoneFormat = (value: string) => {
   const digits = value.replace(/\D/g, '').slice(0, 11);
   return digits.length <= 4 ? digits : `${digits.slice(0, 4)}-${digits.slice(4)}`;
 };
+const cnicFormat = (raw: string) => {
+  const d = raw.replace(/\D/g, '').slice(0, 13);
+  if (d.length <= 5) return d;
+  if (d.length <= 12) return `${d.slice(0, 5)}-${d.slice(5)}`;
+  return `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}`;
+};
 
 const money = (value?: number | null) => value == null ? '—' : `PKR ${Number(value).toLocaleString('en-PK')}`;
-const dateText = (value?: string) => value ? new Date(value).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const dateText = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 export default function Teachers() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -39,15 +55,17 @@ export default function Teachers() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Teacher | null>(null);
   const [form, setForm] = useState({ ...initialForm });
+  const [step, setStep] = useState(1);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [filterStatus, setFilterStatus] = useState('');
 
   const load = async () => {
     setLoading(true);
     try {
       const { data } = await apiClient.get('/people/teachers');
       setTeachers(Array.isArray(data) ? data : []);
-    } catch (error: any) {
+    } catch {
       setTeachers([]);
-      toast.error(error?.response?.data?.message || 'Unable to load teachers');
     } finally {
       setLoading(false);
     }
@@ -57,153 +75,533 @@ export default function Teachers() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return teachers;
-    return teachers.filter((teacher) => [teacher.name, teacher.email, teacher.employeeNo, teacher.phone, teacher.qualification]
-      .some((value) => String(value ?? '').toLowerCase().includes(q)));
-  }, [teachers, query]);
+    return teachers.filter((t) => {
+      const matchesSearch = !q || [t.name, t.email, t.employeeNo, t.phone, t.qualification]
+        .some((v) => String(v ?? '').toLowerCase().includes(q));
+      const matchesStatus = !filterStatus ||
+        (filterStatus === 'ACTIVE' ? t.isActive !== false : t.isActive === false);
+      return matchesSearch && matchesStatus;
+    });
+  }, [teachers, query, filterStatus]);
 
-  const activeCount = teachers.filter((teacher) => teacher.isActive !== false).length;
-  const qualifiedCount = teachers.filter((teacher) => Boolean(teacher.qualification)).length;
-  const payroll = teachers.reduce((sum, teacher) => sum + Number(teacher.salary || 0), 0);
+  const activeCount = teachers.filter((t) => t.isActive !== false).length;
+  const qualifiedCount = teachers.filter((t) => Boolean(t.qualification)).length;
+  const payroll = teachers.reduce((sum, t) => sum + Number(t.salary || 0), 0);
 
   const openAdd = () => {
     setEditing(null);
     const nextNo = `TCH-${String(teachers.length + 1).padStart(3, '0')}`;
     setForm({ ...initialForm, employeeNo: nextNo });
+    setStep(1);
     setShowForm(true);
   };
 
-  const openEdit = (teacher: Teacher) => {
-    setEditing(teacher);
+  const openEdit = (t: Teacher) => {
+    setEditing(t);
     setForm({
-      name: teacher.name || '', email: teacher.email || '', employeeNo: teacher.employeeNo || '',
-      phone: teacher.phone || '', gender: teacher.gender || 'MALE', qualification: teacher.qualification || '',
-      experience: teacher.experience == null ? '' : String(teacher.experience),
-      salary: teacher.salary == null ? '' : String(teacher.salary), password: '',
+      name: t.name || '', email: t.email || '', employeeNo: t.employeeNo || '',
+      phone: t.phone || '', gender: t.gender || 'MALE', qualification: t.qualification || '',
+      experience: t.experience == null ? '' : String(t.experience),
+      salary: t.salary == null ? '' : String(t.salary), password: '',
+      specialization: t.specialization || '', cnic: t.cnic || '',
+      address: t.address || '', dateOfBirth: t.dateOfBirth ? t.dateOfBirth.split('T')[0] : '',
     });
+    setStep(1);
     setShowForm(true);
   };
 
-  const save = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSaving(true);
     try {
       if (editing) {
         await apiClient.patch(`/people/teachers/${editing.id}`, {
-          name: form.name,
-          phone: form.phone,
-          gender: form.gender,
-          qualification: form.qualification,
+          name: form.name, phone: form.phone, gender: form.gender,
+          qualification: form.qualification, specialization: form.specialization,
           experience: form.experience ? Number(form.experience) : undefined,
           salary: form.salary ? Number(form.salary) : undefined,
+          cnic: form.cnic || undefined, address: form.address || undefined,
+          dateOfBirth: form.dateOfBirth || undefined,
         });
-        toast.success('Teacher profile updated');
+        toast.success('Teacher profile updated successfully');
       } else {
-        if (form.password.length < 12) throw new Error('Teacher portal password must be at least 12 characters');
+        if (form.password.length < 12) throw new Error('Portal password must be at least 12 characters');
         await apiClient.post('/people/teachers', {
           ...form,
           experience: form.experience ? Number(form.experience) : undefined,
           salary: form.salary ? Number(form.salary) : undefined,
         });
-        toast.success('Teacher added successfully');
+        toast.success('Teacher added and portal credentials created!');
       }
       setShowForm(false);
       setEditing(null);
       setForm({ ...initialForm });
       await load();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || 'Unable to save teacher');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Unable to save teacher');
     } finally {
       setSaving(false);
     }
   };
 
-  const remove = async (teacher: Teacher) => {
-    if (!window.confirm(`Archive ${teacher.name}?`)) return;
+  const remove = async (t: Teacher) => {
+    if (!window.confirm(`Archive ${t.name}?`)) return;
     try {
-      await apiClient.delete(`/people/teachers/${teacher.id}`);
-      toast.success('Teacher archived');
+      await apiClient.delete(`/people/teachers/${t.id}`);
+      toast.success('Teacher archived successfully');
       await load();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Unable to archive teacher');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Unable to archive teacher');
     }
   };
 
-  return (
-    <div className="mx-auto max-w-screen-2xl space-y-6 pb-10">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
-              <Award size={12} /> Faculty Management
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Teachers</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">Live teacher records, portal credentials and faculty profiles for this school.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-muted-foreground"><RefreshCw size={15} className={loading ? 'animate-spin' : ''}/> Refresh</button>
-            <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"><Plus size={15}/> Add Teacher</button>
-          </div>
-        </div>
-      </motion.div>
+  const steps = [
+    { id: 1, title: 'Personal Info', icon: User },
+    { id: 2, title: 'Employment', icon: Briefcase },
+    { id: 3, title: 'Review', icon: CheckCircle },
+  ];
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[['Total Teachers', teachers.length, Users], ['Active Faculty', activeCount, UserCheck], ['Qualified Profiles', qualifiedCount, Award], ['Monthly Payroll', money(payroll), Briefcase]].map(([label, value, Icon]: any) => (
-          <div key={label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><Icon size={16}/></span></div>
-            <p className="mt-3 text-2xl font-black text-foreground">{value}</p>
+  return (
+    <div className="space-y-8 animate-fade-in pb-20 max-w-[1400px] mx-auto">
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Faculty Registry</h1>
+          </div>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
+            {teachers.length} Total Faculty Members
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => void load()} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+          <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20">
+            <Plus size={14} /> Add Teacher
+          </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Faculty', value: teachers.length, icon: Users, color: 'primary' },
+          { label: 'Active Staff', value: activeCount, icon: UserCheck, color: 'emerald' },
+          { label: 'Qualified', value: qualifiedCount, icon: Award, color: 'violet' },
+          { label: 'Monthly Payroll', value: money(payroll), icon: Briefcase, color: 'amber', raw: true },
+        ].map(({ label, value, icon: Icon, color, raw }) => (
+          <div key={label} className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-primary/30 transition-all duration-300">
+            <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">{label}</p>
+            <div className="flex items-end justify-between mt-2">
+              <h4 className={`${raw ? 'text-lg' : 'text-2xl'} font-black text-white`}>{value}</h4>
+              <div className={`h-8 w-8 rounded-lg bg-${color}-500/10 flex items-center justify-center text-${color}-400 border border-${color}-500/20`}>
+                <Icon size={16} />
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-muted-foreground" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search teacher, employee ID, email, phone or qualification…" className="h-10 w-full rounded-xl border-0 bg-background pl-9 pr-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-primary/30" />
+      {/* Search + Filter Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-white/[0.02] p-4 rounded-[24px] border border-white/[0.06]">
+        <div className="relative lg:col-span-8">
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, employee ID, email, phone or qualification..."
+            className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+          />
+        </div>
+        <div className="lg:col-span-4">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold"
+          >
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active Faculty</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left">
-            <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              <tr><th className="px-5 py-4">Teacher</th><th className="px-5 py-4">Employee</th><th className="px-5 py-4">Contact</th><th className="px-5 py-4">Qualification</th><th className="px-5 py-4">Experience</th><th className="px-5 py-4">Salary</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Actions</th></tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? <tr><td colSpan={8} className="p-12 text-center"><Loader2 className="mx-auto animate-spin text-primary"/></td></tr> : filtered.length === 0 ? <tr><td colSpan={8} className="p-14 text-center"><Users className="mx-auto mb-3 text-muted-foreground/50" size={28}/><p className="text-sm font-semibold text-muted-foreground">No teacher records found in the live database.</p><p className="mt-1 text-xs text-muted-foreground/70">Add a teacher and the record will appear here automatically.</p></td></tr> : filtered.map((teacher) => (
-                <tr key={teacher.id} className="transition-colors hover:bg-muted/30">
-                  <td className="px-5 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 font-black text-violet-600 dark:text-violet-400"><BookOpen size={17}/></span><div><p className="text-sm font-bold text-foreground">{teacher.name}</p><p className="text-[11px] text-muted-foreground">Joined {dateText(teacher.joiningDate)}</p></div></div></td>
-                  <td className="px-5 py-4 font-mono text-xs text-muted-foreground">{teacher.employeeNo || '—'}</td>
-                  <td className="px-5 py-4"><div className="space-y-1 text-xs text-muted-foreground"><div className="flex items-center gap-1.5"><Mail size={12}/>{teacher.email}</div><div className="flex items-center gap-1.5"><Phone size={12}/>{teacher.phone || '—'}</div></div></td>
-                  <td className="px-5 py-4 text-xs font-semibold text-foreground">{teacher.qualification || 'Not added'}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{teacher.experience == null ? '—' : `${teacher.experience} yrs`}</td>
-                  <td className="px-5 py-4 text-xs font-bold text-foreground">{money(teacher.salary)}</td>
-                  <td className="px-5 py-4"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${teacher.isActive === false ? 'border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>{teacher.isActive === false ? 'Inactive' : 'Active'}</span></td>
-                  <td className="px-5 py-4"><div className="flex gap-1.5"><button onClick={() => openEdit(teacher)} className="rounded-xl border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title="Edit"><Edit3 size={14}/></button><button onClick={() => void remove(teacher)} className="rounded-xl border border-border p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-600" title="Archive"><Trash2 size={14}/></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Table */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64"><Loader2 size={48} className="animate-spin text-primary" /></div>
+      ) : (
+        <div className="glass-elevated border border-white/[0.06] rounded-[40px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]">
+          {filtered.length === 0 ? (
+            <div className="text-center py-40 space-y-6">
+              <div className="h-24 w-24 rounded-[32px] bg-violet-500/10 flex items-center justify-center text-violet-400 mx-auto border border-violet-500/20">
+                <GraduationCap size={48} className="opacity-40" />
+              </div>
+              <div className="space-y-2">
+                <p className="font-black text-3xl text-white tracking-tighter">No faculty records</p>
+                <p className="text-sm text-slate-500 uppercase tracking-widest">Add a teacher to get started</p>
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/[0.05] bg-white/[0.01] text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">
+                    <th className="text-left px-8 py-8">Identity</th>
+                    <th className="text-left px-8 py-8">Employee ID</th>
+                    <th className="text-left px-8 py-8 hidden lg:table-cell">Contact</th>
+                    <th className="text-left px-8 py-8 hidden lg:table-cell">Qualification</th>
+                    <th className="text-left px-8 py-8 hidden xl:table-cell">Experience</th>
+                    <th className="text-left px-8 py-8">Salary</th>
+                    <th className="text-left px-8 py-8 hidden xl:table-cell">Status</th>
+                    <th className="px-8 py-8"></th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {filtered.map((t, i) => (
+                    <motion.tr
+                      key={t.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      className="border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-all cursor-pointer group border-l-4 border-l-transparent hover:border-l-violet-500"
+                      onClick={() => setSelectedTeacher(t)}
+                    >
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-6">
+                          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-black text-xl shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-white/10">
+                            {t.name.charAt(0)}
+                          </div>
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-lg font-black text-white group-hover:text-violet-400 transition-colors tracking-tight truncate">{t.name}</p>
+                            <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                              <Calendar size={10} /> Joined {dateText(t.joiningDate)}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="px-4 py-1.5 rounded-xl font-mono text-xs font-black text-violet-400 bg-violet-400/5 border border-violet-400/10 tracking-widest">
+                          {t.employeeNo || '—'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 hidden lg:table-cell">
+                        <div className="space-y-1.5 text-[11px] text-slate-400 font-bold">
+                          <div className="flex items-center gap-2"><Mail size={11} />{t.email}</div>
+                          <div className="flex items-center gap-2"><Phone size={11} />{t.phone || '—'}</div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 hidden lg:table-cell">
+                        <span className="text-white font-black text-sm">{t.qualification || 'Not added'}</span>
+                        {t.specialization && <p className="text-[10px] text-slate-500 mt-1">{t.specialization}</p>}
+                      </td>
+                      <td className="px-8 py-6 hidden xl:table-cell">
+                        <span className="text-slate-300 font-bold text-sm">
+                          {t.experience == null ? '—' : `${t.experience} yrs`}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="text-amber-400 font-black text-sm">{money(t.salary)}</span>
+                      </td>
+                      <td className="px-8 py-6 hidden xl:table-cell">
+                        <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] rounded-full border shadow-lg ${
+                          t.isActive !== false
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        }`}>
+                          {t.isActive !== false ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-3">
+                          <button
+                            onClick={() => openEdit(t)}
+                            className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-violet-600 transition-all flex items-center justify-center border border-white/5"
+                            title="Edit Teacher"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => void remove(t)}
+                            className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-rose-600 transition-all flex items-center justify-center border border-white/5"
+                            title="Archive"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      {showForm && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <form onSubmit={save} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-2xl">
-          <div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">Live faculty record</p><h2 className="mt-1 text-2xl font-black text-foreground">{editing ? 'Edit Teacher' : 'Add Teacher'}</h2><p className="mt-1 text-xs text-muted-foreground">Changes are written directly to this school's database.</p></div><button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border p-2 text-muted-foreground"><X size={18}/></button></div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <input required disabled={Boolean(editing)} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Full name *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input required type="email" disabled={Boolean(editing)} value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Work email *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input required disabled={Boolean(editing)} value={form.employeeNo} onChange={(e) => setForm((p) => ({ ...p, employeeNo: e.target.value }))} placeholder="Employee No *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: phoneFormat(e.target.value) }))} placeholder="0300-0000000" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <select value={form.gender} onChange={(e) => setForm((p) => ({ ...p, gender: e.target.value }))} className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select>
-            <input value={form.qualification} onChange={(e) => setForm((p) => ({ ...p, qualification: e.target.value }))} placeholder="Qualification" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input type="number" min="0" value={form.experience} onChange={(e) => setForm((p) => ({ ...p, experience: e.target.value }))} placeholder="Experience (years)" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            <input type="number" min="0" value={form.salary} onChange={(e) => setForm((p) => ({ ...p, salary: e.target.value }))} placeholder="Monthly salary (PKR)" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none" />
-            {!editing && <input required minLength={12} value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} placeholder="Portal password (12+ chars) *" className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none md:col-span-2" />}
-          </div>
-          <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground">Cancel</button><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground">{saving && <Loader2 size={14} className="animate-spin"/>}{editing ? 'Save Changes' : 'Create Teacher'}</button></div>
-        </form>
-      </div>}
+      {/* Teacher Detail Modal */}
+      <AnimatePresence>
+        {selectedTeacher && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+            onClick={() => setSelectedTeacher(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-slate-950/95 border border-white/[0.08] rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="relative p-8 border-b border-white/[0.06] flex items-center gap-6">
+                <div className="absolute top-0 right-0 h-40 w-40 bg-violet-500/10 rounded-full blur-[60px] pointer-events-none" />
+                <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center text-white text-3xl font-black border border-white/10">
+                  {selectedTeacher.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-black text-white tracking-tight">{selectedTeacher.name}</h2>
+                  <p className="text-xs font-mono text-violet-400 font-black tracking-widest mt-1 uppercase bg-violet-500/10 px-3 py-1 rounded-lg inline-block border border-violet-500/20">
+                    {selectedTeacher.employeeNo}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setSelectedTeacher(null); openEdit(selectedTeacher); }}
+                    className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center hover:bg-violet-500 hover:text-white transition-all">
+                    <Edit2 size={16} />
+                  </button>
+                  <button onClick={() => setSelectedTeacher(null)}
+                    className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              {/* Body */}
+              <div className="p-8 grid grid-cols-2 md:grid-cols-3 gap-4">
+                {[
+                  { label: 'Email', value: selectedTeacher.email, icon: Mail },
+                  { label: 'Phone', value: selectedTeacher.phone || '—', icon: Phone },
+                  { label: 'Gender', value: selectedTeacher.gender || '—', icon: User },
+                  { label: 'CNIC', value: selectedTeacher.cnic || '—', icon: Fingerprint },
+                  { label: 'Qualification', value: selectedTeacher.qualification || '—', icon: GraduationCap },
+                  { label: 'Specialization', value: selectedTeacher.specialization || '—', icon: BookOpen },
+                  { label: 'Experience', value: selectedTeacher.experience != null ? `${selectedTeacher.experience} years` : '—', icon: Award },
+                  { label: 'Monthly Salary', value: money(selectedTeacher.salary), icon: Briefcase },
+                  { label: 'Status', value: selectedTeacher.isActive !== false ? 'Active' : 'Inactive', icon: Shield },
+                ].map(({ label, value, icon: Icon }) => (
+                  <div key={label} className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-2">
+                    <div className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                      <Icon size={10} />{label}
+                    </div>
+                    <p className="text-sm font-bold text-white truncate">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Modal */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              className="bg-slate-950/95 border border-white/[0.08] rounded-[40px] shadow-2xl w-full max-w-3xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-8 border-b border-white/[0.06] flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Faculty Management</p>
+                  <h2 className="text-2xl font-black text-white mt-1">{editing ? 'Edit Teacher Profile' : 'Register New Teacher'}</h2>
+                </div>
+                <button type="button" onClick={() => setShowForm(false)}
+                  className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Step indicator */}
+              <div className="flex items-center justify-center gap-2 px-8 py-4 border-b border-white/[0.04]">
+                {steps.map((s, idx) => (
+                  <div key={s.id} className="flex items-center gap-2">
+                    <div
+                      className={`h-8 w-8 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                        step >= s.id ? 'bg-primary text-white' : 'bg-white/[0.03] text-slate-700 opacity-50'
+                      } ${step === s.id ? 'scale-110 shadow-lg shadow-primary/20' : ''}`}
+                    >
+                      <s.icon size={12} />
+                    </div>
+                    <span className={`text-[9px] font-black uppercase tracking-widest hidden sm:block ${step === s.id ? 'text-white' : 'text-slate-600'}`}>{s.title}</span>
+                    {idx < steps.length - 1 && <div className={`h-[1px] w-8 rounded-full mx-1 ${step > s.id ? 'bg-primary' : 'bg-white/[0.05]'}`} />}
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={save} className="p-8 space-y-6">
+                <AnimatePresence mode="wait">
+                  {/* Step 1: Personal Info */}
+                  {step === 1 && (
+                    <motion.div key="s1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                      <div className="flex items-center gap-2 border-b border-white/[0.05] pb-3">
+                        <User size={12} className="text-primary" />
+                        <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Personal Information</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1 md:col-span-2">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name *</label>
+                          <input required disabled={!!editing} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                            placeholder="Teacher's full name" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Work Email *</label>
+                          <input required type="email" disabled={!!editing} value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                            placeholder="name@school.edu" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone</label>
+                          <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: phoneFormat(e.target.value) }))}
+                            placeholder="0300-0000000" maxLength={12} className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Gender</label>
+                          <select value={form.gender} onChange={(e) => setForm((p) => ({ ...p, gender: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold">
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">CNIC</label>
+                          <input value={form.cnic} onChange={(e) => setForm((p) => ({ ...p, cnic: cnicFormat(e.target.value) }))}
+                            placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Date of Birth</label>
+                          <input type="date" value={form.dateOfBirth} onChange={(e) => setForm((p) => ({ ...p, dateOfBirth: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1 md:col-span-2">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Address</label>
+                          <input value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+                            placeholder="Residential address" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 2: Employment */}
+                  {step === 2 && (
+                    <motion.div key="s2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                      <div className="flex items-center gap-2 border-b border-white/[0.05] pb-3">
+                        <Briefcase size={12} className="text-emerald-400" />
+                        <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Employment Details</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Employee No *</label>
+                          <div className="px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-amber-500 font-mono font-black text-sm">
+                            {form.employeeNo || 'Generating...'}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Qualification *</label>
+                          <input value={form.qualification} onChange={(e) => setForm((p) => ({ ...p, qualification: e.target.value }))}
+                            placeholder="e.g. M.Ed, B.Sc, MA" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Specialization</label>
+                          <input value={form.specialization} onChange={(e) => setForm((p) => ({ ...p, specialization: e.target.value }))}
+                            placeholder="e.g. Mathematics, Physics" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Experience (years)</label>
+                          <input type="number" min="0" value={form.experience} onChange={(e) => setForm((p) => ({ ...p, experience: e.target.value }))}
+                            placeholder="0" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Monthly Salary (PKR)</label>
+                          <input type="number" min="0" value={form.salary} onChange={(e) => setForm((p) => ({ ...p, salary: e.target.value }))}
+                            placeholder="0" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
+                        </div>
+                        {!editing && (
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Portal Password (12+ chars) *</label>
+                            <input required minLength={12} type="password" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                              placeholder="Minimum 12 characters" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Review */}
+                  {step === 3 && (
+                    <motion.div key="s3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                      <div className="flex items-center gap-2 border-b border-white/[0.05] pb-3">
+                        <CheckCircle size={12} className="text-primary" />
+                        <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Final Review</h3>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: 'Name', value: form.name },
+                          { label: 'Email', value: form.email },
+                          { label: 'Employee No', value: form.employeeNo },
+                          { label: 'Phone', value: form.phone || '—' },
+                          { label: 'Gender', value: form.gender },
+                          { label: 'Qualification', value: form.qualification || '—' },
+                          { label: 'Specialization', value: form.specialization || '—' },
+                          { label: 'Experience', value: form.experience ? `${form.experience} yrs` : '—' },
+                          { label: 'Salary', value: form.salary ? `PKR ${Number(form.salary).toLocaleString()}` : '—' },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
+                            <p className="text-sm font-bold text-white mt-1 truncate">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-3">
+                        <AlertCircle size={20} className="text-primary shrink-0" />
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                          By confirming, a teacher portal account will be created for <strong className="text-white">{form.name}</strong> and credentials saved to the database.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
+                  <button type="button"
+                    onClick={() => { if (step > 1) setStep(step - 1); else setShowForm(false); }}
+                    className="px-6 py-2.5 rounded-xl border border-white/[0.1] text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-white/[0.05] hover:text-white transition-all flex items-center gap-2">
+                    <X size={14} />{step === 1 ? 'Cancel' : 'Previous'}
+                  </button>
+                  {step < 3 ? (
+                    <button type="button"
+                      onClick={() => setStep(step + 1)}
+                      disabled={step === 1 && !form.name}
+                      className="px-10 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white font-black text-[9px] uppercase tracking-widest hover:bg-primary hover:border-primary transition-all duration-300 disabled:opacity-30 flex items-center gap-2">
+                      Proceed Next <ArrowUpRight size={14} />
+                    </button>
+                  ) : (
+                    <button type="submit" disabled={saving}
+                      className="px-14 py-3 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 flex items-center gap-3">
+                      {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                      {editing ? 'Save Changes' : 'Create Teacher'}
+                    </button>
+                  )}
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
