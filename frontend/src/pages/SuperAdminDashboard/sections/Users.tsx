@@ -197,10 +197,21 @@ export default function Users() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border ${u.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${u.isActive ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                          {u.isActive ? 'Active' : 'Disabled'}
-                        </span>
+                        <button
+                          onClick={() => handleToggleStatus(u)}
+                          disabled={processingId === u.id || u.role === 'SUPER_ADMIN'}
+                          title={u.isActive ? "Click to Disable User (Turn OFF)" : "Click to Enable User (Turn ON)"}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all disabled:opacity-50 ${
+                            u.isActive
+                              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-500 hover:bg-rose-500/15 hover:border-rose-500/30 hover:text-rose-500"
+                              : "bg-rose-500/15 border-rose-500/30 text-rose-500 hover:bg-emerald-500/15 hover:border-emerald-500/30 hover:text-emerald-500"
+                          }`}
+                        >
+                          <div className={`w-7 h-3.5 rounded-full transition-colors relative ${u.isActive ? "bg-emerald-500" : "bg-rose-500"}`}>
+                            <div className={`w-2.5 h-2.5 rounded-full bg-white absolute top-0.5 transition-all ${u.isActive ? "left-3.5" : "left-0.5"}`} />
+                          </div>
+                          <span>{u.isActive ? "ON" : "OFF"}</span>
+                        </button>
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
                         {new Date(u.createdAt).toLocaleDateString('en-PK')}
