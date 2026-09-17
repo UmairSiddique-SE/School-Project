@@ -152,3 +152,191 @@ html.light body:has([class*="bg-[#030817"]) #pricing { background: linear-gradie
 html.light body:has([class*="bg-[#030817"]) #pricing .text-5xl.font-black.text-white { color: #0f172a !important; }
 html.light body:has([class*="bg-[#030817"]) h1, html.light body:has([class*="bg-[#030817"]) h2, html.light body:has([class*="bg-[#030817"]) h3 { text-shadow: none; }
 html.light body:has([class*="bg-[#030817"]) input, html.light body:has([class*="bg-[#030817"]) textarea { color: #172033 !important; background: rgba(255,255,255,.96) !important; border-color: rgba(15,23,42,.12) !important; }
+
+/* =========================================================
+   SCHOOL PANEL PREMIUM VISUAL LAYER
+   Inspired by the supplied reference: clean cards, rich gradients,
+   restrained glow, and consistent section hierarchy.
+   ========================================================= */
+
+/* Soft gradient canvas behind every school dashboard screen. */
+body:has(.glass) {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,.12), transparent 28%),
+    radial-gradient(circle at 92% 8%, rgba(6,182,212,.10), transparent 25%),
+    linear-gradient(145deg, #070b18 0%, #0b1020 48%, #071522 100%) !important;
+}
+
+.light body:has(.glass) {
+  background:
+    radial-gradient(circle at 5% 0%, rgba(99,102,241,.08), transparent 26%),
+    radial-gradient(circle at 96% 4%, rgba(6,182,212,.07), transparent 24%),
+    linear-gradient(145deg, #f5f8ff 0%, #ffffff 52%, #f2fbff 100%) !important;
+}
+
+/* Premium sidebar + header surfaces. */
+.glass {
+  background: linear-gradient(180deg, rgba(13,18,34,.94), rgba(9,14,27,.88)) !important;
+  border-color: rgba(148,163,184,.11) !important;
+  box-shadow: 0 18px 55px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.light .glass {
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,250,255,.92)) !important;
+  border-color: rgba(15,23,42,.08) !important;
+  box-shadow: 0 14px 38px rgba(15,23,42,.06), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+/* Sidebar navigation: active item gets a refined gradient, not a loud block. */
+aside .group.relative {
+  border: 1px solid transparent;
+}
+
+aside .group.relative:hover {
+  background: linear-gradient(90deg, rgba(99,102,241,.10), rgba(6,182,212,.055)) !important;
+  border-color: rgba(99,102,241,.14) !important;
+}
+
+aside .group.relative.bg-violet-500\/12,
+aside .group.relative[class*="bg-violet-500/12"] {
+  background: linear-gradient(100deg, rgba(99,102,241,.20), rgba(124,58,237,.13), rgba(6,182,212,.09)) !important;
+  border-color: rgba(129,140,248,.28) !important;
+  box-shadow: 0 8px 24px rgba(79,70,229,.12), inset 3px 0 0 #818cf8 !important;
+}
+
+/* Header controls. */
+header .btn-ghost,
+header button[class*="border-white"] {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+header .btn-ghost:hover,
+header button[class*="border-white"]:hover {
+  transform: translateY(-1px);
+  border-color: rgba(129,140,248,.30) !important;
+  box-shadow: 0 8px 22px rgba(79,70,229,.10);
+}
+
+/* Main content cards / sections. */
+.glass-card,
+.stat-card,
+.register-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(148,163,184,.12) !important;
+  background: linear-gradient(145deg, rgba(18,25,43,.88), rgba(10,16,30,.78)) !important;
+  box-shadow: 0 14px 38px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.045);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.glass-card::before,
+.stat-card::before,
+.register-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+  opacity: .78;
+}
+
+.glass-card:hover,
+.stat-card:hover,
+.register-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(129,140,248,.20) !important;
+  box-shadow: 0 20px 48px rgba(0,0,0,.24), 0 0 26px rgba(99,102,241,.06), inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.light .glass-card,
+.light .stat-card,
+.light .register-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,250,255,.96)) !important;
+  border-color: rgba(15,23,42,.08) !important;
+  box-shadow: 0 12px 34px rgba(15,23,42,.07), inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+.light .glass-card:hover,
+.light .stat-card:hover,
+.light .register-card:hover {
+  border-color: rgba(99,102,241,.22) !important;
+  box-shadow: 0 18px 42px rgba(15,23,42,.10);
+}
+
+/* Primary actions: premium blue-violet-cyan gradient. */
+.btn-primary,
+.gradient-bg-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 48%, #0891b2 100%) !important;
+  background-size: 180% 180% !important;
+  box-shadow: 0 10px 24px rgba(79,70,229,.22), inset 0 1px 0 rgba(255,255,255,.16);
+  transition: transform .18s ease, box-shadow .18s ease, background-position .25s ease;
+}
+
+.btn-primary:hover,
+.gradient-bg-primary:hover {
+  transform: translateY(-1px);
+  background-position: 100% 50% !important;
+  box-shadow: 0 14px 30px rgba(79,70,229,.28), 0 0 24px rgba(6,182,212,.08), inset 0 1px 0 rgba(255,255,255,.20);
+}
+
+/* Form controls: clean premium fields with a subtle focus halo. */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  border-color: rgba(148,163,184,.16) !important;
+  background: rgba(255,255,255,.035) !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(129,140,248,.55) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.10), 0 8px 24px rgba(79,70,229,.06) !important;
+  background: rgba(255,255,255,.055) !important;
+}
+
+.light input:not([type="checkbox"]):not([type="radio"]),
+.light textarea,
+.light select {
+  background: rgba(255,255,255,.96) !important;
+  border-color: rgba(15,23,42,.12) !important;
+}
+
+.light input:not([type="checkbox"]):not([type="radio"]):focus,
+.light textarea:focus,
+.light select:focus {
+  border-color: rgba(79,70,229,.42) !important;
+  background: #fff !important;
+}
+
+/* Section headings / badges feel more intentional. */
+main h1, main h2, main h3 {
+  letter-spacing: -.02em;
+}
+
+main .rounded-xl.border,
+main .rounded-2xl.border,
+main .rounded-3xl.border {
+  border-color: rgba(148,163,184,.12);
+}
+
+/* Scrollbar blends into the new visual system. */
+.scrollbar-thin::-webkit-scrollbar { width: 7px; height: 7px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(99,102,241,.48), rgba(6,182,212,.38));
+  border-radius: 999px;
+}
+
+/* Mobile: keep the visual polish without making cards too heavy. */
+@media (max-width: 640px) {
+  .glass-card,
+  .stat-card,
+  .register-card { box-shadow: 0 10px 26px rgba(0,0,0,.16); }
+  .glass-card:hover,
+  .stat-card:hover,
+  .register-card:hover { transform: none; }
+}

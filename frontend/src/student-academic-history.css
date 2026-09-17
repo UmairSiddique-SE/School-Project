@@ -1,0 +1,5 @@
+/* Student form: hide the fields that are no longer required. */
+div.space-y-1:has(> div > input[placeholder="Cloud storage link"]),
+div.space-y-1:has(> textarea[placeholder="Summarize grades, discipline etc..."]) {
+  display: none !important;
+}
