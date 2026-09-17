@@ -1,14 +1,12 @@
 /* EduSphere School Panel Consistency
- * Visual-only layer for school-facing pages.
- * Keeps existing data/actions intact while making every section follow the
- * same spacing, surface, typography, control and table language as Dashboard.
+ * Dashboard-derived visual layer for school-facing pages.
+ * Keeps existing data/actions intact while standardising the product language.
  */
 
 main {
   min-width: 0;
 }
 
-/* Page rhythm: every school section starts from the same canvas width/spacing. */
 main > div {
   width: 100%;
   max-width: 1680px;
@@ -21,24 +19,25 @@ main > div > h2:first-child {
   letter-spacing: -0.035em;
 }
 
-/* Legacy page roots still using space-y-* now inherit Dashboard-like rhythm. */
 main > div[class*="space-y-"] {
   padding-bottom: 2.5rem;
 }
 
-/* Consistent page headings. */
-main > div > div:first-child h1,
-main > div > section:first-child h1 {
+/* Shared page header rhythm used by the older School Panel pages. */
+main > div[class*="space-y-"] > div:first-child {
+  position: relative;
+}
+
+main > div[class*="space-y-"] > div:first-child h1 {
   color: hsl(var(--foreground));
   letter-spacing: -0.035em;
 }
 
-main > div > div:first-child p,
-main > div > section:first-child p {
+main > div[class*="space-y-"] > div:first-child p {
   color: hsl(var(--muted-foreground));
 }
 
-/* Convert old hard-coded white/slate text to the same semantic palette used by Dashboard. */
+/* Convert legacy hard-coded text to the Dashboard semantic palette. */
 main .text-white,
 main .text-slate-100,
 main .text-slate-200 {
@@ -53,7 +52,7 @@ main .text-slate-700 {
   color: hsl(var(--muted-foreground)) !important;
 }
 
-/* Legacy translucent surfaces become the same calm glass/card treatment. */
+/* Legacy surfaces become the same glass language as DashboardLayout. */
 main [class*="bg-slate-900/"],
 main [class*="bg-slate-800/"],
 main [class*="bg-white/[0.01]"],
@@ -76,7 +75,7 @@ main [class*="bg-white/[0.04]"] {
   background: rgba(255, 255, 255, 0.82) !important;
 }
 
-/* Legacy white borders match the Dashboard border language. */
+/* Dashboard border language. */
 main [class*="border-white/"] {
   border-color: rgba(148, 163, 184, 0.12) !important;
 }
@@ -85,7 +84,7 @@ main [class*="border-white/"] {
   border-color: rgba(15, 23, 42, 0.09) !important;
 }
 
-/* Cards/panels: one shared radius, border, shadow and hover language. */
+/* Cards/panels share Dashboard's radius, depth and glass treatment. */
 main .glass-card,
 main .glass-elevated,
 main [class*="rounded-2xl"][class*="border"],
@@ -97,7 +96,7 @@ main [class*="rounded-3xl"][class*="border"] {
 main .glass-card:hover,
 main [class*="rounded-2xl"][class*="border"]:hover,
 main [class*="rounded-3xl"][class*="border"]:hover {
-  border-color: rgba(45, 212, 191, 0.18);
+  border-color: hsl(var(--primary) / 0.24);
 }
 
 .light main .glass-card,
@@ -108,12 +107,13 @@ main [class*="rounded-3xl"][class*="border"]:hover {
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 
-/* Stat grids follow Dashboard's compact KPI cards. */
-main .stat-card {
+/* KPI cards: compact, high-contrast and consistent with Dashboard. */
+main .stat-card,
+main > div[class*="space-y-"] > div:nth-child(2) > div[class*="rounded-2xl"] {
   border-radius: 1.1rem !important;
 }
 
-/* Inputs/selects/textareas across Students, Staff, Attendance, Exams, Timetable, Reports, etc. */
+/* Controls used by Students, Staff, Attendance, Exams, Timetable, Reports, etc. */
 main input,
 main select,
 main textarea {
@@ -133,8 +133,8 @@ main textarea::placeholder {
 main input:focus,
 main select:focus,
 main textarea:focus {
-  border-color: rgba(45,212,191,0.45) !important;
-  box-shadow: 0 0 0 3px rgba(20,184,166,0.10) !important;
+  border-color: hsl(var(--primary) / 0.52) !important;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.11) !important;
   outline: none !important;
 }
 
@@ -145,7 +145,7 @@ main textarea:focus {
   border-color: rgba(15,23,42,0.13) !important;
 }
 
-/* Buttons: consistent height, weight and interaction without changing semantic colors. */
+/* Buttons: Dashboard-like motion and hierarchy without changing actions. */
 main button[class*="rounded"],
 main a[class*="rounded"] {
   transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
@@ -161,13 +161,12 @@ main button:disabled {
   opacity: .55;
 }
 
-/* Dashboard-style primary actions for legacy violet primary buttons. */
 main button[class*="bg-primary"],
 main a[class*="bg-primary"] {
-  box-shadow: 0 8px 22px rgba(20,184,166,.12);
+  box-shadow: 0 8px 22px hsl(var(--primary) / 0.14);
 }
 
-/* Tables: same density and hover behavior as Dashboard. */
+/* Tables: dense, quiet and readable like the Dashboard data surfaces. */
 main table {
   border-collapse: separate;
   border-spacing: 0;
@@ -187,21 +186,25 @@ main tbody tr {
 }
 
 main tbody tr:hover {
-  background: rgba(20,184,166,.035) !important;
+  background: hsl(var(--primary) / 0.045) !important;
 }
 
-/* Keep table content readable after removing hard-coded slate colors. */
 main td {
   color: hsl(var(--foreground));
 }
 
-/* Empty/loading states share Dashboard's quiet presentation. */
+/* Student/People table identity cells feel like Dashboard avatars. */
+main table td button[class*="flex"] > div[class*="rounded-xl"] {
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.12);
+}
+
+/* Quiet empty/loading states. */
 main [class*="text-slate-600"]:only-child,
 main [class*="text-muted-foreground"] {
   line-height: 1.5;
 }
 
-/* Consistent page-level scroll and mobile density. */
+/* Mobile density. */
 @media (max-width: 768px) {
   main > div {
     padding-left: 0 !important;
@@ -216,7 +219,8 @@ main [class*="text-muted-foreground"] {
     font-size: 1.55rem;
   }
 
-  main .stat-card {
+  main .stat-card,
+  main > div[class*="space-y-"] > div:nth-child(2) > div[class*="rounded-2xl"] {
     border-radius: 1rem !important;
   }
 }
