@@ -1,0 +1,231 @@
+/* EduSphere School Panel Consistency
+ * Visual-only layer for school-facing pages.
+ * Keeps existing data/actions intact while making every section follow the
+ * same spacing, surface, typography, control and table language as Dashboard.
+ */
+
+main {
+  min-width: 0;
+}
+
+/* Page rhythm: every school section starts from the same canvas width/spacing. */
+main > div {
+  width: 100%;
+  max-width: 1680px;
+  margin-inline: auto;
+}
+
+main > div > h1:first-child,
+main > div > h2:first-child {
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+/* Legacy page roots still using space-y-* now inherit Dashboard-like rhythm. */
+main > div[class*="space-y-"] {
+  padding-bottom: 2.5rem;
+}
+
+/* Consistent page headings. */
+main > div > div:first-child h1,
+main > div > section:first-child h1 {
+  color: hsl(var(--foreground));
+  letter-spacing: -0.035em;
+}
+
+main > div > div:first-child p,
+main > div > section:first-child p {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Convert old hard-coded white/slate text to the same semantic palette used by Dashboard. */
+main .text-white,
+main .text-slate-100,
+main .text-slate-200 {
+  color: hsl(var(--foreground)) !important;
+}
+
+main .text-slate-300,
+main .text-slate-400,
+main .text-slate-500,
+main .text-slate-600,
+main .text-slate-700 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Legacy translucent surfaces become the same calm glass/card treatment. */
+main [class*="bg-slate-900/"],
+main [class*="bg-slate-800/"],
+main [class*="bg-white/[0.01]"],
+main [class*="bg-white/[0.02]"],
+main [class*="bg-white/[0.025]"],
+main [class*="bg-white/[0.03]"],
+main [class*="bg-white/[0.04]"] {
+  background: rgba(13, 17, 26, 0.58) !important;
+  backdrop-filter: blur(12px) saturate(145%);
+  -webkit-backdrop-filter: blur(12px) saturate(145%);
+}
+
+.light main [class*="bg-slate-900/"],
+.light main [class*="bg-slate-800/"],
+.light main [class*="bg-white/[0.01]"],
+.light main [class*="bg-white/[0.02]"],
+.light main [class*="bg-white/[0.025]"],
+.light main [class*="bg-white/[0.03]"],
+.light main [class*="bg-white/[0.04]"] {
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* Legacy white borders match the Dashboard border language. */
+main [class*="border-white/"] {
+  border-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+.light main [class*="border-white/"] {
+  border-color: rgba(15, 23, 42, 0.09) !important;
+}
+
+/* Cards/panels: one shared radius, border, shadow and hover language. */
+main .glass-card,
+main .glass-elevated,
+main [class*="rounded-2xl"][class*="border"],
+main [class*="rounded-3xl"][class*="border"] {
+  border-color: rgba(148, 163, 184, 0.12);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.035);
+}
+
+main .glass-card:hover,
+main [class*="rounded-2xl"][class*="border"]:hover,
+main [class*="rounded-3xl"][class*="border"]:hover {
+  border-color: rgba(45, 212, 191, 0.18);
+}
+
+.light main .glass-card,
+.light main .glass-elevated,
+.light main [class*="rounded-2xl"][class*="border"],
+.light main [class*="rounded-3xl"][class*="border"] {
+  border-color: rgba(15, 23, 42, 0.09);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+/* Stat grids follow Dashboard's compact KPI cards. */
+main .stat-card {
+  border-radius: 1.1rem !important;
+}
+
+/* Inputs/selects/textareas across Students, Staff, Attendance, Exams, Timetable, Reports, etc. */
+main input,
+main select,
+main textarea {
+  min-height: 40px;
+  border-radius: 0.75rem !important;
+  color: hsl(var(--foreground)) !important;
+  background: rgba(255,255,255,0.035) !important;
+  border-color: rgba(148,163,184,0.15) !important;
+}
+
+main input::placeholder,
+main textarea::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.72;
+}
+
+main input:focus,
+main select:focus,
+main textarea:focus {
+  border-color: rgba(45,212,191,0.45) !important;
+  box-shadow: 0 0 0 3px rgba(20,184,166,0.10) !important;
+  outline: none !important;
+}
+
+.light main input,
+.light main select,
+.light main textarea {
+  background: rgba(255,255,255,0.94) !important;
+  border-color: rgba(15,23,42,0.13) !important;
+}
+
+/* Buttons: consistent height, weight and interaction without changing semantic colors. */
+main button[class*="rounded"],
+main a[class*="rounded"] {
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+main button[class*="rounded-xl"]:not(:disabled):hover,
+main a[class*="rounded-xl"]:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+main button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+/* Dashboard-style primary actions for legacy violet primary buttons. */
+main button[class*="bg-primary"],
+main a[class*="bg-primary"] {
+  box-shadow: 0 8px 22px rgba(20,184,166,.12);
+}
+
+/* Tables: same density and hover behavior as Dashboard. */
+main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+main thead th {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+main tbody tr {
+  border-color: rgba(148,163,184,.08) !important;
+  transition: background-color .16s ease;
+}
+
+main tbody tr:hover {
+  background: rgba(20,184,166,.035) !important;
+}
+
+/* Keep table content readable after removing hard-coded slate colors. */
+main td {
+  color: hsl(var(--foreground));
+}
+
+/* Empty/loading states share Dashboard's quiet presentation. */
+main [class*="text-slate-600"]:only-child,
+main [class*="text-muted-foreground"] {
+  line-height: 1.5;
+}
+
+/* Consistent page-level scroll and mobile density. */
+@media (max-width: 768px) {
+  main > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  main > div[class*="space-y-"] {
+    padding-bottom: 1.5rem;
+  }
+
+  main h1 {
+    font-size: 1.55rem;
+  }
+
+  main .stat-card {
+    border-radius: 1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main *,
+  main *::before,
+  main *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
