@@ -1,1656 +1,1337 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Plus, Trash2, GraduationCap, X, Loader2, Search,
-  User, Shield, FileSpreadsheet, FileText, Printer, ArrowUpRight,
-  MapPin, Phone, Mail, FileDown, Upload, Check, CheckCircle, AlertCircle, Calendar, CreditCard, Award, BookOpen, UserCheck, ShieldAlert, ShieldCheck, Edit2, Save, Users, UserPlus, Fingerprint
+  ArrowLeft, ArrowRightLeft, ArrowUpRight, Camera, CheckSquare, Download, FileUp, GraduationCap,
+  ImagePlus, Loader2, Pencil, Plus, Printer, RefreshCw, Search, Trash2,
+  UserCheck, UserRound, Users, X, BookOpen, ShieldCheck, Mail, Phone, MapPin, AlertCircle, User
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
-import { uploadImage } from '@/api/media';
 import { toast } from 'sonner';
-import Modal, { ModalHeader } from '@/component/ui/Modal';
-import { useAuth } from '@/context/AuthContext';
 
-// Î“Ã¶Ã‡Î“Ã¶Ã‡ Format helpers Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
-function formatCNIC(raw: string): string {
-  // Remove non-digits, limit to 13
-  const d = raw.replace(/\D/g, '').slice(0, 13);
-  if (d.length <= 5) return d;
-  if (d.length <= 12) return `${d.slice(0, 5)}-${d.slice(5)}`;
-  return `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}`;
-}
-function formatPhone(raw: string): string {
-  // Remove non-digits, limit to 11
-  const d = raw.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 4) return d;
-  return `${d.slice(0, 4)}-${d.slice(4)}`;
-}
-function validateCNIC(val: string): boolean {
-  return /^\d{5}-\d{7}-\d$/.test(val);
-}
-function validatePhone(val: string): boolean {
-  return /^\d{4}-\d{7}$/.test(val);
-}
+type Student = any;
+type Teacher = { id: string; name: string; email?: string };
+type Section = { id: string; name: string; capacity?: number; teacher?: Teacher | null; className: string; classId: string };
+type FacilityAvailability = { transport: boolean; hostel: boolean };
 
-// Î“Ã¶Ã‡Î“Ã¶Ã‡ Pakistan Administrative Divisions Data Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
-const PK_GEO: Record<string, Record<string, string[]>> = {
-  Punjab: {
-    Lahore: ['Lahore City', 'Shalimar', 'Data Gunj Bakhsh', 'Ravi', 'Aziz Bhatti', 'Wagah'],
-    Faisalabad: ['Faisalabad City', 'Jaranwala', 'Samundri', 'Tandlianwala', 'Chak Jhumra'],
-    Rawalpindi: ['Rawalpindi City', 'Gujar Khan', 'Kahuta', 'Kotli Sattian', 'Muree', 'Taxila'],
-    Gujranwala: ['Gujranwala City', 'Wazirabad', 'Hafizabad', 'Kamoke', 'Nowshera Virkan'],
-    Multan: ['Multan City', 'Shujabad', 'Jalalpur Pirwala', 'Lodhran'],
-    Sialkot: ['Sialkot City', 'Daska', 'Sambrial', 'Pasrur'],
-    Sargodha: ['Sargodha City', 'Bhalwal', 'Kot Momin', 'Sahiwal', 'Shahpur'],
-    Bahawalpur: ['Bahawalpur City', 'Hasilpur', 'Yazman', 'Khairpur Tamewali'],
-    Gujrat: ['Gujrat City', 'Kharian', 'Sarai Alamgir'],
-    Sheikhupura: ['Sheikhupura City', 'Nankana Sahib', 'Ferozewala', 'Safdarabad'],
-    Kasur: ['Kasur City', 'Chunian', 'Phool Nagar', 'Pattoki'],
-    Okara: ['Okara City', 'Depalpur', 'Renala Khurd'],
-    Jhang: ['Jhang City', 'Chiniot', 'Shorkot'],
-    Dera_Ghazi_Khan: ['D.G. Khan City', 'Taunsa', 'Kot Chutta'],
-    Pakpattan: ['Pakpattan City', 'Arifwala'],
-    Vehari: ['Vehari City', 'Mailsi', 'Burewala'],
-    Sahiwal: ['Sahiwal City', 'Chichawatni'],
-    Narowal: ['Narowal City', 'Shakargarh'],
-    Mandi_Bahauddin: ['Mandi Bahauddin City', 'Phalia', 'Malikwal'],
-    Attock: ['Attock City', 'Hazro', 'Pindigheb', 'Fatehjang'],
-    Chakwal: ['Chakwal City', 'Talagang', 'Choa Saidan Shah'],
-    Jhelum: ['Jhelum City', 'Sohawa', 'Dina', 'Pind Dadan Khan'],
-    Bhakkar: ['Bhakkar City', 'Mankera', 'Kallurkot'],
-    Khushab: ['Khushab City', 'Nurpur', 'Quaidabad'],
-    Mianwali: ['Mianwali City', 'Piplan', 'Isa Khel'],
-    Muzaffargarh: ['Muzaffargarh City', 'Kot Addu', 'Alipur'],
-    Layyah: ['Layyah City', 'Chowbara', 'Karor Lal Esan'],
-    Rajanpur: ['Rajanpur City', 'Jampur', 'Rojhan'],
-    Lodhran: ['Lodhran City', 'Dunyapur', 'Kahror Pakka'],
-    Khanewal: ['Khanewal City', 'Mian Channu', 'Kabir Wala'],
-    Toba_Tek_Singh: ['Toba Tek Singh City', 'Gojra', 'Kamalia'],
-    Hafizabad: ['Hafizabad City', 'Pindi Bhattian'],
-    Chiniot: ['Chiniot City', 'Bhawana', 'Lalian'],
-    Nankana_Sahib: ['Nankana Sahib City', 'Sangla Hill', 'Shahkot'],
-    Rahim_Yar_Khan: ['Rahim Yar Khan City', 'Sadiqabad', 'Liaqatpur', 'Khanpur'],
-  },
-  Sindh: {
-    Karachi: ['Karachi Central', 'Karachi East', 'Karachi West', 'Karachi South', 'Korangi', 'Malir', 'Kemari'],
-    Hyderabad: ['Hyderabad City', 'Latifabad', 'Qasimabad', 'Tando Muhammad Khan'],
-    Sukkur: ['Sukkur City', 'Rohri', 'Pano Aqil'],
-    Larkana: ['Larkana City', 'Ratodero', 'Shahdadkot'],
-    Nawabshah: ['Nawabshah City', 'Sakrand', 'Qazi Ahmed'],
-    Mirpur_Khas: ['Mirpur Khas City', 'Jhuddo', 'Kot Ghulam Muhammad'],
-    Jacobabad: ['Jacobabad City', 'Garhi Khairo', 'Thull'],
-    Shikarpur: ['Shikarpur City', 'Lakhi', 'Garhi Yasin'],
-    Khairpur: ['Khairpur City', 'Gambat', 'Kot Diji', 'Ubauro'],
-    Dadu: ['Dadu City', 'Johi', 'Mehar', 'Khairpur Nathan Shah'],
-    Sanghar: ['Sanghar City', 'Shahdadpur', 'Sinjhoro'],
-    Umerkot: ['Umerkot City', 'Pithoro', 'Kunri'],
-    Tharparkar: ['Mithi', 'Diplo', 'Chachro'],
-    Badin: ['Badin City', 'Talhar', 'Tando Bago'],
-    Matiari: ['Matiari City', 'Hala', 'Saeedabad'],
-    Thatta: ['Thatta City', 'Gharo', 'Sujawal'],
-    Jamshoro: ['Kotri', 'Sehwan', 'Manjhand'],
-    Ghotki: ['Ubauro', 'Daharki', 'Mirpur Mathelo'],
-    Kashmore: ['Kashmore City', 'Kandhkot'],
-    Kamber_Shahdadkot: ['Kamber City', 'Warah'],
-    Qambar_Shahdadkot: ['Qambar City', 'Miro Khan'],
-    Tando_Muhammad_Khan: ['Tando Muhammad Khan City'],
-    Tando_Allahyar: ['Tando Allahyar City', 'Chambar'],
-  },
-  KPK: {
-    Peshawar: ['Peshawar City', 'Bara', 'Nauthia', 'Chamkani'],
-    Mardan: ['Mardan City', 'Rustam', 'Katlang', 'Takht Bhai'],
-    Abbottabad: ['Abbottabad City', 'Havelian', 'Nathiagali', 'Haripur'],
-    Swat: ['Saidu Sharif', 'Matta', 'Kabal', 'Bahrain', 'Kalam'],
-    Charsadda: ['Charsadda City', 'Tangi', 'Shabqadar'],
-    Nowshera: ['Nowshera City', 'Pabbi', 'Akora Khattak'],
-    Kohat: ['Kohat City', 'Hangu', 'Lachi', 'Tall'],
-    Mansehra: ['Mansehra City', 'Balakot', 'Oghi', 'Battagram'],
-    Dera_Ismail_Khan: ['D.I. Khan City', 'Paharpur', 'Kulachi'],
-    Swabi: ['Swabi City', 'Razzar', 'Topi'],
-    Malakand: ['Malakand City', 'Bat Khela', 'Thana'],
-    Buner: ['Daggar', 'Gao', 'Sowari'],
-    Dir_Lower: ['Timergara', 'Balambat'],
-    Dir_Upper: ['Chitral', 'Drosh'],
-    Chitral: ['Chitral City', 'Drosh', 'Booni'],
-    Shangla: ['Alpuri', 'Martung'],
-    Lakki_Marwat: ['Lakki City', 'Serai Naurang'],
-    Tank: ['Tank City'],
-    Karak: ['Karak City', 'Takht-e-Nasrati'],
-    Tor_Ghar: ['Torghar City'],
-    Kohistan: ['Dassu'],
-    Haripur: ['Haripur City', 'Khurd', 'Ghazi'],
-    Battagram: ['Battagram City', 'Allai'],
-    Bannu: ['Bannu City', 'Domel', 'Ghoriwala'],
-  },
-  Balochistan: {
-    Quetta: ['Quetta City', 'Sariab', 'Zarghoon', 'Kuchlak'],
-    Turbat: ['Turbat City', 'Tump', 'Mand'],
-    Khuzdar: ['Khuzdar City', 'Zehri'],
-    Gwadar: ['Gwadar City', 'Pasni', 'Ormara'],
-    Chaman: ['Chaman City', 'Qila Abdullah'],
-    Hub: ['Hub City', 'Uthal'],
-    Kalat: ['Kalat City', 'Surab', 'Mangochar'],
-    Kharan: ['Kharan City', 'Washuk'],
-    Loralai: ['Loralai City', 'Bori', 'Duki'],
-    Zhob: ['Zhob City', 'Sherani'],
-    Panjgur: ['Panjgur City', 'Gichk'],
-    Sibi: ['Sibi City', 'Lehri', 'Harnai'],
-    Nasirabad: ['Dera Murad Jamali', 'Tamboo'],
-    Jaffarabad: ['Dera Allah Yar', 'Gandava'],
-    Musakhel: ['Musakhel City', 'Kingri'],
-    Barkhan: ['Barkhan City', 'Rakhni'],
-    Dera_Bugti: ['Sui', 'Phelawagh'],
-    Kech: ['Turbat City', 'Buleda'],
-    Awaran: ['Awaran City', 'Jhal'],
-    Lasbela: ['Uthal', 'Bela', 'Liari'],
-    Washuk: ['Washuk City', 'Mashkel'],
-    Chaghi: ['Dalbandin', 'Nok Kundi'],
-  },
-  'Azad Kashmir': {
-    Muzaffarabad: ['Muzaffarabad City', 'Hattian Bala', 'Neelum'],
-    Mirpur: ['Mirpur City', 'Dudyal', 'Chakswari'],
-    Rawalakot: ['Rawalakot City', 'Haveli', 'Bagh'],
-    Bagh: ['Bagh City', 'Dhirkot', 'Haveli'],
-    Kotli: ['Kotli City', 'Sehnsa', 'Charhoi'],
-    Bhimber: ['Bhimber City', 'Samahni'],
-    Sudhnoti: ['Pallandri City', 'Mong'],
-    Haveli: ['Forward Kahuta', 'Haveli City'],
-  },
-  Gilgit_Baltistan: {
-    Gilgit: ['Gilgit City', 'Jutial', 'Nomal'],
-    Skardu: ['Skardu City', 'Shigar', 'Khaplu'],
-    Hunza: ['Karimabad', 'Aliabad', 'Nagar'],
-    Ghizer: ['Gahkuch', 'Phundar'],
-    Diamer: ['Chilas', 'Darel', 'Tangir'],
-    Astore: ['Astore City', 'Gurez'],
-    Ghanche: ['Khaplu', 'Saltoro'],
-    Shigar: ['Shigar City'],
-    Kharmang: ['Kharmang City'],
-  },
-  ICT: {
-    Islamabad: ['Islamabad Urban', 'Islamabad Rural', 'Rawalpindi Urban', 'Saidpur', 'Tarnol'],
-  },
+type FormState = {
+  name: string;
+  dateOfBirth: string;
+  gender: string;
+  religion: string;
+  bFormNumber: string;
+  email: string;
+  phone: string;
+  admissionType: 'NEW' | 'TRANSFER';
+  sectionId: string;
+  session: string;
+  previousSchool: string;
+  previousClass: string;
+  leavingCertificateUrl: string;
+  previousAcademicRecord: string;
+  fatherName: string;
+  fatherStatus: 'ALIVE' | 'DECEASED';
+  fatherMobile1: string;
+  fatherWhatsapp: string;
+  fatherCnic: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherMobile: string;
+  motherOccupation: string;
+  guardianName: string;
+  guardianRelation: string;
+  guardianMobile: string;
+  currentAddress: string;
+  permanentAddress: string;
+  transportRequired: boolean;
+  hostelRequired: boolean;
+  avatarUrl: string;
 };
 
-// Get districts for a province
-function getDistricts(province: string): string[] {
-  const prov = PK_GEO[province];
-  return prov ? Object.keys(prov).map(k => k.replace(/_/g, ' ')) : [];
+const input = 'w-full rounded-2xl border border-slate-200 dark:border-border/80 bg-white dark:bg-background/90 px-4 py-3 text-sm text-foreground outline-none shadow-sm transition placeholder:text-muted-foreground/60 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 font-medium';
+const button = 'inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2 text-sm font-semibold transition hover:bg-accent';
+const primaryBtn = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-600/20 hover:brightness-110 transition disabled:opacity-60';
+const currentSession = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+const religions = ['Muslim', 'Christian', 'Hindu', 'Sikh', 'Buddhist', 'Other'];
+const guardianRelations = ['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'];
+const fatherOccupations = ['Business', 'Government Job', 'Private Job', 'Self Employed', 'Farmer', 'Overseas', 'Driver', 'Shopkeeper', 'Labour', 'Doctor', 'Engineer', 'Teacher', 'Other'];
+const motherOccupations = ['Housewife', 'Government Job', 'Private Job', 'Business', 'Self Employed', 'Teacher', 'Doctor', 'Engineer', 'Other'];
+
+const emptyForm = (): FormState => ({
+  name: '', dateOfBirth: '', gender: 'MALE', religion: 'Muslim', bFormNumber: '', email: '', phone: '',
+  admissionType: 'NEW', sectionId: '', session: currentSession,
+  previousSchool: '', previousClass: '', leavingCertificateUrl: '', previousAcademicRecord: '',
+  fatherName: '', fatherStatus: 'ALIVE', fatherMobile1: '', fatherWhatsapp: '', fatherCnic: '', fatherOccupation: '',
+  motherName: '', motherMobile: '', motherOccupation: '',
+  guardianName: '', guardianRelation: '', guardianMobile: '',
+  currentAddress: '', permanentAddress: '',
+  transportRequired: false, hostelRequired: false, avatarUrl: '',
+});
+
+function formatPhone(raw: string) {
+  const digits = raw.replace(/\D/g, '').slice(0, 11);
+  return digits.length > 4 ? `${digits.slice(0, 4)}-${digits.slice(4)}` : digits;
 }
 
-// Get tehsils for a province+district
-function getTehsils(province: string, district: string): string[] {
-  const prov = PK_GEO[province];
-  if (!prov) return [];
-  const key = district.replace(/ /g, '_');
-  return prov[key] || prov[district] || [];
+function formatCnic(raw: string) {
+  const digits = raw.replace(/\D/g, '').slice(0, 13);
+  if (digits.length <= 5) return digits;
+  if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
 }
 
-// Î“Ã¶Ã‡Î“Ã¶Ã‡ Automatic 100KB Image Compressor Helper Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
-export default function Students() {
-  const { user, previewRole } = useAuth();
-  const role = previewRole ?? user?.role;
-  const isTeacher = role === 'TEACHER';
+function phoneValid(value: string) { return !value || /^\d{4}-\d{7}$/.test(value); }
+function cnicValid(value: string) { return !value || /^\d{5}-\d{7}-\d$/.test(value); }
 
-  const [students, setStudents] = useState<any[]>([]);
-  const [classes, setClasses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'list' | 'add' | 'profile'>('list');
-  const [saving, setSaving] = useState(false);
-  const [search, setSearch] = useState('');
+function csvCell(value: unknown) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
 
-  // Modals / dialogs state
-  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [profileTab, setProfileTab] = useState('basic');
-  const [showImport, setShowImport] = useState(false);
-  const [showPromote, setShowPromote] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [showIdCard, setShowIdCard] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [editForm, setEditForm] = useState<any>({});
-  const [editSaving, setEditSaving] = useState(false);
+function parseCsv(text: string) {
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [] as Record<string, string>[];
+  const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, '').toLowerCase().replace(/\s+/g, ''));
+  return lines.slice(1).map((line) => {
+    const cols = line.split(/,(?=(?:[^\\"]*\\"[^\\"]*\\")*[^\\"]*$)/).map((v) => v.trim().replace(/^"|"$/g, '').replace(/""/g, ''));
+    return Object.fromEntries(headers.map((header, index) => [header, cols[index] ?? '']));
+  }).filter((row) => Object.values(row).some(Boolean));
+}
 
-  // Selection state for batch actions
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [promoteClassId, setPromoteClassId] = useState('');
-  const [promoteSectionId, setPromoteSectionId] = useState('');
-
-  // Excel import mock state
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
-
-  // Auto increment suggestions for Admission / Roll
-  const nextAdmissionNo = students.length > 0
-    ? 'STD' + String(Math.max(...students.map(s => parseInt(s.admissionNo.replace(/\D/g, '') || '0'))) + 1).padStart(3, '0')
-    : 'STD001';
-
-  // Compute next roll number for a given sectionId
-  const getNextRollForSection = useCallback((sectionId: string) => {
-    if (!sectionId) return '';
-    const inSection = students.filter(s => s.sectionId === sectionId || s.section?.id === sectionId);
-    if (inSection.length === 0) return '1';
-    const max = Math.max(...inSection.map(s => parseInt(s.rollNo || '0') || 0));
-    return String(max + 1);
-  }, [students]);
-
-  const [parentPassword, setParentPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    studentMobile: '',
-    admissionNo: '',
-    rollNo: '',
-    gender: 'MALE',
-    dateOfBirth: '',
-    bloodGroup: '',
-    religion: '',
-    bFormNumber: '',
-    sectionId: '',
-    session: '2026-2027',
-    admissionDate: new Date().toISOString().split('T')[0],
-    status: 'ACTIVE',
-    photoUrl: '',
-    // Father info
-    fatherName: '',
-    fatherMobile1: '',
-    fatherMobile2: '',
-    fatherWhatsapp: '',
-    fatherCnic: '',
-    fatherOccupation: '',
-    // Mother info
-    motherName: '',
-    motherMobile: '',
-    motherCnic: '',
-    motherOccupation: '',
-    // Guardian info
-    guardianName: '',
-    relation: 'FATHER',
-    guardianMobile: '',
-    // Address
-    country: 'Pakistan',
-    province: 'Punjab',
-    district: 'Lahore',
-    tehsil: 'Lahore City',
-    city: 'Lahore',
-    currentAddress: '',
-    permanentAddress: '',
-    emergencyContact: '',
-    // Academic
-    previousSchool: '',
-    previousClass: '',
-    leavingCertificateUrl: '',
-    admissionType: 'NEW',
-    previousAcademicRecord: '',
-    // Additional
-    medicalNotes: '',
-    specialRequirements: '',
-    transportRequired: false,
-    hostelRequired: false,
-    remarks: ''
+async function compressPhoto(file: File) {
+  if (!file.type.startsWith('image/')) throw new Error('Please select an image file');
+  const source = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Unable to read image')); };
+    image.src = url;
   });
+  const maxSide = 320;
+  const width = source.naturalWidth || source.width;
+  const height = source.naturalHeight || source.height;
+  const scale = Math.min(1, maxSide / Math.max(width, height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Image compression is unavailable');
+  context.drawImage(source, 0, 0, canvas.width, canvas.height);
+  let smallest = '';
+  for (const quality of [0.72, 0.62, 0.52, 0.44, 0.36, 0.3, 0.24]) {
+    const data = canvas.toDataURL('image/webp', quality);
+    smallest = data;
+    const bytes = Math.ceil((data.length * 3) / 4);
+    if (bytes <= 30 * 1024) return data;
+  }
+  return smallest;
+}
 
-  const [step, setStep] = useState(1);
+export default function Students() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [facilities, setFacilities] = useState<FacilityAvailability>({ transport: false, hostel: false });
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'list' | 'add'>('list');
+  const [saving, setSaving] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [profile, setProfile] = useState<Student | null>(null);
+  const [editing, setEditing] = useState<Student | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm());
+  const [credentials, setCredentials] = useState<any>(null);
+  const [moveMode, setMoveMode] = useState<'promote' | 'transfer' | null>(null);
+  const [targetSection, setTargetSection] = useState('');
 
-
-  const fetchAll = () => {
+  const load = async () => {
     setLoading(true);
-    Promise.all([apiClient.get('/people/students'), apiClient.get('/classes')])
-      .then(([sRes, cRes]) => {
-        const sData = Array.isArray(sRes.data) ? sRes.data : [];
-        const cData = Array.isArray(cRes.data) ? cRes.data : [];
-        setStudents(sData);
-        setClasses(cData);
-      })
-      .catch(() => {
-        setStudents([]);
-        setClasses([]);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const facilityPromise = apiClient.get('/people/student-facilities').catch(() => ({ data: {} }));
+      const [studentRes, classRes, facilityRes] = await Promise.all([
+        apiClient.get('/people/students'),
+        apiClient.get('/classes'),
+        facilityPromise,
+      ]);
+      setStudents(Array.isArray(studentRes.data) ? studentRes.data : []);
+      setClasses(Array.isArray(classRes.data) ? classRes.data : []);
+      setFacilities({
+        transport: Boolean(facilityRes.data?.transport),
+        hostel: Boolean(facilityRes.data?.hostel),
+      });
+      setSelectedIds([]);
+    } catch (error: any) {
+      setStudents([]);
+      setClasses([]);
+      toast.error(error?.response?.data?.message || 'Unable to load student database');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchAll();
+    void load();
   }, []);
 
-  // Update form fields with auto values when opening registration
-  useEffect(() => {
-    if (view === 'add') {
-      const generatedPass = Math.random().toString(36).slice(-8);
-      setParentPassword(generatedPass);
-      setForm(prev => ({
-        ...prev,
-        admissionNo: nextAdmissionNo,
-        rollNo: ''
-      }));
-    }
-  }, [view]);
+  const sections: Section[] = useMemo(() => {
+    return classes.flatMap((item: any) =>
+      (item.sections || []).map((section: any) => ({
+        ...section,
+        className: item.name,
+        classId: item.id,
+      }))
+    );
+  }, [classes]);
 
-  // When sectionId changes in form, auto-compute roll number
-  useEffect(() => {
-    if (view === 'add' && form.sectionId) {
-      setForm(prev => ({ ...prev, rollNo: getNextRollForSection(form.sectionId) }));
-    }
-  }, [form.sectionId, view]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((student) =>
+      [
+        student.name,
+        student.admissionNo,
+        student.rollNo,
+        student.section?.name,
+        student.section?.class?.name,
+        student.fatherName,
+        student.fatherMobile1,
+        student.phone,
+        student.bFormNumber,
+      ].some((value) => String(value ?? '').toLowerCase().includes(q))
+    );
+  }, [students, search]);
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const boysCount = useMemo(() => students.filter((s) => s.gender === 'MALE').length, [students]);
+  const girlsCount = useMemo(() => students.filter((s) => s.gender === 'FEMALE').length, [students]);
+  const sectionCount = useMemo(() => new Set(students.map((s) => s.sectionId).filter(Boolean)).size, [students]);
+  const allSelected = filtered.length > 0 && selectedIds.length === filtered.length;
+
+  const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    setCredentials(null);
+    setForm(emptyForm());
+    setView('add');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const openEdit = (student: Student) => {
+    setEditing(student);
+    setCredentials(null);
+    const parent = student.parents?.[0]?.parent;
+    setForm({
+      ...emptyForm(),
+      ...student,
+      fatherName: student.fatherName || parent?.fatherName || parent?.name || '',
+      fatherMobile1: formatPhone(student.fatherMobile1 || parent?.fatherMobile1 || parent?.phone || ''),
+      fatherWhatsapp: formatPhone(student.fatherWhatsapp || parent?.fatherWhatsapp || ''),
+      fatherCnic: formatCnic(student.fatherCnic || parent?.fatherCnic || ''),
+      fatherOccupation: student.fatherOccupation || parent?.fatherOccupation || '',
+      fatherStatus: student.fatherStatus || parent?.fatherStatus || 'ALIVE',
+      motherName: student.motherName || parent?.motherName || '',
+      motherMobile: formatPhone(student.motherMobile || parent?.motherMobile || ''),
+      motherOccupation: student.motherOccupation || parent?.motherOccupation || '',
+      guardianName: student.guardianName || parent?.guardianName || '',
+      guardianRelation: student.guardianRelation || parent?.guardianRelation || '',
+      guardianMobile: formatPhone(student.guardianMobile || parent?.guardianMobile || ''),
+      currentAddress: student.currentAddress || student.address || parent?.addressLine || '',
+      permanentAddress: student.permanentAddress || '',
+      phone: formatPhone(student.phone || ''),
+      bFormNumber: formatCnic(student.bFormNumber || ''),
+      avatarUrl: student.avatarUrl || '',
+      sectionId: student.sectionId || '',
+      session: student.session || currentSession,
+      admissionType: student.admissionType === 'TRANSFER' ? 'TRANSFER' : 'NEW',
+      dateOfBirth: student.dateOfBirth ? String(student.dateOfBirth).slice(0, 10) : '',
+    });
+    setView('add');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePhoto = async (file?: File) => {
+    if (!file) return;
+    setCompressing(true);
+    try {
+      update('avatarUrl', await compressPhoto(file));
+      toast.success('Student photo attached');
+    } catch (error: any) {
+      toast.error(error?.message || 'Unable to process photo');
+    } finally {
+      setCompressing(false);
+    }
+  };
+
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.name.trim() || !form.sectionId) {
+      return toast.error('Student name and Class / Section are required');
+    }
+    if (form.admissionType === 'TRANSFER' && (!form.previousSchool.trim() || !form.previousClass.trim())) {
+      return toast.error('Previous School and Previous Class are required for transfer students');
+    }
+    if (!cnicValid(form.bFormNumber) || (form.bFormNumber && form.bFormNumber.replace(/\D/g, '').length !== 13)) {
+      return toast.error('Student CNIC / B-Form must contain exactly 13 digits: 35202-1234567-1');
+    }
+    if (!form.fatherName.trim()) {
+      return toast.error("Father's Name is required");
+    }
+
+    if (form.fatherStatus === 'ALIVE') {
+      if (!form.fatherMobile1.trim() || form.fatherMobile1.replace(/\D/g, '').length !== 11) {
+        return toast.error('Father Mobile Number is required (11 digits: 0300-1234567)');
+      }
+    } else if (form.fatherStatus === 'DECEASED') {
+      if (!form.guardianName.trim()) {
+        return toast.error('Guardian Full Name is required when Father is deceased');
+      }
+      if (!form.guardianRelation.trim()) {
+        return toast.error('Guardian Relation with student is required');
+      }
+      if (!form.guardianMobile.trim() || form.guardianMobile.replace(/\D/g, '').length !== 11) {
+        return toast.error('Guardian Mobile Number is required (11 digits: 0300-1234567)');
+      }
+    }
+
+    for (const [label, value] of [
+      ['Student Mobile', form.phone],
+      ['Father Mobile', form.fatherMobile1],
+      ['Father WhatsApp', form.fatherWhatsapp],
+      ['Guardian Mobile', form.guardianMobile],
+    ] as const) {
+      if (value && (!phoneValid(value) || value.replace(/\D/g, '').length !== 11)) {
+        return toast.error(`${label} must contain 11 digits: 0300-1234567`);
+      }
+    }
+    if (form.fatherCnic && (!cnicValid(form.fatherCnic) || form.fatherCnic.replace(/\D/g, '').length !== 13)) {
+      return toast.error('Father CNIC must contain exactly 13 digits: 35202-1234567-1');
+    }
+
     setSaving(true);
     try {
-      await apiClient.post('/people/students', {
+      const payload: any = {
         ...form,
-        phone: form.studentMobile || '',
-        addressCountry: form.country,
-        addressProvince: form.province,
-        addressCity: form.city || form.district,
-        addressLine: form.currentAddress,
-        address: form.currentAddress,
-        password: 'student123',
-        parentPassword: parentPassword
-      });
-      toast.success('Student added successfully along with Parent registration!');
-      setView('list');
-      setStep(1);
-      // Reset form
-      setPhotoPreview(null);
-      setForm({
-        name: '', email: '', studentMobile: '', admissionNo: '', rollNo: '', gender: 'MALE', dateOfBirth: '',
-        bloodGroup: '', religion: '', bFormNumber: '', sectionId: '', session: '2026-2027',
-        admissionDate: new Date().toISOString().split('T')[0], status: 'ACTIVE', photoUrl: '',
-        fatherName: '', fatherMobile1: '', fatherMobile2: '', fatherWhatsapp: '', fatherCnic: '', fatherOccupation: '',
-        motherName: '', motherMobile: '', motherCnic: '', motherOccupation: '',
-        guardianName: '', relation: 'FATHER', guardianMobile: '',
-        country: 'Pakistan', province: 'Punjab', district: 'Lahore', tehsil: 'Lahore City', city: 'Lahore',
-        currentAddress: '', permanentAddress: '', emergencyContact: '',
-        previousSchool: '', previousClass: '', leavingCertificateUrl: '', admissionType: 'NEW', previousAcademicRecord: '',
-        medicalNotes: '', specialRequirements: '', transportRequired: false, hostelRequired: false, remarks: ''
-      });
-      fetchAll();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to add student');
+        name: form.name.trim(),
+        phone: form.phone || undefined,
+        studentMobile: form.phone || undefined,
+        email: form.email.trim().toLowerCase() || undefined,
+        address: form.currentAddress.trim() || undefined,
+        bFormNumber: form.bFormNumber || undefined,
+        fatherMobile1: form.fatherMobile1 || undefined,
+        fatherWhatsapp: form.fatherWhatsapp || undefined,
+        fatherCnic: form.fatherCnic || undefined,
+        motherMobile: form.motherMobile || undefined,
+        guardianMobile: form.guardianMobile || undefined,
+        avatarUrl: form.avatarUrl || undefined,
+        admissionType: form.admissionType,
+        parentPassword: `${form.name.replace(/\s+/g, '').slice(0, 5)}${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}!A9`,
+      };
+
+      if (editing) {
+        await apiClient.patch(`/people/students/${editing.id}`, payload);
+        toast.success('Student profile updated successfully!');
+        setView('list');
+      } else {
+        const response = await apiClient.post('/people/students', payload);
+        setCredentials(response.data?.credentials || null);
+        toast.success(`Student admitted — ${response.data?.student?.admissionNo || 'Admission created'}`);
+        setView('list');
+      }
+      await load();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Unable to save student');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this student? (Soft delete)')) return;
+  const archive = async (id: string) => {
+    if (!window.confirm('Archive this student? Existing school records will remain stored.')) return;
     try {
       await apiClient.delete(`/people/students/${id}`);
-      toast.success('Student archived successfully');
-      fetchAll();
-    } catch {
-      setStudents(prev => prev.filter(s => s.id !== id));
-      toast.success('Student archived successfully');
+      setProfile(null);
+      await load();
+      toast.success('Student archived');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Unable to archive student');
     }
   };
 
-  const handleImport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!importFile) return;
+  const move = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!moveMode || !targetSection || !selectedIds.length) return;
+    try {
+      await apiClient.post(`/people/students/${moveMode}`, {
+        studentIds: selectedIds,
+        sectionId: targetSection,
+        ...(moveMode === 'promote' ? { session: currentSession } : {}),
+      });
+      toast.success(`${selectedIds.length} student(s) ${moveMode === 'promote' ? 'promoted' : 'transferred'}`);
+      setMoveMode(null);
+      setTargetSection('');
+      await load();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || `Unable to ${moveMode} students`);
+    }
+  };
+
+  const exportCsv = () => {
+    const rows = [
+      ['Admission No', 'Name', 'Class', 'Section', 'Roll No', 'Religion', 'Admission Type', 'Previous School', 'Previous Class', 'Father Name', 'Father Mobile'],
+      ...students.map((student) => [
+        student.admissionNo,
+        student.name,
+        student.section?.class?.name,
+        student.section?.name,
+        student.rollNo,
+        student.religion,
+        student.admissionType,
+        student.previousSchool,
+        student.previousClass,
+        student.fatherName,
+        student.fatherMobile1,
+      ]),
+    ];
+    const csv = rows.map((row) => row.map(csvCell).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'edusphere-students.csv';
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast.success('Students exported to CSV');
+  };
+
+  const importCsv = async (file: File) => {
     setImporting(true);
-    setTimeout(() => {
+    try {
+      const rows = parseCsv(await file.text());
+      if (!rows.length) throw new Error('CSV contains no student rows');
+      let created = 0;
+      for (const row of rows) {
+        if (!row.name || !row.sectionid) continue;
+        await apiClient.post('/people/students', {
+          name: row.name,
+          sectionId: row.sectionid,
+          email: row.email || undefined,
+          studentMobile: row.studentmobile || row.phone || undefined,
+          fatherName: row.fathername || undefined,
+          fatherMobile1: row.fathermobile1 || row.fathermobile || undefined,
+          dateOfBirth: row.dateofbirth || row.dob || undefined,
+          gender: String(row.gender || 'MALE').toUpperCase(),
+          religion: row.religion || 'Muslim',
+          bFormNumber: row.bformnumber || row.cnic || undefined,
+          session: row.session || currentSession,
+          admissionType: row.admissiontype === 'TRANSFER' ? 'TRANSFER' : 'NEW',
+          previousSchool: row.previousschool || undefined,
+          previousClass: row.previousclass || undefined,
+          previousAcademicRecord: row.previousacademicrecord || undefined,
+          parentPassword: `${row.name.replace(/\s+/g, '').slice(0, 5)}${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}!A9`,
+        });
+        created += 1;
+      }
+      await load();
+      toast.success(`${created} student(s) imported`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Student import failed');
+    } finally {
       setImporting(false);
-      setShowImport(false);
-      setImportFile(null);
-      toast.success('Import processed successfully');
-      fetchAll();
-    }, 1500);
-  };
-
-  const handlePromote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedIds.length === 0) {
-      toast.warning('Please select students to promote');
-      return;
-    }
-    toast.success(`Selected ${selectedIds.length} students promoted successfully!`);
-    setShowPromote(false);
-    setSelectedIds([]);
-  };
-
-  const handleTransfer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedIds.length === 0) {
-      toast.warning('Please select students to transfer');
-      return;
-    }
-    toast.success(`Transferred ${selectedIds.length} students successfully!`);
-    setShowTransfer(false);
-    setSelectedIds([]);
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filtered.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filtered.map(s => s.id));
     }
   };
 
-  const exportExcel = () => {
-    toast.info('Exporting excel spreadsheet...');
-    setTimeout(() => {
-      toast.success('Excel file exported successfully!');
-    }, 1000);
+  const printId = (student: Student) => {
+    const popup = window.open('', '_blank', 'width=540,height=760');
+    if (!popup) return toast.error('Please allow popups to print the ID card');
+    const photo = student.avatarUrl || '';
+    popup.document.write(`<!doctype html><html><head><title>${student.name} - ID Card</title><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;padding:28px;display:flex;justify-content:center}.card{width:360px;border-radius:24px;overflow:hidden;background:#1e293b;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.5)}.head{padding:24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;text-align:center}.photo{width:90px;height:90px;border-radius:22px;object-fit:cover;background:#334155;margin:0 auto 12px;border:3px solid #fff;display:block}.body{padding:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #334155;padding:8px 0}.muted{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em}.value{font-weight:700;font-size:13px;color:#fff}</style></head><body><div class='card'><div class='head'>${photo ? `<img class='photo' src='${photo}'/>` : `<div class='photo' style='display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;'>${student.name.charAt(0)}</div>`}<div style='font-size:10px;letter-spacing:0.2em;opacity:.8;font-weight:900;'>EDUSPHERE STUDENT ID</div><h2 style='margin:4px 0 0;font-size:20px;font-weight:900;'>${student.name}</h2></div><div class='body'><div class='row'><span class='muted'>Admission No</span><span class='value'>${student.admissionNo || '—'}</span></div><div class='row'><span class='muted'>Roll No</span><span class='value'>${student.rollNo || '—'}</span></div><div class='row'><span class='muted'>Class / Sec</span><span class='value'>${student.section?.class?.name || '—'} / ${student.section?.name || '—'}</span></div><div class='row'><span class='muted'>Session</span><span class='value'>${student.session || currentSession}</span></div><div class='row'><span class='muted'>Father</span><span class='value'>${student.fatherName || '—'}</span></div><div class='row' style='border:none;'><span class='muted'>Emergency</span><span class='value'>${student.fatherMobile1 || student.phone || '—'}</span></div></div></div><script>window.onload=()=>window.print()</script></body></html>`);
+    popup.document.close();
   };
 
-  const exportPdf = () => {
-    toast.info('Generating PDF Report...');
-    setTimeout(() => {
-      toast.success('PDF report saved to downloads!');
-    }, 1000);
-  };
-
-  const printSelectedCards = () => {
-    if (selectedIds.length === 0) {
-      toast.warning('Please select at least one student to print ID cards');
-      return;
-    }
-    setShowIdCard(true);
-  };
-
-  // Filter state dropdowns
-  const [filterClassId, setFilterClassId] = useState('');
-  const [filterSectionId, setFilterSectionId] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-
-  const filtered = students.filter(s => {
-    const term = search.toLowerCase();
-    const className = s.section?.class?.name?.toLowerCase() || '';
-    const sectionName = s.section?.name?.toLowerCase() || '';
-    const rollNo = s.rollNo || '';
-    const matchesSearch = s.name.toLowerCase().includes(term) ||
-      s.admissionNo.toLowerCase().includes(term) ||
-      rollNo.toLowerCase().includes(term) ||
-      className.includes(term) ||
-      sectionName.includes(term);
-
-    const sClassId = s.section?.class?.id || s.section?.classId;
-    const sSectionId = s.sectionId || s.section?.id;
-
-    const matchesClass = !filterClassId || sClassId === filterClassId;
-    const matchesSection = !filterSectionId || sSectionId === filterSectionId;
-    const matchesStatus = !filterStatus || s.status === filterStatus;
-
-    return matchesSearch && matchesClass && matchesSection && matchesStatus;
-  });
-
-  const sections = classes.flatMap((c: any) =>
-    (c.sections || []).map((s: any) => ({ ...s, className: c.name, classId: c.id }))
-  );
-
-  const availableFilterSections = filterClassId
-    ? sections.filter(s => s.classId === filterClassId)
-    : sections;
-
-  // Î“Ã¶Ã‡Î“Ã¶Ã‡ Render Registration View (6-Step Wizard) Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
+  // ══════════════════════════════════════════════════════════════
+  // FULL PAGE ADD / EDIT STUDENT VIEW
+  // ══════════════════════════════════════════════════════════════
   if (view === 'add') {
     return (
-      <div className="animate-fade-in pb-20">
-        {/* â”€â”€ Premium Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <div className="relative overflow-hidden rounded-[28px] mb-8" style={{background: 'linear-gradient(135deg, #0f0f23 0%, #1a0533 40%, #0d1a3a 100%)'}}>
-          <div className="absolute inset-0 opacity-60" style={{backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(139,92,246,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(59,130,246,0.3) 0%, transparent 50%)'}} />
-          <div className="relative px-8 py-8">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
-              {/* Photo Upload */}
-              <label className="relative cursor-pointer group shrink-0 mx-auto lg:mx-0">
-                <div className="h-32 w-32 rounded-[24px] overflow-hidden border-2 border-white/20 shadow-2xl shadow-violet-900/50 flex items-center justify-center" style={{background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(59,130,246,0.2))'}}>
-                  {photoPreview
-                    ? <img src={photoPreview} alt="Student" className="h-full w-full object-cover" />
-                    : <div className="flex flex-col items-center gap-2 text-white/40">
-                        <User size={36} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Photo</span>
-                      </div>
-                  }
-                </div>
-                {photoPreview && (
-                  <button type="button" onClick={e => { e.preventDefault(); setPhotoPreview(null); setForm(p => ({ ...p, photoUrl: '' })); }}
-                    className="absolute -top-2 -right-2 h-7 w-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg z-10">
-                    <X size={13}/>
-                  </button>
-                )}
-                <div className="absolute inset-0 rounded-[24px] bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span className="text-white text-[9px] font-black uppercase tracking-widest">Change</span>
-                </div>
-                <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    if (!['image/png', 'image/jpeg'].includes(file.type)) throw new Error('Only JPG and PNG images are allowed.');
-                    if (file.size > 2 * 1024 * 1024) throw new Error('Image must be 2 MB or smaller.');
-                    setPhotoPreview(URL.createObjectURL(file));
-                    const uploaded = await uploadImage(file, 'student');
-                    setForm(p => ({ ...p, photoUrl: uploaded.url }));
-                    toast.success('Student photo uploaded.');
-                  } catch (error: any) {
-                    setPhotoPreview(null);
-                    setForm(p => ({ ...p, photoUrl: '' }));
-                    toast.error(error?.response?.data?.message || error?.message || 'Photo upload failed.');
-                  } finally {
-                    e.target.value = '';
-                  }
-                }} />
-              </label>
-
-              {/* Header Text */}
-              <div className="flex-1 text-center lg:text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-violet-300/80 mb-1">Student Enrollment</p>
-                <h1 className="text-3xl font-black text-white tracking-tight mb-2">
-                  {form.name || <span className="text-white/30">New Student</span>}
-                </h1>
-                <p className="text-sm text-white/50 font-medium">Fill in all sections below to complete the student registration.</p>
-                <div className="flex flex-wrap gap-2 mt-4 justify-center lg:justify-start">
-                  {['Student Info','Admission','Family','Address','Academic','Additional'].map((s, i) => (
-                    <span key={i} className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10 text-white/50" style={{background:'rgba(255,255,255,0.05)'}}>{s}</span>
-                  ))}
-                </div>
+      <div className="space-y-6 pb-20 max-w-[1400px] mx-auto animate-fade-in">
+        {/* Soft Cyan Aesthetic Header with Back Button */}
+        <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 via-sky-500/5 to-card p-6 shadow-xl backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-cyan-500/15 text-cyan-500 flex items-center justify-center border border-cyan-500/25 shadow-inner">
+                <GraduationCap size={28} />
               </div>
-
-              {/* Cancel */}
-              <button type="button" onClick={() => { setView('list'); }}
-                className="absolute top-5 right-5 h-9 w-9 rounded-xl border border-white/10 bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/40 text-white/60 hover:text-rose-400 flex items-center justify-center transition-all">
-                <X size={16}/>
-              </button>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    {editing ? 'STUDENT PROFILE UPDATE' : 'NEW STUDENT ADMISSION'}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-semibold">Session {form.session}</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                  {editing ? `Edit Record: ${editing.name}` : 'Add New Student'}
+                </h1>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Register student record, classroom section, and parent/guardian contact details.
+                </p>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-4 py-2 text-sm font-bold text-foreground hover:bg-muted transition-all shadow-sm"
+            >
+              <ArrowLeft size={16} /> Back to Student List
+            </button>
           </div>
         </div>
 
-        <form onSubmit={handleAdd} className="space-y-6 max-w-5xl mx-auto">
-
-          {/* â”€â”€ Section 1: Student Information â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #8b5cf6, #3b82f6)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(139,92,246,0.08), transparent)'}}>
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(139,92,246,0.2)'}}>
-                  <User size={16} className="text-violet-400"/>
+        {/* Full Page Admission Form */}
+        <form onSubmit={save} className="space-y-7">
+          {/* 1. STUDENT INFORMATION (with Left-Side Photo Upload) */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              1. STUDENT INFORMATION
+            </h3>
+            <div className="rounded-2xl border border-border bg-muted/15 p-6">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                {/* LEFT SIDE PHOTO UPLOAD */}
+                <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
+                  <label className="relative flex h-36 w-36 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cyan-500/40 bg-card shadow-inner hover:border-cyan-400 transition-all group">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={compressing}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handlePhoto(file);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                    {form.avatarUrl ? (
+                      <>
+                        <img src={form.avatarUrl} alt="Student" className="h-full w-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-black uppercase tracking-wider transition-opacity">
+                          Change
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground text-center p-2">
+                        {compressing ? <Loader2 size={24} className="animate-spin text-cyan-500" /> : <Camera size={26} className="text-cyan-500" />}
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Student Photo</span>
+                      </div>
+                    )}
+                  </label>
+                  {form.avatarUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => update('avatarUrl', '')}
+                      className="text-[10px] font-bold text-rose-500 hover:text-rose-400 uppercase tracking-wider"
+                    >
+                      Remove Photo
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">JPG/PNG (Max 2MB)</span>
+                  )}
                 </div>
-                <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-wider">Student Information</h2>
-                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">Identity, contact and personal details</p>
+
+                {/* RIGHT FORM FIELDS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
+                  <Field label="Student Full Name" required>
+                    <input
+                      required
+                      className={input}
+                      placeholder="e.g. Muhammad Ali"
+                      value={form.name}
+                      onChange={(e) => update('name', e.target.value)}
+                    />
+                  </Field>
+
+                  <Field label="Date of Birth" required>
+                    <input
+                      required
+                      type="date"
+                      className={input}
+                      value={form.dateOfBirth}
+                      onChange={(e) => update('dateOfBirth', e.target.value)}
+                    />
+                  </Field>
+
+                  <Field label="Gender" required>
+                    <select
+                      className={input}
+                      value={form.gender}
+                      onChange={(e) => update('gender', e.target.value)}
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </Field>
+
+                  <Field label="Class / Section Assignment" required>
+                    <select
+                      required
+                      className={input}
+                      value={form.sectionId}
+                      onChange={(e) => update('sectionId', e.target.value)}
+                    >
+                      <option value="">Select class / section *</option>
+                      {sections.map((sec) => (
+                        <option key={sec.id} value={sec.id}>
+                          {sec.className} — Section {sec.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  <Field label="B-Form / CNIC (Optional)">
+                    <input
+                      inputMode="numeric"
+                      maxLength={15}
+                      className={`${input} font-mono`}
+                      placeholder="35201-xxxxxxx-x"
+                      value={form.bFormNumber}
+                      onChange={(e) => update('bFormNumber', formatCnic(e.target.value))}
+                    />
+                  </Field>
+
+                  <Field label="Religion">
+                    <select
+                      className={input}
+                      value={form.religion}
+                      onChange={(e) => update('religion', e.target.value)}
+                    >
+                      {religions.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  <Field label="Student Email (Optional)">
+                    <input
+                      type="email"
+                      className={input}
+                      placeholder="student@school.edu"
+                      disabled={Boolean(editing)}
+                      value={form.email}
+                      onChange={(e) => update('email', e.target.value)}
+                    />
+                  </Field>
+
+                  <Field label="Student Mobile (Optional)">
+                    <input
+                      inputMode="numeric"
+                      maxLength={12}
+                      className={`${input} font-mono`}
+                      placeholder="0300-1234567"
+                      value={form.phone}
+                      onChange={(e) => update('phone', formatPhone(e.target.value))}
+                    />
+                  </Field>
                 </div>
               </div>
             </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div className="lg:col-span-2 space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Student Name *</label>
-                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Full Name" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
+          </div>
+
+          {/* 2. FATHER & GUARDIAN INFORMATION */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              2. FATHER & GUARDIAN INFORMATION
+            </h3>
+            <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-5">
+              {/* Father Primary Information */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Field label="Father Full Name" required>
+                  <input
+                    required
+                    className={input}
+                    placeholder="Father Full Name"
+                    value={form.fatherName}
+                    onChange={(e) => update('fatherName', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Father Status" required>
+                  <select
+                    className={`${input} font-bold text-cyan-600 dark:text-cyan-400`}
+                    value={form.fatherStatus}
+                    onChange={(e) => update('fatherStatus', e.target.value as 'ALIVE' | 'DECEASED')}
+                  >
+                    <option value="ALIVE">Alive (حـیات)</option>
+                    <option value="DECEASED">Deceased (مرحوم)</option>
+                  </select>
+                </Field>
+
+                <Field label="Father Mobile Number" required={form.fatherStatus === 'ALIVE'}>
+                  <input
+                    required={form.fatherStatus === 'ALIVE'}
+                    inputMode="numeric"
+                    maxLength={12}
+                    className={`${input} font-mono`}
+                    placeholder="0300-1234567"
+                    value={form.fatherMobile1}
+                    onChange={(e) => update('fatherMobile1', formatPhone(e.target.value))}
+                  />
+                </Field>
+
+                <Field label="Father WhatsApp (Optional)">
+                  <input
+                    inputMode="numeric"
+                    maxLength={12}
+                    className={`${input} font-mono`}
+                    placeholder="0300-1234567"
+                    value={form.fatherWhatsapp}
+                    onChange={(e) => update('fatherWhatsapp', formatPhone(e.target.value))}
+                  />
+                </Field>
+
+                <Field label="Father CNIC (Optional)">
+                  <input
+                    inputMode="numeric"
+                    maxLength={15}
+                    className={`${input} font-mono`}
+                    placeholder="35201-xxxxxxx-x"
+                    value={form.fatherCnic}
+                    onChange={(e) => update('fatherCnic', formatCnic(e.target.value))}
+                  />
+                </Field>
+
+                <Field label="Father Occupation">
+                  <select
+                    className={input}
+                    value={form.fatherOccupation}
+                    onChange={(e) => update('fatherOccupation', e.target.value)}
+                  >
+                    <option value="">Select occupation</option>
+                    {fatherOccupations.map((occ) => (
+                      <option key={occ} value={occ}>{occ}</option>
+                    ))}
+                  </select>
+                </Field>
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gender</label>
-                <select value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold">
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
+
+              {/* Conditional Guardian Details — Displayed ONLY if Father is Deceased */}
+              {form.fatherStatus === 'DECEASED' && (
+                <div className="pt-5 border-t border-amber-500/20 bg-amber-500/[0.04] p-5 rounded-2xl border space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-amber-500">
+                      Guardian Details (Required because Father is Deceased)
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Please provide the legal guardian contact details for school communication and student verification.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <Field label="Guardian Full Name" required>
+                      <input
+                        required
+                        className={input}
+                        placeholder="Guardian Full Name"
+                        value={form.guardianName}
+                        onChange={(e) => update('guardianName', e.target.value)}
+                      />
+                    </Field>
+
+                    <Field label="Relation with Student" required>
+                      <select
+                        required
+                        className={input}
+                        value={form.guardianRelation}
+                        onChange={(e) => update('guardianRelation', e.target.value)}
+                      >
+                        <option value="">Select relation *</option>
+                        {guardianRelations.map((rel) => (
+                          <option key={rel} value={rel}>{rel}</option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="Guardian Mobile Number" required>
+                      <input
+                        required
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${input} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.guardianMobile}
+                        onChange={(e) => update('guardianMobile', formatPhone(e.target.value))}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 3. ACADEMIC & ADMISSION DETAILS */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              3. ACADEMIC & ADMISSION DETAILS
+            </h3>
+            <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Field label="Admission Type">
+                  <select
+                    className={input}
+                    value={form.admissionType}
+                    onChange={(e) => update('admissionType', e.target.value as 'NEW' | 'TRANSFER')}
+                  >
+                    <option value="NEW">Fresh New Admission</option>
+                    <option value="TRANSFER">Transfer Student</option>
+                  </select>
+                </Field>
+
+                <Field label="Academic Session">
+                  <input className={input} value={form.session} onChange={(e) => update('session', e.target.value)} />
+                </Field>
+
+                <Field label="Sequential Roll Number">
+                  <input className={`${input} bg-muted text-muted-foreground font-mono`} readOnly value={editing?.rollNo || 'Auto-generated on save'} />
+                </Field>
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Date of Birth *</label>
-                <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({ ...p, dateOfBirth: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
+
+              {form.admissionType === 'TRANSFER' && (
+                <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Previous School Name" required>
+                    <input
+                      required
+                      className={input}
+                      placeholder="Previous School Name"
+                      value={form.previousSchool}
+                      onChange={(e) => update('previousSchool', e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Previous Class" required>
+                    <input
+                      required
+                      className={input}
+                      placeholder="e.g. Class 8"
+                      value={form.previousClass}
+                      onChange={(e) => update('previousClass', e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Leaving Certificate URL">
+                    <input
+                      className={input}
+                      placeholder="Document link"
+                      value={form.leavingCertificateUrl}
+                      onChange={(e) => update('leavingCertificateUrl', e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Previous Academic Summary">
+                    <input
+                      className={input}
+                      placeholder="Previous grades / percentage"
+                      value={form.previousAcademicRecord}
+                      onChange={(e) => update('previousAcademicRecord', e.target.value)}
+                    />
+                  </Field>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 4. RESIDENTIAL ADDRESS & CAMPUS SERVICES */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              4. RESIDENTIAL ADDRESS & CAMPUS SERVICES
+            </h3>
+            <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Current Residential Address" required>
+                  <textarea
+                    required
+                    rows={2}
+                    className={input}
+                    placeholder="House No, Street, Area, City"
+                    value={form.currentAddress}
+                    onChange={(e) => update('currentAddress', e.target.value)}
+                  />
+                </Field>
+                <Field label="Permanent Family Address">
+                  <textarea
+                    rows={2}
+                    className={input}
+                    placeholder="Permanent Address"
+                    value={form.permanentAddress}
+                    onChange={(e) => update('permanentAddress', e.target.value)}
+                  />
+                </Field>
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">B-Form / CNIC</label>
-                <input value={form.bFormNumber} onChange={e => setForm(p => ({ ...p, bFormNumber: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-mono font-bold" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Blood Group</label>
-                <select value={form.bloodGroup} onChange={e => setForm(p => ({ ...p, bloodGroup: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold">
-                  <option value="">-- Select --</option>
-                  {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Religion</label>
-                <input value={form.religion} onChange={e => setForm(p => ({ ...p, religion: e.target.value }))} placeholder="e.g. Islam" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Phone</label>
-                <input value={form.studentMobile} onChange={e => setForm(p => ({ ...p, studentMobile: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-mono font-bold" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Email</label>
-                <input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="name@school.edu" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all" />
+
+              <div className="flex flex-wrap gap-6 pt-2">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.transportRequired}
+                    onChange={(e) => update('transportRequired', e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+                  />
+                  <span>Require School Bus / Transport</span>
+                </label>
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.hostelRequired}
+                    onChange={(e) => update('hostelRequired', e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+                  />
+                  <span>Require School Hostel Facility</span>
+                </label>
               </div>
             </div>
           </div>
 
-          {/* Admission and Class */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #10b981, #06b6d4)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(16,185,129,0.08), transparent)'}}>
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(16,185,129,0.2)'}}><GraduationCap size={16} className="text-emerald-400"/></div>
-                <div><h2 className="text-sm font-black text-white uppercase tracking-wider">Admission and Class</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Academic placement, session and status</p></div>
-              </div>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Class / Section *</label><select value={form.sectionId} onChange={e => setForm(p => ({ ...p, sectionId: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold"><option value="">-- Select Class and Section --</option>{sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} - {s.name}</option>)}</select></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission No</label><div className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-amber-400 font-mono font-black text-sm">{form.admissionNo || 'Auto-generated'}</div></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Roll Number</label><div className={`px-4 py-2.5 rounded-xl border text-sm font-mono font-black ${form.rollNo ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-white/[0.03] border-white/[0.08] text-slate-600'}`}>{form.rollNo || 'Auto'}</div></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Academic Session</label><input value={form.session} onChange={e => setForm(p => ({ ...p, session: e.target.value }))} placeholder="2026-2027" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission Date</label><input type="date" value={form.admissionDate} onChange={e => setForm(p => ({ ...p, admissionDate: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" /></div>
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Enrollment Status</label><div className="grid grid-cols-4 gap-2">{['ACTIVE','INACTIVE','LEFT','GRADUATED'].map(status => (<button key={status} type="button" onClick={() => setForm(p => ({ ...p, status }))} className={`py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${form.status === status ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>{status}</button>))}</div></div>
-            </div>
-          </div>
-
-          {/* Father Details */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #3b82f6, #8b5cf6)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(59,130,246,0.08), transparent)'}}>
-              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(59,130,246,0.2)'}}><UserCheck size={16} className="text-blue-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Father Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Father contact, CNIC and occupation</p></div></div>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Father Name *</label><input value={form.fatherName} onChange={e => setForm(p => ({ ...p, fatherName: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mobile *</label><input value={form.fatherMobile1} onChange={e => setForm(p => ({ ...p, fatherMobile1: formatPhone(e.target.value) }))} required placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">WhatsApp</label><input value={form.fatherWhatsapp} onChange={e => setForm(p => ({ ...p, fatherWhatsapp: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Father CNIC</label><input value={form.fatherCnic} onChange={e => setForm(p => ({ ...p, fatherCnic: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Occupation</label><input value={form.fatherOccupation} onChange={e => setForm(p => ({ ...p, fatherOccupation: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-bold" /></div>
-            </div>
-          </div>
-
-          {/* Mother Details */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #ec4899, #f43f5e)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(236,72,153,0.08), transparent)'}}>
-              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(236,72,153,0.2)'}}><UserCheck size={16} className="text-pink-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Mother Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Mother contact and occupation</p></div></div>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mother Name</label><input value={form.motherName} onChange={e => setForm(p => ({ ...p, motherName: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mobile</label><input value={form.motherMobile} onChange={e => setForm(p => ({ ...p, motherMobile: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-mono font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Occupation</label><input value={form.motherOccupation} onChange={e => setForm(p => ({ ...p, motherOccupation: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-bold" /></div>
-            </div>
-          </div>
-
-          {/* Address */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #06b6d4, #10b981)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(6,182,212,0.08), transparent)'}}>
-              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(6,182,212,0.2)'}}><MapPin size={16} className="text-cyan-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Address and Contact</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Residential address and emergency contact</p></div></div>
-            </div>
-            <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Current Address *</label><textarea value={form.currentAddress} onChange={e => setForm(p => ({ ...p, currentAddress: e.target.value }))} rows={3} required placeholder="Street, Area, City..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold resize-none" /></div>
-              <div className="space-y-1"><div className="flex items-center justify-between"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Permanent Address</label><button type="button" onClick={() => setForm(p => ({ ...p, permanentAddress: p.currentAddress }))} className="text-[9px] font-black text-cyan-400 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-1"><Check size={11}/> Copy</button></div><textarea value={form.permanentAddress} onChange={e => setForm(p => ({ ...p, permanentAddress: e.target.value }))} rows={3} placeholder="Village, Town..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold resize-none" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">City</label><input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Emergency Contact *</label><input value={form.emergencyContact} onChange={e => setForm(p => ({ ...p, emergencyContact: formatPhone(e.target.value) }))} required placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-mono font-bold" /></div>
-            </div>
-          </div>
-
-          {/* Academic History */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #f59e0b, #f97316)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(245,158,11,0.08), transparent)'}}>
-              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(245,158,11,0.2)'}}><BookOpen size={16} className="text-amber-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Academic History</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Previous school and academic records</p></div></div>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission Type</label><div className="flex gap-2">{['NEW','TRANSFER'].map(type => (<button key={type} type="button" onClick={() => setForm(p => ({ ...p, admissionType: type }))} className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${form.admissionType === type ? 'bg-amber-500 text-white shadow-lg' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>{type === 'NEW' ? 'Fresh Entry' : 'Transfer-In'}</button>))}</div></div>
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Previous School</label><input value={form.previousSchool} onChange={e => setForm(p => ({ ...p, previousSchool: e.target.value }))} placeholder="Name of previous institution" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" /></div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Previous Class</label><input value={form.previousClass} onChange={e => setForm(p => ({ ...p, previousClass: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" /></div>
-              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Leaving Certificate URL</label><input value={form.leavingCertificateUrl} onChange={e => setForm(p => ({ ...p, leavingCertificateUrl: e.target.value }))} placeholder="Cloud storage link" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-mono text-xs" /></div>
-              <div className="lg:col-span-3 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Academic Summary</label><textarea value={form.previousAcademicRecord} onChange={e => setForm(p => ({ ...p, previousAcademicRecord: e.target.value }))} rows={2} placeholder="Previous grades, discipline..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold resize-none" /></div>
-            </div>
-          </div>
-
-          {/* Additional Details */}
-          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <div className="h-0.5" style={{background:'linear-gradient(90deg, #6366f1, #8b5cf6)'}}/>
-            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(99,102,241,0.08), transparent)'}}>
-              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(99,102,241,0.2)'}}><CheckCircle size={16} className="text-indigo-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Additional Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Medical notes, services and remarks</p></div></div>
-            </div>
-            <div className="p-6 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Medical Notes</label><textarea value={form.medicalNotes} onChange={e => setForm(p => ({ ...p, medicalNotes: e.target.value }))} rows={2} placeholder="Critical health info..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
-                <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Special Requirements</label><textarea value={form.specialRequirements} onChange={e => setForm(p => ({ ...p, specialRequirements: e.target.value }))} rows={2} placeholder="Support needs..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
-              </div>
-              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Internal Remarks</label><textarea value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} rows={2} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setForm(p => ({ ...p, transportRequired: !p.transportRequired }))} className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${form.transportRequired ? 'bg-violet-500/10 border-violet-500/40' : 'bg-white/[0.02] border-white/[0.08]'}`}><div className="flex items-center gap-3"><div className={`h-9 w-9 rounded-lg flex items-center justify-center ${form.transportRequired ? 'bg-violet-500 text-white' : 'bg-white/[0.05] text-slate-500'}`}><MapPin size={16}/></div><p className={`font-black text-[10px] uppercase tracking-widest ${form.transportRequired ? 'text-violet-400' : 'text-slate-500'}`}>Transport</p></div><div className={`h-5 w-10 rounded-full relative transition-all ${form.transportRequired ? 'bg-violet-500' : 'bg-slate-800'}`}><div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${form.transportRequired ? 'left-6' : 'left-1'}`}/></div></button>
-                <button type="button" onClick={() => setForm(p => ({ ...p, hostelRequired: !p.hostelRequired }))} className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${form.hostelRequired ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-white/[0.02] border-white/[0.08]'}`}><div className="flex items-center gap-3"><div className={`h-9 w-9 rounded-lg flex items-center justify-center ${form.hostelRequired ? 'bg-indigo-500 text-white' : 'bg-white/[0.05] text-slate-500'}`}><Shield size={16}/></div><p className={`font-black text-[10px] uppercase tracking-widest ${form.hostelRequired ? 'text-indigo-400' : 'text-slate-500'}`}>Hostel</p></div><div className={`h-5 w-10 rounded-full relative transition-all ${form.hostelRequired ? 'bg-indigo-500' : 'bg-slate-800'}`}><div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${form.hostelRequired ? 'left-6' : 'left-1'}`}/></div></button>
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Footer */}
-          <div className="flex items-center justify-between pt-2">
-            <button type="button" onClick={() => setView('list')} className="px-6 py-2.5 rounded-xl border border-white/[0.1] text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-white/[0.05] hover:text-white transition-all flex items-center gap-2"><X size={14}/> Cancel</button>
-            <button type="submit" disabled={saving} className="px-14 py-3 rounded-xl text-white font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl flex items-center gap-3 disabled:opacity-50" style={{background: saving ? 'rgba(139,92,246,0.5)' : 'linear-gradient(135deg, #8b5cf6, #6366f1)'}}>{saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} Complete Admission</button>
+          {/* Action Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <button
+              type="button"
+              className={button}
+              onClick={() => setView('list')}
+            >
+              <ArrowLeft size={16} /> Cancel & Return
+            </button>
+            <button className={primaryBtn} disabled={saving || compressing}>
+              {saving && <Loader2 size={16} className="animate-spin" />}
+              {editing ? 'Save Changes' : '+ Complete Admission'}
+            </button>
           </div>
         </form>
       </div>
     );
   }
 
-
+  // ══════════════════════════════════════════════════════════════
+  // LIST VIEW WITH AESTHETIC CARDS (Total Students, Boys, Girls, Sections)
+  // ══════════════════════════════════════════════════════════════
   return (
-    <div className="space-y-8 animate-fade-in pb-20 max-w-[1400px] mx-auto">
-      {/* Refined Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
+    <div className="space-y-6 pb-12 max-w-[1500px] mx-auto">
+      {/* ── Top Header ── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Student Registry</h1>
-            {isTeacher && (
-              <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                â‰¡Æ’Ã¦Â¿Î“Ã‡Ã¬â‰¡Æ’Ã…Â½ Teacher Access
-              </span>
-            )}
-          </div>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
-            {students.length} Total Enrolled Students
-          </p>
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">PEOPLE MANAGEMENT</p>
+          <h1 className="mt-1 text-3xl sm:text-4xl font-black tracking-tight text-foreground">Students</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Live database records — registered campus students.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {!isTeacher && selectedIds.length > 0 && (
-            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 mr-2">
-              <span className="text-[9px] font-black text-primary uppercase">{selectedIds.length} SELECTED:</span>
-              <button onClick={() => setShowPromote(true)} className="text-[9px] bg-primary text-white font-black px-2 py-1 rounded-lg">Promote</button>
-              <button onClick={() => setShowTransfer(true)} className="text-[9px] bg-violet-600 text-white font-black px-2 py-1 rounded-lg">Transfer</button>
-              <button onClick={printSelectedCards} className="text-[9px] bg-cyan-600 text-white font-black px-2 py-1 rounded-lg flex items-center gap-1"><Printer size={10} /> ID Card</button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button className={button} onClick={() => void load()} title="Refresh database">
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          </button>
+          <button className={button} onClick={exportCsv} title="Export CSV spreadsheet">
+            <Download size={15} /> Export CSV
+          </button>
+          <label className={`${button} cursor-pointer`}>
+            <FileUp size={15} />
+            {importing ? 'Importing…' : 'Import CSV'}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              disabled={importing}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void importCsv(file);
+                event.currentTarget.value = '';
+              }}
+            />
+          </label>
+          <button className={primaryBtn} onClick={openCreate}>
+            <Plus size={16} /> Add Student
+          </button>
+        </div>
+      </div>
+
+      {/* ── 4 Soft Gradient KPI Stat Cards (Total Students, Boys, Girls, Sections) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* TOTAL STUDENTS (Cyan) */}
+        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-cyan-500">TOTAL STUDENTS</p>
+              <h3 className="mt-2 text-3xl font-black text-foreground">{students.length}</h3>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 shadow-sm">
+              <GraduationCap size={22} strokeWidth={2.2} />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-cyan-400" />
+            <span>Enrolled in campus</span>
+          </div>
+        </div>
+
+        {/* BOYS (Blue/Cyan) */}
+        <div className="relative overflow-hidden rounded-3xl border border-blue-500/25 bg-gradient-to-br from-blue-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-blue-500">BOYS (MALE)</p>
+              <h3 className="mt-2 text-3xl font-black text-foreground">{boysCount}</h3>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-sm">
+              <User size={22} strokeWidth={2.2} />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            <span>Male student cohort</span>
+          </div>
+        </div>
+
+        {/* GIRLS (Rose/Pink) */}
+        <div className="relative overflow-hidden rounded-3xl border border-rose-500/25 bg-gradient-to-br from-rose-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-rose-500">GIRLS (FEMALE)</p>
+              <h3 className="mt-2 text-3xl font-black text-foreground">{girlsCount}</h3>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm">
+              <User size={22} strokeWidth={2.2} />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-rose-400" />
+            <span>Female student cohort</span>
+          </div>
+        </div>
+
+        {/* ACTIVE SECTIONS (Purple) */}
+        <div className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-br from-purple-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-purple-500">SECTIONS</p>
+              <h3 className="mt-2 text-3xl font-black text-foreground">{sectionCount || 1}</h3>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-500 border border-purple-500/20 shadow-sm">
+              <BookOpen size={22} strokeWidth={2.2} />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-purple-400" />
+            <span>Across {classes.length || 1} class grades</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Search Bar ── */}
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              className={`${input} pl-11 py-3`}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search name, admission no, class, section or roll no..."
+            />
+          </div>
+          {selectedIds.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 shrink-0 bg-cyan-500/10 p-1.5 rounded-xl border border-cyan-500/20">
+              <span className="text-[10px] font-black uppercase text-cyan-500 px-2">{selectedIds.length} Selected:</span>
+              <button className={button} onClick={() => setMoveMode('promote')}>
+                <ArrowUpRight size={14} /> Promote
+              </button>
+              <button className={button} onClick={() => setMoveMode('transfer')}>
+                <ArrowRightLeft size={14} /> Transfer
+              </button>
+              <button
+                className={button}
+                onClick={() =>
+                  selectedIds
+                    .map((id) => students.find((student) => student.id === id))
+                    .filter(Boolean)
+                    .forEach((student) => printId(student))
+                }
+              >
+                <Printer size={14} /> Print ID
+              </button>
             </div>
           )}
-          {!isTeacher && (
-            <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
-              <Upload size={12} /> Import
-            </button>
-          )}
-          <button onClick={exportExcel} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
-            <FileSpreadsheet size={12} /> Excel
-          </button>
-          <button onClick={exportPdf} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 font-bold text-[9px] uppercase hover:bg-white/[0.05] transition-all">
-            <FileDown size={12} /> PDF
-          </button>
-          {!isTeacher && (
-            <button onClick={() => setView('add')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20">
-              <Plus size={14} /> Add Student
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Teacher Mode Notice Banner */}
-      {isTeacher && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-purple-950/40 border border-violet-500/25 flex items-center gap-3 text-xs text-violet-200">
-          <GraduationCap className="w-5 h-5 text-violet-400 shrink-0" />
-          <span>
-            <strong>Teacher Mode:</strong> You have read-only access to your assigned students. New student admissions, enrollment forms, and batch promotions are managed by the School Administrator.
-          </span>
-        </div>
-      )}
-
-      {/* Quick Statistics Overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-primary/30 transition-all duration-300">
-          <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Total Enrollment</p>
-          <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-white">{students.length}</h4>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><GraduationCap size={16}/></div>
-          </div>
-        </div>
-        <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-cyan-400/30 transition-all duration-300">
-          <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Male Cohort</p>
-          <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-cyan-400">{students.filter(s => s.gender === 'MALE').length }</h4>
-            <div className="h-8 w-8 rounded-lg bg-cyan-400/10 flex items-center justify-center text-cyan-400 border border-cyan-400/20"><User size={16}/></div>
-          </div>
-        </div>
-        <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-rose-400/30 transition-all duration-300">
-          <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Female Cohort</p>
-          <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-rose-400">{students.filter(s => s.gender === 'FEMALE').length }</h4>
-            <div className="h-8 w-8 rounded-lg bg-rose-400/10 flex items-center justify-center text-rose-400 border border-rose-400/20"><User size={16}/></div>
-          </div>
-        </div>
-        <div className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-emerald-400/30 transition-all duration-300">
-          <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">New Entries</p>
-          <div className="flex items-end justify-between mt-2">
-            <h4 className="text-2xl font-black text-emerald-400">12</h4>
-            <div className="h-8 w-8 rounded-lg bg-emerald-400/10 flex items-center justify-center text-emerald-400 border border-emerald-400/20"><CheckCircle size={16}/></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-white/[0.02] p-4 rounded-[24px] border border-white/[0.06]">
-        {/* Text Search */}
-        <div className="relative lg:col-span-5">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, roll, or admission ID..."
-            className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
-          />
-        </div>
-
-        {/* Filter by Class */}
-        <div className="lg:col-span-3">
-          <select
-            value={filterClassId}
-            onChange={e => {
-              setFilterClassId(e.target.value);
-              setFilterSectionId('');
-            }}
-            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold"
-          >
-            <option value="">All Academic Classes</option>
-            {classes.map((c: any) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Filter by Section */}
-        <div className="lg:col-span-2">
-          <select
-            value={filterSectionId}
-            onChange={e => setFilterSectionId(e.target.value)}
-            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold"
-          >
-            <option value="">All Sections</option>
-            {availableFilterSections.map((s: any) => (
-              <option key={s.id} value={s.id}>{s.className} - {s.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Filter by Status */}
-        <div className="lg:col-span-2">
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold"
-          >
-            <option value="">All Statuses</option>
-            <option value="ACTIVE">Authorized Active</option>
-            <option value="INACTIVE">Suspended</option>
-            <option value="TRANSFERRED">Transferred</option>
-            <option value="GRADUATED">Alumni</option>
-          </select>
-        </div>
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <div className="flex items-center justify-center h-64"><Loader2 size={48} className="animate-spin text-primary" /></div>
-      ) : (
-        <div className="glass-elevated border border-white/[0.06] rounded-[40px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]">
-          {filtered.length === 0 ? (
-            <div className="text-center py-40 space-y-6">
-              <div className="h-24 w-24 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary mx-auto border border-primary/20"><GraduationCap size={48} className="opacity-40" /></div>
-              <div className="space-y-2">
-                <p className="font-black text-3xl text-white tracking-tighter">Registry record empty</p>
-                <p className="text-sm text-slate-500 uppercase tracking-widest">Adjust search parameters or initiate new enrollment</p>
-              </div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/[0.05] bg-white/[0.01] text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">
-                    <th className="px-8 py-8 text-left w-12">
+      {/* ── Students Table ── */}
+      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1050px] text-left">
+            <thead className="border-b border-border bg-muted/40 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+              <tr>
+                <th className="px-5 py-4 w-12">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={() => setSelectedIds(allSelected ? [] : filtered.map((s) => s.id))}
+                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                  />
+                </th>
+                <th className="px-5 py-4">STUDENT</th>
+                <th className="px-5 py-4">ADMISSION</th>
+                <th className="px-5 py-4">CLASS / SECTION</th>
+                <th className="px-5 py-4">ROLL</th>
+                <th className="px-5 py-4">FATHER CONTACT</th>
+                <th className="px-5 py-4">STATUS</th>
+                <th className="px-5 py-4 text-right">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border text-sm">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="p-16 text-center">
+                    <Loader2 className="mx-auto animate-spin text-cyan-500" size={32} />
+                    <p className="mt-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Loading live student database…</p>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-16 text-center text-sm text-muted-foreground">
+                    <p className="font-bold text-foreground text-base">No students found in the live database.</p>
+                    <p className="text-xs text-muted-foreground mt-1">Adjust search parameters or click '+ Add Student' above.</p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="hover:bg-cyan-500/[0.03] transition-colors cursor-pointer"
+                    onClick={() => setProfile(student)}
+                  >
+                    <td className="px-5 py-4 w-12" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
-                        checked={selectedIds.length === filtered.length && filtered.length > 0}
-                        onChange={toggleSelectAll}
-                        className="rounded-lg border-white/10 text-primary focus:ring-primary h-5 w-5 bg-slate-900 transition-all cursor-pointer"
+                        checked={selectedIds.includes(student.id)}
+                        onChange={() =>
+                          setSelectedIds((current) =>
+                            current.includes(student.id) ? current.filter((id) => id !== student.id) : [...current, student.id]
+                          )
+                        }
+                        className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500 cursor-pointer"
                       />
-                    </th>
-                    <th className="text-left px-8 py-8">Identity & Portal Access</th>
-                    <th className="text-left px-8 py-8">Central ADM ID</th>
-                    <th className="text-left px-8 py-8">Sequential Roll</th>
-                    <th className="text-left px-8 py-8 hidden lg:table-cell">Academic Tier</th>
-                    <th className="text-left px-8 py-8 hidden xl:table-cell">Operational Status</th>
-                    <th className="px-8 py-8"></th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {filtered.map((s: any, i: number) => {
-                    const isSelected = selectedIds.includes(s.id);
-                    return (
-                      <motion.tr
-                        key={s.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.02 }}
-                        className={`border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-all cursor-pointer group ${isSelected ? 'bg-primary/5 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}
-                        onClick={() => setSelectedStudent(s)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600 to-blue-700 text-white font-black flex items-center justify-center shadow-md text-sm border border-white/10">
+                          {student.avatarUrl ? (
+                            <img src={student.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            String(student.name || 'S').charAt(0)
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-foreground hover:text-cyan-500 transition-colors truncate">{student.name}</div>
+                          <div className="text-[11px] text-muted-foreground font-medium">
+                            {student.religion || 'Muslim'} {student.gender ? `• ${student.gender}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 font-mono font-bold text-xs text-cyan-500">
+                      <span className="bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                        {student.admissionNo || '—'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="font-bold text-foreground">{student.section?.class?.name || '—'}</div>
+                      <div className="text-xs text-muted-foreground">Section {student.section?.name || '—'}</div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="h-7 w-7 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono font-bold text-xs flex items-center justify-center">
+                        {student.rollNo || '—'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="text-xs font-bold text-foreground">
+                        {student.fatherName || student.parents?.[0]?.parent?.fatherName || student.parents?.[0]?.parent?.name || '—'}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground font-mono">
+                        {student.fatherMobile1 || student.parents?.[0]?.parent?.fatherMobile1 || student.parents?.[0]?.parent?.phone || student.phone || '—'}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                          student.admissionType === 'TRANSFER'
+                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                        }`}
                       >
-                        <td className="px-8 py-6 w-12" onClick={e => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSelect(s.id)}
-                            className="rounded-lg border-white/10 text-primary focus:ring-primary h-5 w-5 bg-slate-900 transition-all cursor-pointer"
-                          />
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-6">
-                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-black text-xl shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-white/10">
-                              {s.name.charAt(0)}
-                            </div>
-                            <div className="min-w-0 space-y-1">
-                              <p className="text-lg font-black text-white group-hover:text-primary transition-colors tracking-tight truncate">{s.name}</p>
-                              {s.email ? (
-                                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                                   <Mail size={10}/> {s.email}
-                                </div>
-                              ) : (
-                                <span className="text-[9px] text-rose-500/50 font-black uppercase tracking-widest">No Portal Account</span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                           <span className="px-4 py-1.5 rounded-xl font-mono text-xs font-black text-violet-400 bg-violet-400/5 border border-violet-400/10 tracking-widest group-hover:bg-violet-400/20 transition-all">
-                              {s.admissionNo}
-                           </span>
-                        </td>
-                        <td className="px-8 py-6">
-                           <div className="h-10 w-10 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-center justify-center font-mono font-black text-amber-500 text-lg group-hover:bg-amber-500 group-hover:text-black transition-all duration-500">
-                              {s.rollNo || '00'}
-                           </div>
-                        </td>
-                        <td className="px-8 py-6 hidden lg:table-cell">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-white font-black text-sm tracking-tight">{s.section?.class?.name || 'â€”'}</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                               <div className="h-1 w-1 rounded-full bg-slate-500"/> Section {s.section?.name || 'â€”'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6 hidden xl:table-cell">
-                          <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] rounded-full border shadow-lg transition-all ${
-                            s.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                          }`}>
-                            {s.status || 'Active Record'}
-                          </span>
-                        </td>
-                        <td className="px-8 py-6" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-3">
-                            <button
-                              onClick={() => setSelectedStudent(s)}
-                              className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-primary transition-all flex items-center justify-center border border-white/5"
-                              title="Full Dossier"
-                            >
-                              <User size={20} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(s.id)}
-                              className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-rose-600 transition-all flex items-center justify-center border border-white/5"
-                              title="Archive Admission"
-                            >
-                              <Trash2 size={20} />
-                            </button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        {student.admissionType === 'TRANSFER' ? 'Transfer' : 'Active'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-cyan-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
+                          onClick={() => setProfile(student)}
+                          title="View Profile"
+                        >
+                          <UserRound size={14} />
+                        </button>
+                        <button
+                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-amber-500 hover:text-black transition-all flex items-center justify-center text-muted-foreground"
+                          onClick={() => openEdit(student)}
+                          title="Edit Student"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
+                          onClick={() => void archive(student.id)}
+                          title="Archive"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Student Profile Dossier Modal ── */}
+      {profile && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="max-h-[94vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-border bg-card shadow-2xl custom-scrollbar">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-4">
+              <h2 className="font-black text-foreground text-lg">Student Profile Dossier</h2>
+              <button onClick={() => setProfile(null)} className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
+                <X size={18} />
+              </button>
             </div>
-          )}
+            <div className="p-6 space-y-6">
+              {/* Profile Header */}
+              <div className="flex items-center gap-5 rounded-2xl bg-muted/40 p-5 border border-border">
+                <div className="h-16 w-16 overflow-hidden rounded-2xl bg-cyan-600 text-lg font-black text-white flex items-center justify-center border border-white/20 shadow-md">
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt="Student" className="h-full w-full object-cover" />
+                  ) : (
+                    String(profile.name || 'S').charAt(0)
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-xl text-foreground">{profile.name}</h2>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      Active Student
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+                    Admission: <span className="text-cyan-500 font-bold">{profile.admissionNo || '—'}</span> • Roll: <span className="text-amber-500 font-bold">{profile.rollNo || '—'}</span> • {profile.section?.class?.name || '—'} / Section {profile.section?.name || '—'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Profile Info Grid */}
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <Info label="Admission No" value={profile.admissionNo} />
+                <Info label="Roll No" value={profile.rollNo} />
+                <Info label="Class / Section" value={`${profile.section?.class?.name || '—'} / ${profile.section?.name || '—'}`} />
+                <Info label="Gender / Religion" value={`${profile.gender || '—'} • ${profile.religion || 'Muslim'}`} />
+                <Info label="B-Form / CNIC" value={profile.bFormNumber} />
+                <Info label="Student Mobile" value={profile.phone} />
+                <Info label="Father Name" value={profile.fatherName || profile.parents?.[0]?.parent?.fatherName || profile.parents?.[0]?.parent?.name} />
+                <Info label="Father Mobile" value={profile.fatherMobile1 || profile.parents?.[0]?.parent?.fatherMobile1 || profile.parents?.[0]?.parent?.phone} />
+                <Info label="Father CNIC" value={profile.fatherCnic || profile.parents?.[0]?.parent?.fatherCnic} />
+                <Info label="Mother Name" value={profile.motherName || profile.parents?.[0]?.parent?.motherName} />
+                <Info label="Mother Mobile" value={profile.motherMobile || profile.parents?.[0]?.parent?.motherMobile} />
+                <Info label="Previous School" value={profile.previousSchool} />
+                <Info label="Current Address" value={profile.currentAddress || profile.address || profile.parents?.[0]?.parent?.addressLine} span={3} />
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">
+                <button className={button} onClick={() => printId(profile)}>
+                  <Printer size={15} /> Print ID Card
+                </button>
+                <button
+                  className={button}
+                  onClick={() => {
+                    const p = profile;
+                    setProfile(null);
+                    openEdit(p);
+                  }}
+                >
+                  <Pencil size={15} /> Edit Record
+                </button>
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-bold text-white hover:bg-rose-500 transition-all"
+                  onClick={() => void archive(profile.id)}
+                >
+                  <Trash2 size={15} /> Archive Student
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-
-
-      {/* Student Profile Dialog (Super Detailed with Tabs) */}
-      <Modal isOpen={!!selectedStudent} onClose={() => { setSelectedStudent(null); setEditMode(false); }} maxWidth="max-w-[95vw]">
-        {selectedStudent && (
-          <div className="flex flex-col lg:flex-row h-[90vh] overflow-hidden bg-background/95 backdrop-blur-2xl rounded-[40px] border border-white/[0.08] shadow-[0_0_100px_rgba(0,0,0,0.8)]">
-              {/* Profile Left Sidebar */}
-              <div className="w-full lg:w-80 bg-white/[0.02] border-r border-white/[0.06] p-10 flex flex-col justify-between shrink-0 relative overflow-hidden">
-                <div className="absolute top-0 right-0 h-64 w-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"/>
-
-                <div className="text-center space-y-8 relative z-10">
-                  <div className="relative mx-auto h-40 w-44">
-                    <div className="h-40 w-40 rounded-[48px] bg-gradient-to-br from-violet-500 via-indigo-600 to-primary flex items-center justify-center text-white text-6xl font-black shadow-2xl border-4 border-white/10 overflow-hidden transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                      {selectedStudent.name.charAt(0)}
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 h-12 w-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center border-4 border-slate-900 shadow-xl"><ShieldCheck size={24}/></div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-black text-white tracking-tight leading-tight">{selectedStudent.name}</h2>
-                    <p className="text-xs font-mono text-primary font-black tracking-widest uppercase bg-primary/10 py-1.5 rounded-lg border border-primary/20">{selectedStudent.admissionNo}</p>
-                    <div className="flex items-center justify-center gap-2 mt-4">
-                      <span className="px-3 py-1 rounded-full text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">Active Enrollment</span>
-                      <span className="px-3 py-1 rounded-full text-[9px] font-black bg-white/5 text-slate-400 border border-white/10 uppercase tracking-widest">Session 26-27</span>
-                    </div>
-                  </div>
-
-                  {/* Action Shortcuts */}
-                  <div className="pt-8 grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => { setEditMode(true); setEditForm({ ...selectedStudent }); setProfileTab('basic'); }}
-                      className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300"
-                    >
-                      <Edit2 size={20}/> <span className="text-[9px] font-black uppercase tracking-tighter">Edit</span>
-                    </button>
-                    <button onClick={() => { setShowIdCard(true); }} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all">
-                      <Printer size={20} className="text-cyan-400"/> <span className="text-[9px] font-black uppercase tracking-tighter">ID Card</span>
-                    </button>
-                    <button onClick={() => { setSelectedIds([selectedStudent.id]); setShowPromote(true); }} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all">
-                      <ArrowUpRight size={20} className="text-emerald-500"/> <span className="text-[9px] font-black uppercase tracking-tighter">Promote</span>
-                    </button>
-                    <button onClick={() => { setSelectedIds([selectedStudent.id]); setShowTransfer(true); }} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all">
-                      <MapPin size={20} className="text-violet-500"/> <span className="text-[9px] font-black uppercase tracking-tighter">Transfer</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-10">
-                   <div className="p-5 rounded-3xl bg-white/5 border border-white/10 flex items-center gap-4 group">
-                      <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-primary/20 group-hover:text-primary transition-all"><Mail size={18}/></div>
-                      <div className="min-w-0">
-                         <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Portal Email</p>
-                         <p className="text-xs text-white font-bold truncate">{selectedStudent.email || 'N/A'}</p>
-                      </div>
-                   </div>
-                   <button onClick={() => { setSelectedStudent(null); setEditMode(false); }} className="w-full py-4 rounded-2xl bg-slate-900 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 transition-all text-xs font-black uppercase tracking-widest text-slate-400">Exit Profile</button>
-                </div>
+      {/* ── Promote / Transfer Modal ── */}
+      {moveMode && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="max-h-[94vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card shadow-2xl p-6">
+            <h2 className="text-lg font-black text-foreground mb-2">
+              {moveMode === 'promote' ? 'Promote Students' : 'Transfer Students'}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Move {selectedIds.length} selected student(s) to a verified section.
+            </p>
+            <form onSubmit={move} className="space-y-4">
+              <select
+                required
+                className={input}
+                value={targetSection}
+                onChange={(e) => setTargetSection(e.target.value)}
+              >
+                <option value="">Select destination section *</option>
+                {sections.map((sec) => (
+                  <option key={sec.id} value={sec.id}>
+                    {sec.className} — Section {sec.name}
+                  </option>
+                ))}
+              </select>
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
+                <button type="button" className={button} onClick={() => setMoveMode(null)}>
+                  Cancel
+                </button>
+                <button className={primaryBtn}>
+                  Confirm {moveMode === 'promote' ? 'Promotion' : 'Transfer'}
+                </button>
               </div>
-
-              {/* Profile Right Content Area with Tabs */}
-              <div className="flex-1 flex flex-col overflow-hidden bg-slate-950/50">
-                {/* Tabs Bar Î“Ã‡Ã¶ always horizontally scrollable with visible indicators */}
-                <div className="flex items-center gap-2 border-b border-white/[0.06] bg-black/20 overflow-x-auto px-8 py-4 shrink-0 no-scrollbar relative" style={{ scrollbarWidth: 'none' }}>
-                  {[
-                    { id: 'basic', label: 'Primary Data', icon: User },
-                    { id: 'academic', label: 'Academic Tier', icon: GraduationCap },
-                    { id: 'parent', label: 'Parental Links', icon: UserCheck },
-                    { id: 'attendance', label: 'Presence Log', icon: Calendar },
-                    { id: 'fees', label: 'Financials', icon: CreditCard },
-                    { id: 'results', label: 'Performance', icon: Award },
-                    { id: 'homework', label: 'Workload', icon: BookOpen },
-                    { id: 'login', label: 'System Access', icon: Shield },
-                    { id: 'timeline', label: 'Event Log', icon: FileText }
-                  ].map(t => {
-                    const Icon = t.icon;
-                    const isActive = profileTab === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => { setProfileTab(t.id); setEditMode(false); }}
-                        className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 relative ${
-                          isActive
-                            ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 z-10'
-                            : 'text-slate-500 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <Icon size={16} />
-                        {t.label}
-                        {isActive && <motion.div layoutId="profileTab" className="absolute inset-0 bg-primary rounded-2xl -z-10" />}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Tab content wrapper */}
-                <div className="flex-1 overflow-y-auto p-12 bg-white/[0.01] text-sm custom-scrollbar">
-                  <AnimatePresence mode="wait">
-                    {profileTab === 'basic' && !editMode && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] pb-6">
-                          <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse"/> Personal Dossier
-                          </h3>
-                          <button onClick={() => { setEditMode(true); setEditForm({ ...selectedStudent }); }} className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 hover:bg-primary hover:text-white transition-all shadow-lg">
-                            <Edit2 size={14}/> Modify Records
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Legal Identity</span><span className="text-lg font-bold text-white block">{selectedStudent.name}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Biological Sex</span><span className="text-lg font-bold text-white block">{selectedStudent.gender || 'MALE'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Chronological Age</span><span className="text-lg font-bold text-white block">{selectedStudent.dateOfBirth ? new Date(selectedStudent.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'NOT RECORDED'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Hematology Group</span><span className="text-2xl font-black text-rose-500 block">{selectedStudent.bloodGroup || 'Î“Ã‡Ã¶'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Religious Affiliation</span><span className="text-lg font-bold text-white block">{selectedStudent.religion || 'Islam'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Registry Number (B-Form)</span><span className="text-lg font-bold text-white font-mono tracking-wider block">{selectedStudent.bFormNumber || 'PENDING'}</span></div>
-                          <div className="md:col-span-2 lg:col-span-3 p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] flex items-start gap-6">
-                             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin size={24}/></div>
-                             <div className="space-y-1">
-                               <span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Verified Residential Address</span>
-                               <span className="text-xl font-bold text-white leading-relaxed block">{selectedStudent.address || 'NO ADDRESS LOGGED IN SYSTEM'}</span>
-                             </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'basic' && editMode && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-10">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] pb-6">
-                          <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                             <Edit2 size={24} className="text-primary"/> Data Correction Terminal
-                          </h3>
-                          <button onClick={() => setEditMode(false)} className="flex items-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all">
-                            <X size={14}/> Abort Changes
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.05]">
-                          {[
-                            { key: 'name', label: 'Student Full Name', span: 2 },
-                            { key: 'gender', label: 'Biological Sex', type: 'select', opts: ['MALE','FEMALE','OTHER'] },
-                            { key: 'dateOfBirth', label: 'Birth Date Record', type: 'date' },
-                            { key: 'religion', label: 'Religious Belief' },
-                            { key: 'bloodGroup', label: 'Blood Group', type: 'select', opts: ['','A+','A-','B+','B-','AB+','AB-','O+','O-'] },
-                            { key: 'bFormNumber', label: 'B-Form / National ID', mono: true, cnic: true },
-                            { key: 'address', label: 'Current Residence', span: 3, area: true },
-                          ].map((f: any) => (
-                            <div key={f.key} className={f.span === 2 ? 'md:col-span-2' : f.span === 3 ? 'md:col-span-3' : ''}>
-                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 ml-1">{f.label}</label>
-                              {f.type === 'select' ? (
-                                <select
-                                  value={editForm[f.key] || ''}
-                                  onChange={e => setEditForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
-                                  className="w-full px-5 py-3 rounded-2xl bg-slate-900 border border-white/[0.1] text-white focus:border-primary transition-all font-bold"
-                                >
-                                  {f.opts.map((o: string) => <option key={o} value={o}>{o || 'Unspecified'}</option>)}
-                                </select>
-                              ) : f.area ? (
-                                <textarea
-                                  value={editForm[f.key] || ''}
-                                  onChange={e => setEditForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
-                                  rows={2}
-                                  className="w-full px-5 py-3 rounded-2xl bg-slate-900/50 border border-white/[0.1] text-white focus:border-primary outline-none transition-all font-bold resize-none"
-                                />
-                              ) : (
-                                <input
-                                  value={editForm[f.key] || ''}
-                                  onChange={e => {
-                                    const val = f.cnic ? formatCNIC(e.target.value) : f.phone ? formatPhone(e.target.value) : e.target.value;
-                                    setEditForm((p: any) => ({ ...p, [f.key]: val }));
-                                  }}
-                                  type={f.type || 'text'}
-                                  maxLength={f.cnic ? 15 : f.phone ? 12 : undefined}
-                                  className={`w-full px-5 py-3 rounded-2xl bg-slate-900 border border-white/[0.1] text-white focus:border-primary transition-all font-bold ${f.mono ? 'font-mono' : ''}`}
-                                />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex justify-end gap-4 pt-6">
-                          <button onClick={() => setEditMode(false)} className="px-10 py-4 rounded-2xl border border-white/[0.1] bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white">Discard</button>
-                          <button
-                            disabled={editSaving}
-                            onClick={async () => {
-                              setEditSaving(true);
-                              try {
-                                await apiClient.patch(`/people/students/${selectedStudent.id}`, editForm);
-                                toast.success('Central Registry Updated!');
-                                setEditMode(false);
-                                fetchAll();
-                                setSelectedStudent((p: any) => ({ ...p, ...editForm }));
-                              } catch {
-                                toast.error('Communication error with registry');
-                              } finally { setEditSaving(false); }
-                            }}
-                            className="flex items-center gap-3 px-14 py-4 rounded-2xl bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 shadow-xl shadow-primary/30 transition-all disabled:opacity-50"
-                          >
-                            {editSaving ? <Loader2 size={18} className="animate-spin"/> : <Save size={18}/>}
-                            Authorize Update
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'academic' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <h3 className="text-xl font-black text-white uppercase tracking-widest border-b border-white/[0.06] pb-6 flex items-center gap-3">
-                           <GraduationCap size={24} className="text-emerald-400"/> Academic Standing
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                          <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
-                             <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Class Designation</p>
-                             <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-xl border border-emerald-500/20">{selectedStudent.section?.class?.numeric || 'â€”'}</div>
-                                <div>
-                                   <p className="text-lg font-bold text-white leading-tight">{selectedStudent.section?.class?.name || 'â€”'}</p>
-                                   <p className="text-xs text-slate-500 font-medium">Standard Academic Level</p>
-                                </div>
-                             </div>
-                          </div>
-
-                          <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
-                             <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Section / Wing</p>
-                             <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20">{selectedStudent.section?.name || 'â€”'}</div>
-                                <div>
-                                   <p className="text-lg font-bold text-white leading-tight">Section {selectedStudent.section?.name || 'â€”'}</p>
-                                   <p className="text-xs text-slate-500 font-medium">Cohort Identifier</p>
-                                </div>
-                             </div>
-                          </div>
-
-                          <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
-                             <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Registry ID</p>
-                             <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black text-xl border border-amber-500/20">{selectedStudent.rollNo || '01'}</div>
-                                <div>
-                                   <p className="text-lg font-bold text-white leading-tight">Roll No {selectedStudent.rollNo || '00'}</p>
-                                   <p className="text-xs text-slate-500 font-medium">Sequence Marker</p>
-                                </div>
-                             </div>
-                          </div>
-
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Enrollment Date</span><span className="text-lg font-bold text-white block">{selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Î“Ã‡Ã¶'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Active Session</span><span className="text-lg font-bold text-white block">{selectedStudent.session || 'â€”'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">System Status</span><span className="inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Authorized Active</span></div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'parent' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <h3 className="text-xl font-black text-white uppercase tracking-widest border-b border-white/[0.06] pb-6 flex items-center gap-3">
-                           <UserCheck size={24} className="text-blue-400"/> Guardianship & Family Tree
-                        </h3>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                          {/* Father Card */}
-                          <div className="relative p-10 rounded-[40px] bg-white/[0.01] border border-white/[0.06] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-2xl">
-                            <div className="absolute top-0 right-0 h-40 w-40 bg-primary/5 rounded-full blur-[60px] -mr-10 -mt-10"/>
-                            <div className="relative z-10 space-y-8">
-                               <div className="flex items-center gap-4">
-                                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/20"><User size={28}/></div>
-                                  <h4 className="text-lg font-black text-white uppercase tracking-widest">Father's Profile</h4>
-                               </div>
-                               <div className="grid grid-cols-2 gap-y-8">
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.fatherName || 'Not provided'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-primary font-mono tracking-wider">{selectedStudent.fatherMobile1 || 'N/A'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.fatherCnic || 'Î“Ã‡Ã¶'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.fatherOccupation || 'Not provided'}</span></div>
-                               </div>
-                            </div>
-                          </div>
-
-                          {/* Mother Card */}
-                          <div className="relative p-10 rounded-[40px] bg-white/[0.01] border border-white/[0.06] overflow-hidden group hover:border-rose-400/30 transition-all duration-500 shadow-2xl">
-                            <div className="absolute top-0 right-0 h-40 w-40 bg-rose-500/5 rounded-full blur-[60px] -mr-10 -mt-10"/>
-                            <div className="relative z-10 space-y-8">
-                               <div className="flex items-center gap-4">
-                                  <div className="h-14 w-14 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-400 shadow-inner border border-rose-500/20"><User size={28}/></div>
-                                  <h4 className="text-lg font-black text-white uppercase tracking-widest">Mother's Profile</h4>
-                               </div>
-                               <div className="grid grid-cols-2 gap-y-8">
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.motherName || 'Not provided'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-rose-400 font-mono tracking-wider">{selectedStudent.motherMobile || 'Î“Ã‡Ã¶'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.motherCnic || 'Î“Ã‡Ã¶'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.motherOccupation || 'Not provided'}</span></div>
-                               </div>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'attendance' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] pb-6">
-                           <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                              <Calendar size={24} className="text-emerald-400"/> Presence Analytics
-                           </h3>
-                           <div className="flex items-center gap-3 px-6 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"/>
-                              <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">96.5% Net Attendance</span>
-                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                          <div className="p-10 rounded-[40px] bg-emerald-500/5 border border-emerald-500/10 text-center space-y-2 group hover:bg-emerald-500/10 transition-all duration-500">
-                            <p className="text-6xl font-black text-emerald-400 group-hover:scale-110 transition-transform">182</p>
-                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Validated Presence</p>
-                          </div>
-                          <div className="p-10 rounded-[40px] bg-rose-500/5 border border-rose-500/10 text-center space-y-2 group hover:bg-rose-500/10 transition-all duration-500">
-                            <p className="text-6xl font-black text-rose-500 group-hover:scale-110 transition-transform">05</p>
-                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Unexcused Absence</p>
-                          </div>
-                          <div className="p-10 rounded-[40px] bg-amber-500/5 border border-amber-500/10 text-center space-y-2 group hover:bg-amber-500/10 transition-all duration-500">
-                            <p className="text-6xl font-black text-amber-500 group-hover:scale-110 transition-transform">02</p>
-                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Approved Leaves</p>
-                          </div>
-                        </div>
-
-                        <div className="p-10 rounded-[40px] bg-white/[0.01] border border-white/[0.06] flex items-center gap-8">
-                          <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/20 shrink-0"><ShieldCheck size={40}/></div>
-                          <div className="space-y-2">
-                             <h4 className="text-base font-black text-white uppercase tracking-widest">Automated Reporting Status</h4>
-                             <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">Attendance verification is synchronized in real-time. Daily automated SMS and Push notifications are broadcasted to registered parent devices at 09:30 AM PST.</p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'fees' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] pb-6">
-                           <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                              <CreditCard size={24} className="text-indigo-400"/> Financial Ledger
-                           </h3>
-                           <button className="px-6 py-2.5 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all">Generate Invoice</button>
-                        </div>
-
-                        <div className="space-y-4">
-                          {[
-                            { title: 'First Term Tuition Fee', ref: 'FP-8373-2026', amount: '$150.00', status: 'PAID', color: 'emerald' },
-                            { title: 'Annual Exam & Syllabus Charges', ref: 'FP-8927-2026', amount: '$75.00', status: 'PAID', color: 'emerald' },
-                            { title: 'Monthly Lab & Sports Charges', ref: 'Due: 10th Aug 2026', amount: '$20.00', status: 'PENDING', color: 'amber' },
-                          ].map((fee, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all group">
-                              <div className="flex items-center gap-6">
-                                 <div className={`h-14 w-14 rounded-2xl bg-${fee.color}-500/10 flex items-center justify-center text-${fee.color}-400 border border-${fee.color}-500/20`}><FileText size={24}/></div>
-                                 <div>
-                                    <p className="text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors">{fee.title}</p>
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">{fee.ref}</p>
-                                 </div>
-                              </div>
-                              <div className="text-right space-y-2">
-                                 <p className="text-xl font-black text-white font-mono">{fee.amount}</p>
-                                 <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-${fee.color}-500/10 text-${fee.color}-400 border border-${fee.color}-500/20`}>{fee.status}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'results' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] pb-6">
-                           <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                              <Award size={24} className="text-amber-400"/> Academic Performance
-                           </h3>
-                           <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all"><FileDown size={14}/> Full Transcript</button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                          {[
-                            { exam: 'Midterm Exam 2026', subject: 'Mathematics (Code: MATH5)', marks: '85 / 100', grade: 'A', percent: 85 },
-                            { exam: 'Monthly Assessment - May', subject: 'Science (Code: SCI5)', marks: '92 / 100', grade: 'A+', percent: 92 },
-                          ].map((res, idx) => (
-                            <div key={idx} className="p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.06] space-y-6 relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 h-32 w-32 bg-primary/5 rounded-full blur-[40px] -mr-16 -mt-16 group-hover:bg-primary/10 transition-all"/>
-                              <div className="flex justify-between items-start">
-                                 <div>
-                                    <p className="text-lg font-bold text-white group-hover:text-primary transition-colors">{res.exam}</p>
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">{res.subject}</p>
-                                 </div>
-                                 <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black text-xl border border-amber-500/20">{res.grade}</div>
-                              </div>
-                              <div className="space-y-3">
-                                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                    <span>Achievement Score</span>
-                                    <span className="text-white">{res.marks}</span>
-                                 </div>
-                                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `${res.percent}%` }} className="h-full bg-gradient-to-r from-primary to-violet-500 shadow-[0_0_10px_rgba(124,58,237,0.5)]"/>
-                                 </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'homework' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <h3 className="text-xl font-black text-white uppercase tracking-widest border-b border-white/[0.06] pb-6 flex items-center gap-3">
-                           <BookOpen size={24} className="text-violet-400"/> Curricular Workload
-                        </h3>
-                        <div className="space-y-4">
-                          {[
-                            { title: 'Linear Equation Chapter 3 Exercises', subject: 'Mathematics', status: 'SUBMITTED', date: '2 days ago', icon: CheckCircle, color: 'emerald' },
-                            { title: 'Plant Cell Anatomy Model Upload', subject: 'Science', status: 'OVERDUE', date: 'Exp: Yesterday', icon: AlertCircle, color: 'rose' },
-                          ].map((hw, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.06] hover:bg-white/[0.03] transition-all group">
-                               <div className="flex items-center gap-6">
-                                  <div className={`h-14 w-14 rounded-2xl bg-${hw.color}-500/10 flex items-center justify-center text-${hw.color}-400 border border-${hw.color}-500/20 group-hover:scale-110 transition-transform`}><hw.icon size={28}/></div>
-                                  <div>
-                                     <p className="text-base font-bold text-white group-hover:text-primary transition-colors">{hw.title}</p>
-                                     <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Subject: {hw.subject}</p>
-                                  </div>
-                               </div>
-                               <div className="text-right">
-                                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-${hw.color}-500/10 text-${hw.color}-400 border border-${hw.color}-500/20`}>{hw.status}</span>
-                                  <p className="text-[10px] text-slate-500 font-medium mt-2">{hw.date}</p>
-                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'login' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <h3 className="text-xl font-black text-white uppercase tracking-widest border-b border-white/[0.06] pb-6 flex items-center gap-3">
-                           <Shield size={24} className="text-primary"/> System Access Hub
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                           <div className="p-10 rounded-[40px] bg-white/[0.01] border border-white/[0.06] space-y-8 relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 h-40 w-40 bg-primary/5 rounded-full blur-[60px] -mr-20 -mt-20"/>
-                              <div className="flex items-center gap-4">
-                                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><User size={24}/></div>
-                                 <h4 className="text-base font-black text-white uppercase tracking-widest">Student Portal</h4>
-                              </div>
-                              <div className="space-y-6">
-                                 <div className="space-y-1">
-                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Access Username</span>
-                                    <div className="px-5 py-3 rounded-2xl bg-slate-900 border border-white/5 font-mono text-white text-sm font-bold flex items-center justify-between group-hover:border-primary/30 transition-all">
-                                       {selectedStudent.email || `${selectedStudent.admissionNo.toLowerCase()}@school.edu`}
-                                       <CheckCircle size={16} className="text-emerald-500 opacity-50"/>
-                                    </div>
-                                 </div>
-                                 <div className="space-y-1">
-                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Portal Password</span>
-                                    <div className="px-5 py-3 rounded-2xl bg-slate-900 border border-white/5 font-mono text-slate-500 text-sm italic">******** (Encrypted)</div>
-                                 </div>
-                              </div>
-                           </div>
-
-                           <div className="p-10 rounded-[40px] bg-white/[0.01] border border-white/[0.06] space-y-8 relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 h-40 w-40 bg-amber-500/5 rounded-full blur-[60px] -mr-20 -mt-20"/>
-                              <div className="flex items-center gap-4">
-                                 <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20"><Users size={24}/></div>
-                                 <h4 className="text-base font-black text-white uppercase tracking-widest">Parent Portal</h4>
-                              </div>
-                              <div className="space-y-6">
-                                 <div className="space-y-1">
-                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Access Username</span>
-                                    <div className="px-5 py-3 rounded-2xl bg-slate-900 border border-white/5 font-mono text-white text-sm font-bold flex items-center justify-between group-hover:border-amber-500/30 transition-all">
-                                       {selectedStudent.admissionNo.toLowerCase()}_parent@school.edu
-                                       <CheckCircle size={16} className="text-emerald-500 opacity-50"/>
-                                    </div>
-                                 </div>
-                                 <div className="space-y-1">
-                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Default Credential</span>
-                                    <div className="px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 font-mono text-amber-500 text-sm font-bold tracking-widest">parent123</div>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {profileTab === 'timeline' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <h3 className="text-xl font-black text-white uppercase tracking-widest border-b border-white/[0.06] pb-6 flex items-center gap-3">
-                           <FileText size={24} className="text-cyan-400"/> Operational Timeline
-                        </h3>
-                        <div className="relative pl-12 border-l-2 border-white/[0.06] space-y-12">
-                          {[
-                            { event: 'Fee Invoice FP-8927 Cleared', time: '15 mins ago', desc: 'Financial transaction processed via Bank Transfer', icon: CreditCard, color: 'emerald' },
-                            { event: 'Assigned Section A of Grade 5', time: '3 days ago', desc: 'Cohort allocation updated by Registrar', icon: GraduationCap, color: 'violet' },
-                            { event: 'Registered Student Admission Account', time: '3 days ago', desc: 'Initial system entry and credential generation', icon: UserPlus, color: 'primary' },
-                          ].map((log, idx) => (
-                            <div key={idx} className="relative group">
-                               <div className={`absolute -left-[64px] top-0 h-11 w-11 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center text-${log.color === 'primary' ? 'primary' : log.color + '-400'} shadow-lg group-hover:scale-110 transition-transform duration-500 z-10`}><log.icon size={20}/></div>
-                               <div className="space-y-1">
-                                  <p className="text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors">{log.event}</p>
-                                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{log.time}</p>
-                                  <p className="text-sm text-slate-500 mt-2">{log.desc}</p>
-                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
+            </form>
           </div>
-        )}
-      </Modal>
-
-      {/* Excel Import Modal */}
-      <Modal isOpen={showImport} onClose={() => setShowImport(false)} maxWidth="max-w-lg">
-        <ModalHeader
-          icon={<FileSpreadsheet size={16} className="text-emerald-500"/>}
-          title="Bulk Import Students via Excel"
-          onClose={() => setShowImport(false)}
-        />
-        <form onSubmit={handleImport} className="space-y-4 p-6 text-xs">
-                <div className="border-2 border-dashed border-border/80 rounded-2xl p-6 text-center hover:border-primary/50 transition-all cursor-pointer">
-                  <Upload size={32} className="mx-auto text-muted-foreground mb-3 opacity-60"/>
-                  <p className="text-xs text-foreground font-semibold">Click to select files, or drag and drop spreadsheet here</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Accepts CSV, XLSX up to 5MB</p>
-                  <input type="file" onChange={e => setImportFile(e.target.files?.[0] || null)} className="hidden" id="excel-file-uploader" />
-                  <label htmlFor="excel-file-uploader" className="inline-block mt-3 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-bold cursor-pointer">Choose File</label>
-                </div>
-                {importFile && (
-                  <div className="p-3 bg-accent/20 border border-border rounded-xl text-xs flex items-center justify-between">
-                    <span className="truncate font-semibold text-foreground">{importFile.name}</span>
-                    <button type="button" onClick={() => setImportFile(null)} className="text-destructive hover:underline">Remove</button>
-                  </div>
-                )}
-
-                {/* Headers Mapper Guide */}
-                <div className="bg-accent/10 border border-border rounded-xl p-3 text-[10px] text-muted-foreground space-y-1">
-                  <p className="font-bold text-foreground">Required Headers Mapping:</p>
-                  <p>AdmissionNo â”¬â•– RollNo â”¬â•– Name â”¬â•– Gender â”¬â•– DateOfBirth â”¬â•– SectionId â”¬â•– FatherName â”¬â•– FatherMobile1 â”¬â•– Address</p>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                  <button type="button" onClick={() => setShowImport(false)} className="px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent">Cancel</button>
-                  <button type="submit" disabled={!importFile || importing} className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 disabled:opacity-70">
-                    {importing && <Loader2 size={13} className="animate-spin"/>}
-                    {importing ? 'Processing Sheet...' : 'Upload & Parse'}
-                  </button>
-                </div>
-        </form>
-      </Modal>
-
-      {/* Student ID Card Print Preview Modal */}
-      <Modal isOpen={showIdCard} onClose={() => { setShowIdCard(false); setSelectedStudent(null); }} maxWidth="max-w-sm">
-        <div className="p-6">
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h3 className="text-sm font-black text-foreground flex items-center gap-1"><Printer size={14}/> ID Card Print Preview</h3>
-                <button onClick={() => { setShowIdCard(false); setSelectedStudent(null); }} className="text-muted-foreground hover:text-foreground"><X size={18}/></button>
-              </div>
-
-              {/* Styled ID Card Badge container */}
-              <div className="relative border border-border rounded-2xl bg-gradient-to-b from-[#0f172a] to-[#020617] p-5 text-center text-white shadow-xl max-w-xs mx-auto overflow-hidden">
-                {/* Card Background elements */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl"/>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-violet-600/10 rounded-full blur-xl"/>
-
-                {/* Header */}
-                <div className="border-b border-primary/20 pb-2.5 mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">EDUSPHERE SCHOOL SYSTEM</span>
-                  <p className="text-[8px] text-muted-foreground">Academic Session 2026-2027</p>
-                </div>
-
-                {/* Photo */}
-                <div className="relative mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center font-bold text-white text-2xl shadow-lg border-2 border-primary/40 mb-3">
-                  {selectedStudent ? selectedStudent.name.charAt(0) : 'S'}
-                </div>
-
-                {/* Details */}
-                <div className="space-y-1 mb-4">
-                  <h4 className="text-sm font-black">{selectedStudent?.name || 'â€”'}</h4>
-                  <p className="text-[10px] text-primary/80 font-bold">{selectedStudent?.section ? `${selectedStudent.section.class?.name} - ${selectedStudent.section.name}` : 'Grade 5 - A'}</p>
-                </div>
-
-                {/* Badges metadata table */}
-                <div className="grid grid-cols-2 gap-1.5 text-[9px] text-left border-y border-primary/20 py-2.5 mb-4 bg-accent/5 px-2 rounded-lg">
-                  <div><span className="text-muted-foreground block">Admission No:</span><span className="font-mono font-bold">{selectedStudent?.admissionNo || 'â€”'}</span></div>
-                  <div><span className="text-muted-foreground block">Roll Number:</span><span className="font-mono font-bold">{selectedStudent?.rollNo || 'â€”'}</span></div>
-                  <div><span className="text-muted-foreground block">Blood Group:</span><span className="font-bold text-red-400">{selectedStudent?.bloodGroup || 'â€”'}</span></div>
-                  <div><span className="text-muted-foreground block">Guardian Phone:</span><span className="font-mono font-bold">{selectedStudent?.phone || 'â€”'}</span></div>
-                </div>
-
-                {/* Barcode Mockup */}
-                <div className="space-y-1">
-                  <div className="h-6 bg-white w-32 mx-auto rounded flex items-center justify-around px-2 py-1 opacity-80">
-                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(x => (
-                      <div key={x} className={`h-full bg-black`} style={{ width: `${x % 3 === 0 ? '3px' : '1px'}` }}/>
-                    ))}
-                  </div>
-                  <p className="text-[8px] text-muted-foreground">Authorized Signature</p>
-                </div>
-              </div>
-
-              <div className="flex gap-2 mt-5">
-                <button onClick={() => { setShowIdCard(false); setSelectedStudent(null); }} className="flex-1 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent transition-all text-foreground">Close</button>
-                <button onClick={() => { toast.success('Sending print command to system...'); setShowIdCard(false); setSelectedStudent(null); }} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95 transition-all flex items-center justify-center gap-1.5"><Printer size={13}/> Print Badges</button>
-              </div>
         </div>
-      </Modal>
+      )}
+    </div>
+  );
+}
 
-      {/* Promote Students Dialog */}
-      <Modal isOpen={showPromote} onClose={() => setShowPromote(false)} maxWidth="max-w-md">
-        <ModalHeader
-          icon={<ArrowUpRight size={16} className="text-emerald-500"/>}
-          title="Promote Selected Students"
-          onClose={() => setShowPromote(false)}
-        />
-        <form onSubmit={handlePromote} className="space-y-4 p-6">
-                <p className="text-xs text-muted-foreground">You are promoting <strong className="text-foreground">{selectedIds.length}</strong> selected student(s) to the next class.</p>
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+        {label}
+        {required ? ' *' : ''}
+      </span>
+      {children}
+    </label>
+  );
+}
 
-                <div>
-                  <label className="text-xs font-bold text-foreground">Target Class & Section *</label>
-                  <select value={promoteSectionId} onChange={e => setPromoteSectionId(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    <option value="">-- Select Target Section --</option>
-                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} Î“Ã‡â•‘ {s.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                  <button type="button" onClick={() => setShowPromote(false)} className="px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent">Cancel</button>
-                  <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95 transition-all">Promote Now</button>
-                </div>
-        </form>
-      </Modal>
-
-      {/* Transfer Students Dialog */}
-      <Modal isOpen={showTransfer} onClose={() => setShowTransfer(false)} maxWidth="max-w-md">
-        <ModalHeader
-          icon={<MapPin size={16} className="text-violet-500"/>}
-          title="Transfer Students Class / Section"
-          onClose={() => setShowTransfer(false)}
-        />
-        <form onSubmit={handleTransfer} className="space-y-4 p-6">
-                <p className="text-xs text-muted-foreground">You are changing class or medium for <strong className="text-foreground">{selectedIds.length}</strong> student(s).</p>
-
-                <div>
-                  <label className="text-xs font-bold text-foreground">New Class & Section *</label>
-                  <select value={promoteSectionId} onChange={e => setPromoteSectionId(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    <option value="">-- Select New Section --</option>
-                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} Î“Ã‡â•‘ {s.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                  <button type="button" onClick={() => setShowTransfer(false)} className="px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent">Cancel</button>
-                  <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95 transition-all">Transfer Now</button>
-                </div>
-        </form>
-      </Modal>
+function Info({ label, value, span }: { label: string; value: unknown; span?: number }) {
+  return (
+    <div className={`rounded-xl border border-border bg-muted/25 p-3 ${span === 3 ? 'sm:col-span-2 lg:col-span-3' : ''}`}>
+      <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-sm font-bold text-foreground">{String(value ?? '—') || '—'}</p>
     </div>
   );
 }

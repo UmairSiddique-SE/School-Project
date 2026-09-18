@@ -39,7 +39,9 @@ export default function Parents() {
   const [selected, setSelected] = useState<Parent | null>(null);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', relation: 'FATHER', password: '', studentId: ''
+    name: '', email: '', phone: '', relation: 'FATHER', fatherStatus: 'ALIVE',
+    guardianName: '', guardianRelation: 'UNCLE', guardianPhone: '',
+    password: '', studentId: ''
   });
 
   const load = async () => {
@@ -75,12 +77,24 @@ export default function Parents() {
     e.preventDefault();
     setSaving(true);
     try {
+      const accountName = form.fatherStatus === 'DECEASED' && form.guardianName ? form.guardianName : form.name;
+      const accountPhone = form.fatherStatus === 'DECEASED' && form.guardianPhone ? form.guardianPhone : form.phone;
+      const accountRelation = form.fatherStatus === 'DECEASED' ? `GUARDIAN (${form.guardianRelation})` : 'FATHER';
+
       await apiClient.post('/people/parents', {
-        ...form,
-        password: form.password || `${form.name.replace(/\s+/g, '').slice(0, 5)}${Math.random().toString(36).slice(2, 8)}!9a`,
+        name: accountName,
+        phone: accountPhone || undefined,
+        email: form.email.trim().toLowerCase() || undefined,
+        relation: accountRelation,
+        studentId: form.studentId || undefined,
+        password: form.password || `${accountName.replace(/\s+/g, '').slice(0, 5)}${Math.random().toString(36).slice(2, 8)}!9a`,
       });
-      toast.success('Parent account created and synced to the database!');
-      setForm({ name: '', email: '', phone: '', relation: 'FATHER', password: '', studentId: '' });
+      toast.success('Parent/Guardian account created and synced to the database!');
+      setForm({
+        name: '', email: '', phone: '', relation: 'FATHER', fatherStatus: 'ALIVE',
+        guardianName: '', guardianRelation: 'UNCLE', guardianPhone: '',
+        password: '', studentId: ''
+      });
       setShowAdd(false);
       setStep(1);
       await load();
@@ -414,38 +428,70 @@ export default function Parents() {
 
               <form onSubmit={createParent} className="p-8 space-y-6">
                 <AnimatePresence mode="wait">
-                  {/* Step 1: Parent Info */}
+                  {/* Step 1: Father / Guardian Info */}
                   {step === 1 && (
                     <motion.div key="p1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
                       <div className="flex items-center gap-2 border-b border-white/[0.05] pb-3">
                         <User size={12} className="text-primary" />
-                        <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Parent Information</h3>
+                        <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Father / Guardian Information</h3>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1 md:col-span-2">
-                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name *</label>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Father Full Name *</label>
                           <input required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                            placeholder="Parent's full name" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                            placeholder="Father Full Name" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Relation</label>
-                          <select value={form.relation} onChange={(e) => setForm((p) => ({ ...p, relation: e.target.value }))}
-                            className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold">
-                            <option value="FATHER">Father</option>
-                            <option value="MOTHER">Mother</option>
-                            <option value="GUARDIAN">Guardian</option>
+                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Father Status *</label>
+                          <select value={form.fatherStatus} onChange={(e) => setForm((p) => ({ ...p, fatherStatus: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-white/[0.08] text-cyan-400 focus:border-primary outline-none transition-all font-bold">
+                            <option value="ALIVE">Alive (حـیات)</option>
+                            <option value="DECEASED">Deceased (مرحوم)</option>
                           </select>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone</label>
-                          <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: phoneFormat(e.target.value) }))}
-                            placeholder="0300-0000000" maxLength={12} className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold" />
-                        </div>
-                        <div className="space-y-1 md:col-span-2">
-                          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
-                          <input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                            placeholder="parent@example.com" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
-                        </div>
+                        {form.fatherStatus === 'ALIVE' ? (
+                          <>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Father Phone Number *</label>
+                              <input required value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: phoneFormat(e.target.value) }))}
+                                placeholder="0300-1234567" maxLength={12} className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Email (Optional)</label>
+                              <input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                                placeholder="parent@example.com" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="md:col-span-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+                            <p className="text-[10px] font-black text-amber-400 uppercase tracking-wider">
+                              Guardian Details (Father is Deceased)
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guardian Name *</label>
+                                <input required value={form.guardianName} onChange={(e) => setForm((p) => ({ ...p, guardianName: e.target.value }))}
+                                  placeholder="Guardian Full Name" className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/[0.08] text-white text-xs font-bold" />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Relation *</label>
+                                <select value={form.guardianRelation} onChange={(e) => setForm((p) => ({ ...p, guardianRelation: e.target.value }))}
+                                  className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/[0.08] text-white text-xs font-bold">
+                                  <option value="UNCLE">Uncle</option>
+                                  <option value="AUNT">Aunt</option>
+                                  <option value="GRANDPARENT">Grandparent</option>
+                                  <option value="SIBLING">Sibling</option>
+                                  <option value="OTHER">Other Guardian</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guardian Mobile *</label>
+                                <input required value={form.guardianPhone} onChange={(e) => setForm((p) => ({ ...p, guardianPhone: phoneFormat(e.target.value) }))}
+                                  placeholder="0300-1234567" maxLength={12} className="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/[0.08] text-white text-xs font-mono font-bold" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -492,10 +538,10 @@ export default function Parents() {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: 'Name', value: form.name },
-                          { label: 'Relation', value: form.relation },
-                          { label: 'Email', value: form.email || '—' },
-                          { label: 'Phone', value: form.phone || '—' },
+                          { label: 'Father Name', value: form.name },
+                          { label: 'Father Status', value: form.fatherStatus === 'DECEASED' ? 'Deceased (مرحوم)' : 'Alive (حیات)' },
+                          { label: 'Primary Contact', value: form.fatherStatus === 'DECEASED' ? `${form.guardianName} (${form.guardianPhone || '—'})` : (form.phone || '—') },
+                          { label: 'Role / Relation', value: form.fatherStatus === 'DECEASED' ? `Guardian (${form.guardianRelation})` : 'Father' },
                           { label: 'Linked Student', value: form.studentId ? (students.find((s) => s.id === form.studentId)?.name || '—') : 'None' },
                           { label: 'Password', value: form.password ? '••••••••••••' : 'Auto-generated' },
                         ].map(({ label, value }) => (
@@ -508,7 +554,7 @@ export default function Parents() {
                       <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-3">
                         <AlertCircle size={20} className="text-primary shrink-0" />
                         <p className="text-[10px] text-slate-400 leading-relaxed">
-                          A portal account will be created for <strong className="text-white">{form.name}</strong> and saved to the database.
+                          A portal account will be created for <strong className="text-white">{form.fatherStatus === 'DECEASED' ? form.guardianName || form.name : form.name}</strong> and saved to the database.
                         </p>
                       </div>
                     </motion.div>

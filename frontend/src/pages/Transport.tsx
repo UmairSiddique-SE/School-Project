@@ -352,52 +352,90 @@ export default function Transport() {
       </div>
 
       {/* ─── Metric Stat Cards ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm hover:border-amber-500/30 transition-all">
-          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-black uppercase tracking-wider">
-            <span>Fleet Routes</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-              <RouteIcon size={16} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Transit Corridors',
+            value: routes.length,
+            icon: RouteIcon,
+            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
+            border: 'border-amber-500/25 hover:border-amber-500/50',
+            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
+            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+            labelColor: 'text-amber-600 dark:text-amber-400',
+            dotColor: 'bg-amber-500',
+            dotPing: 'bg-amber-400',
+            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
+            subtitle: 'Configured pick & drop routes',
+          },
+          {
+            label: 'Fleet Vehicles',
+            value: `${activeVehicles} / ${vehicles.length}`,
+            icon: Bus,
+            gradient: 'from-sky-500/[0.08] via-card/70 to-card',
+            border: 'border-sky-500/25 hover:border-sky-500/50',
+            glow: 'bg-sky-500/15 group-hover:bg-sky-500/25',
+            iconBox: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25',
+            labelColor: 'text-sky-600 dark:text-sky-400',
+            dotColor: 'bg-sky-500',
+            dotPing: 'bg-sky-400',
+            shadow: 'shadow-sky-500/[0.04] hover:shadow-sky-500/15',
+            subtitle: `${totalCapacity} seats total fleet capacity`,
+          },
+          {
+            label: 'Student Riders',
+            value: assignments.length,
+            icon: Users,
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: `${occupancyRate}% fleet occupancy`,
+          },
+          {
+            label: 'Monthly Transit Billing',
+            value: money(totalRevenue),
+            icon: DollarSign,
+            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            border: 'border-violet-500/25 hover:border-violet-500/50',
+            glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
+            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            labelColor: 'text-violet-600 dark:text-violet-400',
+            dotColor: 'bg-violet-500',
+            dotPing: 'bg-violet-400',
+            shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
+            subtitle: 'Recurring transport fees',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                  {value}
+                </h4>
+              </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
+              </div>
+            </div>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-foreground">{routes.length}</p>
-          <span className="text-xs text-muted-foreground font-semibold">Active pick/drop corridors</span>
-        </div>
-
-        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm hover:border-sky-500/30 transition-all">
-          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-black uppercase tracking-wider">
-            <span>Fleet Vehicles</span>
-            <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
-              <Bus size={16} />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-foreground">
-            {activeVehicles} <span className="text-xs font-normal text-muted-foreground">/ {vehicles.length}</span>
-          </p>
-          <span className="text-xs text-sky-500 font-semibold">{totalCapacity} total seat capacity</span>
-        </div>
-
-        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm hover:border-emerald-500/30 transition-all">
-          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-black uppercase tracking-wider">
-            <span>Riders Enrolled</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-              <Users size={16} />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-foreground">{assignments.length}</p>
-          <span className="text-xs text-emerald-600 font-semibold">{occupancyRate}% fleet occupancy</span>
-        </div>
-
-        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm hover:border-violet-500/30 transition-all">
-          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-black uppercase tracking-wider">
-            <span>Monthly Transit Value</span>
-            <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center">
-              <DollarSign size={16} />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-foreground">{money(totalRevenue)}</p>
-          <span className="text-xs text-muted-foreground font-semibold">Active monthly billing</span>
-        </div>
+        ))}
       </div>
 
       {/* ─── Tabs & Search Filter ──────────────────────────────────────────────── */}

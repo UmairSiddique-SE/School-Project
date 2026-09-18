@@ -85,6 +85,8 @@ export default function Teachers() {
   }, [teachers, query, filterStatus]);
 
   const activeCount = teachers.filter((t) => t.isActive !== false).length;
+  const maleCount = teachers.filter((t) => (t.gender || 'MALE').toUpperCase() === 'MALE').length;
+  const femaleCount = teachers.filter((t) => (t.gender || '').toUpperCase() === 'FEMALE').length;
   const qualifiedCount = teachers.filter((t) => Boolean(t.qualification)).length;
   const payroll = teachers.reduce((sum, t) => sum + Number(t.salary || 0), 0);
 
@@ -185,10 +187,10 @@ export default function Teachers() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            label: 'Total Faculty',
+            label: 'Total Teachers',
             value: teachers.length,
             icon: Users,
             gradient: 'from-violet-500/[0.08] via-card/70 to-card',
@@ -199,10 +201,38 @@ export default function Teachers() {
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
             shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
-            subtitle: 'Faculty headcount',
+            subtitle: 'Total faculty headcount',
           },
           {
-            label: 'Active Staff',
+            label: 'Male Teachers',
+            value: maleCount,
+            icon: User,
+            gradient: 'from-blue-500/[0.08] via-card/70 to-card',
+            border: 'border-blue-500/25 hover:border-blue-500/50',
+            glow: 'bg-blue-500/15 group-hover:bg-blue-500/25',
+            iconBox: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25',
+            labelColor: 'text-blue-600 dark:text-blue-400',
+            dotColor: 'bg-blue-500',
+            dotPing: 'bg-blue-400',
+            shadow: 'shadow-blue-500/[0.04] hover:shadow-blue-500/15',
+            subtitle: 'Male teaching staff',
+          },
+          {
+            label: 'Female Teachers',
+            value: femaleCount,
+            icon: User,
+            gradient: 'from-rose-500/[0.08] via-card/70 to-card',
+            border: 'border-rose-500/25 hover:border-rose-500/50',
+            glow: 'bg-rose-500/15 group-hover:bg-rose-500/25',
+            iconBox: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25',
+            labelColor: 'text-rose-600 dark:text-rose-400',
+            dotColor: 'bg-rose-500',
+            dotPing: 'bg-rose-400',
+            shadow: 'shadow-rose-500/[0.04] hover:shadow-rose-500/15',
+            subtitle: 'Female teaching staff',
+          },
+          {
+            label: 'Active Faculty',
             value: activeCount,
             icon: UserCheck,
             gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
@@ -213,38 +243,9 @@ export default function Teachers() {
             dotColor: 'bg-emerald-500',
             dotPing: 'bg-emerald-400',
             shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
-            subtitle: 'In active service',
+            subtitle: 'In active teaching service',
           },
-          {
-            label: 'Qualified',
-            value: qualifiedCount,
-            icon: Award,
-            gradient: 'from-cyan-500/[0.08] via-card/70 to-card',
-            border: 'border-cyan-500/25 hover:border-cyan-500/50',
-            glow: 'bg-cyan-500/15 group-hover:bg-cyan-500/25',
-            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
-            labelColor: 'text-cyan-600 dark:text-cyan-400',
-            dotColor: 'bg-cyan-500',
-            dotPing: 'bg-cyan-400',
-            shadow: 'shadow-cyan-500/[0.04] hover:shadow-cyan-500/15',
-            subtitle: 'Degrees on file',
-          },
-          {
-            label: 'Monthly Payroll',
-            value: money(payroll),
-            icon: Briefcase,
-            raw: true,
-            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
-            border: 'border-amber-500/25 hover:border-amber-500/50',
-            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
-            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
-            labelColor: 'text-amber-600 dark:text-amber-400',
-            dotColor: 'bg-amber-500',
-            dotPing: 'bg-amber-400',
-            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
-            subtitle: 'Monthly salary total',
-          },
-        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle, raw }) => (
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
           <div
             key={label}
             className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
@@ -253,7 +254,7 @@ export default function Teachers() {
             <div className="relative flex items-start justify-between">
               <div>
                 <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
-                <h4 className={`mt-2 ${raw ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'} font-black text-foreground tracking-tight`}>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
                   {value}
                 </h4>
               </div>

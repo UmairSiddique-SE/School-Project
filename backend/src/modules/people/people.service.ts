@@ -56,6 +56,11 @@ export class PeopleService {
             teacher: { select: { id: true, name: true, email: true } },
           },
         },
+        parents: {
+          include: {
+            parent: true,
+          },
+        },
       },
       orderBy: { name: 'asc' },
     });

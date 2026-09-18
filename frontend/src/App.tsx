@@ -20,7 +20,7 @@ const Settings = lazy(() => import("@/pages/Settings"));
 const Staff = lazy(() => import("@/pages/Staff"));
 const Homework = lazy(() => import("@/pages/Homework"));
 const Exams = lazy(() => import("@/pages/ExamsLive"));
-const Timetable = lazy(() => import("@/pages/TimetableLive"));
+const Timetable = lazy(() => import("@/pages/Timetable"));
 const NoticeBoard = lazy(() => import("@/pages/NoticeBoard"));
 const Transport = lazy(() => import("@/pages/Transport"));
 const Reports = lazy(() => import("@/pages/Reports"));

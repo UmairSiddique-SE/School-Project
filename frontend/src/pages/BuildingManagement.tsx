@@ -328,59 +328,90 @@ export default function BuildingManagement() {
       </div>
 
       {/* Top Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Total Buildings</span>
-            <Building2 size={16} className="text-violet-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Campus Buildings',
+            value: totalBuildings,
+            icon: Building2,
+            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            border: 'border-violet-500/25 hover:border-violet-500/50',
+            glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
+            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            labelColor: 'text-violet-600 dark:text-violet-400',
+            dotColor: 'bg-violet-500',
+            dotPing: 'bg-violet-400',
+            shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
+            subtitle: `${ownedBuildings} Owned • ${rentedBuildings} Rented`,
+          },
+          {
+            label: 'Total Classrooms',
+            value: totalClassrooms,
+            icon: DoorOpen,
+            gradient: 'from-blue-500/[0.08] via-card/70 to-card',
+            border: 'border-blue-500/25 hover:border-blue-500/50',
+            glow: 'bg-blue-500/15 group-hover:bg-blue-500/25',
+            iconBox: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25',
+            labelColor: 'text-blue-600 dark:text-blue-400',
+            dotColor: 'bg-blue-500',
+            dotPing: 'bg-blue-400',
+            shadow: 'shadow-blue-500/[0.04] hover:shadow-blue-500/15',
+            subtitle: `Across ${totalRooms} total campus rooms`,
+          },
+          {
+            label: 'Student Capacity',
+            value: totalCapacity.toLocaleString(),
+            icon: Users,
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: 'Total campus seating capacity',
+          },
+          {
+            label: 'Safety Standard',
+            value: `${buildings.length > 0 ? Math.round((buildings.reduce((acc, b) => acc + (b.hasCctv ? 1 : 0) + (b.hasSecurityGuard ? 1 : 0) + (b.hasFireSafety ? 1 : 0) + (b.hasFirstAid ? 1 : 0), 0) / (buildings.length * 4)) * 100) : 100}%`,
+            icon: ShieldCheck,
+            gradient: 'from-cyan-500/[0.08] via-card/70 to-card',
+            border: 'border-cyan-500/25 hover:border-cyan-500/50',
+            glow: 'bg-cyan-500/15 group-hover:bg-cyan-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
+            labelColor: 'text-cyan-600 dark:text-cyan-400',
+            dotColor: 'bg-cyan-500',
+            dotPing: 'bg-cyan-400',
+            shadow: 'shadow-cyan-500/[0.04] hover:shadow-cyan-500/15',
+            subtitle: 'Safety & surveillance compliant',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                  {value}
+                </h4>
+              </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
+              </div>
+            </div>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
+            </div>
           </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalBuildings}</p>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1 font-medium">
-            <span className="text-emerald-500">{ownedBuildings} Owned</span>
-            <span>•</span>
-            <span className="text-amber-500">{rentedBuildings} Rented</span>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Classrooms</span>
-            <DoorOpen size={16} className="text-blue-400" />
-          </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalClassrooms}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Across all floors ({totalRooms} total rooms)
-          </p>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Student Capacity</span>
-            <Users size={16} className="text-emerald-400" />
-          </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalCapacity.toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">Total seat capacity</p>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Safety Standard</span>
-            <ShieldCheck size={16} className="text-cyan-400" />
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <p className="text-2xl font-black text-emerald-500">
-              {buildings.length > 0
-                ? Math.round(
-                    (buildings.reduce((acc, b) => acc + (b.hasCctv ? 1 : 0) + (b.hasSecurityGuard ? 1 : 0) + (b.hasFireSafety ? 1 : 0) + (b.hasFirstAid ? 1 : 0), 0) /
-                      (buildings.length * 4)) * 100
-                  )
-                : 100}
-              %
-            </p>
-            <span className="text-[10px] text-muted-foreground font-semibold">Compliant</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1">CCTV, Guard, Fire, Medical</p>
-        </div>
+        ))}
       </div>
 
       {/* Filter and Search Bar */}

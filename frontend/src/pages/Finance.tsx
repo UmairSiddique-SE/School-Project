@@ -400,72 +400,90 @@ export default function Finance() {
       )}
 
       {/* ─── Metric Stat Cards ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="relative overflow-hidden p-5 rounded-2xl bg-card border border-border/80 shadow-sm transition-all duration-200 hover:shadow-md hover:border-emerald-500/30 group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
-              Total Revenue
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-transform group-hover:scale-110">
-              <DollarSign size={18} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Total Collected',
+            value: money(totalCollected),
+            icon: DollarSign,
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: 'Verified bank & cash receipts',
+          },
+          {
+            label: 'Outstanding Dues',
+            value: money(totalOutstanding),
+            icon: Clock,
+            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
+            border: 'border-amber-500/25 hover:border-amber-500/50',
+            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
+            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+            labelColor: 'text-amber-600 dark:text-amber-400',
+            dotColor: 'bg-amber-500',
+            dotPing: 'bg-amber-400',
+            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
+            subtitle: `${defaulters.length} pending vouchers`,
+          },
+          {
+            label: 'Collection Rate',
+            value: `${collectionRate}%`,
+            icon: Percent,
+            gradient: 'from-sky-500/[0.08] via-card/70 to-card',
+            border: 'border-sky-500/25 hover:border-sky-500/50',
+            glow: 'bg-sky-500/15 group-hover:bg-sky-500/25',
+            iconBox: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25',
+            labelColor: 'text-sky-600 dark:text-sky-400',
+            dotColor: 'bg-sky-500',
+            dotPing: 'bg-sky-400',
+            shadow: 'shadow-sky-500/[0.04] hover:shadow-sky-500/15',
+            subtitle: `${paidCount} of ${payments.length} fully settled`,
+          },
+          {
+            label: 'Fee Structures',
+            value: structures.length,
+            icon: Layers,
+            gradient: 'from-purple-500/[0.08] via-card/70 to-card',
+            border: 'border-purple-500/25 hover:border-purple-500/50',
+            glow: 'bg-purple-500/15 group-hover:bg-purple-500/25',
+            iconBox: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25',
+            labelColor: 'text-purple-600 dark:text-purple-400',
+            dotColor: 'bg-purple-500',
+            dotPing: 'bg-purple-400',
+            shadow: 'shadow-purple-500/[0.04] hover:shadow-purple-500/15',
+            subtitle: 'Configured billing plans',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                  {value}
+                </h4>
+              </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
+              </div>
+            </div>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
             </div>
           </div>
-          <p className="mt-3 text-2xl font-black text-foreground tracking-tight">{money(totalCollected)}</p>
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-500 font-semibold">
-            <CheckCircle2 size={13} />
-            <span>Verified in bank & cash</span>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden p-5 rounded-2xl bg-card border border-border/80 shadow-sm transition-all duration-200 hover:shadow-md hover:border-amber-500/30 group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
-              Outstanding Dues
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center transition-transform group-hover:scale-110">
-              <Clock size={18} />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-foreground tracking-tight">{money(totalOutstanding)}</p>
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-500 font-semibold">
-            <AlertTriangle size={13} />
-            <span>{defaulters.length} pending vouchers</span>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden p-5 rounded-2xl bg-card border border-border/80 shadow-sm transition-all duration-200 hover:shadow-md hover:border-sky-500/30 group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
-              Collection Rate
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center transition-transform group-hover:scale-110">
-              <Percent size={18} />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-foreground tracking-tight">{collectionRate}%</p>
-          <div className="mt-2 w-full bg-accent rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-sky-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, collectionRate)}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden p-5 rounded-2xl bg-card border border-border/80 shadow-sm transition-all duration-200 hover:shadow-md hover:border-purple-500/30 group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
-              Active Fee Heads
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center transition-transform group-hover:scale-110">
-              <Layers size={18} />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-foreground tracking-tight">{structures.length}</p>
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
-            <Building2 size={13} />
-            <span>Configured templates</span>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* ─── Navigation Tabs & Filters ─────────────────────────────────────────── */}
