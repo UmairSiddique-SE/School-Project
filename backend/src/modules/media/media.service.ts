@@ -14,7 +14,6 @@ type CloudinaryUploadResponse = {
 
 @Injectable()
 export class MediaService {
-  private readonly maxImageBytes = 2 * 1024 * 1024;
   private readonly allowedFormats = new Set(['image/jpeg', 'image/png']);
 
   constructor(private readonly config: ConfigService) {}
@@ -47,10 +46,6 @@ export class MediaService {
 
     if (!this.allowedFormats.has(file.mimetype)) {
       throw new BadRequestException('Only JPG and PNG images are allowed');
-    }
-
-    if (file.size > this.maxImageBytes) {
-      throw new BadRequestException('Image must be 2 MB or smaller');
     }
 
     const safeCategory = String(category || 'general')
