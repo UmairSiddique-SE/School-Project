@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Param,
@@ -34,8 +35,12 @@ export class MediaController {
   }
 
   @Delete('image')
-  async deleteImage(@CurrentUser() user: any) {
+  async deleteImage(@CurrentUser() user: any, @Body('publicId') publicId?: string) {
     if (!user?.schoolId) throw new BadRequestException('A school account is required');
-    return this.mediaService.deleteImageFromBody(user?.bodyPublicId);
+    if (!publicId?.trim()) throw new BadRequestException('Cloudinary public ID is required');
+    if (!publicId.startsWith(`edusphere/schools/${user.schoolId}/`)) {
+      throw new BadRequestException('Image does not belong to this school');
+    }
+    return this.mediaService.deleteImage(publicId);
   }
 }
