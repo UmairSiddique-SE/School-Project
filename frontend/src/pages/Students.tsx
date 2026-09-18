@@ -6,6 +6,7 @@ import {
   MapPin, Phone, Mail, FileDown, Upload, Check, CheckCircle, AlertCircle, Calendar, CreditCard, Award, BookOpen, UserCheck, ShieldAlert, ShieldCheck, Edit2, Save, Users, UserPlus, Fingerprint
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
+import { uploadImage } from '@/api/media';
 import { toast } from 'sonner';
 import Modal, { ModalHeader } from '@/component/ui/Modal';
 import { useAuth } from '@/context/AuthContext';
@@ -186,62 +187,6 @@ function getTehsils(province: string, district: string): string[] {
 }
 
 // ΓöÇΓöÇ Automatic 100KB Image Compressor Helper ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-function compressImageToMax100KB(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        // Max dimension bounds for passport photo aspect
-        const MAX_WIDTH = 600;
-        const MAX_HEIGHT = 600;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height);
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(event.target?.result as string);
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Iteratively compress quality until under 100KB (100,000 bytes)
-        let quality = 0.85;
-        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-
-        while (dataUrl.length > 100 * 1024 * 1.33 && quality > 0.1) {
-          quality -= 0.1;
-          dataUrl = canvas.toDataURL('image/jpeg', quality);
-        }
-
-        resolve(dataUrl);
-      };
-      img.onerror = (err) => reject(err);
-    };
-    reader.onerror = (err) => reject(err);
-  });
-}
-
 export default function Students() {
   const { user, previewRole } = useAuth();
   const role = previewRole ?? user?.role;
@@ -624,9 +569,20 @@ export default function Students() {
                         Photo
                         <input type="file" accept="image/*" className="hidden" onChange={async e => {
                           const file = e.target.files?.[0];
-                          if (file) {
-                            const res = await compressImageToMax100KB(file);
-                            setPhotoPreview(res); setForm(p => ({ ...p, photoUrl: res }));
+                          if (!file) return;
+                          try {
+                            if (!['image/png', 'image/jpeg'].includes(file.type)) throw new Error('Only JPG and PNG images are allowed.');
+                            if (file.size > 2 * 1024 * 1024) throw new Error('Image must be 2 MB or smaller.');
+                            setPhotoPreview(URL.createObjectURL(file));
+                            const uploaded = await uploadImage(file, 'student');
+                            setForm(p => ({ ...p, photoUrl: uploaded.url }));
+                            toast.success('Student photo uploaded.');
+                          } catch (error: any) {
+                            setPhotoPreview(null);
+                            setForm(p => ({ ...p, photoUrl: '' }));
+                            toast.error(error?.response?.data?.message || error?.message || 'Photo upload failed.');
+                          } finally {
+                            e.target.value = '';
                           }
                         }} />
                       </label>
