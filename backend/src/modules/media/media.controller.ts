@@ -12,14 +12,17 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { MediaService } from './media.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   @Post('image/:category')
   @UseInterceptors(FileInterceptor('file', {
     storage: memoryStorage(),
@@ -34,6 +37,7 @@ export class MediaController {
     return this.mediaService.uploadImage(file!, user.schoolId, category);
   }
 
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
   @Delete('image')
   async deleteImage(@CurrentUser() user: any, @Body('publicId') publicId?: string) {
     if (!user?.schoolId) throw new BadRequestException('A school account is required');
