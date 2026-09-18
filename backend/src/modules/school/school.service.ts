@@ -138,11 +138,41 @@ export class SchoolService {
     }
   }
 
-  async suspend(id: string, actor?: any, reason?: string) {
-    if (!reason?.trim()) throw new ConflictException('A suspension reason is required');
+  async suspend(id: string, actor?: any, payload?: any) {
+    const data = typeof payload === 'string' ? { reason: payload } : (payload || {});
+    const reason = (data.reason || data.message || 'School portal placed offline by Super Admin').trim();
+    const title = (data.title || '⚠️ School Portal Offline').trim();
+    const type = (data.type || 'SUSPENSION').toUpperCase();
+    const actionType = data.actionType || (type === 'PAYMENT' ? 'RENEW_PAYMENT' : 'ACKNOWLEDGE');
+    const actionUrl = data.actionUrl || (type === 'PAYMENT' ? '/subscription' : '');
+    const expiresAt = data.estimatedReturn ? new Date(data.estimatedReturn) : null;
+
     const school = await this.findOne(id);
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: false } });
-    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name}. Reason: ${reason.trim()}`);
+
+    // Mark previous active suspension/offline alerts for this school as inactive
+    await (this.prisma as any).schoolAlert.updateMany({
+      where: { schoolId: id, isActive: true },
+      data: { isActive: false, isDismissed: true },
+    }).catch(() => {});
+
+    // Create a new active critical alert representing the offline reason & theme
+    await (this.prisma as any).schoolAlert.create({
+      data: {
+        schoolId: id,
+        type,
+        title,
+        message: reason,
+        priority: 'CRITICAL',
+        actionType,
+        actionUrl,
+        expiresAt,
+        isActive: true,
+        createdBy: actor?.name || actor?.email || 'Super Admin',
+      },
+    }).catch((err: any) => console.error('Error creating school offline alert:', err));
+
+    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name} [${type}]. Reason: ${reason}`);
     return updated;
   }
 
@@ -154,6 +184,13 @@ export class SchoolService {
       throw new ConflictException('Cannot activate this school until its subscription is active and unexpired');
     }
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: true } });
+
+    // Clear active offline/suspension alerts
+    await (this.prisma as any).schoolAlert.updateMany({
+      where: { schoolId: id, isActive: true },
+      data: { isActive: false, isDismissed: true },
+    }).catch(() => {});
+
     await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}${reason?.trim() ? `. Reason: ${reason.trim()}` : ''}`);
     return updated;
   }

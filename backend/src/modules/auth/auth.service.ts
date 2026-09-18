@@ -3,6 +3,8 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -249,10 +251,62 @@ return { school, user };
             select: { id: true },
           })
         : null;
-    if (!user.isActive && !pendingRequest)
-      throw new UnauthorizedException('This account has been suspended');
-    if (user.school && !user.school.isActive && !pendingRequest)
-      throw new UnauthorizedException('This school account is suspended');
+    if (user.school && !user.school.isActive && !pendingRequest) {
+      const schoolDetails = user.schoolId
+        ? await this.prisma.school.findUnique({
+            where: { id: user.schoolId },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+              email: true,
+              phone: true,
+              address: true,
+              city: true,
+              country: true,
+            },
+          })
+        : null;
+
+      const activeAlert = user.schoolId
+        ? await (this.prisma as any).schoolAlert.findFirst({
+            where: { schoolId: user.schoolId, isActive: true },
+            orderBy: { createdAt: 'desc' },
+          })
+        : null;
+
+      const adminUser = user.schoolId
+        ? await this.prisma.user.findFirst({
+            where: { schoolId: user.schoolId, role: 'SCHOOL_ADMIN', deletedAt: null },
+            select: { name: true, email: true, phone: true },
+          })
+        : null;
+
+      throw new HttpException(
+        {
+          statusCode: 403,
+          message: activeAlert?.message || 'This school portal is temporarily offline or suspended.',
+          isSchoolOffline: true,
+          school: schoolDetails || {
+            name: user.school.name,
+            slug: user.school.slug,
+          },
+          adminContact: {
+            name: adminUser?.name || 'School Administration',
+            email: adminUser?.email || schoolDetails?.email || 'admin@edusphere.pk',
+            phone: adminUser?.phone || schoolDetails?.phone || '+92 300 0000000',
+            address: schoolDetails?.address || (schoolDetails?.city ? `${schoolDetails.city}, Pakistan` : 'Campus Address'),
+          },
+          notice: activeAlert || {
+            type: 'SUSPENSION',
+            title: 'School Portal Offline',
+            message: 'This school portal is currently offline by platform administration.',
+          },
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
     if (!(await bcrypt.compare(dto.password, user.passwordHash)))
       throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified && user.role !== 'STUDENT')

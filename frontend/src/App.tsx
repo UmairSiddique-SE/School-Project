@@ -31,6 +31,7 @@ const BuildingManagement = lazy(() => import("@/pages/BuildingManagement"));
 const StudentPortal = lazy(() => import("@/pages/StudentPortal"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 const SchoolLogin = lazy(() => import("@/pages/SchoolLogin"));
+const SchoolOfflinePage = lazy(() => import("@/pages/SchoolOfflinePage"));
 const RegisterSchool = lazy(() => import("@/pages/RegisterSchoolPremium"));
 const SchoolPlanSelection = lazy(() => import("@/pages/SchoolPlanSelection"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
@@ -53,7 +54,7 @@ const ACADEMIC_READ = ["SCHOOL_ADMIN", "TEACHER", "STUDENT"];
 
 export default function App() {
   return <ThemeProvider><AuthProvider><BrowserRouter><Suspense fallback={<PageLoader />}><Routes>
-    <Route path="/" element={<LandingPage />} /><Route path="/portal" element={<PortalSelector />} /><Route path="/school-login" element={<SchoolLogin />} /><Route path="/school-login/:schoolSlug" element={<LoginPage />} /><Route path="/register-school" element={<RegisterSchool />} /><Route path="/register-school/plans" element={<SchoolPlanSelection />} /><Route path="/register-school/form" element={<RegisterSchool />} /><Route path="/admin-login" element={<AdminLogin />} /><Route path="/admin" element={<AdminLogin />} /><Route path="/admin/login" element={<AdminLogin />} />
+    <Route path="/" element={<LandingPage />} /><Route path="/portal" element={<PortalSelector />} /><Route path="/school-login" element={<SchoolLogin />} /><Route path="/school-login/:schoolSlug" element={<LoginPage />} /><Route path="/:schoolSlug/offline" element={<SchoolOfflinePage />} /><Route path="/school-offline/:schoolSlug" element={<SchoolOfflinePage />} /><Route path="/register-school" element={<RegisterSchool />} /><Route path="/register-school/plans" element={<SchoolPlanSelection />} /><Route path="/register-school/form" element={<RegisterSchool />} /><Route path="/admin-login" element={<AdminLogin />} /><Route path="/admin" element={<AdminLogin />} /><Route path="/admin/login" element={<AdminLogin />} />
     <Route path="/onboarding" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}><Onboarding /></ProtectedRoute>} />
     <Route path="/super-admin" element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]}><SuperAdminDashboard /></ProtectedRoute>} />
     <Route path="/:schoolSlug/parent-portal" element={<ProtectedRoute allowedRoles={PARENT_ONLY}><ParentPortal /></ProtectedRoute>} />

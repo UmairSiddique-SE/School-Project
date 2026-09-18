@@ -50,7 +50,7 @@ export class PublicService {
 
   async resolveBySlug(slug: string) {
     const school = await this.prisma.school.findFirst({
-      where: { slug, deletedAt: null, isActive: true },
+      where: { slug, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -59,17 +59,52 @@ export class PublicService {
         email: true,
         phone: true,
         address: true,
+        city: true,
+        country: true,
         website: true,
+        isActive: true,
         subscription: { select: { plan: true, status: true, endDate: true } },
+        alerts: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            type: true,
+            title: true,
+            message: true,
+            actionType: true,
+            actionUrl: true,
+            priority: true,
+            expiresAt: true,
+            createdAt: true,
+          },
+        },
+        users: {
+          where: { role: 'SCHOOL_ADMIN', deletedAt: null },
+          select: { name: true, email: true, phone: true },
+          take: 1,
+        },
       },
     });
     if (!school) throw new NotFoundException(`School with slug "${slug}" not found`);
-    return school;
+    const adminUser = school.users?.[0] || null;
+    const offlineNotice = school.alerts?.[0] || null;
+    return {
+      ...school,
+      adminContact: {
+        name: adminUser?.name || 'School Administration',
+        email: adminUser?.email || school.email || 'admin@edusphere.pk',
+        phone: adminUser?.phone || school.phone || '+92 300 0000000',
+        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
+      },
+      offlineNotice,
+    };
   }
 
   async resolveByDomain(domain: string) {
     const school = await this.prisma.school.findFirst({
-      where: { domain, deletedAt: null, isActive: true },
+      where: { domain, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -78,12 +113,47 @@ export class PublicService {
         email: true,
         phone: true,
         address: true,
+        city: true,
+        country: true,
         website: true,
+        isActive: true,
         subscription: { select: { plan: true, status: true, endDate: true } },
+        alerts: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            type: true,
+            title: true,
+            message: true,
+            actionType: true,
+            actionUrl: true,
+            priority: true,
+            expiresAt: true,
+            createdAt: true,
+          },
+        },
+        users: {
+          where: { role: 'SCHOOL_ADMIN', deletedAt: null },
+          select: { name: true, email: true, phone: true },
+          take: 1,
+        },
       },
     });
     if (!school) throw new NotFoundException(`No school found for domain "${domain}"`);
-    return school;
+    const adminUser = school.users?.[0] || null;
+    const offlineNotice = school.alerts?.[0] || null;
+    return {
+      ...school,
+      adminContact: {
+        name: adminUser?.name || 'School Administration',
+        email: adminUser?.email || school.email || 'admin@edusphere.pk',
+        phone: adminUser?.phone || school.phone || '+92 300 0000000',
+        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
+      },
+      offlineNotice,
+    };
   }
 
   async submitContact(data: { name: string; email: string; message: string; schoolName?: string }) {

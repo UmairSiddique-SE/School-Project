@@ -146,6 +146,93 @@ const ALERT_PRESETS = [
   },
 ];
 
+const SUSPENSION_THEME_PRESETS = [
+  {
+    id: "MAINTENANCE",
+    name: "System Maintenance",
+    badge: "Scheduled Maintenance",
+    type: "MAINTENANCE",
+    theme: "amber",
+    colorClass: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+    icon: Wrench,
+    title: "🛠️ Scheduled System Maintenance in Progress",
+    reason: "Our school portal is temporarily offline for scheduled system upgrades and data maintenance. Normal service will resume shortly. We apologize for any inconvenience.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedHours: 4,
+  },
+  {
+    id: "PAYMENT",
+    name: "Subscription / Payment Overdue",
+    badge: "Payment Required",
+    type: "PAYMENT",
+    theme: "rose",
+    colorClass: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+    icon: CreditCard,
+    title: "⚠️ Subscription Renewal Required",
+    reason: "The institutional subscription for this school portal is currently pending renewal. School administrators must settle the outstanding subscription payment to unlock full access.",
+    actionType: "RENEW_PAYMENT",
+    actionUrl: "/subscription",
+    estimatedHours: 0,
+  },
+  {
+    id: "SUSPENSION",
+    name: "Administrative Suspension",
+    badge: "Account Suspended",
+    type: "SUSPENSION",
+    theme: "red",
+    colorClass: "border-red-500/30 bg-red-500/10 text-red-300",
+    icon: ShieldAlert,
+    title: "🚨 Institutional Portal Suspended by Administration",
+    reason: "Access to this school portal has been placed on hold by EduSphere platform administration due to compliance, documentation, or administrative review. Please contact support.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedHours: 0,
+  },
+  {
+    id: "VACATION",
+    name: "Academic Break / Term Holiday",
+    badge: "School Closed / Vacation",
+    type: "VACATION",
+    theme: "emerald",
+    colorClass: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+    icon: Calendar,
+    title: "🏖️ School Portal Closed for Scheduled Break",
+    reason: "The school is closed for the scheduled academic holiday / term break. Online modules and parent/student portals will resume on the next official term opening date.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedHours: 72,
+  },
+  {
+    id: "EMERGENCY",
+    name: "Emergency / Weather Advisory",
+    badge: "Emergency Closure",
+    type: "EMERGENCY",
+    theme: "purple",
+    colorClass: "border-purple-500/30 bg-purple-500/10 text-purple-300",
+    icon: AlertTriangle,
+    title: "⚡ Emergency Weather / Advisory Closure",
+    reason: "Due to local weather advisories or emergency district notices, school operations and portal services are temporarily paused for student and staff safety.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedHours: 24,
+  },
+  {
+    id: "CUSTOM",
+    name: "Custom Reason & Theme",
+    badge: "Custom Notice",
+    type: "CUSTOM",
+    theme: "cyan",
+    colorClass: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
+    icon: Sparkles,
+    title: "📢 Official Notice from Administration",
+    reason: "This school portal is currently offline. Please review this notice and contact the administration for further information.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedHours: 0,
+  },
+];
+
 type ModalType = "create" | "edit" | "view" | "extend" | "plan" | "alert" | null;
 type ViewTab = "overview" | "subscription" | "alerts" | "stats" | "audit";
 type SchoolAction = "suspend" | "activate" | "archive";
@@ -165,8 +252,21 @@ export default function Schools() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [planFilter, setPlanFilter] = useState("ALL");
-  const [actionDialog, setActionDialog] = useState<{ id: string; action: SchoolAction; label: string; schoolName: string } | null>(null);
+  const [actionDialog, setActionDialog] = useState<{ id: string; action: SchoolAction; label: string; schoolName: string; slug?: string } | null>(null);
   const [actionReason, setActionReason] = useState("");
+
+  // Rich Suspend / Turn Off Form State
+  const [suspendForm, setSuspendForm] = useState({
+    type: "MAINTENANCE",
+    title: "🛠️ Scheduled System Maintenance in Progress",
+    reason: "Our school portal is temporarily offline for scheduled system upgrades and data maintenance. Normal service will resume shortly. We apologize for any inconvenience.",
+    actionType: "ACKNOWLEDGE",
+    actionUrl: "",
+    estimatedReturn: "",
+    contactPhone: "",
+    contactEmail: "",
+    theme: "amber",
+  });
 
   // Alert form state
   const [alertForm, setAlertForm] = useState({
@@ -405,23 +505,55 @@ export default function Schools() {
   };
 
   const handleAction = (id: string, action: SchoolAction, label: string, schoolName: string) => {
-    setActionDialog({ id, action, label, schoolName });
+    const schoolObj = schools.find((s) => s.id === id);
+    setActionDialog({ id, action, label, schoolName, slug: schoolObj?.slug });
     setActionReason("");
+    if (action === "suspend") {
+      setSuspendForm({
+        type: "MAINTENANCE",
+        title: "🛠️ Scheduled System Maintenance in Progress",
+        reason: "Our school portal is temporarily offline for scheduled system upgrades and data maintenance. Normal service will resume shortly. We apologize for any inconvenience.",
+        actionType: "ACKNOWLEDGE",
+        actionUrl: "",
+        estimatedReturn: "",
+        contactPhone: schoolObj?.phone || "",
+        contactEmail: schoolObj?.email || "",
+        theme: "amber",
+      });
+    }
+  };
+
+  const handleApplySuspensionPreset = (preset: typeof SUSPENSION_THEME_PRESETS[0]) => {
+    setSuspendForm((prev) => ({
+      ...prev,
+      type: preset.type,
+      title: preset.title,
+      reason: preset.reason,
+      actionType: preset.actionType,
+      actionUrl: preset.actionUrl || "",
+      theme: preset.theme,
+    }));
   };
 
   const confirmAction = async () => {
     if (!actionDialog) return;
     const { id, action } = actionDialog;
-    if (action !== "activate" && !actionReason.trim()) {
-      toast.error("Please provide a reason");
-      return;
-    }
     setSaving(true);
     try {
-      await apiClient.patch(`/schools/${id}/${action}`, {
-        reason: actionReason.trim() || undefined,
-      });
-      toast.success(`School ${actionDialog.label} successfully`);
+      if (action === "suspend") {
+        if (!suspendForm.reason.trim()) {
+          toast.error("Please provide a notice reason / message");
+          setSaving(false);
+          return;
+        }
+        await apiClient.patch(`/schools/${id}/suspend`, suspendForm);
+        toast.success(`School ${actionDialog.schoolName} placed offline with ${suspendForm.type} notice`);
+      } else {
+        await apiClient.patch(`/schools/${id}/${action}`, {
+          reason: actionReason.trim() || undefined,
+        });
+        toast.success(`School ${actionDialog.label} successfully`);
+      }
       setActionDialog(null);
       fetchData();
       if (selected?.id === id) {
@@ -1949,49 +2081,338 @@ export default function Schools() {
         )}
       </AnimatePresence>
 
-      {/* Confirmation Action Dialog */}
+      {/* Rich Confirmation & Turn-Off Theme Modal */}
       <AnimatePresence>
         {actionDialog && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-400">Sensitive Platform Action</p>
-                  <h3 className="mt-1 text-lg font-black text-foreground">
-                    {actionDialog.action[0].toUpperCase() + actionDialog.action.slice(1)} {actionDialog.schoolName}
-                  </h3>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className={`w-full ${
+                actionDialog.action === "suspend" ? "max-w-3xl" : "max-w-md"
+              } rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-2xl my-8`}
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-3 rounded-2xl ${
+                      actionDialog.action === "suspend"
+                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                        : actionDialog.action === "activate"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border border-red-500/20"
+                    }`}
+                  >
+                    {actionDialog.action === "suspend" ? (
+                      <Ban size={22} />
+                    ) : actionDialog.action === "activate" ? (
+                      <CheckCircle size={22} />
+                    ) : (
+                      <Trash2 size={22} />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-400">
+                      {actionDialog.action === "suspend"
+                        ? "School Portal Status Control"
+                        : "Campus Management"}
+                    </p>
+                    <h3 className="text-lg font-black text-foreground">
+                      {actionDialog.action === "suspend"
+                        ? `Turn OFF School & Set Notice: ${actionDialog.schoolName}`
+                        : actionDialog.action === "activate"
+                        ? `Activate / Turn ON: ${actionDialog.schoolName}`
+                        : `Archive: ${actionDialog.schoolName}`}
+                    </h3>
+                  </div>
                 </div>
-                <button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
-                  <X size={17} />
-                </button>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                This action will be recorded in the audit trail. {actionDialog.action === 'archive' ? 'Archived schools are removed from standard directory.' : ''}
-              </p>
-              <label className="mt-5 block text-xs font-bold text-muted-foreground">
-                Reason {actionDialog.action === 'activate' ? '(optional)' : '(required)'}
-                <textarea
-                  value={actionReason}
-                  onChange={(event) => setActionReason(event.target.value)}
-                  rows={3}
-                  placeholder={actionDialog.action === 'suspend' ? 'e.g. Overdue subscription renewal or policy notice' : 'State the reason for this action'}
-                  className="mt-2 w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50"
-                />
-              </label>
-              <div className="mt-6 flex justify-end gap-2">
-                <button onClick={() => setActionDialog(null)} disabled={saving} className="rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all">
-                  Cancel
-                </button>
+
                 <button
-                  onClick={() => void confirmAction()}
+                  onClick={() => setActionDialog(null)}
                   disabled={saving}
-                  className={`rounded-xl px-4 py-2.5 text-xs font-black text-white disabled:opacity-60 cursor-pointer ${
-                    actionDialog.action === 'activate' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'
-                  }`}
+                  className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition"
                 >
-                  {saving ? 'Processing...' : `Confirm ${actionDialog.action}`}
+                  <X size={18} />
                 </button>
               </div>
+
+              {/* SUSPEND / TURN OFF MODE */}
+              {actionDialog.action === "suspend" ? (
+                <div className="mt-5 space-y-5">
+                  <p className="text-xs text-muted-foreground">
+                    Select a notice reason & theme. When students, teachers, or parents visit or log in, they will be presented with this exact themed offline notice along with administration contact details.
+                  </p>
+
+                  {/* 1. Theme & Reason Presets */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <Sparkles size={13} className="text-violet-400" />
+                      Choose Notice Theme & Reason Preset
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {SUSPENSION_THEME_PRESETS.map((preset) => {
+                        const Icon = preset.icon;
+                        const isSelected = suspendForm.type === preset.type;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleApplySuspensionPreset(preset)}
+                            className={`p-3 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between gap-2 ${
+                              isSelected
+                                ? "border-violet-500 bg-violet-500/10 shadow-md ring-1 ring-violet-500"
+                                : "border-border/70 bg-background/50 hover:border-border hover:bg-accent/40"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div
+                                className={`p-1.5 rounded-xl border ${preset.colorClass}`}
+                              >
+                                <Icon size={14} />
+                              </div>
+                              {isSelected && (
+                                <span className="h-4 w-4 rounded-full bg-violet-500 text-white flex items-center justify-center text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-foreground leading-tight">
+                                {preset.name}
+                              </p>
+                              <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                                Theme: {preset.theme}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2. Custom Title & Detailed Reason Text */}
+                  <div className="grid grid-cols-1 gap-3.5">
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
+                        Public Notice Title
+                      </label>
+                      <input
+                        type="text"
+                        value={suspendForm.title}
+                        onChange={(e) =>
+                          setSuspendForm((p) => ({ ...p, title: e.target.value }))
+                        }
+                        placeholder="e.g. 🛠️ Scheduled System Maintenance in Progress"
+                        className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none focus:border-primary/60"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
+                        Detailed Reason & Instructions for Users
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={suspendForm.reason}
+                        onChange={(e) =>
+                          setSuspendForm((p) => ({ ...p, reason: e.target.value }))
+                        }
+                        placeholder="Explain why the school is temporarily off and what actions users should take..."
+                        className="mt-1.5 w-full rounded-xl border border-border bg-background p-3 text-xs font-medium text-foreground outline-none resize-none focus:border-primary/60 leading-relaxed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. Estimated Resumption & Admin Contact Information */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Expected Return Date (Optional)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={suspendForm.estimatedReturn}
+                        onChange={(e) =>
+                          setSuspendForm((p) => ({
+                            ...p,
+                            estimatedReturn: e.target.value,
+                          }))
+                        }
+                        className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary/60"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        School Contact Helpline
+                      </label>
+                      <input
+                        type="text"
+                        value={suspendForm.contactPhone}
+                        onChange={(e) =>
+                          setSuspendForm((p) => ({
+                            ...p,
+                            contactPhone: e.target.value,
+                          }))
+                        }
+                        placeholder="+92 300 1234567"
+                        className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary/60"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Official Admin Email
+                      </label>
+                      <input
+                        type="email"
+                        value={suspendForm.contactEmail}
+                        onChange={(e) =>
+                          setSuspendForm((p) => ({
+                            ...p,
+                            contactEmail: e.target.value,
+                          }))
+                        }
+                        placeholder="admin@school.pk"
+                        className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary/60"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. Live Mini-Preview of Offline Banner */}
+                  <div className="rounded-2xl border border-border/80 bg-muted/30 p-4 space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground flex items-center gap-1.5">
+                      <Eye size={12} /> Live Preview on School Portal
+                    </p>
+                    <div className="rounded-xl border border-rose-500/20 bg-rose-500/[0.04] p-3.5 flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 shrink-0 mt-0.5">
+                        <AlertTriangle size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-black text-foreground">
+                          {suspendForm.title || "School Portal Offline"}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {suspendForm.reason || "This school is offline."}
+                        </p>
+                        <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+                          <span>
+                            Helpline:{" "}
+                            <strong className="text-foreground">
+                              {suspendForm.contactPhone || "School Admin"}
+                            </strong>
+                          </span>
+                          <span>•</span>
+                          <span>
+                            Email:{" "}
+                            <strong className="text-foreground">
+                              {suspendForm.contactEmail || "admin@school.pk"}
+                            </strong>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Modal Action Buttons */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border">
+                    {actionDialog.slug ? (
+                      <a
+                        href={`/${actionDialog.slug}/offline`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-400 hover:text-violet-300"
+                      >
+                        <span>Preview Full Offline Page</span>
+                        <ExternalLink size={13} />
+                      </a>
+                    ) : (
+                      <span />
+                    )}
+
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setActionDialog(null)}
+                        disabled={saving}
+                        className="px-4 py-2.5 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-accent transition"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void confirmAction()}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-black text-white shadow-lg shadow-rose-950/40 transition disabled:opacity-60 cursor-pointer"
+                      >
+                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+                        <span>{saving ? "Placing Offline..." : "Confirm & Turn OFF School"}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* ACTIVATE OR ARCHIVE MODE */
+                <div className="mt-5 space-y-4">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {actionDialog.action === "activate"
+                      ? "Activating this school will immediately restore online access for students, teachers, and administrators and clear active offline notice banners."
+                      : "Archiving this school will remove it from active directory."}
+                  </p>
+
+                  <label className="block text-xs font-bold text-muted-foreground">
+                    Reason {actionDialog.action === "activate" ? "(optional)" : "(required)"}
+                    <textarea
+                      value={actionReason}
+                      onChange={(e) => setActionReason(e.target.value)}
+                      rows={2}
+                      placeholder={
+                        actionDialog.action === "activate"
+                          ? "e.g. Subscription verified or maintenance completed"
+                          : "State the reason for archiving"
+                      }
+                      className="mt-1.5 w-full resize-none rounded-xl border border-border bg-background p-3 text-xs text-foreground outline-none focus:border-primary/50"
+                    />
+                  </label>
+
+                  <div className="mt-6 flex justify-end gap-2.5 pt-3 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => setActionDialog(null)}
+                      disabled={saving}
+                      className="rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void confirmAction()}
+                      disabled={saving}
+                      className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-black text-white transition disabled:opacity-60 cursor-pointer ${
+                        actionDialog.action === "activate"
+                          ? "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-950/30"
+                          : "bg-red-600 hover:bg-red-500"
+                      }`}
+                    >
+                      {saving && <Loader2 size={14} className="animate-spin" />}
+                      <span>
+                        {saving
+                          ? "Processing..."
+                          : actionDialog.action === "activate"
+                          ? "Confirm & Turn ON School"
+                          : `Confirm ${actionDialog.action}`}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

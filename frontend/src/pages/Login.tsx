@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, GraduationCap, LockKeyhole, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, GraduationCap, LockKeyhole, Loader2, Mail, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
@@ -17,9 +17,30 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [schoolStatus, setSchoolStatus] = useState<any>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   const schoolName = urlSchoolSlug ? urlSchoolSlug.replace(/-/g, " ") : "your school";
+
+  useEffect(() => {
+    if (urlSchoolSlug) {
+      apiClient
+        .get(`/public/tenant/slug/${encodeURIComponent(urlSchoolSlug)}`)
+        .then((res) => {
+          setSchoolStatus(res.data);
+          // If school is offline, show warning toast & allow clicking to view offline notice
+          if (res.data && res.data.isActive === false) {
+            toast.warning(`Note: ${res.data.name} is currently offline.`, {
+              action: {
+                label: "View Notice",
+                onClick: () => navigate(`/${urlSchoolSlug}/offline`),
+              },
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [urlSchoolSlug, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +66,13 @@ export default function LoginPage() {
         navigate("/onboarding", { replace: true });
       }
     } catch (err: any) {
+      const data = err.response?.data;
+      if (data?.isSchoolOffline) {
+        const slug = data.school?.slug || urlSchoolSlug || "edusphere";
+        toast.error(data.message || "This school is currently offline or suspended.");
+        navigate(`/${slug}/offline`, { replace: true });
+        return;
+      }
       toast.error(err.response?.data?.message || "Invalid Login ID or password. Please check your credentials.");
     } finally {
       setLoading(false);
@@ -79,6 +107,18 @@ export default function LoginPage() {
             <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Welcome back</h1>
             <p className="mt-2 text-sm capitalize text-slate-400">Sign in to {schoolName}</p>
           </div>
+
+          {schoolStatus && schoolStatus.isActive === false && (
+            <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-300 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <AlertTriangle size={16} className="shrink-0 text-amber-400" />
+                <span className="truncate">This school is currently offline by admin.</span>
+              </div>
+              <Link to={`/${urlSchoolSlug}/offline`} className="font-bold underline shrink-0 hover:text-white">
+                View Notice
+              </Link>
+            </div>
+          )}
 
           <div className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/85 shadow-2xl shadow-black/30 backdrop-blur-2xl">
             <div className="border-b border-white/10 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-indigo-500/10 px-6 py-4">
