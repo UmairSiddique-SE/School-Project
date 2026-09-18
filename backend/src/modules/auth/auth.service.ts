@@ -23,6 +23,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { randomInt } from 'crypto';
 import { MailService } from '../mail/mail.service';
+import { MediaService } from '../media/media.service';
 import { JwtPayload } from './strategies/jwt.strategy';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly mediaService: MediaService,
   ) {}
 
   async registerSchool(dto: RegisterSchoolDto) {
@@ -124,6 +126,34 @@ return { school, user };
       timeout: 15000,
     },
   );     
+      if (typeof dto.logoUrl === 'string' && dto.logoUrl.startsWith('data:image/')) {
+        const match = dto.logoUrl.match(/^data:(image\\/(?:png|jpeg));base64,(.+)$/);
+        if (!match) throw new BadRequestException('School logo must be a valid PNG or JPG image');
+        const buffer = Buffer.from(match[2], 'base64');
+        if (buffer.length > 2 * 1024 * 1024) throw new BadRequestException('School logo must be 2 MB or smaller');
+        const uploaded = await this.mediaService.uploadImage(
+          {
+            buffer,
+            mimetype: match[1],
+            size: buffer.length,
+            originalname: 'school-logo',
+            fieldname: 'file',
+            encoding: '7bit',
+            destination: '',
+            filename: 'school-logo',
+            path: '',
+            stream: undefined as any,
+          } as any,
+          result.school.id,
+          'school-logo',
+        );
+        await this.prisma.school.update({
+          where: { id: result.school.id },
+          data: { logoUrl: uploaded.url },
+        });
+        result.school.logoUrl = uploaded.url;
+      }
+
       this.mailService
         .sendEmailVerification(result.user.email, otp)
         .catch((error) =>
