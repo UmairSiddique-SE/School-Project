@@ -127,8 +127,8 @@ return { school, user };
     },
   );     
       if (typeof dto.logoUrl === 'string' && dto.logoUrl.startsWith('data:image/')) {
-        const match = dto.logoUrl.match(/^data:(image\\/(?:png|jpeg));base64,(.+)$/);
-        if (!match) throw new BadRequestException('School logo must be a valid PNG or JPG image');
+        const match = dto.logoUrl.match(/^data:(image\/(?:png|jpeg|jpg|webp));base64,(.+)$/);
+        if (!match) throw new BadRequestException('School logo must be a valid PNG, JPG, or WEBP image');
         const buffer = Buffer.from(match[2], 'base64');
         if (buffer.length > 2 * 1024 * 1024) throw new BadRequestException('School logo must be 2 MB or smaller');
         const uploaded = await this.mediaService.uploadImage(
