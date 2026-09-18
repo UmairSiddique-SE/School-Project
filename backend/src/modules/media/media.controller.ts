@@ -26,7 +26,7 @@ export class MediaController {
   @Post('image/:category')
   @UseInterceptors(FileInterceptor('file', {
     storage: memoryStorage(),
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 25 * 1024 * 1024 },
   }))
   async uploadImage(
     @CurrentUser() user: any,
