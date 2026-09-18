@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Trash2, GraduationCap, X, Loader2, Search,
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import Modal, { ModalHeader } from '@/component/ui/Modal';
 import { useAuth } from '@/context/AuthContext';
 
-// ΓöÇΓöÇ Format helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Î“Ã¶Ã‡Î“Ã¶Ã‡ Format helpers Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
 function formatCNIC(raw: string): string {
   // Remove non-digits, limit to 13
   const d = raw.replace(/\D/g, '').slice(0, 13);
@@ -32,7 +32,7 @@ function validatePhone(val: string): boolean {
   return /^\d{4}-\d{7}$/.test(val);
 }
 
-// ΓöÇΓöÇ Pakistan Administrative Divisions Data ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Î“Ã¶Ã‡Î“Ã¶Ã‡ Pakistan Administrative Divisions Data Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
 const PK_GEO: Record<string, Record<string, string[]>> = {
   Punjab: {
     Lahore: ['Lahore City', 'Shalimar', 'Data Gunj Bakhsh', 'Ravi', 'Aziz Bhatti', 'Wagah'],
@@ -186,7 +186,7 @@ function getTehsils(province: string, district: string): string[] {
   return prov[key] || prov[district] || [];
 }
 
-// ΓöÇΓöÇ Automatic 100KB Image Compressor Helper ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Î“Ã¶Ã‡Î“Ã¶Ã‡ Automatic 100KB Image Compressor Helper Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
 export default function Students() {
   const { user, previewRole } = useAuth();
   const role = previewRole ?? user?.role;
@@ -492,475 +492,236 @@ export default function Students() {
     ? sections.filter(s => s.classId === filterClassId)
     : sections;
 
-  // ΓöÇΓöÇ Render Registration View (6-Step Wizard) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  // Î“Ã¶Ã‡Î“Ã¶Ã‡ Render Registration View (6-Step Wizard) Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡Î“Ã¶Ã‡
   if (view === 'add') {
-    const steps = [
-      { id: 1, title: 'Student Info', icon: User },
-      { id: 2, title: 'Admission', icon: GraduationCap },
-      { id: 3, title: 'Parent/Guardian', icon: UserCheck },
-      { id: 4, title: 'Address', icon: MapPin },
-      { id: 5, title: 'Academic', icon: BookOpen },
-      { id: 6, title: 'Review', icon: CheckCircle },
-    ];
-
     return (
-      <div className="space-y-4 animate-fade-in pb-12 max-w-4xl mx-auto">
-        {/* Minimal Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-           <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Student Enrollment</h2>
-           <button
-             onClick={() => { setView('list'); setStep(1); }}
-             className="text-slate-600 hover:text-rose-500 transition-colors text-[9px] font-black uppercase tracking-widest flex items-center gap-1"
-           >
-             <X size={12} /> Cancel
-           </button>
-        </div>
+      <div className="animate-fade-in pb-20">
+        {/* â”€â”€ Premium Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="relative overflow-hidden rounded-[28px] mb-8" style={{background: 'linear-gradient(135deg, #0f0f23 0%, #1a0533 40%, #0d1a3a 100%)'}}>
+          <div className="absolute inset-0 opacity-60" style={{backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(139,92,246,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(59,130,246,0.3) 0%, transparent 50%)'}} />
+          <div className="relative px-8 py-8">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+              {/* Photo Upload */}
+              <label className="relative cursor-pointer group shrink-0 mx-auto lg:mx-0">
+                <div className="h-32 w-32 rounded-[24px] overflow-hidden border-2 border-white/20 shadow-2xl shadow-violet-900/50 flex items-center justify-center" style={{background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(59,130,246,0.2))'}}>
+                  {photoPreview
+                    ? <img src={photoPreview} alt="Student" className="h-full w-full object-cover" />
+                    : <div className="flex flex-col items-center gap-2 text-white/40">
+                        <User size={36} />
+                        <span className="text-[9px] font-black uppercase tracking-widest">Photo</span>
+                      </div>
+                  }
+                </div>
+                {photoPreview && (
+                  <button type="button" onClick={e => { e.preventDefault(); setPhotoPreview(null); setForm(p => ({ ...p, photoUrl: '' })); }}
+                    className="absolute -top-2 -right-2 h-7 w-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg z-10">
+                    <X size={13}/>
+                  </button>
+                )}
+                <div className="absolute inset-0 rounded-[24px] bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-white text-[9px] font-black uppercase tracking-widest">Change</span>
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    if (!['image/png', 'image/jpeg'].includes(file.type)) throw new Error('Only JPG and PNG images are allowed.');
+                    if (file.size > 2 * 1024 * 1024) throw new Error('Image must be 2 MB or smaller.');
+                    setPhotoPreview(URL.createObjectURL(file));
+                    const uploaded = await uploadImage(file, 'student');
+                    setForm(p => ({ ...p, photoUrl: uploaded.url }));
+                    toast.success('Student photo uploaded.');
+                  } catch (error: any) {
+                    setPhotoPreview(null);
+                    setForm(p => ({ ...p, photoUrl: '' }));
+                    toast.error(error?.response?.data?.message || error?.message || 'Photo upload failed.');
+                  } finally {
+                    e.target.value = '';
+                  }
+                }} />
+              </label>
 
-        {/* Slim Progress Bar */}
-        <div className="flex items-center justify-center w-full gap-1.5 px-4 py-1">
-          {steps.map((s, idx) => (
-            <React.Fragment key={s.id}>
-              <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={() => step > s.id && setStep(s.id)}>
-                <div
-                  className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                    step >= s.id ? 'bg-primary text-white' : 'bg-white/[0.03] text-slate-700'
-                  } ${step === s.id ? 'scale-110 shadow-lg shadow-primary/20' : 'opacity-50'}`}
-                >
-                  <s.icon size={12} />
+              {/* Header Text */}
+              <div className="flex-1 text-center lg:text-left">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-violet-300/80 mb-1">Student Enrollment</p>
+                <h1 className="text-3xl font-black text-white tracking-tight mb-2">
+                  {form.name || <span className="text-white/30">New Student</span>}
+                </h1>
+                <p className="text-sm text-white/50 font-medium">Fill in all sections below to complete the student registration.</p>
+                <div className="flex flex-wrap gap-2 mt-4 justify-center lg:justify-start">
+                  {['Student Info','Admission','Family','Address','Academic','Additional'].map((s, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10 text-white/50" style={{background:'rgba(255,255,255,0.05)'}}>{s}</span>
+                  ))}
                 </div>
               </div>
-              {idx < steps.length - 1 && (
-                <div className={`h-[1px] w-6 rounded-full ${step > s.id ? 'bg-primary' : 'bg-white/[0.05]'}`} />
-              )}
-            </React.Fragment>
-          ))}
+
+              {/* Cancel */}
+              <button type="button" onClick={() => { setView('list'); }}
+                className="absolute top-5 right-5 h-9 w-9 rounded-xl border border-white/10 bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/40 text-white/60 hover:text-rose-400 flex items-center justify-center transition-all">
+                <X size={16}/>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleAdd} className="w-full space-y-5 bg-white/[0.01] border border-white/[0.05] p-6 rounded-[24px] shadow-xl relative overflow-hidden glass-elevated">
-          {/* Background Decorative Glows */}
-          <div className="absolute -top-24 -right-24 h-64 w-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
+        <form onSubmit={handleAdd} className="space-y-6 max-w-5xl mx-auto">
 
-          <AnimatePresence mode="wait">
-            {/* Step 1: Student Information */}
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
-                  <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                    <User size={12} className="text-primary"/> Identity Details
-                  </h3>
-                  <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary font-mono font-bold text-[8px]">{form.admissionNo}</span>
+          {/* â”€â”€ Section 1: Student Information â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #8b5cf6, #3b82f6)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(139,92,246,0.08), transparent)'}}>
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(139,92,246,0.2)'}}>
+                  <User size={16} className="text-violet-400"/>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-3">
-                    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex flex-col items-center gap-3 group hover:border-primary/20 transition-all duration-300">
-                      <div className="relative">
-                        <div className="h-24 w-24 rounded-2xl gradient-bg-primary flex items-center justify-center text-white font-bold text-3xl shadow-xl overflow-hidden border border-white/[0.05]">
-                          {photoPreview ? <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" /> : <User size={32} className="opacity-30" />}
-                        </div>
-                        {photoPreview && <button type="button" onClick={() => setPhotoPreview(null)} className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-lg bg-rose-500 text-white flex items-center justify-center shadow-lg"><X size={12}/></button>}
-                      </div>
-                      <label className="cursor-pointer block w-full py-2 rounded-lg bg-white/[0.03] hover:bg-primary/20 text-white font-black text-[8px] uppercase tracking-widest transition-all border border-white/[0.05] text-center">
-                        Photo
-                        <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            if (!['image/png', 'image/jpeg'].includes(file.type)) throw new Error('Only JPG and PNG images are allowed.');
-                            if (file.size > 2 * 1024 * 1024) throw new Error('Image must be 2 MB or smaller.');
-                            setPhotoPreview(URL.createObjectURL(file));
-                            const uploaded = await uploadImage(file, 'student');
-                            setForm(p => ({ ...p, photoUrl: uploaded.url }));
-                            toast.success('Student photo uploaded.');
-                          } catch (error: any) {
-                            setPhotoPreview(null);
-                            setForm(p => ({ ...p, photoUrl: '' }));
-                            toast.error(error?.response?.data?.message || error?.message || 'Photo upload failed.');
-                          } finally {
-                            e.target.value = '';
-                          }
-                        }} />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-1 lg:col-span-2">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Student Name *</label>
-                      <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Full Name" className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Gender</label>
-                      <select value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold text-sm">
-                        <option value="MALE">Male</option>
-                        <option value="FEMALE">Female</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Date of Birth *</label>
-                      <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({ ...p, dateOfBirth: e.target.value }))} required className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">B-Form / ID</label>
-                      <input value={form.bFormNumber} onChange={e => setForm(p => ({ ...p, bFormNumber: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Blood Group</label>
-                      <select value={form.bloodGroup} onChange={e => setForm(p => ({ ...p, bloodGroup: e.target.value }))} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold text-sm">
-                        <option value="">-- Select --</option>
-                        {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Religion</label>
-                      <input value={form.religion} onChange={e => setForm(p => ({ ...p, religion: e.target.value }))} placeholder="e.g. Islam" className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone</label>
-                      <input value={form.studentMobile} onChange={e => setForm(p => ({ ...p, studentMobile: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-mono font-bold text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
-                      <input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="name@school.edu" className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all text-sm" />
-                    </div>
-                  </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-wider">Student Information</h2>
+                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">Identity, contact and personal details</p>
                 </div>
-              </motion.div>
-            )}
-
-            {/* Step 2: Admission Information */}
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="space-y-8"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 border border-emerald-500/20"><GraduationCap size={20}/></div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Academic Placement</h3>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="space-y-1 lg:col-span-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Class / Grade Allocation *</label>
-                    <select value={form.sectionId} onChange={e => setForm(p => ({ ...p, sectionId: e.target.value }))} required className="w-full px-5 py-3 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold">
-                      <option value="">-- Select Class & Section --</option>
-                      {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} ΓÇ║ {s.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admission Number</label>
-                    <div className="px-5 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-amber-500 font-mono font-black text-sm flex items-center justify-between group">
-                       {form.admissionNo || 'Generating...'}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Roll Number</label>
-                    <div className={`px-5 py-3 rounded-xl border transition-all flex items-center justify-between ${form.rollNo ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-white/[0.03] border-white/[0.08] text-slate-600'}`}>
-                       <span className="font-mono font-black text-sm">{form.rollNo || '00'}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Academic Session</label>
-                    <input value={form.session} onChange={e => setForm(p => ({ ...p, session: e.target.value }))} placeholder="2026-2027" className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admission Date</label>
-                    <input type="date" value={form.admissionDate} onChange={e => setForm(p => ({ ...p, admissionDate: e.target.value }))} className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" />
-                  </div>
-
-                  <div className="space-y-1 lg:col-span-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Enrollment Status</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {['ACTIVE', 'INACTIVE', 'LEFT', 'GRADUATED'].map(status => (
-                        <button key={status} type="button" onClick={() => setForm(p => ({ ...p, status }))} className={`py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${form.status === status ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>
-                          {status}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Parent/Guardian Information */}
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-500 border border-violet-500/20"><UserCheck size={20}/></div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Family & Guardian</h3>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Father's Info */}
-                  <div className="relative p-6 rounded-2xl bg-white/[0.01] border border-white/[0.06]">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      <div className="space-y-1 lg:col-span-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Father Name *</label>
-                        <input value={form.fatherName} onChange={e => setForm(p => ({ ...p, fatherName: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-primary transition-all font-bold" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mobile Phone *</label>
-                        <input value={form.fatherMobile1} onChange={e => setForm(p => ({ ...p, fatherMobile1: formatPhone(e.target.value) }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-primary transition-all font-mono font-bold" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">WhatsApp</label>
-                        <input value={form.fatherWhatsapp} onChange={e => setForm(p => ({ ...p, fatherWhatsapp: formatPhone(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-primary transition-all font-mono font-bold" />
-                      </div>
-                      <div className="space-y-1 lg:col-span-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">National ID (CNIC)</label>
-                        <input value={form.fatherCnic} onChange={e => setForm(p => ({ ...p, fatherCnic: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-primary transition-all font-mono font-bold" />
-                      </div>
-                      <div className="space-y-1 lg:col-span-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Occupation</label>
-                        <input value={form.fatherOccupation} onChange={e => setForm(p => ({ ...p, fatherOccupation: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-primary transition-all font-bold" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mother's Profile */}
-                  <div className="relative p-6 rounded-2xl bg-white/[0.01] border border-white/[0.06]">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div className="space-y-1 lg:col-span-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mother Name *</label>
-                        <input value={form.motherName} onChange={e => setForm(p => ({ ...p, motherName: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-rose-500 transition-all font-bold" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mobile Phone</label>
-                        <input value={form.motherMobile} onChange={e => setForm(p => ({ ...p, motherMobile: formatPhone(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/30 border border-white/[0.08] text-white focus:border-rose-500 transition-all font-mono font-bold" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 4: Address Information */}
-            {step === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-500 border border-cyan-500/20"><MapPin size={20}/></div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Residential Logistics</h3>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Living Address *</label>
-                      <textarea value={form.currentAddress} onChange={e => setForm(p => ({ ...p, currentAddress: e.target.value }))} rows={3} required placeholder="Street, Sector, Area..." className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-cyan-400 outline-none transition-all font-bold resize-none shadow-inner" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">City / Tehsil *</label>
-                        <input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} required className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-cyan-400 outline-none transition-all font-bold" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">District *</label>
-                        <input value={form.district} onChange={e => setForm(p => ({ ...p, district: e.target.value }))} required className="w-full px-4 py-2 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-cyan-400 outline-none transition-all font-bold" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between px-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Permanent Home Address</label>
-                        <button type="button" onClick={() => setForm(p => ({ ...p, permanentAddress: p.currentAddress }))} className="text-[9px] font-black text-cyan-400 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-1.5"><Check size={12}/> Copy Current</button>
-                      </div>
-                      <textarea value={form.permanentAddress} onChange={e => setForm(p => ({ ...p, permanentAddress: e.target.value }))} rows={3} placeholder="Village, Town, District..." className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-cyan-400 outline-none transition-all font-bold resize-none shadow-inner" />
-                    </div>
-
-                    <div className="p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 space-y-3">
-                      <div className="flex items-center gap-3">
-                         <div className="h-8 w-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-500"><Phone size={14}/></div>
-                         <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Emergency Broadcast Contact *</h4>
-                      </div>
-                      <input value={form.emergencyContact} onChange={e => setForm(p => ({ ...p, emergencyContact: formatPhone(e.target.value) }))} required placeholder="Primary Emergency Number" className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-white/[0.1] text-white focus:border-cyan-400 outline-none transition-all font-mono font-bold" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 5: Academic History */}
-            {step === 5 && (
-              <motion.div
-                key="step5"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 border border-amber-500/20"><BookOpen size={20}/></div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Academic History</h3>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="space-y-1 md:col-span-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admission Category</label>
-                    <div className="flex gap-2">
-                       {['NEW', 'TRANSFER'].map(type => (
-                         <button key={type} type="button" onClick={() => setForm(p => ({ ...p, admissionType: type }))} className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${form.admissionType === type ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>{type === 'NEW' ? 'Fresh Entry' : 'Transfer-In'}</button>
-                       ))}
-                    </div>
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Previous Institution Name</label>
-                    <input value={form.previousSchool} onChange={e => setForm(p => ({ ...p, previousSchool: e.target.value }))} placeholder="Name of last school attended" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Last Class Studied</label>
-                    <input value={form.previousClass} onChange={e => setForm(p => ({ ...p, previousClass: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" />
-                  </div>
-                  <div className="space-y-1 lg:col-span-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Leaving Certificate URL</label>
-                    <div className="relative">
-                      <input value={form.leavingCertificateUrl} onChange={e => setForm(p => ({ ...p, leavingCertificateUrl: e.target.value }))} placeholder="Cloud storage link" className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-mono text-xs" />
-                      <FileText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
-                    </div>
-                  </div>
-                  <div className="md:col-span-3 space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Academic Summary</label>
-                    <textarea value={form.previousAcademicRecord} onChange={e => setForm(p => ({ ...p, previousAcademicRecord: e.target.value }))} rows={3} placeholder="Summarize grades, discipline etc..." className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold resize-none shadow-inner" />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 6: Review & Additional Info */}
-            {step === 6 && (
-              <motion.div
-                key="step6"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20"><CheckCircle size={20}/></div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Final Verification</h3>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  <div className="lg:col-span-4 space-y-4">
-                    <button type="button" onClick={() => setForm(p => ({ ...p, transportRequired: !p.transportRequired }))} className={`w-full p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between group ${form.transportRequired ? 'bg-primary/10 border-primary/40' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05]'}`}>
-                      <div className="flex items-center gap-3 text-left">
-                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${form.transportRequired ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white/[0.05] text-slate-500'}`}><MapPin size={18}/></div>
-                        <div>
-                           <p className={`font-black uppercase tracking-widest text-[9px] ${form.transportRequired ? 'text-primary' : 'text-slate-400'}`}>School Transport</p>
-                        </div>
-                      </div>
-                      <div className={`h-5 w-10 rounded-full border border-white/[0.1] relative transition-all ${form.transportRequired ? 'bg-primary border-primary' : 'bg-slate-900'}`}>
-                         <div className={`absolute top-1 h-2.5 w-2.5 rounded-full bg-white transition-all ${form.transportRequired ? 'left-6' : 'left-1'}`} />
-                      </div>
-                    </button>
-
-                    <button type="button" onClick={() => setForm(p => ({ ...p, hostelRequired: !p.hostelRequired }))} className={`w-full p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between group ${form.hostelRequired ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05]'}`}>
-                      <div className="flex items-center gap-3 text-left">
-                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${form.hostelRequired ? 'bg-indigo-500 text-white scale-110 shadow-lg' : 'bg-white/[0.05] text-slate-500'}`}><Shield size={18}/></div>
-                        <div>
-                           <p className={`font-black uppercase tracking-widest text-[9px] ${form.hostelRequired ? 'text-indigo-400' : 'text-slate-400'}`}>Hostel Facility</p>
-                        </div>
-                      </div>
-                      <div className={`h-5 w-10 rounded-full border border-white/[0.1] relative transition-all ${form.hostelRequired ? 'bg-indigo-500 border-indigo-500' : 'bg-slate-900'}`}>
-                         <div className={`absolute top-1 h-2.5 w-2.5 rounded-full bg-white transition-all ${form.hostelRequired ? 'left-6' : 'left-1'}`} />
-                      </div>
-                    </button>
-
-                    <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-3">
-                      <p className="text-[10px] text-slate-500 leading-relaxed text-center">Auto-generated password for the <strong>Parent Portal</strong>:</p>
-                      <div className="px-4 py-2 rounded-xl bg-slate-900/80 border border-white/[0.1] flex flex-col items-center justify-center">
-                        <span className="text-xl font-mono font-black text-amber-500 tracking-wider">{parentPassword}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-8 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Medical Notes</label>
-                         <textarea value={form.medicalNotes} onChange={e => setForm(p => ({ ...p, medicalNotes: e.target.value }))} rows={2} placeholder="Critical health info..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold resize-none" />
-                       </div>
-                       <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Special Requirements</label>
-                         <textarea value={form.specialRequirements} onChange={e => setForm(p => ({ ...p, specialRequirements: e.target.value }))} rows={2} placeholder="Support details..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold resize-none" />
-                       </div>
-                    </div>
-
-                    <div className="space-y-1">
-                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Internal Remarks</label>
-                       <textarea value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} rows={3} className="w-full px-5 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold resize-none" />
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-4">
-                       <AlertCircle size={24} className="text-primary shrink-0"/>
-                       <p className="text-[10px] text-slate-500 leading-relaxed font-medium">By authorizing, you confirm all data for <strong>{form.name}</strong> is verified. This will allocate seat space for academic session {form.session}.</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Wizard Footer Controls */}
-          <div className="flex items-center justify-between pt-6 border-t border-white/[0.06] mt-4">
-            <button
-              type="button"
-              onClick={() => { if(step > 1) setStep(step - 1); else { setView('list'); setStep(1); } }}
-              className="group px-6 py-2.5 rounded-xl border border-white/[0.1] text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-white/[0.05] hover:text-white transition-all flex items-center gap-2"
-            >
-              <X size={14} className="group-hover:rotate-90 transition-transform duration-500"/>
-              {step === 1 ? 'Cancel' : 'Previous Stage'}
-            </button>
-
-            <div className="flex items-center gap-3">
-              {step < 6 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep(step + 1)}
-                  disabled={step === 1 && !form.name}
-                  className="group px-10 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white font-black text-[9px] uppercase tracking-widest hover:bg-primary hover:border-primary transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed shadow-xl flex items-center gap-2"
-                >
-                  Proceed Next
-                  <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"/>
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="group px-14 py-3 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all duration-300 shadow-2xl shadow-primary/30 flex items-center gap-3"
-                >
-                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                  Complete Admission
-                </button>
-              )}
+              </div>
             </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="lg:col-span-2 space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Student Name *</label>
+                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Full Name" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gender</label>
+                <select value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold">
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Date of Birth *</label>
+                <input type="date" value={form.dateOfBirth} onChange={e => setForm(p => ({ ...p, dateOfBirth: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">B-Form / CNIC</label>
+                <input value={form.bFormNumber} onChange={e => setForm(p => ({ ...p, bFormNumber: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-mono font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Blood Group</label>
+                <select value={form.bloodGroup} onChange={e => setForm(p => ({ ...p, bloodGroup: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold">
+                  <option value="">-- Select --</option>
+                  {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Religion</label>
+                <input value={form.religion} onChange={e => setForm(p => ({ ...p, religion: e.target.value }))} placeholder="e.g. Islam" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Phone</label>
+                <input value={form.studentMobile} onChange={e => setForm(p => ({ ...p, studentMobile: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all font-mono font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Email</label>
+                <input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="name@school.edu" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-violet-500 outline-none transition-all" />
+              </div>
+            </div>
+          </div>
+
+          {/* Admission and Class */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #10b981, #06b6d4)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(16,185,129,0.08), transparent)'}}>
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(16,185,129,0.2)'}}><GraduationCap size={16} className="text-emerald-400"/></div>
+                <div><h2 className="text-sm font-black text-white uppercase tracking-wider">Admission and Class</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Academic placement, session and status</p></div>
+              </div>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Class / Section *</label><select value={form.sectionId} onChange={e => setForm(p => ({ ...p, sectionId: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold"><option value="">-- Select Class and Section --</option>{sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} - {s.name}</option>)}</select></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission No</label><div className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-amber-400 font-mono font-black text-sm">{form.admissionNo || 'Auto-generated'}</div></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Roll Number</label><div className={`px-4 py-2.5 rounded-xl border text-sm font-mono font-black ${form.rollNo ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-white/[0.03] border-white/[0.08] text-slate-600'}`}>{form.rollNo || 'Auto'}</div></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Academic Session</label><input value={form.session} onChange={e => setForm(p => ({ ...p, session: e.target.value }))} placeholder="2026-2027" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission Date</label><input type="date" value={form.admissionDate} onChange={e => setForm(p => ({ ...p, admissionDate: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-emerald-500 outline-none transition-all font-bold" /></div>
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Enrollment Status</label><div className="grid grid-cols-4 gap-2">{['ACTIVE','INACTIVE','LEFT','GRADUATED'].map(status => (<button key={status} type="button" onClick={() => setForm(p => ({ ...p, status }))} className={`py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${form.status === status ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>{status}</button>))}</div></div>
+            </div>
+          </div>
+
+          {/* Father Details */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #3b82f6, #8b5cf6)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(59,130,246,0.08), transparent)'}}>
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(59,130,246,0.2)'}}><UserCheck size={16} className="text-blue-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Father Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Father contact, CNIC and occupation</p></div></div>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Father Name *</label><input value={form.fatherName} onChange={e => setForm(p => ({ ...p, fatherName: e.target.value }))} required className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mobile *</label><input value={form.fatherMobile1} onChange={e => setForm(p => ({ ...p, fatherMobile1: formatPhone(e.target.value) }))} required placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">WhatsApp</label><input value={form.fatherWhatsapp} onChange={e => setForm(p => ({ ...p, fatherWhatsapp: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Father CNIC</label><input value={form.fatherCnic} onChange={e => setForm(p => ({ ...p, fatherCnic: formatCNIC(e.target.value) }))} placeholder="35202-xxxxxxx-x" maxLength={15} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-mono font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Occupation</label><input value={form.fatherOccupation} onChange={e => setForm(p => ({ ...p, fatherOccupation: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-blue-500 outline-none transition-all font-bold" /></div>
+            </div>
+          </div>
+
+          {/* Mother Details */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #ec4899, #f43f5e)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(236,72,153,0.08), transparent)'}}>
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(236,72,153,0.2)'}}><UserCheck size={16} className="text-pink-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Mother Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Mother contact and occupation</p></div></div>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mother Name</label><input value={form.motherName} onChange={e => setForm(p => ({ ...p, motherName: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Mobile</label><input value={form.motherMobile} onChange={e => setForm(p => ({ ...p, motherMobile: formatPhone(e.target.value) }))} placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-mono font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Occupation</label><input value={form.motherOccupation} onChange={e => setForm(p => ({ ...p, motherOccupation: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-pink-500 outline-none transition-all font-bold" /></div>
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #06b6d4, #10b981)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(6,182,212,0.08), transparent)'}}>
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(6,182,212,0.2)'}}><MapPin size={16} className="text-cyan-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Address and Contact</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Residential address and emergency contact</p></div></div>
+            </div>
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Current Address *</label><textarea value={form.currentAddress} onChange={e => setForm(p => ({ ...p, currentAddress: e.target.value }))} rows={3} required placeholder="Street, Area, City..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold resize-none" /></div>
+              <div className="space-y-1"><div className="flex items-center justify-between"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Permanent Address</label><button type="button" onClick={() => setForm(p => ({ ...p, permanentAddress: p.currentAddress }))} className="text-[9px] font-black text-cyan-400 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-1"><Check size={11}/> Copy</button></div><textarea value={form.permanentAddress} onChange={e => setForm(p => ({ ...p, permanentAddress: e.target.value }))} rows={3} placeholder="Village, Town..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold resize-none" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">City</label><input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Emergency Contact *</label><input value={form.emergencyContact} onChange={e => setForm(p => ({ ...p, emergencyContact: formatPhone(e.target.value) }))} required placeholder="03xx-xxxxxxx" maxLength={12} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-cyan-500 outline-none transition-all font-mono font-bold" /></div>
+            </div>
+          </div>
+
+          {/* Academic History */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #f59e0b, #f97316)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(245,158,11,0.08), transparent)'}}>
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(245,158,11,0.2)'}}><BookOpen size={16} className="text-amber-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Academic History</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Previous school and academic records</p></div></div>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Admission Type</label><div className="flex gap-2">{['NEW','TRANSFER'].map(type => (<button key={type} type="button" onClick={() => setForm(p => ({ ...p, admissionType: type }))} className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${form.admissionType === type ? 'bg-amber-500 text-white shadow-lg' : 'bg-white/[0.05] text-slate-500 hover:bg-white/[0.1]'}`}>{type === 'NEW' ? 'Fresh Entry' : 'Transfer-In'}</button>))}</div></div>
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Previous School</label><input value={form.previousSchool} onChange={e => setForm(p => ({ ...p, previousSchool: e.target.value }))} placeholder="Name of previous institution" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" /></div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Previous Class</label><input value={form.previousClass} onChange={e => setForm(p => ({ ...p, previousClass: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold" /></div>
+              <div className="lg:col-span-2 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Leaving Certificate URL</label><input value={form.leavingCertificateUrl} onChange={e => setForm(p => ({ ...p, leavingCertificateUrl: e.target.value }))} placeholder="Cloud storage link" className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-mono text-xs" /></div>
+              <div className="lg:col-span-3 space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Academic Summary</label><textarea value={form.previousAcademicRecord} onChange={e => setForm(p => ({ ...p, previousAcademicRecord: e.target.value }))} rows={2} placeholder="Previous grades, discipline..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-amber-500 outline-none transition-all font-bold resize-none" /></div>
+            </div>
+          </div>
+
+          {/* Additional Details */}
+          <div className="overflow-hidden rounded-[20px] border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
+            <div className="h-0.5" style={{background:'linear-gradient(90deg, #6366f1, #8b5cf6)'}}/>
+            <div className="px-6 py-4 border-b border-white/[0.04]" style={{background:'linear-gradient(90deg, rgba(99,102,241,0.08), transparent)'}}>
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{background:'rgba(99,102,241,0.2)'}}><CheckCircle size={16} className="text-indigo-400"/></div><div><h2 className="text-sm font-black text-white uppercase tracking-wider">Additional Details</h2><p className="text-[10px] text-slate-500 font-medium mt-0.5">Medical notes, services and remarks</p></div></div>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Medical Notes</label><textarea value={form.medicalNotes} onChange={e => setForm(p => ({ ...p, medicalNotes: e.target.value }))} rows={2} placeholder="Critical health info..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
+                <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Special Requirements</label><textarea value={form.specialRequirements} onChange={e => setForm(p => ({ ...p, specialRequirements: e.target.value }))} rows={2} placeholder="Support needs..." className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
+              </div>
+              <div className="space-y-1"><label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Internal Remarks</label><textarea value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} rows={2} className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] text-white focus:border-indigo-500 outline-none transition-all font-bold resize-none" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setForm(p => ({ ...p, transportRequired: !p.transportRequired }))} className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${form.transportRequired ? 'bg-violet-500/10 border-violet-500/40' : 'bg-white/[0.02] border-white/[0.08]'}`}><div className="flex items-center gap-3"><div className={`h-9 w-9 rounded-lg flex items-center justify-center ${form.transportRequired ? 'bg-violet-500 text-white' : 'bg-white/[0.05] text-slate-500'}`}><MapPin size={16}/></div><p className={`font-black text-[10px] uppercase tracking-widest ${form.transportRequired ? 'text-violet-400' : 'text-slate-500'}`}>Transport</p></div><div className={`h-5 w-10 rounded-full relative transition-all ${form.transportRequired ? 'bg-violet-500' : 'bg-slate-800'}`}><div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${form.transportRequired ? 'left-6' : 'left-1'}`}/></div></button>
+                <button type="button" onClick={() => setForm(p => ({ ...p, hostelRequired: !p.hostelRequired }))} className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${form.hostelRequired ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-white/[0.02] border-white/[0.08]'}`}><div className="flex items-center gap-3"><div className={`h-9 w-9 rounded-lg flex items-center justify-center ${form.hostelRequired ? 'bg-indigo-500 text-white' : 'bg-white/[0.05] text-slate-500'}`}><Shield size={16}/></div><p className={`font-black text-[10px] uppercase tracking-widest ${form.hostelRequired ? 'text-indigo-400' : 'text-slate-500'}`}>Hostel</p></div><div className={`h-5 w-10 rounded-full relative transition-all ${form.hostelRequired ? 'bg-indigo-500' : 'bg-slate-800'}`}><div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${form.hostelRequired ? 'left-6' : 'left-1'}`}/></div></button>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Footer */}
+          <div className="flex items-center justify-between pt-2">
+            <button type="button" onClick={() => setView('list')} className="px-6 py-2.5 rounded-xl border border-white/[0.1] text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-white/[0.05] hover:text-white transition-all flex items-center gap-2"><X size={14}/> Cancel</button>
+            <button type="submit" disabled={saving} className="px-14 py-3 rounded-xl text-white font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl flex items-center gap-3 disabled:opacity-50" style={{background: saving ? 'rgba(139,92,246,0.5)' : 'linear-gradient(135deg, #8b5cf6, #6366f1)'}}>{saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} Complete Admission</button>
           </div>
         </form>
       </div>
@@ -977,7 +738,7 @@ export default function Students() {
             <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Student Registry</h1>
             {isTeacher && (
               <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                ≡ƒæ¿ΓÇì≡ƒÅ½ Teacher Access
+                â‰¡Æ’Ã¦Â¿Î“Ã‡Ã¬â‰¡Æ’Ã…Â½ Teacher Access
               </span>
             )}
           </div>
@@ -1197,9 +958,9 @@ export default function Students() {
                         </td>
                         <td className="px-8 py-6 hidden lg:table-cell">
                           <div className="flex flex-col gap-1">
-                            <span className="text-white font-black text-sm tracking-tight">{s.section?.class?.name || '—'}</span>
+                            <span className="text-white font-black text-sm tracking-tight">{s.section?.class?.name || 'â€”'}</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                               <div className="h-1 w-1 rounded-full bg-slate-500"/> Section {s.section?.name || '—'}
+                               <div className="h-1 w-1 rounded-full bg-slate-500"/> Section {s.section?.name || 'â€”'}
                             </span>
                           </div>
                         </td>
@@ -1299,7 +1060,7 @@ export default function Students() {
 
               {/* Profile Right Content Area with Tabs */}
               <div className="flex-1 flex flex-col overflow-hidden bg-slate-950/50">
-                {/* Tabs Bar ΓÇö always horizontally scrollable with visible indicators */}
+                {/* Tabs Bar Î“Ã‡Ã¶ always horizontally scrollable with visible indicators */}
                 <div className="flex items-center gap-2 border-b border-white/[0.06] bg-black/20 overflow-x-auto px-8 py-4 shrink-0 no-scrollbar relative" style={{ scrollbarWidth: 'none' }}>
                   {[
                     { id: 'basic', label: 'Primary Data', icon: User },
@@ -1349,7 +1110,7 @@ export default function Students() {
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Legal Identity</span><span className="text-lg font-bold text-white block">{selectedStudent.name}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Biological Sex</span><span className="text-lg font-bold text-white block">{selectedStudent.gender || 'MALE'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Chronological Age</span><span className="text-lg font-bold text-white block">{selectedStudent.dateOfBirth ? new Date(selectedStudent.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'NOT RECORDED'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Hematology Group</span><span className="text-2xl font-black text-rose-500 block">{selectedStudent.bloodGroup || 'ΓÇö'}</span></div>
+                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Hematology Group</span><span className="text-2xl font-black text-rose-500 block">{selectedStudent.bloodGroup || 'Î“Ã‡Ã¶'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Religious Affiliation</span><span className="text-lg font-bold text-white block">{selectedStudent.religion || 'Islam'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Registry Number (B-Form)</span><span className="text-lg font-bold text-white font-mono tracking-wider block">{selectedStudent.bFormNumber || 'PENDING'}</span></div>
                           <div className="md:col-span-2 lg:col-span-3 p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] flex items-start gap-6">
@@ -1449,9 +1210,9 @@ export default function Students() {
                           <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Class Designation</p>
                              <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-xl border border-emerald-500/20">{selectedStudent.section?.class?.numeric || '—'}</div>
+                                <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-xl border border-emerald-500/20">{selectedStudent.section?.class?.numeric || 'â€”'}</div>
                                 <div>
-                                   <p className="text-lg font-bold text-white leading-tight">{selectedStudent.section?.class?.name || '—'}</p>
+                                   <p className="text-lg font-bold text-white leading-tight">{selectedStudent.section?.class?.name || 'â€”'}</p>
                                    <p className="text-xs text-slate-500 font-medium">Standard Academic Level</p>
                                 </div>
                              </div>
@@ -1460,9 +1221,9 @@ export default function Students() {
                           <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.06] space-y-4">
                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Section / Wing</p>
                              <div className="flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20">{selectedStudent.section?.name || '—'}</div>
+                                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20">{selectedStudent.section?.name || 'â€”'}</div>
                                 <div>
-                                   <p className="text-lg font-bold text-white leading-tight">Section {selectedStudent.section?.name || '—'}</p>
+                                   <p className="text-lg font-bold text-white leading-tight">Section {selectedStudent.section?.name || 'â€”'}</p>
                                    <p className="text-xs text-slate-500 font-medium">Cohort Identifier</p>
                                 </div>
                              </div>
@@ -1479,8 +1240,8 @@ export default function Students() {
                              </div>
                           </div>
 
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Enrollment Date</span><span className="text-lg font-bold text-white block">{selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'ΓÇö'}</span></div>
-                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Active Session</span><span className="text-lg font-bold text-white block">{selectedStudent.session || '—'}</span></div>
+                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Enrollment Date</span><span className="text-lg font-bold text-white block">{selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Î“Ã‡Ã¶'}</span></div>
+                          <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">Active Session</span><span className="text-lg font-bold text-white block">{selectedStudent.session || 'â€”'}</span></div>
                           <div className="space-y-1"><span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] block mb-2">System Status</span><span className="inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Authorized Active</span></div>
                         </div>
                       </motion.div>
@@ -1503,7 +1264,7 @@ export default function Students() {
                                <div className="grid grid-cols-2 gap-y-8">
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.fatherName || 'Not provided'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-primary font-mono tracking-wider">{selectedStudent.fatherMobile1 || 'N/A'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.fatherCnic || 'ΓÇö'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.fatherCnic || 'Î“Ã‡Ã¶'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.fatherOccupation || 'Not provided'}</span></div>
                                </div>
                             </div>
@@ -1519,8 +1280,8 @@ export default function Students() {
                                </div>
                                <div className="grid grid-cols-2 gap-y-8">
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Full Name</span><span className="text-base font-bold text-white">{selectedStudent.motherName || 'Not provided'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-rose-400 font-mono tracking-wider">{selectedStudent.motherMobile || 'ΓÇö'}</span></div>
-                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.motherCnic || 'ΓÇö'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Mobile Access</span><span className="text-base font-bold text-rose-400 font-mono tracking-wider">{selectedStudent.motherMobile || 'Î“Ã‡Ã¶'}</span></div>
+                                  <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">National ID</span><span className="text-base font-bold text-white font-mono">{selectedStudent.motherCnic || 'Î“Ã‡Ã¶'}</span></div>
                                   <div className="space-y-1"><span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block">Professional Role</span><span className="text-base font-bold text-white">{selectedStudent.motherOccupation || 'Not provided'}</span></div>
                                </div>
                             </div>
@@ -1771,7 +1532,7 @@ export default function Students() {
                 {/* Headers Mapper Guide */}
                 <div className="bg-accent/10 border border-border rounded-xl p-3 text-[10px] text-muted-foreground space-y-1">
                   <p className="font-bold text-foreground">Required Headers Mapping:</p>
-                  <p>AdmissionNo ┬╖ RollNo ┬╖ Name ┬╖ Gender ┬╖ DateOfBirth ┬╖ SectionId ┬╖ FatherName ┬╖ FatherMobile1 ┬╖ Address</p>
+                  <p>AdmissionNo â”¬â•– RollNo â”¬â•– Name â”¬â•– Gender â”¬â•– DateOfBirth â”¬â•– SectionId â”¬â•– FatherName â”¬â•– FatherMobile1 â”¬â•– Address</p>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-border">
@@ -1811,16 +1572,16 @@ export default function Students() {
 
                 {/* Details */}
                 <div className="space-y-1 mb-4">
-                  <h4 className="text-sm font-black">{selectedStudent?.name || '—'}</h4>
+                  <h4 className="text-sm font-black">{selectedStudent?.name || 'â€”'}</h4>
                   <p className="text-[10px] text-primary/80 font-bold">{selectedStudent?.section ? `${selectedStudent.section.class?.name} - ${selectedStudent.section.name}` : 'Grade 5 - A'}</p>
                 </div>
 
                 {/* Badges metadata table */}
                 <div className="grid grid-cols-2 gap-1.5 text-[9px] text-left border-y border-primary/20 py-2.5 mb-4 bg-accent/5 px-2 rounded-lg">
-                  <div><span className="text-muted-foreground block">Admission No:</span><span className="font-mono font-bold">{selectedStudent?.admissionNo || '—'}</span></div>
-                  <div><span className="text-muted-foreground block">Roll Number:</span><span className="font-mono font-bold">{selectedStudent?.rollNo || '—'}</span></div>
-                  <div><span className="text-muted-foreground block">Blood Group:</span><span className="font-bold text-red-400">{selectedStudent?.bloodGroup || '—'}</span></div>
-                  <div><span className="text-muted-foreground block">Guardian Phone:</span><span className="font-mono font-bold">{selectedStudent?.phone || '—'}</span></div>
+                  <div><span className="text-muted-foreground block">Admission No:</span><span className="font-mono font-bold">{selectedStudent?.admissionNo || 'â€”'}</span></div>
+                  <div><span className="text-muted-foreground block">Roll Number:</span><span className="font-mono font-bold">{selectedStudent?.rollNo || 'â€”'}</span></div>
+                  <div><span className="text-muted-foreground block">Blood Group:</span><span className="font-bold text-red-400">{selectedStudent?.bloodGroup || 'â€”'}</span></div>
+                  <div><span className="text-muted-foreground block">Guardian Phone:</span><span className="font-mono font-bold">{selectedStudent?.phone || 'â€”'}</span></div>
                 </div>
 
                 {/* Barcode Mockup */}
@@ -1855,7 +1616,7 @@ export default function Students() {
                   <label className="text-xs font-bold text-foreground">Target Class & Section *</label>
                   <select value={promoteSectionId} onChange={e => setPromoteSectionId(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
                     <option value="">-- Select Target Section --</option>
-                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} ΓÇ║ {s.name}</option>)}
+                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} Î“Ã‡â•‘ {s.name}</option>)}
                   </select>
                 </div>
 
@@ -1880,7 +1641,7 @@ export default function Students() {
                   <label className="text-xs font-bold text-foreground">New Class & Section *</label>
                   <select value={promoteSectionId} onChange={e => setPromoteSectionId(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
                     <option value="">-- Select New Section --</option>
-                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} ΓÇ║ {s.name}</option>)}
+                    {sections.map((s: any) => <option key={s.id} value={s.id}>{s.className} Î“Ã‡â•‘ {s.name}</option>)}
                   </select>
                 </div>
 

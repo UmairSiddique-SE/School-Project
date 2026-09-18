@@ -191,80 +191,96 @@ export default function Teachers() {
             label: 'Total Faculty',
             value: teachers.length,
             icon: Users,
-            gradient: 'from-violet-950/40 via-slate-900/90 to-slate-950',
-            border: 'border-violet-500/30 hover:border-violet-400/50',
-            iconBg: 'bg-violet-500/15 border-violet-500/30',
-            iconColor: 'text-violet-400',
-            labelColor: 'text-violet-400/90',
-            shadow: 'shadow-violet-950/20',
+            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            border: 'border-violet-500/25 hover:border-violet-500/50',
+            glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
+            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            labelColor: 'text-violet-600 dark:text-violet-400',
+            dotColor: 'bg-violet-500',
+            dotPing: 'bg-violet-400',
+            shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
+            subtitle: 'Faculty headcount',
           },
           {
             label: 'Active Staff',
             value: activeCount,
             icon: UserCheck,
-            gradient: 'from-emerald-950/40 via-slate-900/90 to-slate-950',
-            border: 'border-emerald-500/30 hover:border-emerald-400/50',
-            iconBg: 'bg-emerald-500/15 border-emerald-500/30',
-            iconColor: 'text-emerald-400',
-            labelColor: 'text-emerald-400/90',
-            shadow: 'shadow-emerald-950/20',
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: 'In active service',
           },
           {
             label: 'Qualified',
             value: qualifiedCount,
             icon: Award,
-            gradient: 'from-cyan-950/40 via-slate-900/90 to-slate-950',
-            border: 'border-cyan-500/30 hover:border-cyan-400/50',
-            iconBg: 'bg-cyan-500/15 border-cyan-500/30',
-            iconColor: 'text-cyan-400',
-            labelColor: 'text-cyan-400/90',
-            shadow: 'shadow-cyan-950/20',
+            gradient: 'from-cyan-500/[0.08] via-card/70 to-card',
+            border: 'border-cyan-500/25 hover:border-cyan-500/50',
+            glow: 'bg-cyan-500/15 group-hover:bg-cyan-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
+            labelColor: 'text-cyan-600 dark:text-cyan-400',
+            dotColor: 'bg-cyan-500',
+            dotPing: 'bg-cyan-400',
+            shadow: 'shadow-cyan-500/[0.04] hover:shadow-cyan-500/15',
+            subtitle: 'Degrees on file',
           },
           {
             label: 'Monthly Payroll',
             value: money(payroll),
             icon: Briefcase,
             raw: true,
-            gradient: 'from-amber-950/40 via-slate-900/90 to-slate-950',
-            border: 'border-amber-500/30 hover:border-amber-400/50',
-            iconBg: 'bg-amber-500/15 border-amber-500/30',
-            iconColor: 'text-amber-400',
-            labelColor: 'text-amber-400/90',
-            shadow: 'shadow-amber-950/20',
+            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
+            border: 'border-amber-500/25 hover:border-amber-500/50',
+            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
+            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+            labelColor: 'text-amber-600 dark:text-amber-400',
+            dotColor: 'bg-amber-500',
+            dotPing: 'bg-amber-400',
+            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
+            subtitle: 'Monthly salary total',
           },
-        ].map(({ label, value, icon: Icon, gradient, border, iconBg, iconColor, labelColor, shadow, raw }) => (
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle, raw }) => (
           <div
             key={label}
-            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300`}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
           >
-            <div className="flex items-start justify-between">
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
               <div>
                 <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
-                <h4 className={`mt-2 ${raw ? 'text-xl' : 'text-2xl sm:text-3xl'} font-black text-white tracking-tight`}>
+                <h4 className={`mt-2 ${raw ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'} font-black text-foreground tracking-tight`}>
                   {value}
                 </h4>
               </div>
-              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${iconBg} border ${iconColor} shadow-sm group-hover:scale-105 transition-transform`}>
-                <Icon size={20} />
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${iconColor.replace('text-', 'bg-')}`} />
-              Faculty record
-            </p>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Search + Filter Bar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-white/[0.02] p-4 rounded-[24px] border border-white/[0.06]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-card/60 p-4 rounded-[24px] border border-border/80 shadow-sm backdrop-blur-xl">
         <div className="relative lg:col-span-8">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, employee ID, email, phone or qualification..."
-            className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+            className="w-full pl-14 pr-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground placeholder:text-muted-foreground text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium outline-none"
           />
         </div>
         <div className="lg:col-span-4">

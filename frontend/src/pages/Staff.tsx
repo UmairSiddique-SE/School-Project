@@ -155,44 +155,112 @@ export default function Staff() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Staff', value: staff.length, icon: Users, color: 'primary' },
-          { label: 'Teaching Faculty', value: teacherCount, icon: Award, color: 'violet' },
-          { label: 'Office Staff', value: officeCount, icon: Building2, color: 'cyan' },
-          { label: 'Monthly Payroll', value: fmtSalary(totalPayroll), icon: DollarSign, color: 'amber', raw: true },
-        ].map(({ label, value, icon: Icon, color, raw }) => (
-          <div key={label} className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] hover:border-primary/30 transition-all duration-300">
-            <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">{label}</p>
-            <div className="flex items-end justify-between mt-2">
-              <h4 className={`${raw ? 'text-lg' : 'text-2xl'} font-black text-white`}>{value}</h4>
-              <div className={`h-8 w-8 rounded-lg bg-${color}-500/10 flex items-center justify-center text-${color}-400 border border-${color}-500/20`}>
-                <Icon size={16} />
+          {
+            label: 'Total Staff',
+            value: staff.length,
+            icon: Users,
+            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            border: 'border-violet-500/25 hover:border-violet-500/50',
+            glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
+            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            labelColor: 'text-violet-600 dark:text-violet-400',
+            dotColor: 'bg-violet-500',
+            dotPing: 'bg-violet-400',
+            shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
+            subtitle: 'Campus personnel',
+          },
+          {
+            label: 'Teaching Faculty',
+            value: teacherCount,
+            icon: Award,
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: 'Active educators',
+          },
+          {
+            label: 'Office Staff',
+            value: officeCount,
+            icon: Building2,
+            gradient: 'from-cyan-500/[0.08] via-card/70 to-card',
+            border: 'border-cyan-500/25 hover:border-cyan-500/50',
+            glow: 'bg-cyan-500/15 group-hover:bg-cyan-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
+            labelColor: 'text-cyan-600 dark:text-cyan-400',
+            dotColor: 'bg-cyan-500',
+            dotPing: 'bg-cyan-400',
+            shadow: 'shadow-cyan-500/[0.04] hover:shadow-cyan-500/15',
+            subtitle: 'Admin operations',
+          },
+          {
+            label: 'Monthly Payroll',
+            value: fmtSalary(totalPayroll),
+            icon: DollarSign,
+            raw: true,
+            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
+            border: 'border-amber-500/25 hover:border-amber-500/50',
+            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
+            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+            labelColor: 'text-amber-600 dark:text-amber-400',
+            dotColor: 'bg-amber-500',
+            dotPing: 'bg-amber-400',
+            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
+            subtitle: 'Estimated monthly',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle, raw }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className={`mt-2 ${raw ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'} font-black text-foreground tracking-tight`}>
+                  {value}
+                </h4>
               </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
+              </div>
+            </div>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-white/[0.02] p-4 rounded-[24px] border border-white/[0.06]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-card/60 p-4 rounded-[24px] border border-border/80 shadow-sm backdrop-blur-xl">
         <div className="relative lg:col-span-6">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, employee ID, email, designation..."
-            className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+            className="w-full pl-14 pr-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground placeholder:text-muted-foreground text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium outline-none"
           />
         </div>
         <div className="lg:col-span-3">
           <select value={designationFilter} onChange={(e) => setDesignationFilter(e.target.value)}
-            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold">
+            className="w-full px-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground text-sm focus:border-primary outline-none transition-all font-bold cursor-pointer">
             <option value="ALL">All Designations</option>
             {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
         <div className="lg:col-span-3">
           <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}
-            className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-white/[0.08] text-white text-sm focus:border-primary outline-none transition-all font-bold">
+            className="w-full px-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground text-sm focus:border-primary outline-none transition-all font-bold cursor-pointer">
             <option value="ALL">All Departments</option>
             {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>

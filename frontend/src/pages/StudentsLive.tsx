@@ -3,7 +3,7 @@ import { Download, FileUp, Loader2, Plus, RefreshCw, Search, Trash2, Users, X, A
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
-const input = 'w-full rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-400';
+const input = 'w-full rounded-xl border border-border bg-background/80 px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 placeholder:text-muted-foreground transition-all';
 
 function csvCell(value: unknown) {
   const s = String(value ?? '');
@@ -105,24 +105,24 @@ export default function StudentsLive() {
   return <div className="space-y-6 p-1">
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-400">People Management</p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-black text-white tracking-tight">Students</h1>
-        <p className="mt-1 text-xs sm:text-sm text-slate-400">Live database records — registered campus students.</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">People Management</p>
+        <h1 className="mt-1 text-2xl sm:text-3xl font-black text-foreground tracking-tight">Students</h1>
+        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Live database records — registered campus students.</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <button onClick={load} title="Refresh student records" className="p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/10 transition-all shadow-sm">
-          <RefreshCw size={15} className={loading ? 'animate-spin text-cyan-400' : ''}/>
+        <button onClick={load} title="Refresh student records" className="p-2.5 rounded-xl border border-border bg-card/70 text-foreground hover:bg-accent transition-all shadow-sm">
+          <RefreshCw size={15} className={loading ? 'animate-spin text-cyan-500' : ''}/>
         </button>
-        <button onClick={exportCsv} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition-all shadow-sm">
-          <Download size={14} className="text-emerald-400"/>
+        <button onClick={exportCsv} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-border bg-card/70 text-xs font-bold text-foreground hover:bg-accent transition-all shadow-sm">
+          <Download size={14} className="text-emerald-500"/>
           <span>Export CSV</span>
         </button>
-        <label className="flex cursor-pointer items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition-all shadow-sm">
-          <FileUp size={14} className="text-violet-400"/>
+        <label className="flex cursor-pointer items-center gap-2 px-3.5 py-2.5 rounded-xl border border-border bg-card/70 text-xs font-bold text-foreground hover:bg-accent transition-all shadow-sm">
+          <FileUp size={14} className="text-violet-500"/>
           <span>{importing ? 'Importing…' : 'Import CSV'}</span>
           <input type="file" accept=".csv,text/csv" className="hidden" disabled={importing} onChange={e => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.currentTarget.value = ''; }}/>
         </label>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-black text-slate-950 transition-all shadow-lg shadow-cyan-500/20 cursor-pointer">
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:opacity-95 text-xs font-black text-white transition-all shadow-lg shadow-cyan-500/20 cursor-pointer">
           <Plus size={16}/>
           <span>Add Student</span>
         </button>
@@ -132,87 +132,316 @@ export default function StudentsLive() {
     {/* Rich & Vibrant Stat KPI Cards */}
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {/* 1. Total Students */}
-      <div className="group relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-cyan-950/20 backdrop-blur-xl hover:border-cyan-400/50 transition-all duration-300">
-        <div className="flex items-start justify-between">
+      <div className="group relative overflow-hidden rounded-3xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.08] via-card/70 to-card p-5 shadow-lg shadow-cyan-500/[0.04] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-cyan-500/15 blur-2xl transition-all duration-500 group-hover:scale-150" />
+        <div className="relative flex items-start justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400/90">Total Students</span>
-            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{students.length}</h3>
+            <span className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Total Students</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">{students.length}</h3>
           </div>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shadow-sm group-hover:scale-105 transition-transform">
-            <GraduationCap size={22} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/25 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <GraduationCap size={22} strokeWidth={2.2} />
           </div>
         </div>
-        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          Enrolled in campus
-        </p>
+        <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+          </span>
+          <span>Enrolled in campus</span>
+        </div>
       </div>
 
       {/* 2. Active Students */}
-      <div className="group relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-emerald-950/20 backdrop-blur-xl hover:border-emerald-400/50 transition-all duration-300">
-        <div className="flex items-start justify-between">
+      <div className="group relative overflow-hidden rounded-3xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/[0.08] via-card/70 to-card p-5 shadow-lg shadow-emerald-500/[0.04] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-emerald-500/15 blur-2xl transition-all duration-500 group-hover:scale-150" />
+        <div className="relative flex items-start justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400/90">Active</span>
-            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
               {students.filter(s => s.status === 'ACTIVE').length}
             </h3>
           </div>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-sm group-hover:scale-105 transition-transform">
-            <UserCheck size={22} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <UserCheck size={22} strokeWidth={2.2} />
           </div>
         </div>
-        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          Active attendance & study
-        </p>
+        <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span>Active attendance & study</span>
+        </div>
       </div>
 
       {/* 3. Sections / Classes */}
-      <div className="group relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-violet-950/20 backdrop-blur-xl hover:border-violet-400/50 transition-all duration-300">
-        <div className="flex items-start justify-between">
+      <div className="group relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.08] via-card/70 to-card p-5 shadow-lg shadow-violet-500/[0.04] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/50">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-violet-500/15 blur-2xl transition-all duration-500 group-hover:scale-150" />
+        <div className="relative flex items-start justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-violet-400/90">Sections</span>
-            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{sections.length}</h3>
+            <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400">Sections</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">{sections.length}</h3>
           </div>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 border border-violet-500/30 text-violet-400 shadow-sm group-hover:scale-105 transition-transform">
-            <BookOpen size={22} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/25 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <BookOpen size={22} strokeWidth={2.2} />
           </div>
         </div>
-        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
-          Across {classes.length} class grades
-        </p>
+        <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
+          </span>
+          <span>Across {classes.length} class grades</span>
+        </div>
       </div>
 
       {/* 4. Selected */}
-      <div className="group relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-amber-950/20 backdrop-blur-xl hover:border-amber-400/50 transition-all duration-300">
-        <div className="flex items-start justify-between">
+      <div className="group relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-br from-amber-500/[0.08] via-card/70 to-card p-5 shadow-lg shadow-amber-500/[0.04] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/50">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-amber-500/15 blur-2xl transition-all duration-500 group-hover:scale-150" />
+        <div className="relative flex items-start justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400/90">Selected</span>
-            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{selected.length}</h3>
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">Selected</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">{selected.length}</h3>
           </div>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-sm group-hover:scale-105 transition-transform">
-            <CheckSquare size={22} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <CheckSquare size={22} strokeWidth={2.2} />
           </div>
         </div>
-        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-          {selected.length > 0 ? 'Batch actions ready' : 'Select for batch action'}
-        </p>
+        <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+          </span>
+          <span>{selected.length > 0 ? 'Batch actions ready' : 'Select for batch action'}</span>
+        </div>
       </div>
     </div>
 
-    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3 md:flex-row">
-      <div className="relative flex-1"><Search size={16} className="absolute left-3 top-3 text-slate-500"/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, admission no, class, section or roll no…" className={`${input} pl-9`}/></div>
-      {selected.length > 0 && <><button onClick={() => { setMoveMode('promote'); setShowMove(true); }} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200"><ArrowUpRight size={15}/> Promote</button><button onClick={() => { setMoveMode('transfer'); setShowMove(true); }} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200"><ArrowRightLeft size={15}/> Transfer</button><button onClick={print} className="rounded-xl border border-white/10 px-3 text-slate-200"><Printer size={15}/></button></>}
+    {/* Search & Actions Bar */}
+    <div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/60 p-4 shadow-sm backdrop-blur-xl md:flex-row md:items-center">
+      <div className="relative flex-1">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, admission no, class, section or roll no…" className={`${input} pl-10`}/>
+      </div>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => { setMoveMode('promote'); setShowMove(true); }} className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card/70 px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all shadow-sm">
+            <ArrowUpRight size={15} className="text-emerald-500"/> Promote
+          </button>
+          <button onClick={() => { setMoveMode('transfer'); setShowMove(true); }} className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card/70 px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all shadow-sm">
+            <ArrowRightLeft size={15} className="text-cyan-500"/> Transfer
+          </button>
+          <button onClick={print} title="Print student roster" className="rounded-xl border border-border bg-card/70 p-2.5 text-foreground hover:bg-accent transition-all shadow-sm">
+            <Printer size={15}/>
+          </button>
+        </div>
+      )}
     </div>
 
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
-      <div className="overflow-x-auto"><table className="w-full text-left"><thead className="border-b border-white/10 bg-white/[0.03] text-[10px] uppercase tracking-widest text-slate-500"><tr><th className="px-4 py-3"><input type="checkbox" checked={allSelected} onChange={() => setSelected(allSelected ? [] : filtered.map(s => s.id))}/></th><th className="px-4 py-3">Student</th><th className="px-4 py-3">Admission</th><th className="px-4 py-3">Class / Section</th><th className="px-4 py-3">Roll</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Actions</th></tr></thead><tbody className="divide-y divide-white/5">{loading ? <tr><td colSpan={7} className="p-10 text-center"><Loader2 className="mx-auto animate-spin text-cyan-400"/></td></tr> : filtered.length === 0 ? <tr><td colSpan={7} className="p-10 text-center text-sm text-slate-500">No students found in the live database.</td></tr> : filtered.map(s => <tr key={s.id} className="hover:bg-white/[0.025]"><td className="px-4 py-3"><input type="checkbox" checked={selected.includes(s.id)} onChange={() => setSelected(v => v.includes(s.id) ? v.filter(id => id !== s.id) : [...v, s.id])}/></td><td className="px-4 py-3"><div className="font-bold text-white">{s.name}</div><div className="text-xs text-slate-500">{s.email || s.phone || '—'}</div></td><td className="px-4 py-3 font-mono text-xs text-slate-300">{s.admissionNo || '—'}</td><td className="px-4 py-3 text-sm text-slate-300">{s.section?.class?.name || '—'} <span className="text-slate-500">/ {s.section?.name || '—'}</span></td><td className="px-4 py-3 text-sm text-slate-300">{s.rollNo || '—'}</td><td className="px-4 py-3"><span className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold uppercase text-slate-300">{s.status || 'ACTIVE'}</span></td><td className="px-4 py-3"><button onClick={() => void removeStudent(s.id)} className="rounded-lg p-2 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400"><Trash2 size={15}/></button></td></tr>)}</tbody></table></div>
+    {/* Table */}
+    <div className="overflow-hidden rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl shadow-xl">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="border-b border-border bg-muted/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <tr>
+              <th className="px-5 py-4"><input type="checkbox" checked={allSelected} onChange={() => setSelected(allSelected ? [] : filtered.map(s => s.id))} className="rounded accent-primary"/></th>
+              <th className="px-5 py-4">Student</th>
+              <th className="px-5 py-4">Admission</th>
+              <th className="px-5 py-4">Class / Section</th>
+              <th className="px-5 py-4">Roll</th>
+              <th className="px-5 py-4">Status</th>
+              <th className="px-5 py-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/60 text-sm">
+            {loading ? (
+              <tr><td colSpan={7} className="p-16 text-center"><Loader2 className="mx-auto animate-spin text-primary" size={32}/><p className="mt-2 text-xs font-semibold text-muted-foreground">Loading student records…</p></td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={7} className="p-16 text-center text-sm font-semibold text-muted-foreground">No students found in the live database.</td></tr>
+            ) : filtered.map(s => (
+              <tr key={s.id} className="hover:bg-muted/20 transition-colors">
+                <td className="px-5 py-4"><input type="checkbox" checked={selected.includes(s.id)} onChange={() => setSelected(v => v.includes(s.id) ? v.filter(id => id !== s.id) : [...v, s.id])} className="rounded accent-primary"/></td>
+                <td className="px-5 py-4">
+                  <div className="font-bold text-foreground">{s.name}</div>
+                  <div className="text-xs text-muted-foreground">{s.email || s.phone || '—'}</div>
+                </td>
+                <td className="px-5 py-4 font-mono text-xs font-semibold text-foreground/80">{s.admissionNo || '—'}</td>
+                <td className="px-5 py-4 text-sm font-medium text-foreground">
+                  {s.section?.class?.name || '—'} <span className="text-muted-foreground">/ {s.section?.name || '—'}</span>
+                </td>
+                <td className="px-5 py-4 text-sm font-mono text-foreground/80">{s.rollNo || '—'}</td>
+                <td className="px-5 py-4">
+                  <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${s.status === 'ACTIVE' ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
+                    {s.status || 'ACTIVE'}
+                  </span>
+                </td>
+                <td className="px-5 py-4 text-right">
+                  <button onClick={() => void removeStudent(s.id)} title="Delete student record" className="rounded-xl p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all">
+                    <Trash2 size={16}/>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    {showAdd && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><form onSubmit={addStudent} className="w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-white">Add Student</h2><p className="text-xs text-slate-500">Creates the student and parent records in the database.</p></div><button type="button" onClick={() => setShowAdd(false)} className="text-slate-500"><X/></button></div><div className="grid gap-3 md:grid-cols-2"><input required className={input} placeholder="Student name *" value={form.name} onChange={e => setForm({...form,name:e.target.value})}/><input required type="date" className={input} value={form.dateOfBirth} onChange={e => setForm({...form,dateOfBirth:e.target.value})}/><select className={input} value={form.gender} onChange={e => setForm({...form,gender:e.target.value})}><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select><select required className={input} value={form.sectionId} onChange={e => setForm({...form,sectionId:e.target.value})}><option value="">Select class / section *</option>{sections.map(s => <option key={s.id} value={s.id}>{s.className} / {s.name}</option>)}</select><input className={input} placeholder="B-Form / CNIC" value={form.bFormNumber} onChange={e => setForm({...form,bFormNumber:e.target.value})}/><input className={input} placeholder="Student email" value={form.email} onChange={e => setForm({...form,email:e.target.value})}/><input className={input} placeholder="Student mobile" value={form.phone} onChange={e => setForm({...form,phone:e.target.value})}/><input required className={input} placeholder="Father name *" value={form.fatherName} onChange={e => setForm({...form,fatherName:e.target.value})}/><input required className={input} placeholder="Father mobile *" value={form.fatherMobile1} onChange={e => setForm({...form,fatherMobile1:e.target.value})}/><input required className={`${input} md:col-span-2`} placeholder="Address *" value={form.address} onChange={e => setForm({...form,address:e.target.value})}/></div><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setShowAdd(false)} className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300">Cancel</button><button disabled={saving} className="flex items-center gap-2 rounded-xl bg-cyan-500 px-5 py-2 text-sm font-bold text-slate-950">{saving && <Loader2 size={15} className="animate-spin"/>}Save Student</button></div></form></div>}
+    {/* Proper Add Student Modal */}
+    {showAdd && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+        <form onSubmit={addStudent} className="w-full max-w-3xl rounded-[32px] border border-border bg-card shadow-2xl overflow-hidden my-8 animate-fade-in">
+          {/* Proper, Stunning Modal Header */}
+          <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-cyan-500/15 via-card/80 to-card p-6 sm:p-7">
+            <div className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full bg-cyan-500/20 blur-2xl" />
+            <div className="relative flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-md">
+                  <GraduationCap size={28} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                      New Student Admission
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-semibold">Session 2026-2027</span>
+                  </div>
+                  <h2 className="mt-1 text-2xl sm:text-3xl font-black text-foreground tracking-tight">Add New Student</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Register student record, classroom section, and parent/guardian contact details.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="rounded-2xl border border-border bg-card/60 p-2.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-all shadow-sm"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
 
-    {showMove && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><form onSubmit={moveStudents} className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-white">{moveMode === 'promote' ? 'Promote' : 'Transfer'} Students</h2><p className="text-xs text-slate-500">{selected.length} selected</p></div><button type="button" onClick={() => setShowMove(false)} className="text-slate-500"><X/></button></div><select required className={input} value={targetSection} onChange={e => setTargetSection(e.target.value)}><option value="">Select target class / section</option>{sections.map(s => <option key={s.id} value={s.id}>{s.className} / {s.name}</option>)}</select><button className="mt-4 w-full rounded-xl bg-cyan-500 px-4 py-2.5 font-bold text-slate-950">Confirm</button></form></div>}
+          {/* Form Body */}
+          <div className="p-6 sm:p-7 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            {/* Section 1: Academic & Personal Info */}
+            <div className="space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-wider text-primary">1. Student Information</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Student Full Name *</label>
+                  <input required className={input} placeholder="e.g. Muhammad Ali" value={form.name} onChange={e => setForm({...form,name:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Date of Birth *</label>
+                  <input required type="date" className={input} value={form.dateOfBirth} onChange={e => setForm({...form,dateOfBirth:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Gender *</label>
+                  <select className={input} value={form.gender} onChange={e => setForm({...form,gender:e.target.value})}>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Class / Section Assignment *</label>
+                  <select required className={input} value={form.sectionId} onChange={e => setForm({...form,sectionId:e.target.value})}>
+                    <option value="">Select class / section *</option>
+                    {sections.map(s => <option key={s.id} value={s.id}>{s.className} / {s.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">B-Form / CNIC (Optional)</label>
+                  <input className={input} placeholder="35201-xxxxxxx-x" value={form.bFormNumber} onChange={e => setForm({...form,bFormNumber:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Student Email (Optional)</label>
+                  <input className={input} placeholder="student@school.edu" value={form.email} onChange={e => setForm({...form,email:e.target.value})}/>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Parent / Guardian Info */}
+            <div className="space-y-3 pt-3 border-t border-border">
+              <p className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">2. Guardian & Contact Details</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Father / Guardian Name *</label>
+                  <input required className={input} placeholder="e.g. Tariq Mehmood" value={form.fatherName} onChange={e => setForm({...form,fatherName:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Guardian Mobile Number *</label>
+                  <input required className={input} placeholder="0300-1234567" value={form.fatherMobile1} onChange={e => setForm({...form,fatherMobile1:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Student Mobile (Optional)</label>
+                  <input className={input} placeholder="0300-xxxxxxx" value={form.phone} onChange={e => setForm({...form,phone:e.target.value})}/>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-bold text-muted-foreground mb-1">Residential Address *</label>
+                  <input required className={input} placeholder="House / Street, Area, City" value={form.address} onChange={e => setForm({...form,address:e.target.value})}/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="flex items-center justify-end gap-3 border-t border-border bg-muted/20 p-5 sm:px-7">
+            <button
+              type="button"
+              onClick={() => setShowAdd(false)}
+              className="rounded-2xl border border-border bg-card/80 px-5 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={saving}
+              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-2.5 text-xs font-black text-white shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all disabled:opacity-50"
+            >
+              {saving && <Loader2 size={16} className="animate-spin"/>}
+              Save Student Admission
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+
+    {/* Proper Move / Promote Modal */}
+    {showMove && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <form onSubmit={moveStudents} className="w-full max-w-md rounded-[32px] border border-border bg-card shadow-2xl overflow-hidden animate-fade-in">
+          <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-cyan-500/15 via-card/80 to-card p-6">
+            <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-cyan-500/20 blur-2xl" />
+            <div className="relative flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm">
+                  {moveMode === 'promote' ? <ArrowUpRight size={20} /> : <ArrowRightLeft size={20} />}
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-foreground tracking-tight">{moveMode === 'promote' ? 'Promote' : 'Transfer'} Students</h2>
+                  <p className="text-xs text-muted-foreground font-medium">{selected.length} students selected for batch action</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowMove(false)} className="rounded-xl border border-border p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-[11px] font-bold text-muted-foreground mb-1.5">Select Destination Class / Section *</label>
+              <select required className={input} value={targetSection} onChange={e => setTargetSection(e.target.value)}>
+                <option value="">Select target class / section</option>
+                {sections.map(s => <option key={s.id} value={s.id}>{s.className} / {s.name}</option>)}
+              </select>
+            </div>
+            <button className="w-full rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 py-3 text-xs font-black text-white shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all">
+              Confirm {moveMode === 'promote' ? 'Promotion' : 'Transfer'}
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
   </div>;
 }

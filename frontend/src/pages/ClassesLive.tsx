@@ -33,7 +33,12 @@ export default function ClassesLive() {
 
   return <div className="mx-auto max-w-screen-2xl space-y-7 pb-12">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><div className="mb-1 flex items-center gap-2"><span className="h-2 w-2 animate-pulse rounded-full bg-violet-400"/><span className="text-[11px] font-black uppercase tracking-widest text-violet-400">Academic Structure</span></div><h1 className="text-3xl font-black tracking-tight text-foreground">Classes & Sections</h1><p className="mt-1 text-sm text-muted-foreground">Manage grades, classrooms, teachers, subjects and student structure.</p></div><button onClick={() => void load()} className={button}><RefreshCw size={16} className={loading ? 'animate-spin' : ''}/> Refresh</button></div>
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat icon={<GraduationCap size={19}/>} label="Grades" value={classes.length}/><Stat icon={<Layers3 size={19}/>} label="Sections" value={totalSections}/><Stat icon={<Users size={19}/>} label="Students" value={totalStudents}/><Stat icon={<UserCheck size={19}/>} label="Occupancy" value={`${occupancy}%`}/></div>
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <Stat icon={<GraduationCap size={22} strokeWidth={2.2}/>} label="Grades" value={classes.length} gradient="from-violet-500/[0.08] via-card/70 to-card" border="border-violet-500/25 hover:border-violet-500/50" glow="bg-violet-500/15 group-hover:bg-violet-500/25" iconBox="bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25" labelColor="text-violet-600 dark:text-violet-400" dotColor="bg-violet-500" dotPing="bg-violet-400" shadow="shadow-violet-500/[0.04] hover:shadow-violet-500/15" subtitle="Academic levels"/>
+      <Stat icon={<Layers3 size={22} strokeWidth={2.2}/>} label="Sections" value={totalSections} gradient="from-cyan-500/[0.08] via-card/70 to-card" border="border-cyan-500/25 hover:border-cyan-500/50" glow="bg-cyan-500/15 group-hover:bg-cyan-500/25" iconBox="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25" labelColor="text-cyan-600 dark:text-cyan-400" dotColor="bg-cyan-500" dotPing="bg-cyan-400" shadow="shadow-cyan-500/[0.04] hover:shadow-cyan-500/15" subtitle="Active classrooms"/>
+      <Stat icon={<Users size={22} strokeWidth={2.2}/>} label="Students" value={totalStudents} gradient="from-emerald-500/[0.08] via-card/70 to-card" border="border-emerald-500/25 hover:border-emerald-500/50" glow="bg-emerald-500/15 group-hover:bg-emerald-500/25" iconBox="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25" labelColor="text-emerald-600 dark:text-emerald-400" dotColor="bg-emerald-500" dotPing="bg-emerald-400" shadow="shadow-emerald-500/[0.04] hover:shadow-emerald-500/15" subtitle="Enrolled in grades"/>
+      <Stat icon={<UserCheck size={22} strokeWidth={2.2}/>} label="Occupancy" value={`${occupancy}%`} gradient="from-amber-500/[0.08] via-card/70 to-card" border="border-amber-500/25 hover:border-amber-500/50" glow="bg-amber-500/15 group-hover:bg-amber-500/25" iconBox="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25" labelColor="text-amber-600 dark:text-amber-400" dotColor="bg-amber-500" dotPing="bg-amber-400" shadow="shadow-amber-500/[0.04] hover:shadow-amber-500/15" subtitle={`${totalStudents}/${totalCapacity} capacity`}/>
+    </div>
     <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm lg:flex-row"><div className="relative flex-1"><Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search grade, section, room or teacher..." className={`${input} pl-10`}/></div><button onClick={() => document.getElementById('class-create')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white"><Plus size={16}/> Add New Grade</button></div>
     <div id="class-create" className="grid grid-cols-1 gap-4 xl:grid-cols-4">
       <Panel title="Add Grade" icon={<GraduationCap size={17}/>}><input className={input} value={className} onChange={(e) => setClassName(e.target.value)} placeholder="Class 10"/><input className={input} type="number" min="0" max="100" value={classNumeric} onChange={(e) => setClassNumeric(e.target.value)} placeholder="Grade number (optional)"/><button disabled={busy} onClick={() => void createClass()} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 font-bold text-white"><Plus size={15}/> Create Grade</button></Panel>
@@ -45,5 +50,29 @@ export default function ClassesLive() {
   </div>;
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) { return <div className="rounded-2xl border border-border bg-card p-4 shadow-sm"><div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">{icon}</div><p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p><p className="text-2xl font-black text-foreground">{value}</p></div>; }
+function Stat({ icon, label, value, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }: { icon: React.ReactNode; label: string; value: string | number; gradient: string; border: string; glow: string; iconBox: string; labelColor: string; dotColor: string; dotPing: string; shadow: string; subtitle?: string }) {
+  return (
+    <div className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}>
+      <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+      <div className="relative flex items-start justify-between">
+        <div>
+          <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+          <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">{value}</h4>
+        </div>
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          {icon}
+        </div>
+      </div>
+      {subtitle && (
+        <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+          </span>
+          <span>{subtitle}</span>
+        </div>
+      )}
+    </div>
+  );
+}
 function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) { return <div className="rounded-2xl border border-border bg-card p-4 shadow-sm"><div className="mb-3 flex items-center gap-2 font-black">{icon}{title}</div><div className="space-y-2.5">{children}</div></div>; }
