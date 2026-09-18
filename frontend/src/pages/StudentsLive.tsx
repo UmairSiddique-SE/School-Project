@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, FileUp, Loader2, Plus, RefreshCw, Search, Trash2, Users, X, ArrowUpRight, ArrowRightLeft, Printer } from 'lucide-react';
+import { Download, FileUp, Loader2, Plus, RefreshCw, Search, Trash2, Users, X, ArrowUpRight, ArrowRightLeft, Printer, GraduationCap, UserCheck, BookOpen, CheckSquare } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
@@ -102,22 +102,104 @@ export default function StudentsLive() {
   const print = () => window.print();
   const allSelected = filtered.length > 0 && filtered.every(s => selected.includes(s.id));
 
-  return <div className="space-y-5 p-1">
+  return <div className="space-y-6 p-1">
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div><p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400">People Management</p><h1 className="mt-1 text-2xl font-black text-white">Students</h1><p className="mt-1 text-sm text-slate-400">Live database records — no demo students.</p></div>
-      <div className="flex flex-wrap gap-2">
-        <button onClick={load} className="rounded-xl border border-white/10 px-3 py-2 text-slate-300 hover:bg-white/5"><RefreshCw size={16}/></button>
-        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><Download size={15}/> Export</button>
-        <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><FileUp size={15}/> {importing ? 'Importing…' : 'Import CSV'}<input type="file" accept=".csv,text/csv" className="hidden" disabled={importing} onChange={e => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.currentTarget.value = ''; }}/></label>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-400"><Plus size={16}/> Add Student</button>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-400">People Management</p>
+        <h1 className="mt-1 text-2xl sm:text-3xl font-black text-white tracking-tight">Students</h1>
+        <p className="mt-1 text-xs sm:text-sm text-slate-400">Live database records — registered campus students.</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button onClick={load} title="Refresh student records" className="p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/10 transition-all shadow-sm">
+          <RefreshCw size={15} className={loading ? 'animate-spin text-cyan-400' : ''}/>
+        </button>
+        <button onClick={exportCsv} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition-all shadow-sm">
+          <Download size={14} className="text-emerald-400"/>
+          <span>Export CSV</span>
+        </button>
+        <label className="flex cursor-pointer items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition-all shadow-sm">
+          <FileUp size={14} className="text-violet-400"/>
+          <span>{importing ? 'Importing…' : 'Import CSV'}</span>
+          <input type="file" accept=".csv,text/csv" className="hidden" disabled={importing} onChange={e => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.currentTarget.value = ''; }}/>
+        </label>
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-black text-slate-950 transition-all shadow-lg shadow-cyan-500/20 cursor-pointer">
+          <Plus size={16}/>
+          <span>Add Student</span>
+        </button>
       </div>
     </div>
 
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><Users size={17} className="text-cyan-400"/><p className="mt-2 text-2xl font-black text-white">{students.length}</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Total Students</p></div>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p className="text-2xl font-black text-white">{students.filter(s => s.status === 'ACTIVE').length}</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Active</p></div>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p className="text-2xl font-black text-white">{sections.length}</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Sections</p></div>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p className="text-2xl font-black text-white">{selected.length}</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Selected</p></div>
+    {/* Rich & Vibrant Stat KPI Cards */}
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* 1. Total Students */}
+      <div className="group relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-cyan-950/20 backdrop-blur-xl hover:border-cyan-400/50 transition-all duration-300">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400/90">Total Students</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{students.length}</h3>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shadow-sm group-hover:scale-105 transition-transform">
+            <GraduationCap size={22} />
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          Enrolled in campus
+        </p>
+      </div>
+
+      {/* 2. Active Students */}
+      <div className="group relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-emerald-950/20 backdrop-blur-xl hover:border-emerald-400/50 transition-all duration-300">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400/90">Active</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">
+              {students.filter(s => s.status === 'ACTIVE').length}
+            </h3>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-sm group-hover:scale-105 transition-transform">
+            <UserCheck size={22} />
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Active attendance & study
+        </p>
+      </div>
+
+      {/* 3. Sections / Classes */}
+      <div className="group relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-violet-950/20 backdrop-blur-xl hover:border-violet-400/50 transition-all duration-300">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-violet-400/90">Sections</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{sections.length}</h3>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 border border-violet-500/30 text-violet-400 shadow-sm group-hover:scale-105 transition-transform">
+            <BookOpen size={22} />
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+          Across {classes.length} class grades
+        </p>
+      </div>
+
+      {/* 4. Selected */}
+      <div className="group relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-slate-900/90 to-slate-950 p-5 shadow-lg shadow-amber-950/20 backdrop-blur-xl hover:border-amber-400/50 transition-all duration-300">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400/90">Selected</span>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">{selected.length}</h3>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-sm group-hover:scale-105 transition-transform">
+            <CheckSquare size={22} />
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          {selected.length > 0 ? 'Batch actions ready' : 'Select for batch action'}
+        </p>
+      </div>
     </div>
 
     <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3 md:flex-row">

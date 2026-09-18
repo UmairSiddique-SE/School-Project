@@ -187,19 +187,71 @@ export default function Teachers() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Faculty', value: teachers.length, icon: Users, color: 'primary' },
-          { label: 'Active Staff', value: activeCount, icon: UserCheck, color: 'emerald' },
-          { label: 'Qualified', value: qualifiedCount, icon: Award, color: 'violet' },
-          { label: 'Monthly Payroll', value: money(payroll), icon: Briefcase, color: 'amber', raw: true },
-        ].map(({ label, value, icon: Icon, color, raw }) => (
-          <div key={label} className="glass-elevated p-5 rounded-2xl border border-white/[0.05] bg-white/[0.01] group hover:border-primary/30 transition-all duration-300">
-            <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">{label}</p>
-            <div className="flex items-end justify-between mt-2">
-              <h4 className={`${raw ? 'text-lg' : 'text-2xl'} font-black text-white`}>{value}</h4>
-              <div className={`h-8 w-8 rounded-lg bg-${color}-500/10 flex items-center justify-center text-${color}-400 border border-${color}-500/20`}>
-                <Icon size={16} />
+          {
+            label: 'Total Faculty',
+            value: teachers.length,
+            icon: Users,
+            gradient: 'from-violet-950/40 via-slate-900/90 to-slate-950',
+            border: 'border-violet-500/30 hover:border-violet-400/50',
+            iconBg: 'bg-violet-500/15 border-violet-500/30',
+            iconColor: 'text-violet-400',
+            labelColor: 'text-violet-400/90',
+            shadow: 'shadow-violet-950/20',
+          },
+          {
+            label: 'Active Staff',
+            value: activeCount,
+            icon: UserCheck,
+            gradient: 'from-emerald-950/40 via-slate-900/90 to-slate-950',
+            border: 'border-emerald-500/30 hover:border-emerald-400/50',
+            iconBg: 'bg-emerald-500/15 border-emerald-500/30',
+            iconColor: 'text-emerald-400',
+            labelColor: 'text-emerald-400/90',
+            shadow: 'shadow-emerald-950/20',
+          },
+          {
+            label: 'Qualified',
+            value: qualifiedCount,
+            icon: Award,
+            gradient: 'from-cyan-950/40 via-slate-900/90 to-slate-950',
+            border: 'border-cyan-500/30 hover:border-cyan-400/50',
+            iconBg: 'bg-cyan-500/15 border-cyan-500/30',
+            iconColor: 'text-cyan-400',
+            labelColor: 'text-cyan-400/90',
+            shadow: 'shadow-cyan-950/20',
+          },
+          {
+            label: 'Monthly Payroll',
+            value: money(payroll),
+            icon: Briefcase,
+            raw: true,
+            gradient: 'from-amber-950/40 via-slate-900/90 to-slate-950',
+            border: 'border-amber-500/30 hover:border-amber-400/50',
+            iconBg: 'bg-amber-500/15 border-amber-500/30',
+            iconColor: 'text-amber-400',
+            labelColor: 'text-amber-400/90',
+            shadow: 'shadow-amber-950/20',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, iconBg, iconColor, labelColor, shadow, raw }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300`}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className={`mt-2 ${raw ? 'text-xl' : 'text-2xl sm:text-3xl'} font-black text-white tracking-tight`}>
+                  {value}
+                </h4>
+              </div>
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${iconBg} border ${iconColor} shadow-sm group-hover:scale-105 transition-transform`}>
+                <Icon size={20} />
               </div>
             </div>
+            <p className="mt-3 text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${iconColor.replace('text-', 'bg-')}`} />
+              Faculty record
+            </p>
           </div>
         ))}
       </div>

@@ -23,6 +23,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   }
 
   if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
+    if (user?.role === "SUPER_ADMIN") return <Navigate to="/super-admin" replace />;
+    if (user?.schoolSlug) {
+      if (user.role === "STUDENT") return <Navigate to={`/${user.schoolSlug}/student-portal`} replace />;
+      if (user.role === "TEACHER") return <Navigate to={`/${user.schoolSlug}/teacher/classes`} replace />;
+      if (user.role === "PARENT") return <Navigate to={`/${user.schoolSlug}/parent-portal`} replace />;
+      return <Navigate to={`/${user.schoolSlug}/dashboard`} replace />;
+    }
     return <Navigate to="/unauthorized" replace />;
   }
 

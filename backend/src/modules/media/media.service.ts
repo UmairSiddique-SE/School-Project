@@ -60,7 +60,7 @@ export class MediaService {
     const signature = this.sign({ folder, timestamp }, apiSecret);
 
     const form = new FormData();
-    form.append('file', new Blob([file.buffer], { type: file.mimetype }), file.originalname || 'image');
+    form.append('file', new Blob([new Uint8Array(file.buffer)], { type: file.mimetype }), file.originalname || 'image');
     form.append('api_key', apiKey);
     form.append('timestamp', String(timestamp));
     form.append('folder', folder);

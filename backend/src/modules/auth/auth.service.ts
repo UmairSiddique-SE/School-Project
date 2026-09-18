@@ -657,11 +657,42 @@ return { school, user };
         lastLoginAt: true,
         isActive: true,
         emailVerified: true,
+        school: {
+          select: {
+            name: true,
+            slug: true,
+            isActive: true,
+            subscription: { select: { plan: true, status: true, endDate: true } },
+          },
+        },
       },
     });
     if (!user || !user.isActive)
       throw new UnauthorizedException('User account is unavailable');
-    return { user };
+
+    const subscription = user.school?.subscription;
+    const now = new Date();
+    const activationStatus = user.school
+      ? subscription?.status === 'ACTIVE' && subscription.endDate > now
+        ? 'ACTIVE'
+        : 'PAYMENT_PENDING'
+      : 'ACTIVE';
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        schoolId: user.schoolId,
+        schoolName: user.school?.name,
+        schoolSlug: user.school?.slug,
+        activationStatus,
+        plan: subscription?.plan,
+        lastLoginAt: user.lastLoginAt,
+      },
+    };
   }
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     return this.prisma.user.update({
