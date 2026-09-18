@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PendingSchoolRegistrationService } from './pending-school-registration.service';
 import { SchoolRegistrationService } from './school-registration.service';
 import { MailModule } from '../mail/mail.module';
+import { MediaModule } from '../media/media.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MailModule } from '../mail/mail.module';
       },
     }),
     MailModule,
+    MediaModule,
   ],
   controllers: [AuthController, OnboardingStatusController],
   providers: [AuthService, OnboardingStatusService, JwtStrategy, PendingSchoolRegistrationService, SchoolRegistrationService],
