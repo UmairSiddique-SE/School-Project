@@ -82,6 +82,24 @@ export class AcademicsService {
     return this.prisma.timetable.create({ data: { dayOfWeek, startTime: data.startTime, endTime: data.endTime, room: data.room || null, sectionId: data.sectionId, subjectId: data.subjectId, teacherId: data.teacherId } });
   }
 
+  async updateTimetable(id: string, schoolId: string, data: any) {
+    const timetable = await this.prisma.timetable.findFirst({ where: { id, section: { class: { schoolId } } } });
+    if (!timetable) throw new NotFoundException('Timetable entry not found');
+    const updateData: any = {};
+    if (data.dayOfWeek !== undefined) {
+      const dayOfWeek = Number(data.dayOfWeek);
+      if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) throw new BadRequestException('Day of week must be between 0 and 6');
+      updateData.dayOfWeek = dayOfWeek;
+    }
+    if (data.startTime) updateData.startTime = data.startTime;
+    if (data.endTime) updateData.endTime = data.endTime;
+    if (data.room !== undefined) updateData.room = data.room || null;
+    if (data.sectionId) updateData.sectionId = data.sectionId;
+    if (data.subjectId) updateData.subjectId = data.subjectId;
+    if (data.teacherId) updateData.teacherId = data.teacherId;
+    return this.prisma.timetable.update({ where: { id }, data: updateData });
+  }
+
   async deleteTimetable(id: string, schoolId: string) {
     const timetable = await this.prisma.timetable.findFirst({ where: { id, section: { class: { schoolId } } } });
     if (!timetable) throw new NotFoundException('Timetable entry not found');

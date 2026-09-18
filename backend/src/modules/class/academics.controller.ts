@@ -23,6 +23,8 @@ export class AcademicsController {
   getTimetables(@CurrentUser() user: any) { return this.academicsService.getTimetables(user.schoolId, user); }
   @Post('timetables') @Roles('SCHOOL_ADMIN', 'TEACHER')
   createTimetable(@CurrentUser() user: any, @Body() dto: any) { return this.academicsService.createTimetable(user.schoolId, dto); }
+  @Patch('timetables/:id') @Roles('SCHOOL_ADMIN', 'TEACHER')
+  updateTimetable(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.academicsService.updateTimetable(id, user.schoolId, dto); }
   @Delete('timetables/:id') @Roles('SCHOOL_ADMIN', 'TEACHER')
   deleteTimetable(@CurrentUser() user: any, @Param('id') id: string) { return this.academicsService.deleteTimetable(id, user.schoolId); }
 
