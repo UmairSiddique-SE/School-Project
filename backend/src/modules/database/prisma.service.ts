@@ -8,8 +8,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   constructor() {
     super({
       transactionOptions: {
-        maxWait: 10000,
-        timeout: 30000,
+        maxWait: 15000,
+        timeout: 60000,
       },
     });
   }
@@ -21,7 +21,22 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw new Error('Production requires a PostgreSQL DATABASE_URL. SQLite is supported only for local development.');
     }
     if (isProduction) this.logger.log('Production database configuration validated for PostgreSQL.');
-    await this.$connect();
+
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.log(`Connecting to database (attempt ${attempt}/${maxRetries})...`);
+        await this.$connect();
+        this.logger.log('Successfully connected to database.');
+        break;
+      } catch (error) {
+        this.logger.warn(`Database connection attempt ${attempt} failed: ${error instanceof Error ? error.message : String(error)}`);
+        if (attempt === maxRetries) {
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
   }
 
   async onModuleDestroy() {

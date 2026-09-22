@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -6,14 +6,14 @@ const FOREVER_DATE = new Date('9999-12-31T23:59:59.999Z');
 const EXPIRY_SYNC_MS = 5 * 60 * 1000;
 
 @Injectable()
-export class PaymentLifecycleService implements OnModuleInit, OnModuleDestroy {
+export class PaymentLifecycleService implements OnApplicationBootstrap, OnModuleDestroy {
   private expiryTimer?: ReturnType<typeof setInterval>;
   private expirySyncRunning = false;
   private readonly logger = new Logger(PaymentLifecycleService.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  onModuleInit() {
+  onApplicationBootstrap() {
     void this.runExpirySync();
     this.expiryTimer = setInterval(() => void this.runExpirySync(), EXPIRY_SYNC_MS);
   }
