@@ -1,42 +1,41 @@
 # EduSphere — Multi-School SaaS School Management System
 
-EduSphere is a multi-school school management platform currently under active development. It is designed to bring school administration, academics, communication, finance, and subscription management into one system.
+EduSphere is a multi-school school management platform under active development. It brings school administration, academics, attendance, finance, communication, and subscription management into one platform.
 
-> **Status:** In Progress
+**Status:** In Progress
 
-## Modules
+## What EduSphere provides
 
-- Multi-school administration
+- Multi-school / tenant-aware architecture
 - Role-based authentication and access control
-- Students, parents, teachers, and staff
+- Super-admin school onboarding and approval workflows
+- Student, parent, teacher, and staff management
 - Classes, sections, and subjects
-- Attendance
-- Fees and finance
-- Homework and examinations
-- Results and academic records
+- Attendance management
+- Fees and finance workflows
+- Homework, examinations, results, and academic records
 - Timetable and notice board
-- Library and transport
+- Library and transport management
 - Reports and settings
 - Subscription and plan management
-- Super-admin school onboarding and approval workflows
+- REST API with documented backend architecture
 
-## Frontend
+## Technology
 
+### Frontend
 - React 19
 - TypeScript
 - Vite
 - React Router
 - Tailwind CSS
 - Framer Motion
-- React Hook Form
-- Zod
+- React Hook Form + Zod
 - Axios
 - Recharts
 - Radix UI
 - Lucide React
 
-## Backend
-
+### Backend
 - Node.js
 - NestJS
 - TypeScript
@@ -51,20 +50,21 @@ EduSphere is a multi-school school management platform currently under active de
 - Throttler
 - Jest
 
-## Data & infrastructure
-
+### Infrastructure
 - PostgreSQL / Neon
 - Prisma
 - Cloudinary
 - REST APIs
 
-## Project structure
+## Architecture
 
 ```text
-School-Project/
-├── frontend/     # React + Vite application
-└── backend/      # NestJS API
+EduSphere
+├── frontend/   # React + Vite client application
+└── backend/    # NestJS REST API
 ```
+
+The frontend communicates with the NestJS backend through REST APIs. PostgreSQL provides persistent application data, while Prisma provides type-safe database access.
 
 ## Development
 
@@ -75,11 +75,20 @@ git clone https://github.com/UmairSiddique-SE/School-Project.git
 cd School-Project
 ```
 
-Install and run the frontend and backend from their respective directories using their environment configuration.
+Install dependencies in both `frontend` and `backend`, configure the required environment variables, then start each application using its local development scripts.
 
-## Development status
+> **Note:** This project is actively being developed. Some modules and production workflows may continue to change as the platform evolves.
 
-EduSphere is being developed incrementally. Authentication, database models, administrative workflows, and application modules are still being refined.
+## Project focus
+
+EduSphere is being built as a practical SaaS-oriented school management system with a focus on:
+
+- Tenant isolation and authorization
+- Maintainable backend architecture
+- Real application workflows instead of static demo data
+- Scalable school administration
+- Subscription and onboarding management
+- Secure authentication and API design
 
 ## Maintainer
 
@@ -87,3 +96,8 @@ EduSphere is being developed incrementally. Authentication, database models, adm
 
 - GitHub: https://github.com/UmairSiddique-SE
 - LinkedIn: https://www.linkedin.com/in/umair-siddique-6029bb375/
+- Portfolio: https://umair-siddique.vercel.app/
+
+---
+
+Built as a Software Engineering project by Umair Siddique.
