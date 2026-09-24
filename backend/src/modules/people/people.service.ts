@@ -91,13 +91,6 @@ export class PeopleService {
     const existing = await this.prisma.student.findUnique({ where: { admissionNo } });
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
-    const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { slug: true } });
-    if (!school?.slug) throw new BadRequestException('School slug is not configured');
-    const firstName = String(data.name).trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!firstName) throw new BadRequestException('Student name must contain letters or numbers');
-    const admissionSuffix = String(admissionNo).match(/(\d+)$/)?.[1];
-    if (!admissionSuffix) throw new BadRequestException('Admission No must end with a numeric value for Student Login ID generation');
-    const loginId = `${firstName}${admissionSuffix}@student.${school.slug}.pk`;
     const generatedPassword = randomBytes(9).toString('base64url').slice(0, 12) + '!';
     const passwordHash = await bcrypt.hash(generatedPassword, 12);
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
@@ -120,7 +113,7 @@ export class PeopleService {
         }
         return createdStudent;
       });
-      return { student, credentials: { loginId, password: generatedPassword } };
+      return { student, credentials: { loginId: email, password: generatedPassword } };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists. Please check for duplicates.`);
       if (error?.status) throw error;

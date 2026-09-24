@@ -23,15 +23,14 @@ type HomeworkItem = {
 };
 
 type Subject = { id: string; name: string; code?: string | null };
-type Section = { id: string; name: string; class?: { id: string; name: string } | null };
-type SchoolClass = { id: string; name: string; sections?: Section[] };
+type Section = { id: string; name: string; classId?: string; className?: string; class?: { id: string; name: string } | null };
 
 export default function Homework() {
   const { user } = useAuth();
   const canManage = user?.role === 'SCHOOL_ADMIN' || user?.role === 'TEACHER';
 
   const [items, setItems] = useState<HomeworkItem[]>([]);
-  const [classes, setClasses] = useState<SchoolClass[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -51,13 +50,13 @@ export default function Homework() {
   const load = async () => {
     setLoading(true);
     try {
-      const [homeworkRes, classesRes, subjectsRes] = await Promise.all([
+      const [homeworkRes, sectionsRes, subjectsRes] = await Promise.all([
         apiClient.get('/academics/homework').catch(() => ({ data: [] })),
-        apiClient.get('/classes').catch(() => ({ data: [] })),
+        apiClient.get('/classes/sections').catch(() => ({ data: [] })),
         apiClient.get('/classes/subjects').catch(() => ({ data: [] })),
       ]);
       setItems(Array.isArray(homeworkRes.data) ? homeworkRes.data : []);
-      setClasses(Array.isArray(classesRes.data) ? classesRes.data : []);
+      setSections(Array.isArray(sectionsRes.data) ? sectionsRes.data : []);
       setSubjects(Array.isArray(subjectsRes.data) ? subjectsRes.data : []);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Unable to load homework data');
@@ -69,11 +68,6 @@ export default function Homework() {
   useEffect(() => {
     void load();
   }, [user?.schoolId]);
-
-  const sections = useMemo(
-    () => classes.flatMap((c) => (c.sections || []).map((s) => ({ ...s, className: c.name }))),
-    [classes]
-  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

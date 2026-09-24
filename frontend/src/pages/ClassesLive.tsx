@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type Teacher = { id: string; name: string; email?: string };
-type Section = { id: string; name: string; capacity: number; teacher?: Teacher | null; students?: any[] };
+type Section = { id: string; name: string; capacity: number; teacher?: Teacher | null; students?: any[]; _count?: { students?: number } };
 type SubjectAssignment = { id: string; subject: { id: string; name: string; code?: string | null }; teacher?: Teacher | null };
 type ClassItem = { id: string; name: string; numeric?: number | null; sections?: Section[]; subjects?: SubjectAssignment[] };
 type Subject = { id: string; name: string; code?: string | null };
@@ -149,7 +149,7 @@ export default function ClassesLive() {
   }, [classes, search]);
 
   const totalSections = classes.reduce((n, c) => n + (c.sections?.length || 0), 0);
-  const totalStudents = classes.reduce((n, c) => n + (c.sections||[]).reduce((m,s) => m + (s.students?.length||0), 0), 0);
+  const totalStudents = classes.reduce((n, c) => n + (c.sections||[]).reduce((m,s) => m + (s._count?.students ?? s.students?.length ?? 0), 0), 0);
   const totalCapacity = classes.reduce((n, c) => n + (c.sections||[]).reduce((m,s) => m + (Number(s.capacity)||0), 0), 0);
   const occupancy     = totalCapacity ? Math.round((totalStudents / totalCapacity) * 100) : 0;
 
@@ -363,7 +363,7 @@ export default function ClassesLive() {
               const secs   = item.sections || [];
               const asgns  = item.subjects  || [];
               const cap    = secs.reduce((n, s) => n + (Number(s.capacity)||0), 0);
-              const enr    = secs.reduce((n, s) => n + (s.students?.length||0), 0);
+              const enr    = secs.reduce((n, s) => n + (s._count?.students ?? s.students?.length ?? 0), 0);
 
               /* generate a colour accent per grade based on index */
               const colors = [
@@ -447,7 +447,7 @@ export default function ClassesLive() {
                           {secs.length ? (
                             <div className="space-y-2">
                               {secs.map(sec => {
-                                const fill = sec.students?.length || 0;
+                                const fill = sec._count?.students ?? sec.students?.length ?? 0;
                                 const pct  = sec.capacity ? Math.round((fill / sec.capacity) * 100) : 0;
                                 return (
                                   <div key={sec.id}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Globe2, MapPin, Search, School, ShieldCheck } from "lucide-react";
 import apiClient from "@/api/apiClient";
 
@@ -16,9 +16,11 @@ interface SchoolItem {
   subscription?: { plan?: string; status?: string; endDate?: string } | null;
 }
 
-const getLoginPath = (slug: string) => `/school-login/${encodeURIComponent(String(slug || "").trim().replace(/^\/+|\/+$/g, "").split("/")[0])}`;
+const getLoginPath = (slug: string, role?: string) => `/school-login/${encodeURIComponent(String(slug || "").trim().replace(/^\/+|\/+$/g, "").split("/")[0])}${role ? `?role=${encodeURIComponent(role)}` : ""}`;
 
 export default function SchoolLogin() {
+  const [searchParams] = useSearchParams();
+  const portalRole = searchParams.get("role")?.toUpperCase();
   const [schools, setSchools] = useState<SchoolItem[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function SchoolLogin() {
             <ShieldCheck size={13} /> Secure school portal
           </div>
           <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Choose your school</h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">Find your school and continue to its secure EduSphere login.</p>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">{portalRole === "STUDENT" ? "Choose your school to open the student login." : portalRole === "TEACHER" ? "Choose your school to open the teacher login." : "Find your school and continue to its secure EduSphere login."}</p>
         </div>
 
         <div className="mx-auto mt-9 max-w-2xl rounded-2xl border border-white/10 bg-white/[.05] p-2 shadow-2xl backdrop-blur-xl">
@@ -84,7 +86,7 @@ export default function SchoolLogin() {
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredSchools.map((school) => (
-              <Link key={school.id || school.slug} to={school.slug ? getLoginPath(school.slug) : "#"} onClick={(event) => { if (!school.slug) event.preventDefault(); }} className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[.045] p-5 shadow-xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-cyan-400/25 hover:bg-white/[.065] hover:shadow-cyan-950/30">
+              <Link key={school.id || school.slug} to={school.slug ? getLoginPath(school.slug, portalRole?.toLowerCase()) : "#"} onClick={(event) => { if (!school.slug) event.preventDefault(); }} className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[.045] p-5 shadow-xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-cyan-400/25 hover:bg-white/[.065] hover:shadow-cyan-950/30">
                 <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-cyan-400/5 blur-2xl transition group-hover:bg-cyan-400/10" />
                 <div className="relative flex items-center gap-4">
                   {school.logoUrl ? <img src={school.logoUrl} alt={school.name} className="h-14 w-14 rounded-2xl object-cover ring-1 ring-white/10" /> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-400/10 bg-cyan-400/10 text-cyan-300"><School size={26} /></div>}

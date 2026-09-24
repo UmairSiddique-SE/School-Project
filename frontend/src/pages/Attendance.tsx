@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -81,40 +81,45 @@ export default function Attendance() {
   const [saving, setSaving] = useState(false);
 
   const [selectedClass, setSelectedClass] = useState<string>(sectionIdParam || '');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
   const [searchQuery, setSearchQuery] = useState('');
 
   const [showRemarks, setShowRemarks] = useState<string | null>(null);
   const [remarksText, setRemarksText] = useState('');
+  const rosterRequest = useRef(0);
 
   // Fetch real classes from API
   const fetchClasses = async () => {
     setClassesLoading(true);
     try {
-      const res = await apiClient.get('/classes');
-      const data = Array.isArray(res.data) ? res.data : [];
-      const extracted: ClassSection[] = [];
-      data.forEach((c: any) => {
-        if (Array.isArray(c.sections)) {
-          c.sections.forEach((s: any) => {
-            extracted.push({
-              id: s.id,
-              name: s.name,
-              classId: c.id,
-              className: c.name,
-              totalStudents: s.enrolledCount || s.students?.length || 0,
-            });
-          });
-        }
-      });
+      const res = await apiClient.get('/classes/sections');
+      const extracted: ClassSection[] = Array.isArray(res.data)
+        ? res.data.map((section: any) => ({
+            id: section.id,
+            name: section.name,
+            classId: section.classId,
+            className: section.className || section.class?.name || '',
+            totalStudents: Number(section.studentCount || 0),
+          }))
+        : [];
       setClasses(extracted);
-      if (extracted.length > 0) {
-        if (!selectedClass || !extracted.some((s) => s.id === selectedClass)) {
-          setSelectedClass(sectionIdParam || extracted[0].id);
-        }
+      setSelectedClass((current) => {
+        if (sectionIdParam && extracted.some((section) => section.id === sectionIdParam)) return sectionIdParam;
+        if (current && extracted.some((section) => section.id === current)) return current;
+        return extracted[0]?.id || '';
+      });
+      if (!extracted.length) {
+        setStudents([]);
+        setAttendance({});
       }
     } catch (err) {
       setClasses([]);
+      setStudents([]);
+      setAttendance({});
+      toast.error((err as any)?.response?.data?.message || 'Could not load school sections. Please refresh and try again.');
     } finally {
       setClassesLoading(false);
     }
@@ -126,9 +131,11 @@ export default function Attendance() {
 
   const loadStudentsForClass = async (sectionId: string) => {
     if (!sectionId) return;
+    const requestId = ++rosterRequest.current;
     setLoading(true);
     try {
       const res = await apiClient.get(`/attendance/section/${sectionId}?date=${selectedDate}`);
+      if (requestId !== rosterRequest.current) return;
       const studentsData: Student[] = Array.isArray(res.data?.students) ? res.data.students : [];
       setStudents(studentsData);
 
@@ -142,11 +149,13 @@ export default function Attendance() {
         };
       });
       setAttendance(initialAttendance);
-    } catch {
+    } catch (err: any) {
+      if (requestId !== rosterRequest.current) return;
       setStudents([]);
       setAttendance({});
+      toast.error(err?.response?.data?.message || 'Could not load attendance for this section and date.');
     } finally {
-      setLoading(false);
+      if (requestId === rosterRequest.current) setLoading(false);
     }
   };
 
@@ -196,6 +205,7 @@ export default function Attendance() {
         records,
       });
       toast.success('Attendance records saved successfully!');
+      await loadStudentsForClass(selectedClass);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to save attendance.');
     } finally {
@@ -219,9 +229,10 @@ export default function Attendance() {
   };
 
   const shiftDate = (days: number) => {
-    const d = new Date(selectedDate);
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
     d.setDate(d.getDate() + days);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
   };
 
   const stats = useMemo(() => {
@@ -468,7 +479,10 @@ export default function Attendance() {
           </div>
 
           <button
-            onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+            onClick={() => {
+              const now = new Date();
+              setSelectedDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
+            }}
             className="px-3 py-1.5 rounded-xl border border-border bg-accent/40 hover:bg-accent text-xs font-semibold text-foreground"
           >
             Today

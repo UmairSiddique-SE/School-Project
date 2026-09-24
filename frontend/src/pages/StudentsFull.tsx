@@ -123,6 +123,7 @@ async function compressPhoto(file: File) {
 export default function StudentsFull() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [facilities, setFacilities] = useState<FacilityAvailability>({ transport: false, hostel: false });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -142,17 +143,19 @@ export default function StudentsFull() {
     setLoading(true);
     try {
       const facilityPromise = apiClient.get('/people/student-facilities').catch(() => ({ data: {} }));
-      const [studentRes, classRes, facilityRes] = await Promise.all([
+      const [studentRes, classRes, sectionRes, facilityRes] = await Promise.all([
         apiClient.get('/people/students'),
         apiClient.get('/classes'),
+        apiClient.get('/classes/sections'),
         facilityPromise,
       ]);
       setStudents(Array.isArray(studentRes.data) ? studentRes.data : []);
       setClasses(Array.isArray(classRes.data) ? classRes.data : []);
+      setSections(Array.isArray(sectionRes.data) ? sectionRes.data : []);
       setFacilities({ transport: facilityRes.data?.transport === true, hostel: facilityRes.data?.hostel === true });
       setSelectedIds([]);
     } catch (error: any) {
-      setStudents([]); setClasses([]);
+      setStudents([]); setClasses([]); setSections([]);
       toast.error(error?.response?.data?.message || 'Unable to load live student records');
     } finally {
       setLoading(false);
@@ -161,7 +164,6 @@ export default function StudentsFull() {
 
   useEffect(() => { void load(); }, []);
 
-  const sections = useMemo<Section[]>(() => classes.flatMap((item) => (item.sections || []).map((section: any) => ({ ...section, className: item.name, classId: item.id }))), [classes]);
   const selectedSection = sections.find((section) => section.id === form.sectionId) || null;
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();

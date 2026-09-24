@@ -66,19 +66,14 @@ export default function ExamsLive() {
 
   const load = async () => {
     try {
-      const [e, classRes, sub, st] = await Promise.all([
+      const [e, sectionRes, sub, st] = await Promise.all([
         apiClient.get('/exams'),
-        apiClient.get('/classes'),
+        apiClient.get('/classes/sections'),
         apiClient.get('/classes/subjects'),
         apiClient.get('/people/students'),
       ]);
-      const classes = Array.isArray(classRes.data) ? classRes.data : [];
       setExams(Array.isArray(e.data) ? e.data : []);
-      setSections(
-        classes.flatMap((item: any) =>
-          (item.sections || []).map((itemSection: any) => ({ ...itemSection, class: { name: item.name } }))
-        )
-      );
+      setSections(Array.isArray(sectionRes.data) ? sectionRes.data : []);
       setSubjects(Array.isArray(sub.data) ? sub.data : []);
       setStudents(Array.isArray(st.data) ? st.data : []);
     } catch (err: any) {

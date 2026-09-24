@@ -20,6 +20,7 @@ function parseCsv(text: string) {
 export default function StudentsLive() {
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
@@ -34,19 +35,19 @@ export default function StudentsLive() {
   const load = async () => {
     setLoading(true);
     try {
-      const [s, c] = await Promise.all([apiClient.get('/people/students'), apiClient.get('/classes')]);
+      const [s, c, sectionRes] = await Promise.all([apiClient.get('/people/students'), apiClient.get('/classes'), apiClient.get('/classes/sections')]);
       setStudents(Array.isArray(s.data) ? s.data : []);
       setClasses(Array.isArray(c.data) ? c.data : []);
+      setSections(Array.isArray(sectionRes.data) ? sectionRes.data : []);
       setSelected([]);
     } catch (e: any) {
-      setStudents([]); setClasses([]);
+      setStudents([]); setClasses([]); setSections([]);
       toast.error(e?.response?.data?.message || 'Unable to load live student data');
     } finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
 
-  const sections = useMemo(() => classes.flatMap((c: any) => (c.sections || []).map((s: any) => ({ ...s, className: c.name, classId: c.id }))), [classes]);
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return students.filter(s => !q || [s.name, s.admissionNo, s.rollNo, s.section?.name, s.section?.class?.name].some(v => String(v ?? '').toLowerCase().includes(q)));

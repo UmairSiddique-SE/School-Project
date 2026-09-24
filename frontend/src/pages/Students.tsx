@@ -127,6 +127,7 @@ async function compressPhoto(file: File) {
 export default function Students() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [facilities, setFacilities] = useState<FacilityAvailability>({ transport: false, hostel: false });
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'add'>('list');
@@ -146,13 +147,15 @@ export default function Students() {
     setLoading(true);
     try {
       const facilityPromise = apiClient.get('/people/student-facilities').catch(() => ({ data: {} }));
-      const [studentRes, classRes, facilityRes] = await Promise.all([
+      const [studentRes, classRes, sectionRes, facilityRes] = await Promise.all([
         apiClient.get('/people/students'),
         apiClient.get('/classes'),
+        apiClient.get('/classes/sections'),
         facilityPromise,
       ]);
       setStudents(Array.isArray(studentRes.data) ? studentRes.data : []);
       setClasses(Array.isArray(classRes.data) ? classRes.data : []);
+      setSections(Array.isArray(sectionRes.data) ? sectionRes.data : []);
       setFacilities({
         transport: Boolean(facilityRes.data?.transport),
         hostel: Boolean(facilityRes.data?.hostel),
@@ -161,6 +164,7 @@ export default function Students() {
     } catch (error: any) {
       setStudents([]);
       setClasses([]);
+      setSections([]);
       toast.error(error?.response?.data?.message || 'Unable to load student database');
     } finally {
       setLoading(false);
@@ -170,16 +174,6 @@ export default function Students() {
   useEffect(() => {
     void load();
   }, []);
-
-  const sections: Section[] = useMemo(() => {
-    return classes.flatMap((item: any) =>
-      (item.sections || []).map((section: any) => ({
-        ...section,
-        className: item.name,
-        classId: item.id,
-      }))
-    );
-  }, [classes]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

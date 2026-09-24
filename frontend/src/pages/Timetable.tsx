@@ -87,21 +87,17 @@ export default function Timetable() {
 
   const load = async () => {
     try {
-      const [tRes, classRes, subRes, trRes] = await Promise.all([
+      const [tRes, classRes, sectionRes, subRes, trRes] = await Promise.all([
         apiClient.get('/academics/timetables'),
         apiClient.get('/classes'),
+        apiClient.get('/classes/sections'),
         apiClient.get('/classes/subjects'),
         apiClient.get('/people/teachers'),
       ]);
       const classData = Array.isArray(classRes.data) ? classRes.data : [];
       setClasses(classData);
       setSlots(Array.isArray(tRes.data) ? tRes.data : []);
-      const allSections = classData.flatMap((item: any) =>
-        (item.sections || []).map((sec: any) => ({
-          ...sec,
-          class: { id: item.id, name: item.name },
-        }))
-      );
+      const allSections = Array.isArray(sectionRes.data) ? sectionRes.data : [];
       setSections(allSections);
       setSubjects(Array.isArray(subRes.data) ? subRes.data : []);
       setTeachers(Array.isArray(trRes.data) ? trRes.data : []);

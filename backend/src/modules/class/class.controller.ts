@@ -18,6 +18,12 @@ export class ClassController {
     return this.classService.findAll(user.schoolId, user.role, user.email);
   }
 
+  @Get('sections')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  findAllSections(@CurrentUser() user: any) {
+    return this.classService.findSections(user.schoolId, user.role, user.email);
+  }
+
   @Post()
   @Roles('SCHOOL_ADMIN')
   createClass(@CurrentUser() user: any, @Body() dto: any) {

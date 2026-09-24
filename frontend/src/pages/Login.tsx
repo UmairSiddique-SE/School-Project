@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, GraduationCap, LockKeyhole, Loader2, Mail, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,8 @@ function normalizeLoginIdentifier(value: string) {
 
 export default function LoginPage() {
   const { schoolSlug: urlSchoolSlug } = useParams();
+  const [searchParams] = useSearchParams();
+  const portalRole = searchParams.get("role")?.toUpperCase();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,13 +56,17 @@ export default function LoginPage() {
         toast.error("This account does not have school portal access.");
         return;
       }
+      if ((portalRole === "STUDENT" || portalRole === "TEACHER") && user.role !== portalRole) {
+        toast.error(`This login is for ${portalRole.toLowerCase()} accounts.`);
+        return;
+      }
       login(accessToken, user, refreshToken);
       toast.success(`Welcome back, ${user.name}!`);
       const slug = user.schoolSlug || urlSchoolSlug || "edusphere";
       if (user.role === "STUDENT") {
         navigate(`/${slug}/student-portal`, { replace: true });
       } else if (user.activationStatus === "ACTIVE") {
-        navigate(`/${slug}/dashboard`, { replace: true });
+        navigate(user.role === "TEACHER" && portalRole === "TEACHER" ? `/${slug}/teacher/classes` : `/${slug}/dashboard`, { replace: true });
       } else {
         toast.info("Your school portal is locked until approval. You can continue from onboarding.");
         navigate("/onboarding", { replace: true });
@@ -133,9 +139,9 @@ export default function LoginPage() {
                 <label className="text-xs font-black uppercase tracking-[.14em] text-slate-300">Login ID / Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
-                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="admin@school.pk or ADM-2026-0001@student.edu.pk" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
+                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="Enter the Login ID shown after registration" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
                 </div>
-                <p className="text-[11px] leading-5 text-slate-500">Students use Admission No@student.edu.pk. The portal converts that ID to the school-issued Admission No automatically.</p>
+                <p className="text-[11px] leading-5 text-slate-500">Students: use the Login ID and password issued by your school. Teachers and administrators: use your registered email and password.</p>
               </div>
 
               <div className="space-y-2">

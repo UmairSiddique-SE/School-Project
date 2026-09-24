@@ -27,7 +27,10 @@ export class ClassService {
             deletedAt: null,
             ...(isTeacher ? { teacher: { email: teacherEmail, deletedAt: null } } : {}),
           },
-          include: { teacher: { select: { id: true, name: true, email: true } } },
+          include: {
+            teacher: { select: { id: true, name: true, email: true } },
+            _count: { select: { students: { where: { deletedAt: null } } } },
+          },
         },
         subjects: {
           ...(isTeacher ? { where: { teacher: { email: teacherEmail, deletedAt: null } } } : {}),
@@ -38,6 +41,19 @@ export class ClassService {
         },
       },
     });
+  }
+
+  async findSections(schoolId: string, role?: string, teacherEmail?: string) {
+    const classes = await this.findAll(schoolId, role, teacherEmail);
+    return classes.flatMap((schoolClass: any) =>
+      (schoolClass.sections || []).map((section: any) => ({
+        ...section,
+        classId: schoolClass.id,
+        className: schoolClass.name,
+        class: { id: schoolClass.id, name: schoolClass.name },
+        studentCount: section._count?.students || 0,
+      })),
+    );
   }
 
   async createClass(schoolId: string, data: any) {
