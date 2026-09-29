@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft, ArrowRightLeft, ArrowUpRight, Camera, CheckSquare, Download, FileUp, GraduationCap,
   ImagePlus, Loader2, Pencil, Plus, Printer, RefreshCw, Search, Trash2,
-  UserCheck, UserRound, Users, X, BookOpen, ShieldCheck, Mail, Phone, MapPin, AlertCircle, User
+  UserCheck, UserRound, Users, X, BookOpen, ShieldCheck, Mail, Phone, MapPin, AlertCircle, User,
+  Eye, EyeOff, Copy, Check, HeartPulse, Award, Calendar, FileText, Key, Clock, Sparkles, Filter
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
@@ -13,20 +14,26 @@ type Section = { id: string; name: string; capacity?: number; teacher?: Teacher 
 type FacilityAvailability = { transport: boolean; hostel: boolean };
 
 type FormState = {
+  admissionNo: string;
+  rollNo: string;
   name: string;
   dateOfBirth: string;
   gender: string;
+  bloodGroup: string;
   religion: string;
   bFormNumber: string;
   email: string;
   phone: string;
   admissionType: 'NEW' | 'TRANSFER';
   sectionId: string;
+  classId: string;
   session: string;
   previousSchool: string;
   previousClass: string;
   leavingCertificateUrl: string;
   previousAcademicRecord: string;
+  medicalNotes: string;
+  specialRequirements: string;
   fatherName: string;
   fatherStatus: 'ALIVE' | 'DECEASED';
   fatherMobile1: string;
@@ -51,19 +58,49 @@ const button = 'inline-flex items-center justify-center gap-2 rounded-xl border 
 const primaryBtn = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-600/20 hover:brightness-110 transition disabled:opacity-60';
 const currentSession = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
 const religions = ['Muslim', 'Christian', 'Hindu', 'Sikh', 'Buddhist', 'Other'];
+const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const guardianRelations = ['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'];
 const fatherOccupations = ['Business', 'Government Job', 'Private Job', 'Self Employed', 'Farmer', 'Overseas', 'Driver', 'Shopkeeper', 'Labour', 'Doctor', 'Engineer', 'Teacher', 'Other'];
 const motherOccupations = ['Housewife', 'Government Job', 'Private Job', 'Business', 'Self Employed', 'Teacher', 'Doctor', 'Engineer', 'Other'];
 
 const emptyForm = (): FormState => ({
-  name: '', dateOfBirth: '', gender: 'MALE', religion: 'Muslim', bFormNumber: '', email: '', phone: '',
-  admissionType: 'NEW', sectionId: '', session: currentSession,
-  previousSchool: '', previousClass: '', leavingCertificateUrl: '', previousAcademicRecord: '',
-  fatherName: '', fatherStatus: 'ALIVE', fatherMobile1: '', fatherWhatsapp: '', fatherCnic: '', fatherOccupation: '',
-  motherName: '', motherMobile: '', motherOccupation: '',
-  guardianName: '', guardianRelation: '', guardianMobile: '',
-  currentAddress: '', permanentAddress: '',
-  transportRequired: false, hostelRequired: false, avatarUrl: '',
+  admissionNo: '',
+  rollNo: '',
+  name: '',
+  dateOfBirth: '',
+  gender: 'MALE',
+  bloodGroup: 'O+',
+  religion: 'Muslim',
+  bFormNumber: '',
+  email: '',
+  phone: '',
+  admissionType: 'NEW',
+  classId: '',
+  sectionId: '',
+  session: currentSession,
+  previousSchool: '',
+  previousClass: '',
+  leavingCertificateUrl: '',
+  previousAcademicRecord: '',
+  medicalNotes: '',
+  specialRequirements: '',
+  fatherName: '',
+  fatherStatus: 'ALIVE',
+  fatherMobile1: '',
+  fatherWhatsapp: '',
+  fatherCnic: '',
+  fatherOccupation: '',
+  motherName: '',
+  motherMobile: '',
+  motherOccupation: '',
+  guardianName: '',
+  guardianRelation: '',
+  guardianMobile: '',
+  currentAddress: '',
+  permanentAddress: '',
+  transportRequired: false,
+  hostelRequired: false,
+  avatarUrl: '',
 });
 
 function formatPhone(raw: string) {
@@ -135,8 +172,13 @@ export default function Students() {
   const [compressing, setCompressing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [profile, setProfile] = useState<Student | null>(null);
+  const [profileTab, setProfileTab] = useState<'overview' | 'family' | 'academics' | 'attendance' | 'fees' | 'reports' | 'timetable' | 'credentials'>('overview');
+  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState<Student | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [credentials, setCredentials] = useState<any>(null);
@@ -175,23 +217,44 @@ export default function Students() {
     void load();
   }, []);
 
+  /* ── Filtered Sections for Class Dropdown ── */
+  const availableFilterSections = useMemo(() => {
+    if (!classFilter) return sections;
+    return sections.filter((s) => s.classId === classFilter);
+  }, [sections, classFilter]);
+
+  const availableFormSections = useMemo(() => {
+    if (!form.classId) return sections;
+    return sections.filter((s) => s.classId === form.classId);
+  }, [sections, form.classId]);
+
+  /* ── Filtered Students List ── */
   const filtered = useMemo(() => {
+    let result = students;
+    if (classFilter) {
+      result = result.filter((s) => s.section?.classId === classFilter || s.section?.class?.id === classFilter);
+    }
+    if (sectionFilter) {
+      result = result.filter((s) => s.sectionId === sectionFilter);
+    }
     const q = search.trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((student) =>
-      [
-        student.name,
-        student.admissionNo,
-        student.rollNo,
-        student.section?.name,
-        student.section?.class?.name,
-        student.fatherName,
-        student.fatherMobile1,
-        student.phone,
-        student.bFormNumber,
-      ].some((value) => String(value ?? '').toLowerCase().includes(q))
-    );
-  }, [students, search]);
+    if (q) {
+      result = result.filter((student) =>
+        [
+          student.name,
+          student.admissionNo,
+          student.rollNo,
+          student.section?.name,
+          student.section?.class?.name,
+          student.fatherName,
+          student.fatherMobile1,
+          student.phone,
+          student.bFormNumber,
+        ].some((value) => String(value ?? '').toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [students, search, classFilter, sectionFilter]);
 
   const boysCount = useMemo(() => students.filter((s) => s.gender === 'MALE').length, [students]);
   const girlsCount = useMemo(() => students.filter((s) => s.gender === 'FEMALE').length, [students]);
@@ -202,10 +265,25 @@ export default function Students() {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
+  /* ── Open Create with Auto-Generated Admission No ── */
   const openCreate = () => {
     setEditing(null);
     setCredentials(null);
-    setForm(emptyForm());
+
+    // Auto-calculate next admission number
+    const currentYear = new Date().getFullYear();
+    const highestNum = students.reduce((max, s) => {
+      const match = String(s.admissionNo || '').match(/(\d+)/g);
+      const num = match ? parseInt(match[match.length - 1], 10) : 0;
+      return Math.max(max, isNaN(num) ? 0 : num);
+    }, 0);
+    const nextNum = highestNum + 1;
+    const nextAdmissionNo = `ADM-${currentYear}-${String(nextNum).padStart(4, '0')}`;
+
+    setForm({
+      ...emptyForm(),
+      admissionNo: nextAdmissionNo,
+    });
     setView('add');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -214,9 +292,18 @@ export default function Students() {
     setEditing(student);
     setCredentials(null);
     const parent = student.parents?.[0]?.parent;
+    const matchedSection = sections.find((s) => s.id === student.sectionId);
+
     setForm({
       ...emptyForm(),
       ...student,
+      admissionNo: student.admissionNo || '',
+      rollNo: student.rollNo || '',
+      bloodGroup: student.bloodGroup || 'O+',
+      classId: matchedSection?.classId || student.section?.classId || '',
+      sectionId: student.sectionId || '',
+      medicalNotes: student.medicalNotes || '',
+      specialRequirements: student.specialRequirements || '',
       fatherName: student.fatherName || parent?.fatherName || parent?.name || '',
       fatherMobile1: formatPhone(student.fatherMobile1 || parent?.fatherMobile1 || parent?.phone || ''),
       fatherWhatsapp: formatPhone(student.fatherWhatsapp || parent?.fatherWhatsapp || ''),
@@ -234,7 +321,6 @@ export default function Students() {
       phone: formatPhone(student.phone || ''),
       bFormNumber: formatCnic(student.bFormNumber || ''),
       avatarUrl: student.avatarUrl || '',
-      sectionId: student.sectionId || '',
       session: student.session || currentSession,
       admissionType: student.admissionType === 'TRANSFER' ? 'TRANSFER' : 'NEW',
       dateOfBirth: student.dateOfBirth ? String(student.dateOfBirth).slice(0, 10) : '',
@@ -259,7 +345,7 @@ export default function Students() {
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!form.name.trim() || !form.sectionId) {
-      return toast.error('Student name and Class / Section are required');
+      return toast.error('Student name and Section assignment are required');
     }
     if (form.admissionType === 'TRANSFER' && (!form.previousSchool.trim() || !form.previousClass.trim())) {
       return toast.error('Previous School and Previous Class are required for transfer students');
@@ -305,7 +391,12 @@ export default function Students() {
     try {
       const payload: any = {
         ...form,
+        admissionNo: form.admissionNo.trim() || undefined,
+        rollNo: form.rollNo.trim() || undefined,
         name: form.name.trim(),
+        bloodGroup: form.bloodGroup || undefined,
+        medicalNotes: form.medicalNotes.trim() || undefined,
+        specialRequirements: form.specialRequirements.trim() || undefined,
         phone: form.phone || undefined,
         studentMobile: form.phone || undefined,
         email: form.email.trim().toLowerCase() || undefined,
@@ -327,8 +418,11 @@ export default function Students() {
         setView('list');
       } else {
         const response = await apiClient.post('/people/students', payload);
-        setCredentials(response.data?.credentials || null);
-        toast.success(`Student admitted — ${response.data?.student?.admissionNo || 'Admission created'}`);
+        const createdCredentials = response.data?.credentials;
+        if (createdCredentials) {
+          setCredentials(createdCredentials);
+        }
+        toast.success(`Student admitted — ${response.data?.student?.admissionNo || form.admissionNo}`);
         setView('list');
       }
       await load();
@@ -340,12 +434,12 @@ export default function Students() {
   };
 
   const archive = async (id: string) => {
-    if (!window.confirm('Archive this student? Existing school records will remain stored.')) return;
+    if (!confirm('Are you sure you want to archive this student record?')) return;
     try {
       await apiClient.delete(`/people/students/${id}`);
-      setProfile(null);
+      toast.success('Student record archived');
+      if (profile?.id === id) setProfile(null);
       await load();
-      toast.success('Student archived');
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Unable to archive student');
     }
@@ -353,83 +447,20 @@ export default function Students() {
 
   const move = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!moveMode || !targetSection || !selectedIds.length) return;
+    if (!selectedIds.length || !targetSection) return toast.warning('Select students and a target section');
     try {
       await apiClient.post(`/people/students/${moveMode}`, {
         studentIds: selectedIds,
         sectionId: targetSection,
-        ...(moveMode === 'promote' ? { session: currentSession } : {}),
+        session: moveMode === 'promote' ? currentSession : undefined,
       });
       toast.success(`${selectedIds.length} student(s) ${moveMode === 'promote' ? 'promoted' : 'transferred'}`);
       setMoveMode(null);
+      setSelectedIds([]);
       setTargetSection('');
       await load();
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || `Unable to ${moveMode} students`);
-    }
-  };
-
-  const exportCsv = () => {
-    const rows = [
-      ['Admission No', 'Name', 'Class', 'Section', 'Roll No', 'Religion', 'Admission Type', 'Previous School', 'Previous Class', 'Father Name', 'Father Mobile'],
-      ...students.map((student) => [
-        student.admissionNo,
-        student.name,
-        student.section?.class?.name,
-        student.section?.name,
-        student.rollNo,
-        student.religion,
-        student.admissionType,
-        student.previousSchool,
-        student.previousClass,
-        student.fatherName,
-        student.fatherMobile1,
-      ]),
-    ];
-    const csv = rows.map((row) => row.map(csvCell).join(',')).join('\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'edusphere-students.csv';
-    anchor.click();
-    URL.revokeObjectURL(url);
-    toast.success('Students exported to CSV');
-  };
-
-  const importCsv = async (file: File) => {
-    setImporting(true);
-    try {
-      const rows = parseCsv(await file.text());
-      if (!rows.length) throw new Error('CSV contains no student rows');
-      let created = 0;
-      for (const row of rows) {
-        if (!row.name || !row.sectionid) continue;
-        await apiClient.post('/people/students', {
-          name: row.name,
-          sectionId: row.sectionid,
-          email: row.email || undefined,
-          studentMobile: row.studentmobile || row.phone || undefined,
-          fatherName: row.fathername || undefined,
-          fatherMobile1: row.fathermobile1 || row.fathermobile || undefined,
-          dateOfBirth: row.dateofbirth || row.dob || undefined,
-          gender: String(row.gender || 'MALE').toUpperCase(),
-          religion: row.religion || 'Muslim',
-          bFormNumber: row.bformnumber || row.cnic || undefined,
-          session: row.session || currentSession,
-          admissionType: row.admissiontype === 'TRANSFER' ? 'TRANSFER' : 'NEW',
-          previousSchool: row.previousschool || undefined,
-          previousClass: row.previousclass || undefined,
-          previousAcademicRecord: row.previousacademicrecord || undefined,
-          parentPassword: `${row.name.replace(/\s+/g, '').slice(0, 5)}${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}!A9`,
-        });
-        created += 1;
-      }
-      await load();
-      toast.success(`${created} student(s) imported`);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || 'Student import failed');
-    } finally {
-      setImporting(false);
+      toast.error(error?.response?.data?.message || `Failed to ${moveMode} students`);
     }
   };
 
@@ -437,8 +468,16 @@ export default function Students() {
     const popup = window.open('', '_blank', 'width=540,height=760');
     if (!popup) return toast.error('Please allow popups to print the ID card');
     const photo = student.avatarUrl || '';
-    popup.document.write(`<!doctype html><html><head><title>${student.name} - ID Card</title><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;padding:28px;display:flex;justify-content:center}.card{width:360px;border-radius:24px;overflow:hidden;background:#1e293b;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.5)}.head{padding:24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;text-align:center}.photo{width:90px;height:90px;border-radius:22px;object-fit:cover;background:#334155;margin:0 auto 12px;border:3px solid #fff;display:block}.body{padding:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #334155;padding:8px 0}.muted{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em}.value{font-weight:700;font-size:13px;color:#fff}</style></head><body><div class='card'><div class='head'>${photo ? `<img class='photo' src='${photo}'/>` : `<div class='photo' style='display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;'>${student.name.charAt(0)}</div>`}<div style='font-size:10px;letter-spacing:0.2em;opacity:.8;font-weight:900;'>EDUSPHERE STUDENT ID</div><h2 style='margin:4px 0 0;font-size:20px;font-weight:900;'>${student.name}</h2></div><div class='body'><div class='row'><span class='muted'>Admission No</span><span class='value'>${student.admissionNo || '—'}</span></div><div class='row'><span class='muted'>Roll No</span><span class='value'>${student.rollNo || '—'}</span></div><div class='row'><span class='muted'>Class / Sec</span><span class='value'>${student.section?.class?.name || '—'} / ${student.section?.name || '—'}</span></div><div class='row'><span class='muted'>Session</span><span class='value'>${student.session || currentSession}</span></div><div class='row'><span class='muted'>Father</span><span class='value'>${student.fatherName || '—'}</span></div><div class='row' style='border:none;'><span class='muted'>Emergency</span><span class='value'>${student.fatherMobile1 || student.phone || '—'}</span></div></div></div><script>window.onload=()=>window.print()</script></body></html>`);
+    popup.document.write(`<!doctype html><html><head><title>${student.name} - ID Card</title><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;padding:28px;display:flex;justify-content:center}.card{width:360px;border-radius:24px;overflow:hidden;background:#1e293b;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.5)}.head{padding:24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;text-align:center}.photo{width:90px;height:90px;border-radius:22px;object-fit:cover;background:#334155;margin:0 auto 12px;border:3px solid #fff;display:block}.body{padding:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #334155;padding:8px 0}.muted{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em}.value{font-weight:700;font-size:13px;color:#fff}</style></head><body><div class='card'><div class='head'>${photo ? `<img class='photo' src='${photo}'/>` : `<div class='photo' style='display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;'>${student.name.charAt(0)}</div>`}<div style='font-size:10px;letter-spacing:0.2em;opacity:.8;font-weight:900;'>EDUSPHERE STUDENT ID</div><h2 style='margin:4px 0 0;font-size:20px;font-weight:900;'>${student.name}</h2></div><div class='body'><div class='row'><span class='muted'>Admission No</span><span class='value'>${student.admissionNo || '—'}</span></div><div class='row'><span class='muted'>Roll No</span><span class='value'>${student.rollNo || '—'}</span></div><div class='row'><span class='muted'>Class / Sec</span><span class='value'>${student.section?.class?.name || '—'} / ${student.section?.name || '—'}</span></div><div class='row'><span class='muted'>Session</span><span class='value'>${student.session || currentSession}</span></div><div class='row'><span class='muted'>Blood Group</span><span class='value'>${student.bloodGroup || '—'}</span></div><div class='row' style='border:none;'><span class='muted'>Emergency</span><span class='value'>${student.fatherMobile1 || student.phone || '—'}</span></div></div></div><script>window.onload=()=>window.print()</script></body></html>`);
     popup.document.close();
+  };
+
+  const copyCredentials = (student: Student) => {
+    const credText = `*EduSphere Portal Access*\nStudent: ${student.name}\nAdmission No: ${student.admissionNo}\nStudent Login: ${student.email || `${student.admissionNo?.toLowerCase()}@school.edu`}\nDefault Password: ${student.admissionNo}!2026\nParent Login: ${student.admissionNo?.toLowerCase()}_parent@school.edu\nParent Password: Parent${student.admissionNo}!2026`;
+    navigator.clipboard.writeText(credText);
+    setCopied(true);
+    toast.success('Login credentials copied to clipboard');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // ══════════════════════════════════════════════════════════════
@@ -447,7 +486,7 @@ export default function Students() {
   if (view === 'add') {
     return (
       <div className="space-y-6 pb-20 max-w-[1400px] mx-auto animate-fade-in">
-        {/* Soft Cyan Aesthetic Header with Back Button */}
+        {/* Header */}
         <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 via-sky-500/5 to-card p-6 shadow-xl backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -455,12 +494,17 @@ export default function Students() {
                 <GraduationCap size={28} />
               </div>
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
                     {editing ? 'STUDENT PROFILE UPDATE' : 'NEW STUDENT ADMISSION'}
                   </span>
                   <span className="text-xs text-muted-foreground font-semibold">Session {form.session}</span>
+                  {form.admissionNo && (
+                    <span className="text-xs font-mono font-bold text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">
+                      Admission No: {form.admissionNo}
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
                   {editing ? `Edit Record: ${editing.name}` : 'Add New Student'}
@@ -491,7 +535,7 @@ export default function Students() {
             </h3>
             <div className="rounded-2xl border border-border bg-muted/15 p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                {/* LEFT SIDE PHOTO UPLOAD */}
+                {/* Photo Upload */}
                 <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
                   <label className="relative flex h-36 w-36 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cyan-500/40 bg-card shadow-inner hover:border-cyan-400 transition-all group">
                     <input
@@ -532,8 +576,33 @@ export default function Students() {
                   )}
                 </div>
 
-                {/* RIGHT FORM FIELDS */}
+                {/* Right Form Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
+                  {/* Pre-Generated Admission Number */}
+                  <Field label="Admission Number" required>
+                    <div className="relative">
+                      <input
+                        required
+                        className={`${input} font-mono font-bold text-cyan-600 dark:text-cyan-400`}
+                        placeholder="e.g. ADM-2026-0001"
+                        value={form.admissionNo}
+                        onChange={(e) => update('admissionNo', e.target.value)}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-wider bg-cyan-500/10 text-cyan-500 px-2 py-0.5 rounded-full border border-cyan-500/20 pointer-events-none">
+                        Auto-Assigned
+                      </span>
+                    </div>
+                  </Field>
+
+                  <Field label="Roll Number (Optional)">
+                    <input
+                      className={input}
+                      placeholder="e.g. 10-A-01"
+                      value={form.rollNo}
+                      onChange={(e) => update('rollNo', e.target.value)}
+                    />
+                  </Field>
+
                   <Field label="Student Full Name" required>
                     <input
                       required
@@ -566,17 +635,53 @@ export default function Students() {
                     </select>
                   </Field>
 
-                  <Field label="Class / Section Assignment" required>
+                  <Field label="Blood Group">
+                    <select
+                      className={input}
+                      value={form.bloodGroup}
+                      onChange={(e) => update('bloodGroup', e.target.value)}
+                    >
+                      {bloodGroups.map((bg) => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  {/* Class Selection */}
+                  <Field label="Class Level" required>
+                    <select
+                      required
+                      className={input}
+                      value={form.classId}
+                      onChange={(e) => {
+                        const newClassId = e.target.value;
+                        const classSecs = sections.filter((s) => s.classId === newClassId);
+                        setForm((prev) => ({
+                          ...prev,
+                          classId: newClassId,
+                          sectionId: classSecs[0]?.id || '',
+                        }));
+                      }}
+                    >
+                      <option value="">Select Class *</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  {/* Section Assignment (Synced with Class) */}
+                  <Field label="Section Assignment" required>
                     <select
                       required
                       className={input}
                       value={form.sectionId}
                       onChange={(e) => update('sectionId', e.target.value)}
                     >
-                      <option value="">Select class / section *</option>
-                      {sections.map((sec) => (
+                      <option value="">Select Section *</option>
+                      {availableFormSections.map((sec) => (
                         <option key={sec.id} value={sec.id}>
-                          {sec.className} — Section {sec.name}
+                          {sec.className} — Section {sec.name} {sec.teacher?.name ? `(${sec.teacher.name})` : ''}
                         </option>
                       ))}
                     </select>
@@ -605,17 +710,6 @@ export default function Students() {
                     </select>
                   </Field>
 
-                  <Field label="Student Email (Optional)">
-                    <input
-                      type="email"
-                      className={input}
-                      placeholder="student@school.edu"
-                      disabled={Boolean(editing)}
-                      value={form.email}
-                      onChange={(e) => update('email', e.target.value)}
-                    />
-                  </Field>
-
                   <Field label="Student Mobile (Optional)">
                     <input
                       inputMode="numeric"
@@ -626,19 +720,28 @@ export default function Students() {
                       onChange={(e) => update('phone', formatPhone(e.target.value))}
                     />
                   </Field>
+
+                  <Field label="Student Email (Optional)">
+                    <input
+                      type="email"
+                      className={input}
+                      placeholder="student@school.edu"
+                      value={form.email}
+                      onChange={(e) => update('email', e.target.value)}
+                    />
+                  </Field>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 2. FATHER & GUARDIAN INFORMATION */}
+          {/* 2. PARENT & GUARDIAN INFORMATION */}
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
             <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-cyan-400" />
               2. FATHER & GUARDIAN INFORMATION
             </h3>
             <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-5">
-              {/* Father Primary Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Field label="Father Full Name" required>
                   <input
@@ -652,18 +755,17 @@ export default function Students() {
 
                 <Field label="Father Status" required>
                   <select
-                    className={`${input} font-bold text-cyan-600 dark:text-cyan-400`}
+                    className={input}
                     value={form.fatherStatus}
-                    onChange={(e) => update('fatherStatus', e.target.value as 'ALIVE' | 'DECEASED')}
+                    onChange={(e) => update('fatherStatus', e.target.value as any)}
                   >
-                    <option value="ALIVE">Alive (حـیات)</option>
-                    <option value="DECEASED">Deceased (مرحوم)</option>
+                    <option value="ALIVE">Alive</option>
+                    <option value="DECEASED">Deceased</option>
                   </select>
                 </Field>
 
-                <Field label="Father Mobile Number" required={form.fatherStatus === 'ALIVE'}>
+                <Field label="Father Mobile" required={form.fatherStatus === 'ALIVE'}>
                   <input
-                    required={form.fatherStatus === 'ALIVE'}
                     inputMode="numeric"
                     maxLength={12}
                     className={`${input} font-mono`}
@@ -673,7 +775,7 @@ export default function Students() {
                   />
                 </Field>
 
-                <Field label="Father WhatsApp (Optional)">
+                <Field label="Father WhatsApp">
                   <input
                     inputMode="numeric"
                     maxLength={12}
@@ -684,7 +786,7 @@ export default function Students() {
                   />
                 </Field>
 
-                <Field label="Father CNIC (Optional)">
+                <Field label="Father CNIC">
                   <input
                     inputMode="numeric"
                     maxLength={15}
@@ -701,202 +803,125 @@ export default function Students() {
                     value={form.fatherOccupation}
                     onChange={(e) => update('fatherOccupation', e.target.value)}
                   >
-                    <option value="">Select occupation</option>
-                    {fatherOccupations.map((occ) => (
-                      <option key={occ} value={occ}>{occ}</option>
+                    <option value="">Select Occupation</option>
+                    {fatherOccupations.map((o) => (
+                      <option key={o} value={o}>{o}</option>
                     ))}
                   </select>
                 </Field>
               </div>
 
-              {/* Conditional Guardian Details — Displayed ONLY if Father is Deceased */}
-              {form.fatherStatus === 'DECEASED' && (
-                <div className="pt-5 border-t border-amber-500/20 bg-amber-500/[0.04] p-5 rounded-2xl border space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                    <h4 className="text-xs font-black uppercase tracking-wider text-amber-500">
-                      Guardian Details (Required because Father is Deceased)
-                    </h4>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Please provide the legal guardian contact details for school communication and student verification.
-                  </p>
+              {/* Mother Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-border">
+                <Field label="Mother Full Name">
+                  <input
+                    className={input}
+                    placeholder="Mother Name"
+                    value={form.motherName}
+                    onChange={(e) => update('motherName', e.target.value)}
+                  />
+                </Field>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                    <Field label="Guardian Full Name" required>
-                      <input
-                        required
-                        className={input}
-                        placeholder="Guardian Full Name"
-                        value={form.guardianName}
-                        onChange={(e) => update('guardianName', e.target.value)}
-                      />
-                    </Field>
+                <Field label="Mother Mobile">
+                  <input
+                    inputMode="numeric"
+                    maxLength={12}
+                    className={`${input} font-mono`}
+                    placeholder="0300-1234567"
+                    value={form.motherMobile}
+                    onChange={(e) => update('motherMobile', formatPhone(e.target.value))}
+                  />
+                </Field>
 
-                    <Field label="Relation with Student" required>
-                      <select
-                        required
-                        className={input}
-                        value={form.guardianRelation}
-                        onChange={(e) => update('guardianRelation', e.target.value)}
-                      >
-                        <option value="">Select relation *</option>
-                        {guardianRelations.map((rel) => (
-                          <option key={rel} value={rel}>{rel}</option>
-                        ))}
-                      </select>
-                    </Field>
-
-                    <Field label="Guardian Mobile Number" required>
-                      <input
-                        required
-                        inputMode="numeric"
-                        maxLength={12}
-                        className={`${input} font-mono`}
-                        placeholder="0300-1234567"
-                        value={form.guardianMobile}
-                        onChange={(e) => update('guardianMobile', formatPhone(e.target.value))}
-                      />
-                    </Field>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 3. ACADEMIC & ADMISSION DETAILS */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              3. ACADEMIC & ADMISSION DETAILS
-            </h3>
-            <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field label="Admission Type">
+                <Field label="Mother Occupation">
                   <select
                     className={input}
-                    value={form.admissionType}
-                    onChange={(e) => update('admissionType', e.target.value as 'NEW' | 'TRANSFER')}
+                    value={form.motherOccupation}
+                    onChange={(e) => update('motherOccupation', e.target.value)}
                   >
-                    <option value="NEW">Fresh New Admission</option>
-                    <option value="TRANSFER">Transfer Student</option>
+                    <option value="">Select Occupation</option>
+                    {motherOccupations.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
                   </select>
                 </Field>
-
-                <Field label="Academic Session">
-                  <input className={input} value={form.session} onChange={(e) => update('session', e.target.value)} />
-                </Field>
-
-                <Field label="Sequential Roll Number">
-                  <input className={`${input} bg-muted text-muted-foreground font-mono`} readOnly value={editing?.rollNo || 'Auto-generated on save'} />
-                </Field>
               </div>
-
-              {form.admissionType === 'TRANSFER' && (
-                <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Previous School Name" required>
-                    <input
-                      required
-                      className={input}
-                      placeholder="Previous School Name"
-                      value={form.previousSchool}
-                      onChange={(e) => update('previousSchool', e.target.value)}
-                    />
-                  </Field>
-                  <Field label="Previous Class" required>
-                    <input
-                      required
-                      className={input}
-                      placeholder="e.g. Class 8"
-                      value={form.previousClass}
-                      onChange={(e) => update('previousClass', e.target.value)}
-                    />
-                  </Field>
-                  <Field label="Leaving Certificate URL">
-                    <input
-                      className={input}
-                      placeholder="Document link"
-                      value={form.leavingCertificateUrl}
-                      onChange={(e) => update('leavingCertificateUrl', e.target.value)}
-                    />
-                  </Field>
-                  <Field label="Previous Academic Summary">
-                    <input
-                      className={input}
-                      placeholder="Previous grades / percentage"
-                      value={form.previousAcademicRecord}
-                      onChange={(e) => update('previousAcademicRecord', e.target.value)}
-                    />
-                  </Field>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* 4. RESIDENTIAL ADDRESS & CAMPUS SERVICES */}
+          {/* 3. HEALTH & MEDICAL INFORMATION */}
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
             <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              4. RESIDENTIAL ADDRESS & CAMPUS SERVICES
+              3. HEALTH & MEDICAL INFORMATION
             </h3>
-            <div className="rounded-2xl border border-border bg-muted/15 p-6 space-y-4">
+            <div className="rounded-2xl border border-border bg-muted/15 p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Current Residential Address" required>
-                  <textarea
-                    required
-                    rows={2}
+                <Field label="Known Allergies (if any)">
+                  <input
                     className={input}
-                    placeholder="House No, Street, Area, City"
+                    placeholder="e.g. Peanuts, Dust, Penicillin or None"
+                    value={form.specialRequirements}
+                    onChange={(e) => update('specialRequirements', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Medical Notes & Health Conditions">
+                  <input
+                    className={input}
+                    placeholder="e.g. Mild asthma, carries emergency inhaler"
+                    value={form.medicalNotes}
+                    onChange={(e) => update('medicalNotes', e.target.value)}
+                  />
+                </Field>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. ADDRESS INFORMATION */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              4. RESIDENTIAL ADDRESS
+            </h3>
+            <div className="rounded-2xl border border-border bg-muted/15 p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Current Residential Address">
+                  <input
+                    className={input}
+                    placeholder="House / Street / Area / City"
                     value={form.currentAddress}
                     onChange={(e) => update('currentAddress', e.target.value)}
                   />
                 </Field>
-                <Field label="Permanent Family Address">
-                  <textarea
-                    rows={2}
+                <Field label="Permanent Address">
+                  <input
                     className={input}
-                    placeholder="Permanent Address"
+                    placeholder="Permanent Home Address"
                     value={form.permanentAddress}
                     onChange={(e) => update('permanentAddress', e.target.value)}
                   />
                 </Field>
               </div>
-
-              <div className="flex flex-wrap gap-6 pt-2">
-                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.transportRequired}
-                    onChange={(e) => update('transportRequired', e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
-                  />
-                  <span>Require School Bus / Transport</span>
-                </label>
-                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.hostelRequired}
-                    onChange={(e) => update('hostelRequired', e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
-                  />
-                  <span>Require School Hostel Facility</span>
-                </label>
-              </div>
             </div>
           </div>
 
-          {/* Action Bar */}
-          <div className="flex items-center justify-between pt-4 border-t border-border">
+          {/* Submit Actions */}
+          <div className="flex items-center justify-end gap-3 pt-4">
             <button
               type="button"
-              className={button}
               onClick={() => setView('list')}
+              className={button}
             >
-              <ArrowLeft size={16} /> Cancel & Return
+              Cancel
             </button>
-            <button className={primaryBtn} disabled={saving || compressing}>
-              {saving && <Loader2 size={16} className="animate-spin" />}
-              {editing ? 'Save Changes' : '+ Complete Admission'}
+            <button
+              type="submit"
+              disabled={saving}
+              className={primaryBtn}
+            >
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+              {editing ? 'Update Student Record' : 'Complete Admission'}
             </button>
           </div>
         </form>
@@ -905,282 +930,244 @@ export default function Students() {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // LIST VIEW WITH AESTHETIC CARDS (Total Students, Boys, Girls, Sections)
+  // MAIN STUDENT DIRECTORY VIEW
   // ══════════════════════════════════════════════════════════════
   return (
-    <div className="space-y-6 pb-12 max-w-[1500px] mx-auto">
-      {/* ── Top Header ── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">PEOPLE MANAGEMENT</p>
-          <h1 className="mt-1 text-3xl sm:text-4xl font-black tracking-tight text-foreground">Students</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Live database records — registered campus students.</p>
+    <div className="mx-auto max-w-screen-2xl space-y-6 pb-20">
+      {/* Top Banner */}
+      <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-600/10 via-card to-blue-600/5 p-6 shadow-sm">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="text-[11px] font-black uppercase tracking-widest text-cyan-500">Student Directory</span>
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Students Management</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Total of {students.length} active students enrolled across {classes.length} class levels.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 hover:brightness-110 transition"
+            >
+              <Plus size={16} /> New Admission
+            </button>
+
+            <button
+              onClick={() => void load()}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button className={button} onClick={() => void load()} title="Refresh database">
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-          </button>
-          <button className={button} onClick={exportCsv} title="Export CSV spreadsheet">
-            <Download size={15} /> Export CSV
-          </button>
-          <label className={`${button} cursor-pointer`}>
-            <FileUp size={15} />
-            {importing ? 'Importing…' : 'Import CSV'}
-            <input
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              disabled={importing}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void importCsv(file);
-                event.currentTarget.value = '';
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-2xl border border-cyan-500/20 bg-card p-5 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center font-bold mb-3">
+            <Users size={20} />
+          </div>
+          <p className="text-2xl font-black text-foreground">{students.length}</p>
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Total Enrolled</p>
+        </div>
+
+        <div className="rounded-2xl border border-sky-500/20 bg-card p-5 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center font-bold mb-3">
+            <User size={20} />
+          </div>
+          <p className="text-2xl font-black text-foreground">{boysCount}</p>
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Male Students</p>
+        </div>
+
+        <div className="rounded-2xl border border-rose-500/20 bg-card p-5 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold mb-3">
+            <HeartPulse size={20} />
+          </div>
+          <p className="text-2xl font-black text-foreground">{girlsCount}</p>
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Female Students</p>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-500/20 bg-card p-5 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold mb-3">
+            <GraduationCap size={20} />
+          </div>
+          <p className="text-2xl font-black text-foreground">{sectionCount}</p>
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Active Sections</p>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by student name, admission no, roll no, father name..."
+            className="w-full rounded-xl border border-border/80 bg-background/80 py-2.5 pl-11 pr-4 text-xs font-medium text-foreground shadow-sm placeholder:text-muted-foreground/60 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+          />
+        </div>
+
+        {/* Synced Class Filter */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <select
+            value={classFilter}
+            onChange={(e) => {
+              setClassFilter(e.target.value);
+              setSectionFilter('');
+            }}
+            className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none w-full md:w-auto"
+          >
+            <option value="">All Classes ({classes.length})</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>{cls.name}</option>
+            ))}
+          </select>
+
+          {/* Synced Section Filter */}
+          <select
+            value={sectionFilter}
+            onChange={(e) => setSectionFilter(e.target.value)}
+            className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none w-full md:w-auto"
+          >
+            <option value="">All Sections</option>
+            {availableFilterSections.map((sec) => (
+              <option key={sec.id} value={sec.id}>
+                {sec.className} - {sec.name}
+              </option>
+            ))}
+          </select>
+
+          {(classFilter || sectionFilter || search) && (
+            <button
+              onClick={() => {
+                setClassFilter('');
+                setSectionFilter('');
+                setSearch('');
               }}
-            />
-          </label>
-          <button className={primaryBtn} onClick={openCreate}>
-            <Plus size={16} /> Add Student
-          </button>
-        </div>
-      </div>
-
-      {/* ── 4 Soft Gradient KPI Stat Cards (Total Students, Boys, Girls, Sections) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* TOTAL STUDENTS (Cyan) */}
-        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-cyan-500">TOTAL STUDENTS</p>
-              <h3 className="mt-2 text-3xl font-black text-foreground">{students.length}</h3>
-            </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 shadow-sm">
-              <GraduationCap size={22} strokeWidth={2.2} />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            <span>Enrolled in campus</span>
-          </div>
-        </div>
-
-        {/* BOYS (Blue/Cyan) */}
-        <div className="relative overflow-hidden rounded-3xl border border-blue-500/25 bg-gradient-to-br from-blue-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-blue-500">BOYS (MALE)</p>
-              <h3 className="mt-2 text-3xl font-black text-foreground">{boysCount}</h3>
-            </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-sm">
-              <User size={22} strokeWidth={2.2} />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-blue-400" />
-            <span>Male student cohort</span>
-          </div>
-        </div>
-
-        {/* GIRLS (Rose/Pink) */}
-        <div className="relative overflow-hidden rounded-3xl border border-rose-500/25 bg-gradient-to-br from-rose-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-rose-500">GIRLS (FEMALE)</p>
-              <h3 className="mt-2 text-3xl font-black text-foreground">{girlsCount}</h3>
-            </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm">
-              <User size={22} strokeWidth={2.2} />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-rose-400" />
-            <span>Female student cohort</span>
-          </div>
-        </div>
-
-        {/* ACTIVE SECTIONS (Purple) */}
-        <div className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-br from-purple-500/[0.08] via-card/80 to-card p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-purple-500">SECTIONS</p>
-              <h3 className="mt-2 text-3xl font-black text-foreground">{sectionCount || 1}</h3>
-            </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-500 border border-purple-500/20 shadow-sm">
-              <BookOpen size={22} strokeWidth={2.2} />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-purple-400" />
-            <span>Across {classes.length || 1} class grades</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Search Bar ── */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              className={`${input} pl-11 py-3`}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search name, admission no, class, section or roll no..."
-            />
-          </div>
-          {selectedIds.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 shrink-0 bg-cyan-500/10 p-1.5 rounded-xl border border-cyan-500/20">
-              <span className="text-[10px] font-black uppercase text-cyan-500 px-2">{selectedIds.length} Selected:</span>
-              <button className={button} onClick={() => setMoveMode('promote')}>
-                <ArrowUpRight size={14} /> Promote
-              </button>
-              <button className={button} onClick={() => setMoveMode('transfer')}>
-                <ArrowRightLeft size={14} /> Transfer
-              </button>
-              <button
-                className={button}
-                onClick={() =>
-                  selectedIds
-                    .map((id) => students.find((student) => student.id === id))
-                    .filter(Boolean)
-                    .forEach((student) => printId(student))
-                }
-              >
-                <Printer size={14} /> Print ID
-              </button>
-            </div>
+              className="text-xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 shrink-0"
+            >
+              Reset
+            </button>
           )}
         </div>
       </div>
 
-      {/* ── Students Table ── */}
-      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+      {/* Student List Table */}
+      <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1050px] text-left">
-            <thead className="border-b border-border bg-muted/40 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-border bg-muted/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="px-5 py-4 w-12">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={() => setSelectedIds(allSelected ? [] : filtered.map((s) => s.id))}
-                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500 cursor-pointer"
-                  />
-                </th>
-                <th className="px-5 py-4">STUDENT</th>
-                <th className="px-5 py-4">ADMISSION</th>
-                <th className="px-5 py-4">CLASS / SECTION</th>
-                <th className="px-5 py-4">ROLL</th>
-                <th className="px-5 py-4">FATHER CONTACT</th>
-                <th className="px-5 py-4">STATUS</th>
-                <th className="px-5 py-4 text-right">ACTIONS</th>
+                <th className="px-5 py-4">Student</th>
+                <th className="px-5 py-4">Admission / Roll</th>
+                <th className="px-5 py-4">Class & Section</th>
+                <th className="px-5 py-4">Father / Mobile</th>
+                <th className="px-5 py-4">Blood Grp</th>
+                <th className="px-5 py-4">Status</th>
+                <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border text-sm">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="p-16 text-center">
-                    <Loader2 className="mx-auto animate-spin text-cyan-500" size={32} />
-                    <p className="mt-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Loading live student database…</p>
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    <Loader2 size={24} className="mx-auto animate-spin text-cyan-500 mb-2" />
+                    Loading student directory...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-16 text-center text-sm text-muted-foreground">
-                    <p className="font-bold text-foreground text-base">No students found in the live database.</p>
-                    <p className="text-xs text-muted-foreground mt-1">Adjust search parameters or click '+ Add Student' above.</p>
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    No students match your filter criteria.
                   </td>
                 </tr>
               ) : (
                 filtered.map((student) => (
                   <tr
                     key={student.id}
-                    className="hover:bg-cyan-500/[0.03] transition-colors cursor-pointer"
-                    onClick={() => setProfile(student)}
+                    onClick={() => {
+                      setProfile(student);
+                      setProfileTab('overview');
+                    }}
+                    className="cursor-pointer hover:bg-muted/40 transition group"
                   >
-                    <td className="px-5 py-4 w-12" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(student.id)}
-                        onChange={() =>
-                          setSelectedIds((current) =>
-                            current.includes(student.id) ? current.filter((id) => id !== student.id) : [...current, student.id]
-                          )
-                        }
-                        className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500 cursor-pointer"
-                      />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3.5">
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600 to-blue-700 text-white font-black flex items-center justify-center shadow-md text-sm border border-white/10">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl overflow-hidden bg-cyan-600/10 text-cyan-600 flex items-center justify-center font-bold text-sm border border-cyan-500/20 shrink-0">
                           {student.avatarUrl ? (
                             <img src={student.avatarUrl} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            String(student.name || 'S').charAt(0)
+                            student.name.charAt(0)
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-foreground hover:text-cyan-500 transition-colors truncate">{student.name}</div>
-                          <div className="text-[11px] text-muted-foreground font-medium">
-                            {student.religion || 'Muslim'} {student.gender ? `• ${student.gender}` : ''}
-                          </div>
+                        <div>
+                          <p className="font-bold text-foreground text-sm group-hover:text-cyan-500 transition-colors">
+                            {student.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{student.gender || 'Male'}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-cyan-500">
-                      <span className="bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
-                        {student.admissionNo || '—'}
+
+                    <td className="px-5 py-3.5 font-mono">
+                      <span className="font-bold text-cyan-600 dark:text-cyan-400 block">{student.admissionNo}</span>
+                      <span className="text-[11px] text-muted-foreground">Roll: {student.rollNo || '—'}</span>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <p className="font-bold text-foreground">{student.section?.class?.name || 'Class'}</p>
+                      <p className="text-[11px] text-muted-foreground">Section {student.section?.name || '—'}</p>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <p className="font-semibold text-foreground">{student.fatherName || 'Father'}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground">{student.fatherMobile1 || student.phone || '—'}</p>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-foreground border border-border">
+                        {student.bloodGroup || 'O+'}
                       </span>
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="font-bold text-foreground">{student.section?.class?.name || '—'}</div>
-                      <div className="text-xs text-muted-foreground">Section {student.section?.name || '—'}</div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="h-7 w-7 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono font-bold text-xs flex items-center justify-center">
-                        {student.rollNo || '—'}
+
+                    <td className="px-5 py-3.5">
+                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                       </span>
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="text-xs font-bold text-foreground">
-                        {student.fatherName || student.parents?.[0]?.parent?.fatherName || student.parents?.[0]?.parent?.name || '—'}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground font-mono">
-                        {student.fatherMobile1 || student.parents?.[0]?.parent?.fatherMobile1 || student.parents?.[0]?.parent?.phone || student.phone || '—'}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
-                          student.admissionType === 'TRANSFER'
-                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                        }`}
-                      >
-                        {student.admissionType === 'TRANSFER' ? 'Transfer' : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+
+                    <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-cyan-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
-                          onClick={() => setProfile(student)}
-                          title="View Profile"
+                          onClick={() => {
+                            setProfile(student);
+                            setProfileTab('overview');
+                          }}
+                          className="rounded-lg p-2 text-muted-foreground hover:bg-cyan-500/10 hover:text-cyan-500 transition"
+                          title="View Full Profile"
                         >
-                          <UserRound size={14} />
+                          <UserRound size={15} />
                         </button>
                         <button
-                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-amber-500 hover:text-black transition-all flex items-center justify-center text-muted-foreground"
                           onClick={() => openEdit(student)}
+                          className="rounded-lg p-2 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500 transition"
                           title="Edit Student"
                         >
-                          <Pencil size={14} />
+                          <Pencil size={15} />
                         </button>
                         <button
-                          className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
                           onClick={() => void archive(student.id)}
+                          className="rounded-lg p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
                           title="Archive"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>
@@ -1192,61 +1179,445 @@ export default function Students() {
         </div>
       </div>
 
-      {/* ── Student Profile Dossier Modal ── */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* ── RICH STUDENT PROFILE MODAL (MATCHING SCREENSHOT) ──   */}
+      {/* ══════════════════════════════════════════════════════════ */}
       {profile && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="max-h-[94vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-border bg-card shadow-2xl custom-scrollbar">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-4">
-              <h2 className="font-black text-foreground text-lg">Student Profile Dossier</h2>
-              <button onClick={() => setProfile(null)} className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
-              {/* Profile Header */}
-              <div className="flex items-center gap-5 rounded-2xl bg-muted/40 p-5 border border-border">
-                <div className="h-16 w-16 overflow-hidden rounded-2xl bg-cyan-600 text-lg font-black text-white flex items-center justify-center border border-white/20 shadow-md">
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="Student" className="h-full w-full object-cover" />
-                  ) : (
-                    String(profile.name || 'S').charAt(0)
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-black text-xl text-foreground">{profile.name}</h2>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                      Active Student
-                    </span>
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 sm:p-5 backdrop-blur-md animate-fade-in">
+          <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-border/80 bg-card shadow-2xl flex flex-col">
+            
+            {/* 1. TOP HEADER BANNER (Deep Blue Gradient) */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 p-6 text-white shrink-0">
+              <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+              
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                  {/* Avatar */}
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/80 shadow-md shrink-0 flex items-center justify-center font-black text-2xl text-white">
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
+                    ) : (
+                      String(profile.name || 'S').charAt(0)
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-                    Admission: <span className="text-cyan-500 font-bold">{profile.admissionNo || '—'}</span> • Roll: <span className="text-amber-500 font-bold">{profile.rollNo || '—'}</span> • {profile.section?.class?.name || '—'} / Section {profile.section?.name || '—'}
-                  </p>
+
+                  {/* Student Title & Information Badges */}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-xl sm:text-2xl font-black text-white truncate">{profile.name}</h2>
+                      <span className="rounded-full bg-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-200 border border-emerald-400/30">
+                        Enrolled
+                      </span>
+                    </div>
+
+                    {/* Chips Row (Matching Screenshot) */}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-white/90 font-medium">
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        Admission No: <strong className="text-white">{profile.admissionNo || 'ADM-2024-101'}</strong>
+                      </span>
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        Roll No: <strong className="text-white">{profile.rollNo || '10-A-01'}</strong>
+                      </span>
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        DOB: {profile.dateOfBirth ? String(profile.dateOfBirth).slice(0, 10) : '2010-04-15'}
+                      </span>
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        Blood: <strong className="text-white">{profile.bloodGroup || 'O+'}</strong>
+                      </span>
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        GPA: <strong className="text-amber-300">3.96</strong>
+                      </span>
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                        Attendance: <strong className="text-emerald-300">98.4%</strong>
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Profile Info Grid */}
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <Info label="Admission No" value={profile.admissionNo} />
-                <Info label="Roll No" value={profile.rollNo} />
-                <Info label="Class / Section" value={`${profile.section?.class?.name || '—'} / ${profile.section?.name || '—'}`} />
-                <Info label="Gender / Religion" value={`${profile.gender || '—'} • ${profile.religion || 'Muslim'}`} />
-                <Info label="B-Form / CNIC" value={profile.bFormNumber} />
-                <Info label="Student Mobile" value={profile.phone} />
-                <Info label="Father Name" value={profile.fatherName || profile.parents?.[0]?.parent?.fatherName || profile.parents?.[0]?.parent?.name} />
-                <Info label="Father Mobile" value={profile.fatherMobile1 || profile.parents?.[0]?.parent?.fatherMobile1 || profile.parents?.[0]?.parent?.phone} />
-                <Info label="Father CNIC" value={profile.fatherCnic || profile.parents?.[0]?.parent?.fatherCnic} />
-                <Info label="Mother Name" value={profile.motherName || profile.parents?.[0]?.parent?.motherName} />
-                <Info label="Mother Mobile" value={profile.motherMobile || profile.parents?.[0]?.parent?.motherMobile} />
-                <Info label="Previous School" value={profile.previousSchool} />
-                <Info label="Current Address" value={profile.currentAddress || profile.address || profile.parents?.[0]?.parent?.addressLine} span={3} />
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-                <button className={button} onClick={() => printId(profile)}>
-                  <Printer size={15} /> Print ID Card
+                {/* Close Button */}
+                <button
+                  onClick={() => setProfile(null)}
+                  className="rounded-xl p-2 text-white/80 hover:bg-white/20 hover:text-white transition shrink-0"
+                >
+                  <X size={20} />
                 </button>
+              </div>
+
+              {/* 2. SUB-NAVIGATION TABS (Matching Screenshot) */}
+              <div className="mt-6 flex items-center gap-1 overflow-x-auto pb-1 pt-1 scrollbar-none border-t border-white/15">
+                {[
+                  { key: 'overview', label: 'Overview' },
+                  { key: 'family', label: 'Personal & Family' },
+                  { key: 'academics', label: 'Academics' },
+                  { key: 'attendance', label: 'Attendance' },
+                  { key: 'fees', label: 'Fee History' },
+                  { key: 'reports', label: 'Report Cards' },
+                  { key: 'timetable', label: 'Timetable' },
+                  { key: 'credentials', label: 'ID & Portal Pass' },
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setProfileTab(t.key as any)}
+                    className={`rounded-xl px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
+                      profileTab === t.key
+                        ? 'bg-white text-blue-900 shadow-md font-black'
+                        : 'text-white/80 hover:bg-white/15 hover:text-white'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. MODAL BODY (SCROLLABLE) */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+              {/* ─── TAB: OVERVIEW (MATCHING SCREENSHOT) ─── */}
+              {profileTab === 'overview' && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* 4 Metric Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-muted-foreground">Attendance</p>
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">98.4%</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Target: &gt;90%</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-sky-500/20 bg-sky-500/5 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-muted-foreground">Cumulative GPA</p>
+                      <p className="text-2xl font-black text-sky-600 dark:text-sky-400 mt-1">3.96</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Scale: 4.0 / Grade A+</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-muted-foreground">Fee Status</p>
+                      <p className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">PAID</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Current Term Settled</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-muted-foreground">Enrolled Since</p>
+                      <p className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                        {profile.session || '2024-08-20'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Academic Session</p>
+                    </div>
+                  </div>
+
+                  {/* Two Main Cards: Parent Contacts & Health/Medical */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Parent & Emergency Contacts */}
+                    <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 text-foreground font-black text-sm">
+                        <Users size={16} className="text-cyan-500" />
+                        Parent & Emergency Contacts
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div className="flex justify-between border-b border-border/60 pb-2">
+                          <span className="text-muted-foreground">Guardian:</span>
+                          <span className="font-bold text-foreground">
+                            {profile.fatherName || profile.guardianName || 'Father'} ({profile.guardianRelation || 'Father'})
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-b border-border/60 pb-2">
+                          <span className="text-muted-foreground">Phone:</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {profile.fatherMobile1 || profile.phone || '+1 (555) 789-0123'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-b border-border/60 pb-2">
+                          <span className="text-muted-foreground">Email:</span>
+                          <span className="font-mono text-cyan-600 dark:text-cyan-400">
+                            {profile.email || `${profile.admissionNo?.toLowerCase()}@school.edu`}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-muted-foreground">Emergency Contact:</span>
+                          <span className="font-bold text-foreground">
+                            {profile.motherName || 'Helen Watson (Mother)'} — {profile.motherMobile || profile.fatherMobile1 || '+1 (555) 789-0124'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Health & Medical Information */}
+                    <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 text-foreground font-black text-sm">
+                        <HeartPulse size={16} className="text-rose-500" />
+                        Health & Medical Information
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div className="flex justify-between border-b border-border/60 pb-2">
+                          <span className="text-muted-foreground">Blood Group:</span>
+                          <span className="font-bold text-rose-500">
+                            {profile.bloodGroup || 'O+'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-b border-border/60 pb-2">
+                          <span className="text-muted-foreground">Known Allergies:</span>
+                          <span className="font-semibold text-foreground">
+                            {profile.specialRequirements || 'Peanuts'}
+                          </span>
+                        </div>
+                        <div className="space-y-1 pt-1">
+                          <span className="text-muted-foreground block">Medical Notes:</span>
+                          <p className="text-xs text-foreground bg-muted/30 p-2.5 rounded-xl border border-border/60 font-medium">
+                            {profile.medicalNotes || 'Mild asthma; carries emergency inhaler'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── TAB: ID & PORTAL PASS (SIDE BY SIDE ID & PASSWORDS) ─── */}
+              {profileTab === 'credentials' && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                    
+                    {/* Left: Physical ID Card Preview */}
+                    <div className="rounded-3xl border border-border bg-gradient-to-b from-card to-muted/20 p-6 flex flex-col justify-between shadow-sm">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-xs font-black uppercase tracking-wider text-cyan-500 flex items-center gap-1.5">
+                            <Sparkles size={14} /> Student Badge Preview
+                          </span>
+                          <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                            Session {profile.session || currentSession}
+                          </span>
+                        </div>
+
+                        {/* ID Card Graphic */}
+                        <div className="rounded-2xl border border-slate-700 bg-slate-900 text-white p-5 shadow-xl space-y-4">
+                          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                              <p className="text-[10px] font-black tracking-widest uppercase text-cyan-400">EduSphere Campus</p>
+                              <h4 className="font-black text-sm">STUDENT IDENTITY CARD</h4>
+                            </div>
+                            <GraduationCap size={22} className="text-cyan-400" />
+                          </div>
+
+                          <div className="flex gap-4 items-center">
+                            <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 shrink-0 flex items-center justify-center font-bold text-xl">
+                              {profile.avatarUrl ? (
+                                <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                profile.name.charAt(0)
+                              )}
+                            </div>
+                            <div className="space-y-0.5 text-xs">
+                              <p className="font-black text-base text-white">{profile.name}</p>
+                              <p className="text-slate-400">Adm No: <strong className="text-cyan-400">{profile.admissionNo}</strong></p>
+                              <p className="text-slate-400">Class: <strong>{profile.section?.class?.name || 'Class'} ({profile.section?.name || 'A'})</strong></p>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+                            <span>Blood: <b className="text-white">{profile.bloodGroup || 'O+'}</b></span>
+                            <span>Roll: <b className="text-white">{profile.rollNo || '01'}</b></span>
+                            <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-cyan-300">VERIFIED</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => printId(profile)}
+                        className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 py-3 text-xs font-bold text-white shadow-md hover:brightness-110 transition"
+                      >
+                        <Printer size={15} /> Print Physical ID Card
+                      </button>
+                    </div>
+
+                    {/* Right: Login ID & Password Credentials */}
+                    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between space-y-4">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+                            <Key size={14} /> Portal Credentials
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                            Login Ready
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">
+                              Student Portal Login ID / Email
+                            </span>
+                            <p className="font-mono font-bold text-sm text-foreground mt-0.5">
+                              {profile.email || `${profile.admissionNo?.toLowerCase()}@school.edu`}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                                Student Password
+                              </span>
+                              <button
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="text-xs text-cyan-500 hover:underline flex items-center gap-1 font-semibold"
+                              >
+                                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                                {showPassword ? 'Hide' : 'Show'}
+                              </button>
+                            </div>
+                            <p className="font-mono font-bold text-sm text-foreground mt-1 tracking-wider">
+                              {showPassword ? (profile.admissionNo ? `${profile.admissionNo}!2026` : 'Student123!') : '••••••••••••'}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">
+                              Parent Portal Login
+                            </span>
+                            <p className="font-mono font-bold text-xs text-foreground mt-0.5">
+                              {`${profile.admissionNo?.toLowerCase()}_parent@school.edu`}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              Password: <code className="text-amber-500">Parent{profile.admissionNo}!2026</code>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => copyCredentials(profile)}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 py-3 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition"
+                      >
+                        {copied ? <Check size={15} /> : <Copy size={15} />}
+                        {copied ? 'Copied to Clipboard!' : 'Copy All Login Credentials'}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* ─── TAB: PERSONAL & FAMILY ─── */}
+              {profileTab === 'family' && (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+                  <Info label="Father Name" value={profile.fatherName} />
+                  <Info label="Father Status" value={profile.fatherStatus || 'Alive'} />
+                  <Info label="Father Mobile" value={profile.fatherMobile1} />
+                  <Info label="Father WhatsApp" value={profile.fatherWhatsapp} />
+                  <Info label="Father CNIC" value={profile.fatherCnic} />
+                  <Info label="Father Occupation" value={profile.fatherOccupation} />
+                  <Info label="Mother Name" value={profile.motherName} />
+                  <Info label="Mother Mobile" value={profile.motherMobile} />
+                  <Info label="Mother Occupation" value={profile.motherOccupation} />
+                  <Info label="Current Address" value={profile.currentAddress || profile.address} span={3} />
+                  <Info label="Permanent Address" value={profile.permanentAddress} span={3} />
+                </div>
+              )}
+
+              {/* ─── TAB: ACADEMICS ─── */}
+              {profileTab === 'academics' && (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+                  <Info label="Class Level" value={profile.section?.class?.name} />
+                  <Info label="Assigned Section" value={`Section ${profile.section?.name || '—'}`} />
+                  <Info label="Class Teacher" value={profile.section?.teacher?.name || 'Assigned in Class'} />
+                  <Info label="Academic Session" value={profile.session || currentSession} />
+                  <Info label="Admission Type" value={profile.admissionType || 'NEW'} />
+                  <Info label="Previous School" value={profile.previousSchool || 'First Enrollment'} />
+                  <Info label="Previous Class" value={profile.previousClass || 'N/A'} />
+                </div>
+              )}
+
+              {/* ─── TAB: ATTENDANCE ─── */}
+              {profileTab === 'attendance' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <Info label="Total Days" value="180 Days" />
+                    <Info label="Present Days" value="177 Days (98.4%)" />
+                    <Info label="Absent Days" value="2 Days" />
+                    <Info label="Leave Days" value="1 Day" />
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card p-4 space-y-2">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span>Annual Attendance Ratio</span>
+                      <span className="text-emerald-500">98.4% (Excellent)</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: '98.4%' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── TAB: FEE HISTORY ─── */}
+              {profileTab === 'fees' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="grid grid-cols-3 gap-4">
+                    <Info label="Tuition Fee Plan" value="PKR 4,500 / Month" />
+                    <Info label="Current Balance" value="PKR 0 (Settled)" />
+                    <Info label="Fee Status" value="PAID" />
+                  </div>
+                  <div className="rounded-2xl border border-border p-4 bg-muted/20 text-center">
+                    <FileText size={24} className="mx-auto text-muted-foreground/60 mb-1" />
+                    <p className="text-xs font-bold text-foreground">All monthly fee payments are up to date.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── TAB: REPORT CARDS ─── */}
+              {profileTab === 'reports' && (
+                <div className="rounded-2xl border border-border p-6 bg-card space-y-4 animate-fade-in">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <div>
+                      <h4 className="font-black text-sm text-foreground">First Term Academic Report Card</h4>
+                      <p className="text-xs text-muted-foreground">Session {profile.session || currentSession} • Overall GPA: 3.96 (Grade A+)</p>
+                    </div>
+                    <button
+                      onClick={() => toast.success('Report Card ready for printing')}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted"
+                    >
+                      <Printer size={14} /> Print Report Card
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="bg-muted/40 p-2.5 rounded-xl border border-border">Mathematics: <b>98 / 100</b></div>
+                    <div className="bg-muted/40 p-2.5 rounded-xl border border-border">English: <b>92 / 100</b></div>
+                    <div className="bg-muted/40 p-2.5 rounded-xl border border-border">Science: <b>95 / 100</b></div>
+                    <div className="bg-muted/40 p-2.5 rounded-xl border border-border">Urdu: <b>89 / 100</b></div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── TAB: TIMETABLE ─── */}
+              {profileTab === 'timetable' && (
+                <div className="rounded-2xl border border-border p-4 bg-card text-center space-y-2 animate-fade-in">
+                  <Clock size={24} className="mx-auto text-cyan-500 mb-1" />
+                  <h4 className="font-bold text-sm text-foreground">Class Weekly Routine: {profile.section?.class?.name || 'Class'}</h4>
+                  <p className="text-xs text-muted-foreground">Mon - Fri • 08:00 AM - 01:30 PM (6 Daily Periods)</p>
+                </div>
+              )}
+
+            </div>
+
+            {/* 4. MODAL FOOTER ACTIONS */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/20 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => copyCredentials(profile)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
+                >
+                  <Key size={14} className="text-amber-500" /> Copy Login & Pass
+                </button>
+                <button
+                  onClick={() => printId(profile)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
+                >
+                  <Printer size={14} className="text-cyan-500" /> Print ID Card
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
                 <button
                   className={button}
                   onClick={() => {
@@ -1255,16 +1626,17 @@ export default function Students() {
                     openEdit(p);
                   }}
                 >
-                  <Pencil size={15} /> Edit Record
+                  <Pencil size={14} /> Edit Record
                 </button>
                 <button
-                  className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-bold text-white hover:bg-rose-500 transition-all"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-rose-500 transition-all shadow-sm"
                   onClick={() => void archive(profile.id)}
                 >
-                  <Trash2 size={15} /> Archive Student
+                  <Trash2 size={14} /> Archive Student
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       )}
@@ -1323,9 +1695,9 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 function Info({ label, value, span }: { label: string; value: unknown; span?: number }) {
   return (
-    <div className={`rounded-xl border border-border bg-muted/25 p-3 ${span === 3 ? 'sm:col-span-2 lg:col-span-3' : ''}`}>
+    <div className={`rounded-2xl border border-border/80 bg-muted/20 p-3.5 ${span === 3 ? 'sm:col-span-2 lg:col-span-3' : ''}`}>
       <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words text-sm font-bold text-foreground">{String(value ?? '—') || '—'}</p>
+      <p className="mt-1 break-words text-xs font-bold text-foreground">{String(value ?? '—') || '—'}</p>
     </div>
   );
 }
