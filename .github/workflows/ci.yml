@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma generate
-      - run: DATABASE_URL=file:./ci.db npm run validate:production-db
+      - run: DATABASE_URL="postgresql://ci:ci@localhost:5432/edusphere" NODE_ENV=production npm run validate:production-db
       - run: npm run lint:check
       - run: npm run build
       - run: npm run test -- --runInBand
