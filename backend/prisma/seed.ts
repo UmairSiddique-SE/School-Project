@@ -6,13 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🚀 Starting Full School ERP Database Seed...');
 
-  // Disable SQLite foreign keys temporarily for clean reset
-  try {
-    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
-  } catch {
-    console.log('Note: PRAGMA foreign_keys command skipped');
-  }
-
   // Clear existing tables
   try {
     await prisma.auditLog.deleteMany({});
@@ -131,12 +124,6 @@ async function main() {
   }
   try {
     await prisma.school.deleteMany({});
-  } catch {
-    // A table may not exist yet in older development databases.
-  }
-
-  try {
-    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
   } catch {
     // A table may not exist yet in older development databases.
   }
