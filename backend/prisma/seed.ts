@@ -132,17 +132,19 @@ async function main() {
     // A table may not exist yet in older development databases.
   }
 
-  const defaultHash = await bcrypt.hash('12345678', 12);
-  const teacherHash = await bcrypt.hash('teacher123', 12);
-  const studentHash = await bcrypt.hash('student123', 12);
-  const parentHash = await bcrypt.hash('parent123', 12);
+  const seedPassword = process.env.SEED_PASSWORD;
+  if (!seedPassword) {
+    throw new Error('SEED_PASSWORD is required when running the demo seed.');
+  }
+
+  const passwordHash = await bcrypt.hash(seedPassword, 12);
 
   // 1. Super Admin User
   const superAdmin = await prisma.user.create({
     data: {
       name: 'Super Administrator',
       email: 'superadmin@gmail.com',
-      passwordHash: defaultHash,
+      passwordHash,
       role: 'SUPER_ADMIN',
       isActive: true,
       emailVerified: true,
@@ -185,7 +187,7 @@ async function main() {
     data: {
       name: 'Prof. Tariq Mahmood',
       email: 'schooladmin@gmail.com',
-      passwordHash: defaultHash,
+      passwordHash,
       role: 'SCHOOL_ADMIN',
       schoolId: school.id,
       isActive: true,
@@ -225,7 +227,7 @@ async function main() {
     data: {
       name: teacherSarah.name,
       email: teacherSarah.email,
-      passwordHash: teacherHash,
+      passwordHash,
       role: 'TEACHER',
       schoolId: school.id,
       isActive: true,
@@ -395,7 +397,7 @@ async function main() {
     data: {
       name: parent1.name,
       email: parent1.email!,
-      passwordHash: parentHash,
+      passwordHash,
       role: 'PARENT',
       schoolId: school.id,
       isActive: true,
@@ -430,7 +432,7 @@ async function main() {
     data: {
       name: student1.name,
       email: student1.email!,
-      passwordHash: studentHash,
+      passwordHash,
       role: 'STUDENT',
       schoolId: school.id,
       isActive: true,
@@ -707,13 +709,6 @@ async function main() {
   });
 
   console.log('\n✨ Database seeding completed successfully!');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('👑 Super Admin : superadmin@gmail.com | 12345678');
-  console.log('🏫 School Admin: schooladmin@gmail.com  | 12345678');
-  console.log('👩‍🏫 Teacher     : teacher@gmail.com      | teacher123');
-  console.log('🎓 Student     : student@gmail.com      | student123');
-  console.log('👨‍👩‍👦 Parent      : parent@gmail.com        | parent123');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 
 main()
