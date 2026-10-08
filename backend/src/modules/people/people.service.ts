@@ -51,24 +51,49 @@ export class PeopleService {
   }
 
   async createTeacher(schoolId: string, data: any) {
-    if (!data.employeeNo || !data.name || !data.email) throw new ConflictException('Employee No, Name, and Email are required');
-    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    if (existingTeacher || existingStaff) throw new ConflictException('Teacher with this Employee No or Email already exists');
-    
-    let plainPassword = data.password;
-    if (!plainPassword || plainPassword.length < 12) {
-      plainPassword = `Tch!${randomBytes(6).toString('base64url').slice(0, 8)}2026`;
+    let employeeNo = data.employeeNo;
+    if (!employeeNo || !String(employeeNo).trim()) {
+      const currentYear = new Date().getFullYear();
+      const lastTeacher = await this.prisma.teacher.findFirst({
+        where: { schoolId, employeeNo: { startsWith: `EMP-${currentYear}` } },
+        orderBy: { employeeNo: 'desc' },
+      });
+      let nextNum = 1;
+      if (lastTeacher?.employeeNo) {
+        const lastNum = parseInt(lastTeacher.employeeNo.split('-').pop() || '', 10);
+        if (!isNaN(lastNum)) nextNum = lastNum + 1;
+      }
+      employeeNo = `EMP-${currentYear}-${String(nextNum).padStart(3, '0')}`;
     }
-    const passwordHash = await bcrypt.hash(plainPassword, 12);
+
+    if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
+
+    let email = data.email ? String(data.email).trim().toLowerCase() : '';
+    if (!email) {
+      const cleanName = String(data.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+      email = `${cleanName || 'teacher'}.${employeeNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    }
+
+    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
+    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    if (existingTeacher || existingStaff || existingUser) {
+      throw new ConflictException(`A teacher or user account with Employee No "${employeeNo}" or Email "${email}" already exists. Please choose a different Login ID.`);
+    }
+    
+    let plainPassword = data.password && String(data.password).trim().length >= 6
+      ? String(data.password).trim()
+      : this.generate8CharPassword();
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email: data.email, passwordHash, role: 'TEACHER', schoolId } });
+        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId } });
         const teacher = await tx.teacher.create({
           data: {
-            employeeNo: data.employeeNo,
+            employeeNo,
             name: data.name,
-            email: data.email,
+            email,
             phone: data.phone || null,
             gender: data.gender || 'MALE',
             qualification: data.qualification || null,
@@ -82,7 +107,7 @@ export class PeopleService {
         });
         return teacher;
       });
-      return { teacher: result, credentials: { loginId: data.email, password: plainPassword } };
+      return { teacher: result, credentials: { loginId: email, password: plainPassword } };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists.`);
       if (error?.status) throw error;
@@ -94,6 +119,17 @@ export class PeopleService {
   async updateTeacher(id: string, schoolId: string, data: any) {
     const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!teacher) throw new NotFoundException('Teacher not found');
+
+    if (data.password && String(data.password).trim().length >= 6) {
+      const passwordHash = await bcrypt.hash(String(data.password).trim(), 10);
+      if (teacher.email) {
+        await this.prisma.user.updateMany({
+          where: { email: teacher.email, schoolId },
+          data: { passwordHash },
+        });
+      }
+    }
+
     return this.prisma.teacher.update({
       where: { id },
       data: {
@@ -109,6 +145,25 @@ export class PeopleService {
         isActive: data.isActive ?? undefined,
       },
     });
+  }
+
+  async updateTeacherPassword(id: string, schoolId: string, password: string) {
+    if (!password || password.trim().length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const passwordHash = await bcrypt.hash(password.trim(), 10);
+    const email = teacher.email;
+    const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
+    if (user) {
+      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+    } else {
+      await this.prisma.user.create({
+        data: { name: teacher.name, email, passwordHash, role: 'TEACHER', schoolId },
+      });
+    }
+    return { success: true, message: 'Teacher password updated successfully', loginId: email, password: password.trim() };
   }
 
   async deleteTeacher(id: string, schoolId: string) {

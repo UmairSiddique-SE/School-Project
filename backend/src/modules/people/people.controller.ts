@@ -104,6 +104,16 @@ export class PeopleController {
     return this.peopleService.createTeacher(user.schoolId, dto);
   }
 
+  @Post('teachers/:id/change-password')
+  @Roles('SCHOOL_ADMIN')
+  async updateTeacherPassword(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (!id?.trim()) throw new BadRequestException('Teacher ID is required');
+    if (!dto?.password || String(dto.password).trim().length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    return this.peopleService.updateTeacherPassword(id, user.schoolId, String(dto.password).trim());
+  }
+
   @Patch('teachers/:id')
   @Roles('SCHOOL_ADMIN')
   updateTeacher(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
