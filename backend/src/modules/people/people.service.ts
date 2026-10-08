@@ -19,31 +19,15 @@ export class PeopleService {
           },
         },
         classSubjects: {
+          where: { class: { schoolId, deletedAt: null } },
           include: {
             class: true,
             subject: true,
           },
         },
-        timetables: {
-          include: {
-            subject: true,
-            section: { include: { class: true } },
-          },
-          orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
-        },
         payrolls: {
           orderBy: [{ year: 'desc' }, { month: 'desc' }],
-          take: 24,
-        },
-        attendances: {
-          where: {
-            date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-          },
-          orderBy: { date: 'desc' },
-        },
-        leaveRequests: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
+          take: 6,
         },
       },
       orderBy: { name: 'asc' },

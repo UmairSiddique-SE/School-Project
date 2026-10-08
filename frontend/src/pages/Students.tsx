@@ -167,8 +167,8 @@ export default function Students() {
     try {
       const [studentRes, classRes, sectionRes] = await Promise.all([
         apiClient.get('/people/students'),
-        apiClient.get('/academics/classes'),
-        apiClient.get('/academics/sections'),
+        apiClient.get('/classes').catch(() => ({ data: [] })),
+        apiClient.get('/classes/sections').catch(() => ({ data: [] })),
       ]);
       setStudents(Array.isArray(studentRes.data) ? studentRes.data : []);
       setClasses(Array.isArray(classRes.data) ? classRes.data : []);
@@ -734,7 +734,7 @@ export default function Students() {
   // ══════════════════════════════════════════════════════════════
   if (view === 'add') {
     return (
-      <div className="space-y-6 pb-20 max-w-[1280px] mx-auto animate-fade-in">
+      <div className="w-full min-h-screen pb-20 space-y-6 max-w-7xl mx-auto animate-fade-in">
         {/* Header */}
         <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 via-sky-500/5 to-card p-6 shadow-xl backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
