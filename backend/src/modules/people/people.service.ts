@@ -377,9 +377,15 @@ export class PeopleService {
     const existing = await this.prisma.student.findUnique({ where: { admissionNo } });
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
+    const firstName = data.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const regDigits = admissionNo.replace(/\D/g, '');
+    const lastNumSeq = parseInt(admissionNo.split('-').pop() || '', 10);
+    const shortSeq = isNaN(lastNumSeq) ? regDigits.slice(-3) : String(lastNumSeq);
+    const friendlyLoginId = `${firstName}${shortSeq}`; // e.g. "umair1", "ali20", "ammar100"
+
     const generatedPassword = (data.password && String(data.password).trim().length >= 6)
       ? String(data.password).trim()
-      : this.generate8CharPassword();
+      : '12345678';
     const passwordHash = await bcrypt.hash(generatedPassword, 10);
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
@@ -391,7 +397,7 @@ export class PeopleService {
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
           const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
-          const rawParentPass = data.parentPassword && data.parentPassword.length >= 6 ? data.parentPassword : this.generate8CharPassword();
+          const rawParentPass = data.parentPassword && data.parentPassword.length >= 6 ? data.parentPassword : '12345678';
           const parentPasswordHash = await bcrypt.hash(rawParentPass, 10);
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
           if (!parentUser) parentUser = await tx.user.create({ data: { name: parentName, email: parentEmail, passwordHash: parentPasswordHash, role: 'PARENT', schoolId } });
@@ -401,7 +407,15 @@ export class PeopleService {
         }
         return createdStudent;
       });
-      return { student, credentials: { loginId: email, password: generatedPassword } };
+      return {
+        student,
+        credentials: {
+          loginId: friendlyLoginId,
+          admissionNo,
+          fullEmail: email,
+          password: generatedPassword,
+        },
+      };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists. Please check for duplicates.`);
       if (error?.status) throw error;
