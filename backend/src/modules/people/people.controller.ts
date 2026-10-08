@@ -188,9 +188,17 @@ export class PeopleController {
       if (duplicate) throw new BadRequestException('A student with this B-Form / CNIC already exists');
     }
 
-    const { password: _password, ...studentDto } = dto;
-    void _password;
-    return this.peopleService.createStudent(user.schoolId, studentDto);
+    return this.peopleService.createStudent(user.schoolId, dto);
+  }
+
+  @Post('students/:id/change-password')
+  @Roles('SCHOOL_ADMIN')
+  async updateStudentPassword(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (!id?.trim()) throw new BadRequestException('Student ID is required');
+    if (!dto?.password || String(dto.password).trim().length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    return this.peopleService.updateStudentPassword(id, user.schoolId, String(dto.password).trim());
   }
 
   @Patch('students/:id')
@@ -390,9 +398,6 @@ export class PeopleController {
     }
     if (dto.guardianRelation !== undefined && dto.guardianRelation !== null && dto.guardianRelation !== '' && !['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'].includes(String(dto.guardianRelation))) {
       throw new BadRequestException('Invalid guardian relation');
-    }
-    if (creating && (dto.fatherName || dto.motherName || dto.guardianName) && (!dto.parentPassword || String(dto.parentPassword).length < 12)) {
-      throw new BadRequestException('Parent password must contain at least 12 characters');
     }
   }
 
