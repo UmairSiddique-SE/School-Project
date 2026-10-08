@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
+import { QUALIFICATION_CATEGORIES } from './Teachers';
 
 interface StaffMember {
   id: string;
@@ -477,8 +478,23 @@ export default function Staff() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Qualification</label>
-                          <input value={form.qualification} onChange={(e) => setForm((p) => ({ ...p, qualification: e.target.value }))}
-                            placeholder="e.g. B.Com, MBA" className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold" />
+                          <select
+                            value={form.qualification}
+                            onChange={(e) => setForm((p) => ({ ...p, qualification: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:border-primary outline-none transition-all font-bold"
+                          >
+                            <option value="">Select Qualification</option>
+                            {form.qualification && !QUALIFICATION_CATEGORIES.some(cat => cat.options.includes(form.qualification)) && (
+                              <option value={form.qualification}>{form.qualification} (Current)</option>
+                            )}
+                            {QUALIFICATION_CATEGORIES.map((group) => (
+                              <optgroup key={group.category} label={group.category} className="bg-slate-900 text-slate-300 font-bold">
+                                {group.options.map((opt) => (
+                                  <option key={opt} value={opt} className="bg-slate-950 text-white">{opt}</option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </motion.div>

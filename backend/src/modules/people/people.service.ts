@@ -52,26 +52,36 @@ export class PeopleService {
 
     if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
 
-    let email = data.email ? String(data.email).trim().toLowerCase() : '';
-    const isCustomEmail = Boolean(email && email.includes('@') && !email.endsWith('@school.edu'));
-    
+    let rawEmail = data.email ? String(data.email).trim().toLowerCase() : '';
     const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
     const regDigits = String(employeeNo).match(/(\d+)$/)?.[1] || String(employeeNo).replace(/\D/g, '').slice(-3) || '001';
 
-    if (!email || !isCustomEmail) {
+    let email = '';
+    let isCustomEmail = false;
+    let customShortId = '';
+
+    if (rawEmail) {
+      if (rawEmail.includes('@')) {
+        email = rawEmail;
+        isCustomEmail = !rawEmail.endsWith('@school.edu');
+      } else {
+        customShortId = rawEmail.replace(/[^a-z0-9_-]/g, '');
+        email = `${customShortId}@school.edu`;
+      }
+    } else {
       email = `${firstName}${regDigits}@school.edu`;
-      let userExists = await this.prisma.user.findUnique({ where: { email } });
+      let userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
       let counter = 1;
       while (userExists) {
         email = `${firstName}${regDigits}_${counter}@school.edu`;
-        userExists = await this.prisma.user.findUnique({ where: { email } });
+        userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
         counter++;
       }
     }
 
-    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
-    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, deletedAt: null, OR: [{ employeeNo }, { email }] } });
+    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, deletedAt: null, OR: [{ employeeNo }, { email }] } });
+    const existingUser = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (existingTeacher || existingStaff || existingUser) {
       throw new ConflictException(`A teacher or user account with Employee No "${employeeNo}" or Email/Login "${email}" already exists. Please choose a different Login ID.`);
     }
@@ -88,6 +98,9 @@ export class PeopleService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
+        // If there is an old deleted user with this email, delete it permanently first
+        await tx.user.deleteMany({ where: { email, deletedAt: { not: null } } });
+
         await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true } });
         const teacher = await tx.teacher.create({
           data: {
@@ -110,7 +123,7 @@ export class PeopleService {
       return {
         teacher: result,
         credentials: {
-          loginId: isCustomEmail ? email : `${firstName}${regDigits}`,
+          loginId: isCustomEmail ? email : customShortId ? customShortId : `${firstName}${regDigits}`,
           fullEmail: email,
           password: plainPassword,
         },

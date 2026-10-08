@@ -85,6 +85,103 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+export const QUALIFICATION_CATEGORIES = [
+  {
+    category: '1. Matriculation & Intermediate (Secondary)',
+    options: [
+      'Matriculation / SSC (Science)',
+      'Matriculation / SSC (Arts / General)',
+      'O-Levels (Cambridge / UK Equivalent)',
+      'Intermediate / F.Sc (Pre-Medical)',
+      'Intermediate / F.Sc (Pre-Engineering)',
+      'Intermediate / ICS (Computer Science)',
+      'Intermediate / I.Com (Commerce)',
+      'Intermediate / F.A (Arts / Humanities)',
+      'A-Levels (Cambridge / UK Equivalent)',
+    ],
+  },
+  {
+    category: '2. Graduation & Bachelor Degrees (14 / 16 Years)',
+    options: [
+      'B.A (Bachelor of Arts - 14 Years)',
+      'B.Sc (Bachelor of Science - 14 Years)',
+      'B.Com (Bachelor of Commerce - 14 Years)',
+      'Associate Degree Program (ADP - 2 Years)',
+      'BS (4 Years) - Computer Science / IT / SE',
+      'BS (4 Years) - Mathematics / Physics / Chemistry',
+      'BS (4 Years) - Biology / Zoology / Botany',
+      'BS (4 Years) - English Literature & Linguistics',
+      'BS (4 Years) - Urdu & Islamic Studies',
+      'BS (4 Years) - Business Administration (BBA)',
+      'B.Ed (1.5 / 2.5 / 4 Years - Education)',
+    ],
+  },
+  {
+    category: '3. Master & Postgraduate Degrees (16 / 18 Years)',
+    options: [
+      'M.Sc (Master of Science - 16 Years)',
+      'M.A (Master of Arts - 16 Years)',
+      'M.Com / MBA (Commerce & Business)',
+      'MCS / MIT (Computer Science & IT)',
+      'M.Ed (Master of Education)',
+      'MS / M.Phil (18 Years Higher Degree)',
+    ],
+  },
+  {
+    category: '4. Doctorate, Professional & Equivalent',
+    options: [
+      'PhD / Doctorate',
+      'Dars-e-Nizami / Shahadat-ul-Almiya (Equivalent)',
+      'Diploma in Education / DAE / CT / PTC',
+      'Montessori & Early Childhood Diploma',
+      'Other Equivalent Qualification',
+    ],
+  },
+];
+
+export const SPECIALIZATION_CATEGORIES = [
+  {
+    category: 'Primary & General Subjects',
+    options: [
+      'General Subjects (Primary & Middle)',
+      'Montessori & Early Childhood Education (ECE)',
+      'General Science (Junior Wing)',
+      'Social Studies & Geography',
+    ],
+  },
+  {
+    category: 'Languages & Humanities',
+    options: [
+      'English Language & Literature',
+      'Urdu Language & Literature',
+      'Islamic Studies / Islamiyat',
+      'Nazra Quran / Hifz / Arabic',
+      'Pakistan Studies & History',
+    ],
+  },
+  {
+    category: 'Sciences & Mathematics',
+    options: [
+      'Mathematics (Primary / Middle / Secondary)',
+      'Physics (Secondary / Higher Secondary)',
+      'Chemistry (Secondary / Higher Secondary)',
+      'Biology / Botany / Zoology',
+      'General Science & Environmental Studies',
+    ],
+  },
+  {
+    category: 'Computer Science, Commerce & Arts',
+    options: [
+      'Computer Science & Information Technology',
+      'Commerce, Accounting & Economics',
+      'Physical Education, Sports & Drill',
+      'Fine Arts, Drawing & Calligraphy',
+      'Library & Lab Incharge',
+      'Other Specialized Discipline',
+    ],
+  },
+];
+
 function generate8CharPassword() {
   const chars = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
   let pass = '';
@@ -100,11 +197,11 @@ const initialForm = () => ({
   employeeNo: '',
   phone: '',
   gender: 'MALE',
-  qualification: 'M.Sc / M.Phil',
+  qualification: 'M.Sc (Master of Science - 16 Years)',
   experience: '3',
   salary: '45000',
   password: generate8CharPassword(),
-  specialization: 'General Subjects',
+  specialization: 'General Subjects (Primary & Middle)',
   cnic: '',
   address: '',
   dateOfBirth: '',
@@ -851,65 +948,62 @@ export default function Teachers() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <Field label="Educational Qualification" required>
-                  <div className="relative">
-                    <input
-                      list="qualifications-list"
-                      required
-                      className={inputStyle}
-                      placeholder="M.Sc / M.Phil"
-                      value={form.qualification}
-                      onChange={(e) => setForm((prev) => ({ ...prev, qualification: e.target.value }))}
-                    />
-                    <datalist id="qualifications-list">
-                      <option value="M.Sc / M.Phil" />
-                      <option value="B.Sc / BS (Hons)" />
-                      <option value="M.A / M.Sc" />
-                      <option value="MS / M.Phil" />
-                      <option value="B.Ed / M.Ed" />
-                      <option value="PhD" />
-                      <option value="MCS / BSCS / BS-IT" />
-                      <option value="B.Com / M.Com / MBA" />
-                      <option value="F.A / F.Sc / Intermediate" />
-                      <option value="Matriculation" />
-                    </datalist>
-                  </div>
+                  <select
+                    required
+                    className={inputStyle}
+                    value={form.qualification}
+                    onChange={(e) => setForm((prev) => ({ ...prev, qualification: e.target.value }))}
+                  >
+                    {form.qualification && !QUALIFICATION_CATEGORIES.some(cat => cat.options.includes(form.qualification)) && (
+                      <option value={form.qualification}>{form.qualification} (Custom)</option>
+                    )}
+                    {QUALIFICATION_CATEGORIES.map((group) => (
+                      <optgroup key={group.category} label={group.category}>
+                        {group.options.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
                 </Field>
 
                 <Field label="Specialization / Subject Focus">
-                  <div className="relative">
-                    <input
-                      list="specialization-list"
-                      className={inputStyle}
-                      placeholder="General Subjects"
-                      value={form.specialization}
-                      onChange={(e) => setForm((prev) => ({ ...prev, specialization: e.target.value }))}
-                    />
-                    <datalist id="specialization-list">
-                      <option value="General Subjects" />
-                      <option value="Mathematics" />
-                      <option value="Physics" />
-                      <option value="Chemistry" />
-                      <option value="Biology" />
-                      <option value="English Language & Literature" />
-                      <option value="Urdu & Islamiyat" />
-                      <option value="Computer Science / IT" />
-                      <option value="General Science" />
-                      <option value="Social Studies / Pak Studies" />
-                      <option value="Montessori & Primary Education" />
-                    </datalist>
-                  </div>
+                  <select
+                    className={inputStyle}
+                    value={form.specialization}
+                    onChange={(e) => setForm((prev) => ({ ...prev, specialization: e.target.value }))}
+                  >
+                    {form.specialization && !SPECIALIZATION_CATEGORIES.some(cat => cat.options.includes(form.specialization)) && (
+                      <option value={form.specialization}>{form.specialization} (Custom)</option>
+                    )}
+                    {SPECIALIZATION_CATEGORIES.map((group) => (
+                      <optgroup key={group.category} label={group.category}>
+                        {group.options.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
                 </Field>
 
-                <Field label="Teaching Experience (Years)">
-                  <input
-                    type="number"
-                    min={0}
-                    max={50}
+                <Field label="Teaching Experience">
+                  <select
                     className={inputStyle}
-                    placeholder="3"
                     value={form.experience}
                     onChange={(e) => setForm((prev) => ({ ...prev, experience: e.target.value }))}
-                  />
+                  >
+                    <option value="0">Fresh / Less than 1 Year</option>
+                    <option value="1">1 Year Experience</option>
+                    <option value="2">2 Years Experience</option>
+                    <option value="3">3 Years Experience</option>
+                    <option value="4">4 Years Experience</option>
+                    <option value="5">5 Years Experience</option>
+                    <option value="6">6 Years Experience</option>
+                    <option value="7">7 Years Experience</option>
+                    <option value="8">8 Years Experience</option>
+                    <option value="10">10+ Years (Senior Faculty)</option>
+                    <option value="15">15+ Years (Principal / Senior)</option>
+                  </select>
                 </Field>
 
                 <Field label="Monthly Basic Salary (PKR)" required>

@@ -18,10 +18,29 @@ export class RolesGuard implements CanActivate {
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
-    if (!requiredRoles) {
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
     const request = context.switchToHttp().getRequest<RoleRequest>();
-    return requiredRoles.includes(request.user?.role ?? '');
+    const userRole = (request.user?.role || '').trim().toUpperCase();
+
+    if (!userRole) {
+      return false;
+    }
+
+    // SUPER_ADMIN has platform-wide access
+    if (userRole === 'SUPER_ADMIN') {
+      return true;
+    }
+
+    const normalizedRequired = requiredRoles.map((r) => r.trim().toUpperCase());
+
+    // Allow ADMIN where SCHOOL_ADMIN is required
+    if (normalizedRequired.includes('SCHOOL_ADMIN') && (userRole === 'SCHOOL_ADMIN' || userRole === 'ADMIN')) {
+      return true;
+    }
+
+    return normalizedRequired.includes(userRole);
   }
 }
+
