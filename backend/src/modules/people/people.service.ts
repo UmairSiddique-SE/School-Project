@@ -8,7 +8,46 @@ export class PeopleService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getTeachers(schoolId: string) {
-    return this.prisma.teacher.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } });
+    return this.prisma.teacher.findMany({
+      where: { schoolId, deletedAt: null },
+      include: {
+        sectionTeacher: {
+          where: { deletedAt: null },
+          include: {
+            class: true,
+            _count: { select: { students: { where: { deletedAt: null } } } },
+          },
+        },
+        classSubjects: {
+          include: {
+            class: true,
+            subject: true,
+          },
+        },
+        timetables: {
+          include: {
+            subject: true,
+            section: { include: { class: true } },
+          },
+          orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+        },
+        payrolls: {
+          orderBy: [{ year: 'desc' }, { month: 'desc' }],
+          take: 24,
+        },
+        attendances: {
+          where: {
+            date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+          },
+          orderBy: { date: 'desc' },
+        },
+        leaveRequests: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 
   async createTeacher(schoolId: string, data: any) {
@@ -16,13 +55,34 @@ export class PeopleService {
     const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
     const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
     if (existingTeacher || existingStaff) throw new ConflictException('Teacher with this Employee No or Email already exists');
-    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
-    const passwordHash = await bcrypt.hash(data.password, 12);
+    
+    let plainPassword = data.password;
+    if (!plainPassword || plainPassword.length < 12) {
+      plainPassword = `Tch!${randomBytes(6).toString('base64url').slice(0, 8)}2026`;
+    }
+    const passwordHash = await bcrypt.hash(plainPassword, 12);
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const result = await this.prisma.$transaction(async (tx) => {
         await tx.user.create({ data: { name: data.name, email: data.email, passwordHash, role: 'TEACHER', schoolId } });
-        return tx.teacher.create({ data: { employeeNo: data.employeeNo, name: data.name, email: data.email, phone: data.phone || null, gender: data.gender || 'MALE', qualification: data.qualification || null, experience: data.experience ? parseInt(data.experience, 10) : null, salary: data.salary ? parseFloat(data.salary) : null, schoolId } });
+        const teacher = await tx.teacher.create({
+          data: {
+            employeeNo: data.employeeNo,
+            name: data.name,
+            email: data.email,
+            phone: data.phone || null,
+            gender: data.gender || 'MALE',
+            qualification: data.qualification || null,
+            experience: data.experience ? parseInt(data.experience, 10) : null,
+            salary: data.salary ? parseFloat(data.salary) : null,
+            bloodGroup: data.bloodGroup || null,
+            avatarUrl: data.avatarUrl || null,
+            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+            schoolId,
+          },
+        });
+        return teacher;
       });
+      return { teacher: result, credentials: { loginId: data.email, password: plainPassword } };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists.`);
       if (error?.status) throw error;
@@ -34,7 +94,21 @@ export class PeopleService {
   async updateTeacher(id: string, schoolId: string, data: any) {
     const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!teacher) throw new NotFoundException('Teacher not found');
-    return this.prisma.teacher.update({ where: { id }, data: { name: data.name ?? undefined, phone: data.phone ?? undefined, gender: data.gender ?? undefined, qualification: data.qualification ?? undefined, experience: data.experience !== undefined ? parseInt(data.experience, 10) : undefined, salary: data.salary !== undefined ? parseFloat(data.salary) : undefined, isActive: data.isActive ?? undefined } });
+    return this.prisma.teacher.update({
+      where: { id },
+      data: {
+        name: data.name ?? undefined,
+        phone: data.phone ?? undefined,
+        gender: data.gender ?? undefined,
+        qualification: data.qualification ?? undefined,
+        experience: data.experience !== undefined ? parseInt(data.experience, 10) : undefined,
+        salary: data.salary !== undefined ? parseFloat(data.salary) : undefined,
+        bloodGroup: data.bloodGroup ?? undefined,
+        avatarUrl: data.avatarUrl ?? undefined,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+        isActive: data.isActive ?? undefined,
+      },
+    });
   }
 
   async deleteTeacher(id: string, schoolId: string) {
@@ -43,6 +117,134 @@ export class PeopleService {
     return this.prisma.$transaction(async (tx) => {
       await tx.teacher.update({ where: { id }, data: { deletedAt: new Date(), isActive: false } });
       await tx.user.updateMany({ where: { email: teacher.email, schoolId }, data: { isActive: false, deletedAt: new Date() } });
+    });
+  }
+
+  async payTeacherSalary(id: string, schoolId: string, data: any) {
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+
+    const month = Number(data.month) || new Date().getMonth() + 1;
+    const year = Number(data.year) || new Date().getFullYear();
+    const basicSalary = Number(data.basicSalary ?? teacher.salary ?? 0);
+    const allowances = Number(data.allowances ?? 0);
+    const deductions = Number(data.deductions ?? 0);
+    const netSalary = Math.max(0, basicSalary + allowances - deductions);
+
+    const existing = await this.prisma.payroll.findFirst({
+      where: { teacherId: id, schoolId, month, year },
+    });
+
+    if (existing) {
+      const updated = await this.prisma.payroll.update({
+        where: { id: existing.id },
+        data: {
+          basicSalary,
+          allowances,
+          deductions,
+          netSalary,
+          isPaid: true,
+          paidDate: new Date(),
+        },
+      });
+      await this.prisma.accountEntry.create({
+        data: {
+          type: 'EXPENSE',
+          category: 'SALARY',
+          description: `Salary paid to ${teacher.name} (${teacher.employeeNo}) for ${month}/${year}`,
+          amount: netSalary,
+          date: new Date(),
+          reference: `PAY-${year}-${month}-${teacher.employeeNo}`,
+          schoolId,
+        },
+      });
+      return updated;
+    }
+
+    const payroll = await this.prisma.payroll.create({
+      data: {
+        month,
+        year,
+        basicSalary,
+        allowances,
+        deductions,
+        netSalary,
+        isPaid: true,
+        paidDate: new Date(),
+        schoolId,
+        teacherId: id,
+      },
+    });
+
+    await this.prisma.accountEntry.create({
+      data: {
+        type: 'EXPENSE',
+        category: 'SALARY',
+        description: `Salary paid to ${teacher.name} (${teacher.employeeNo}) for ${month}/${year}`,
+        amount: netSalary,
+        date: new Date(),
+        reference: `PAY-${year}-${month}-${teacher.employeeNo}`,
+        schoolId,
+      },
+    });
+
+    return payroll;
+  }
+
+  async assignTeacherSection(id: string, schoolId: string, sectionId: string) {
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, class: { schoolId }, deletedAt: null },
+    });
+    if (!section) throw new NotFoundException('Section not found in this school');
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: { teacherId: id },
+    });
+  }
+
+  async unassignTeacherSection(sectionId: string, schoolId: string) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, class: { schoolId }, deletedAt: null },
+    });
+    if (!section) throw new NotFoundException('Section not found in this school');
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: { teacherId: null },
+    });
+  }
+
+  async assignTeacherSubject(id: string, schoolId: string, data: { classId: string; subjectId: string }) {
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const schoolClass = await this.prisma.class.findFirst({ where: { id: data.classId, schoolId, deletedAt: null } });
+    if (!schoolClass) throw new NotFoundException('Class not found');
+    const subject = await this.prisma.subject.findFirst({ where: { id: data.subjectId, schoolId, deletedAt: null } });
+    if (!subject) throw new NotFoundException('Subject not found');
+
+    const existing = await this.prisma.classSubject.findFirst({
+      where: { classId: data.classId, subjectId: data.subjectId },
+    });
+    if (existing) {
+      return this.prisma.classSubject.update({
+        where: { id: existing.id },
+        data: { teacherId: id },
+      });
+    }
+    return this.prisma.classSubject.create({
+      data: { classId: data.classId, subjectId: data.subjectId, teacherId: id },
+    });
+  }
+
+  async unassignTeacherSubject(classSubjectId: string, schoolId: string) {
+    const assignment = await this.prisma.classSubject.findFirst({
+      where: { id: classSubjectId, class: { schoolId, deletedAt: null } },
+    });
+    if (!assignment) throw new NotFoundException('Subject assignment not found');
+    return this.prisma.classSubject.update({
+      where: { id: classSubjectId },
+      data: { teacherId: null },
     });
   }
 
@@ -108,7 +310,7 @@ export class PeopleService {
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
           if (!parentUser) parentUser = await tx.user.create({ data: { name: parentName, email: parentEmail, passwordHash: parentPasswordHash, role: 'PARENT', schoolId } });
           else if (parentUser.schoolId !== schoolId) throw new ConflictException('Parent account belongs to another school');
-          const parent = await tx.parent.create({ data: { name: parentName, email: parentEmail, phone: data.fatherMobile1 || data.guardianMobile || data.motherMobile || '0000000000', relation: data.fatherName ? 'FATHER' : data.guardianName ? 'GUARDIAN' : 'MOTHER', fatherName: data.fatherName || null, fatherMobile1: data.fatherMobile1 || null, fatherMobile2: data.fatherMobile2 || null, fatherWhatsapp: data.fatherWhatsapp || null, fatherCnic: data.fatherCnic || null, fatherOccupation: data.fatherOccupation || null, fatherStatus: data.fatherStatus || 'ALIVE', motherName: data.motherName || null, motherMobile: data.motherMobile || null, motherCnic: data.motherCnic || null, motherOccupation: data.motherOccupation || null, guardianName: data.guardianName || null, guardianRelation: data.guardianRelation || null, guardianMobile: data.guardianMobile || null, addressCountry: data.addressCountry || data.country || null, addressProvince: data.addressProvince || data.province || null, addressCity: data.addressCity || data.city || data.district || null, addressLine: data.addressLine || data.address || null, schoolId, userId: parentUser.id } });
+          const parent = await tx.parent.create({ data: { name: parentName, email: parentEmail, phone: data.fatherMobile1 || data.guardianMobile || data.motherMobile || '0000000000', relation: data.fatherName ? 'FATHER' : data.guardianName ? 'GUARDIAN' : 'MOTHER', fatherName: data.fatherName || null, fatherMobile1: data.fatherMobile1 || null, fatherMobile2: data.fatherMobile2 || null, fatherWhatsapp: data.fatherWhatsapp || null, fatherCnic: data.fatherCnic || null, fatherOccupation: data.fatherOccupation || null, fatherStatus: data.fatherStatus || 'ALIVE', motherName: data.motherName || null, motherMobile: data.motherMobile || null, motherCnic: data.motherCnic || null, motherOccupation: data.motherOccupation || null, guardianName: data.guardianName || null, guardianRelation: data.guardianRelation || null, guardianMobile: data.guardianMobile || null, addressCountry: data.addressCountry || data.country || null, addressProvince: data.addressProvince || data.province || null, addressCity: data.addressCity || data.district || null, addressLine: data.addressLine || data.address || null, schoolId, userId: parentUser.id } });
           await tx.studentParent.create({ data: { studentId: createdStudent.id, parentId: parent.id, isPrimary: true } });
         }
         return createdStudent;

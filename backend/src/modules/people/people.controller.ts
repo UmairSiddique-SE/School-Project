@@ -116,6 +116,38 @@ export class PeopleController {
     return this.peopleService.deleteTeacher(id, user.schoolId);
   }
 
+  @Post('teachers/:id/pay-salary')
+  @Roles('SCHOOL_ADMIN')
+  payTeacherSalary(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    return this.peopleService.payTeacherSalary(id, user.schoolId, dto);
+  }
+
+  @Post('teachers/:id/assign-section')
+  @Roles('SCHOOL_ADMIN')
+  assignTeacherSection(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (!dto?.sectionId) throw new BadRequestException('Section ID is required');
+    return this.peopleService.assignTeacherSection(id, user.schoolId, dto.sectionId);
+  }
+
+  @Delete('teachers/sections/:sectionId')
+  @Roles('SCHOOL_ADMIN')
+  unassignTeacherSection(@CurrentUser() user: any, @Param('sectionId') sectionId: string) {
+    return this.peopleService.unassignTeacherSection(sectionId, user.schoolId);
+  }
+
+  @Post('teachers/:id/assign-subject')
+  @Roles('SCHOOL_ADMIN')
+  assignTeacherSubject(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    if (!dto?.classId || !dto?.subjectId) throw new BadRequestException('Class ID and Subject ID are required');
+    return this.peopleService.assignTeacherSubject(id, user.schoolId, dto);
+  }
+
+  @Delete('teachers/subjects/:classSubjectId')
+  @Roles('SCHOOL_ADMIN')
+  unassignTeacherSubject(@CurrentUser() user: any, @Param('classSubjectId') classSubjectId: string) {
+    return this.peopleService.unassignTeacherSubject(classSubjectId, user.schoolId);
+  }
+
   @Get('students')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   async getStudents(@CurrentUser() user: any) {
