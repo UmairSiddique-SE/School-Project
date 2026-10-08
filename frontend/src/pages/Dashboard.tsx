@@ -171,14 +171,29 @@ export default function Dashboard() {
   const totalPeople = stats.studentsCount + totalStaff + stats.parentsCount;
   const attendanceTotal = stats.presentToday + stats.absentToday;
 
-  const kpis = useMemo(() => [
-    { icon: GraduationCap, label: 'Total Students', value: stats.studentsCount, subtitle: 'Live database count', trend: stats.studentsCount ? 'Synced' : 'No students yet', gradient: 'gradient-bg-blue', path: '/students' },
-    { icon: Users, label: 'Total Staff', value: totalStaff, subtitle: `${stats.teachersCount} teachers · ${stats.staffCount} staff`, trend: totalStaff ? 'Synced' : 'No staff yet', gradient: 'gradient-bg-emerald', path: '/staff' },
-    { icon: BookOpen, label: 'Total Classes', value: stats.classesCount, subtitle: 'Live academic classes', trend: stats.classesCount ? 'Synced' : 'No classes yet', gradient: 'gradient-bg-primary', path: '/classes' },
-    { icon: ClipboardCheck, label: 'Today Attendance', value: `${stats.todayAttendancePercentage}%`, subtitle: `${stats.presentToday} present · ${stats.absentToday} absent`, trend: attendanceTotal ? 'Live attendance' : 'No attendance yet', gradient: 'gradient-bg-blue', path: '/attendance' },
-    { icon: WalletCards, label: 'Fee Collection', value: money(stats.totalRevenue), subtitle: 'Recorded payments', trend: stats.totalRevenue ? 'Live finance data' : 'No payments yet', gradient: 'gradient-bg-rose', path: '/finance' },
-    { icon: AlertTriangle, label: 'Pending Fees', value: money(stats.pendingFees), subtitle: `${stats.pendingFeePaymentsCount} pending payments`, trend: stats.pendingFeePaymentsCount ? 'Action required' : 'All clear', trendDir: stats.pendingFeePaymentsCount ? 'down' as const : 'up' as const, gradient: 'gradient-bg-amber', path: '/finance' },
-  ], [stats, totalStaff, attendanceTotal]);
+  const isTeacher = role === 'TEACHER';
+
+  const kpis = useMemo(() => {
+    if (isTeacher) {
+      return [
+        { icon: BookOpen, label: 'Classes', value: stats.classesCount, subtitle: 'Academic classes', trend: stats.classesCount ? 'Synced' : 'No classes yet', gradient: 'gradient-bg-primary', path: '/classes' },
+        { icon: GraduationCap, label: 'Students', value: stats.studentsCount, subtitle: 'Total enrolled students', trend: stats.studentsCount ? 'Synced' : 'No students yet', gradient: 'gradient-bg-blue', path: '/students' },
+        { icon: ClipboardCheck, label: 'Attendance', value: `${stats.todayAttendancePercentage}%`, subtitle: `${stats.presentToday} present · ${stats.absentToday} absent`, trend: attendanceTotal ? 'Today live' : 'Not marked', gradient: 'gradient-bg-emerald', path: '/attendance' },
+        { icon: FileText, label: 'Homework', value: stats.pendingHomeworks, subtitle: 'Active homework tasks', trend: stats.pendingHomeworks ? 'Active' : 'No tasks', gradient: 'gradient-bg-blue', path: '/homework' },
+        { icon: CalendarDays, label: 'Upcoming Exams', value: stats.upcomingExams.length, subtitle: 'Scheduled exams', trend: stats.upcomingExams.length ? 'Scheduled' : 'None', gradient: 'gradient-bg-violet', path: '/exams' },
+        { icon: Bell, label: 'Notice Board', value: stats.announcements.length, subtitle: 'School announcements', trend: stats.announcements.length ? 'Active' : 'Clear', gradient: 'gradient-bg-amber', path: '/notices' },
+      ];
+    }
+
+    return [
+      { icon: GraduationCap, label: 'Total Students', value: stats.studentsCount, subtitle: 'Live database count', trend: stats.studentsCount ? 'Synced' : 'No students yet', gradient: 'gradient-bg-blue', path: '/students' },
+      { icon: Users, label: 'Total Staff', value: totalStaff, subtitle: `${stats.teachersCount} teachers · ${stats.staffCount} staff`, trend: totalStaff ? 'Synced' : 'No staff yet', gradient: 'gradient-bg-emerald', path: '/staff' },
+      { icon: BookOpen, label: 'Total Classes', value: stats.classesCount, subtitle: 'Live academic classes', trend: stats.classesCount ? 'Synced' : 'No classes yet', gradient: 'gradient-bg-primary', path: '/classes' },
+      { icon: ClipboardCheck, label: 'Today Attendance', value: `${stats.todayAttendancePercentage}%`, subtitle: `${stats.presentToday} present · ${stats.absentToday} absent`, trend: attendanceTotal ? 'Live attendance' : 'No attendance yet', gradient: 'gradient-bg-blue', path: '/attendance' },
+      { icon: WalletCards, label: 'Fee Collection', value: money(stats.totalRevenue), subtitle: 'Recorded payments', trend: stats.totalRevenue ? 'Live finance data' : 'No payments yet', gradient: 'gradient-bg-rose', path: '/finance' },
+      { icon: AlertTriangle, label: 'Pending Fees', value: money(stats.pendingFees), subtitle: `${stats.pendingFeePaymentsCount} pending payments`, trend: stats.pendingFeePaymentsCount ? 'Action required' : 'All clear', trendDir: stats.pendingFeePaymentsCount ? 'down' as const : 'up' as const, gradient: 'gradient-bg-amber', path: '/finance' },
+    ];
+  }, [isTeacher, stats, totalStaff, attendanceTotal]);
 
   const indicatorData = [
     { label: 'Students', value: stats.studentsCount },
@@ -205,12 +220,23 @@ export default function Dashboard() {
               <span className="text-xs text-muted-foreground">{new Date().toLocaleDateString('en-PK', { dateStyle: 'full' })}</span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{user?.schoolName || 'Your School'}</h1>
-            <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{role === 'TEACHER' ? 'Your teacher portal is showing live school records from the connected database.' : 'Your school operations overview is synchronized directly with live database records.'}</p>
+            <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{isTeacher ? `Welcome back, ${user?.name || 'Teacher'}. Your portal provides access to your classes, daily attendance, homework, exams and academic routines.` : 'Your school operations overview is synchronized directly with live database records.'}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => navigate(`${basePath}/students`)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm"><UserPlus size={15} /> Add Student</button>
-            <button onClick={() => navigate(`${basePath}/finance`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Receipt size={15} /> Fees</button>
-            <button onClick={() => navigate(`${basePath}/notices`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Megaphone size={15} /> Notice Board</button>
+            {isTeacher ? (
+              <>
+                <button onClick={() => navigate(`${basePath}/attendance`)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm"><ClipboardCheck size={15} /> Mark Attendance</button>
+                <button onClick={() => navigate(`${basePath}/homework`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><FileText size={15} /> Homework</button>
+                <button onClick={() => navigate(`${basePath}/exams`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><GraduationCap size={15} /> Exams & Marks</button>
+                <button onClick={() => navigate(`${basePath}/timetable`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><CalendarDays size={15} /> Timetable</button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => navigate(`${basePath}/students`)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm"><UserPlus size={15} /> Add Student</button>
+                <button onClick={() => navigate(`${basePath}/finance`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Receipt size={15} /> Fees</button>
+                <button onClick={() => navigate(`${basePath}/notices`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Megaphone size={15} /> Notice Board</button>
+              </>
+            )}
             <button onClick={() => void loadDashboard()} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-muted-foreground" title="Refresh live database data"><RefreshCw size={15} className={loading ? 'animate-spin' : ''} /></button>
           </div>
         </div>
@@ -322,9 +348,19 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <button onClick={() => navigate(`${basePath}/homework`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Pending Homework</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} live records</span></span></button>
-        <button onClick={() => navigate(`${basePath}/staff`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400"><Clock3 size={18} /></span><span><span className="block text-sm font-bold text-foreground">Pending Leaves</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingLeaves} live records</span></span></button>
-        <div className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400"><AlertTriangle size={18} /></span><span><span className="block text-sm font-bold text-foreground">Overdue Library</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.overdueLibraryBooks} overdue records</span></span></div>
+        {isTeacher ? (
+          <>
+            <button onClick={() => navigate(`${basePath}/homework`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Homework Assigned</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} active tasks</span></span></button>
+            <button onClick={() => navigate(`${basePath}/timetable`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><CalendarDays size={18} /></span><span><span className="block text-sm font-bold text-foreground">My Timetable</span><span className="mt-0.5 block text-xs text-muted-foreground">Class & period schedule</span></span></button>
+            <button onClick={() => navigate(`${basePath}/exams`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"><GraduationCap size={18} /></span><span><span className="block text-sm font-bold text-foreground">Exams & Gradebook</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.upcomingExams.length} upcoming exams</span></span></button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => navigate(`${basePath}/homework`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Pending Homework</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} live records</span></span></button>
+            <button onClick={() => navigate(`${basePath}/staff`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400"><Clock3 size={18} /></span><span><span className="block text-sm font-bold text-foreground">Staff & Leaves</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingLeaves} live records</span></span></button>
+            <button onClick={() => navigate(`${basePath}/reports`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"><LayoutDashboard size={18} /></span><span><span className="block text-sm font-bold text-foreground">School Reports</span><span className="mt-0.5 block text-xs text-muted-foreground">Live analytics</span></span></button>
+          </>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/20 px-4 py-3">

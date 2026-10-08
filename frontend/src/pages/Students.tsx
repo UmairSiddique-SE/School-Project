@@ -5,6 +5,7 @@ import {
   Eye, EyeOff, Check, HeartPulse, FileText, Key, Clock, Sparkles, Layout, Smartphone
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
 type Student = any;
@@ -115,6 +116,9 @@ async function compressPhoto(file: File) {
 }
 
 export default function Students() {
+  const { user } = useAuth();
+  const canManage = user?.role === 'SCHOOL_ADMIN';
+
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -1179,12 +1183,14 @@ export default function Students() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 hover:brightness-110 transition"
-            >
-              <Plus size={16} /> New Admission
-            </button>
+            {canManage && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 hover:brightness-110 transition"
+              >
+                <Plus size={16} /> New Admission
+              </button>
+            )}
 
             <button
               onClick={() => void load()}
@@ -1382,16 +1388,6 @@ export default function Students() {
                         </button>
                         <button
                           onClick={() => {
-                            setPasswordModalStudent(student);
-                            setNewPassword(generate8CharPassword());
-                          }}
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500 transition"
-                          title="Update Password"
-                        >
-                          <Key size={15} />
-                        </button>
-                        <button
-                          onClick={() => {
                             setProfile(student);
                             setProfileTab('overview');
                           }}
@@ -1400,20 +1396,34 @@ export default function Students() {
                         >
                           <UserRound size={15} />
                         </button>
-                        <button
-                          onClick={() => openEdit(student)}
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-indigo-500/10 hover:text-indigo-500 transition"
-                          title="Edit Student"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => void archive(student.id)}
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
-                          title="Archive"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        {canManage && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setPasswordModalStudent(student);
+                                setNewPassword(generate8CharPassword());
+                              }}
+                              className="rounded-lg p-2 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500 transition"
+                              title="Update Password"
+                            >
+                              <Key size={15} />
+                            </button>
+                            <button
+                              onClick={() => openEdit(student)}
+                              className="rounded-lg p-2 text-muted-foreground hover:bg-indigo-500/10 hover:text-indigo-500 transition"
+                              title="Edit Student"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              onClick={() => void archive(student.id)}
+                              className="rounded-lg p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
+                              title="Archive"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

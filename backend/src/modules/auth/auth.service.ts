@@ -374,6 +374,20 @@ return { school, user };
       throw new UnauthorizedException(
         'Parent accounts do not have portal login access',
       );
+
+    const requestedRole = dto.portalRole ? String(dto.portalRole).trim().toUpperCase() : null;
+    if (requestedRole) {
+      if (requestedRole === 'TEACHER' && user.role !== 'TEACHER') {
+        throw new UnauthorizedException('This login is strictly for Teachers. For School Admin or Student access, please switch to the correct portal.');
+      }
+      if (requestedRole === 'STUDENT' && user.role !== 'STUDENT') {
+        throw new UnauthorizedException('This LMS login is strictly for Students. For Teacher or School Admin access, please switch to the correct portal.');
+      }
+      if ((requestedRole === 'SCHOOL_ADMIN' || requestedRole === 'ADMIN') && !['SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+        throw new UnauthorizedException('This login is strictly for School Administrators. Teachers and Students must use their respective portals.');
+      }
+    }
+
     const pendingRequest =
       user.role === 'SCHOOL_ADMIN' && user.school
         ? await this.prisma.schoolRequest.findFirst({

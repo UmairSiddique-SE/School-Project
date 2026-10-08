@@ -20,6 +20,10 @@ export class LoginDto {
   @IsOptional()
   @IsString()
   schoolSlug?: string;
+
+  @IsOptional()
+  @IsString()
+  portalRole?: string;
 }
 
 export class RegisterSchoolDto {

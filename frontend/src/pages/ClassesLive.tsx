@@ -6,6 +6,7 @@ import {
   Award, Clock, CheckCircle2, AlertCircle, Filter, ArrowUpRight
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
 /* ─── Types ─────────────────────────────────────────────────── */
@@ -98,6 +99,10 @@ function ModalShell({ open, onClose, title, icon, children, palette }: {
 
 /* ─── Main Page ──────────────────────────────────────────────── */
 export default function ClassesLive() {
+  const { user, previewRole } = useAuth();
+  const role = previewRole ?? user?.role ?? 'SCHOOL_ADMIN';
+  const canManage = role === 'SCHOOL_ADMIN' || role === 'SUPER_ADMIN';
+
   const [activeTab,  setActiveTab]  = useState<'classes' | 'subjects' | 'mapping' | 'sessions'>('classes');
   const [classes,    setClasses]    = useState<ClassItem[]>([]);
   const [subjects,   setSubjects]   = useState<Subject[]>([]);
@@ -447,7 +452,7 @@ export default function ClassesLive() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {activeTab === 'classes' && (
+            {canManage && activeTab === 'classes' && (
               <>
                 <button
                   onClick={() => setModal('grade')}
@@ -472,7 +477,7 @@ export default function ClassesLive() {
               </>
             )}
 
-            {activeTab === 'subjects' && (
+            {canManage && activeTab === 'subjects' && (
               <>
                 <button
                   onClick={openNewSubjectModal}
@@ -489,7 +494,7 @@ export default function ClassesLive() {
               </>
             )}
 
-            {activeTab === 'mapping' && (
+            {canManage && activeTab === 'mapping' && (
               <button
                 onClick={() => setModal('assign')}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:brightness-110 transition"
@@ -498,7 +503,7 @@ export default function ClassesLive() {
               </button>
             )}
 
-            {activeTab === 'sessions' && (
+            {canManage && activeTab === 'sessions' && (
               <button
                 onClick={openAcademicYearModal}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-500/20 hover:brightness-110 transition"
@@ -638,23 +643,23 @@ export default function ClassesLive() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-black uppercase tracking-wider text-muted-foreground">Class Levels</h2>
-                <p className="text-xs text-muted-foreground">Select class to view and manage sections</p>
+                <p className="text-xs text-muted-foreground">Select class to view {canManage ? 'and manage ' : ''}sections</p>
               </div>
-              <button
+              {canManage && <button
                 onClick={() => setModal('grade')}
                 className="inline-flex items-center gap-1 text-xs font-bold text-violet-500 hover:text-violet-600 bg-violet-500/10 px-3 py-1.5 rounded-xl border border-violet-500/20"
               >
                 <Plus size={13}/> New Class
-              </button>
+              </button>}
             </div>
 
             {filteredClasses.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-border bg-card p-10 text-center space-y-3">
                 <GraduationCap size={32} className="mx-auto text-muted-foreground/40"/>
                 <p className="font-bold text-foreground text-sm">No classes found</p>
-                <button onClick={() => setModal('grade')} className="inline-flex items-center gap-1.5 text-xs font-bold bg-violet-600 text-white px-3.5 py-2 rounded-xl">
+                {canManage && <button onClick={() => setModal('grade')} className="inline-flex items-center gap-1.5 text-xs font-bold bg-violet-600 text-white px-3.5 py-2 rounded-xl">
                   <Plus size={13}/> Create First Class
-                </button>
+                </button>}
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -693,7 +698,7 @@ export default function ClassesLive() {
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
-                          <button
+                          {canManage && <button
                             onClick={(e) => {
                               e.stopPropagation();
                               void archiveClass(item.id, item.name);
@@ -702,7 +707,7 @@ export default function ClassesLive() {
                             title="Delete Class"
                           >
                             <Trash2 size={15}/>
-                          </button>
+                          </button>}
                           <ChevronRight size={18} className={`transition ${isSelected ? 'text-violet-500 translate-x-1' : 'text-muted-foreground/40'}`}/>
                         </div>
                       </div>
@@ -728,7 +733,7 @@ export default function ClassesLive() {
                     </div>
                   </div>
 
-                  <button
+                  {canManage && <button
                     onClick={() => {
                       setSectionClassId(selectedClass.id);
                       setSectionName('');
@@ -739,7 +744,7 @@ export default function ClassesLive() {
                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 hover:brightness-110 transition"
                   >
                     <Plus size={15}/> Add Section
-                  </button>
+                  </button>}
                 </div>
 
                 {/* Sections Grid */}
@@ -752,7 +757,7 @@ export default function ClassesLive() {
                     <div className="rounded-2xl border border-dashed border-border p-8 text-center space-y-2">
                       <Layers3 size={24} className="mx-auto text-muted-foreground/40" />
                       <p className="text-xs font-bold text-foreground">No sections in this class yet</p>
-                      <button
+                      {canManage && <button
                         onClick={() => {
                           setSectionClassId(selectedClass.id);
                           setSectionName('');
@@ -763,7 +768,7 @@ export default function ClassesLive() {
                         className="text-xs font-bold text-cyan-500 hover:underline"
                       >
                         + Add Section (e.g. Section A, Section B)
-                      </button>
+                      </button>}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -774,13 +779,13 @@ export default function ClassesLive() {
                           <div key={sec.id} className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3 hover:border-cyan-500/40 transition group">
                             <div className="flex items-center justify-between">
                               <span className="font-black text-sm text-foreground">Section {sec.name}</span>
-                              <button
+                              {canManage && <button
                                 onClick={() => void archiveSection(sec.id, sec.name)}
                                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition"
                                 title="Delete Section"
                               >
                                 <Trash2 size={14} />
-                              </button>
+                              </button>}
                             </div>
 
                             <div className="space-y-1.5 text-xs text-muted-foreground">
@@ -816,7 +821,7 @@ export default function ClassesLive() {
                     <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <BookMarked size={14} className="text-emerald-500" /> Curriculum Subjects ({selectedClass.subjects?.length || 0})
                     </h3>
-                    <button
+                    {canManage && <button
                       onClick={() => {
                         setAssignClassId(selectedClass.id);
                         setModal('assign');
@@ -824,7 +829,7 @@ export default function ClassesLive() {
                       className="text-xs font-bold text-emerald-500 hover:underline inline-flex items-center gap-1"
                     >
                       <Plus size={12}/> Allocate Subject
-                    </button>
+                    </button>}
                   </div>
 
                   {(selectedClass.subjects || []).length === 0 ? (
@@ -837,7 +842,7 @@ export default function ClassesLive() {
                             <th className="p-3">Subject</th>
                             <th className="p-3">Code</th>
                             <th className="p-3">Assigned Faculty</th>
-                            <th className="p-3 text-right">Action</th>
+                            {canManage && <th className="p-3 text-right">Action</th>}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
@@ -854,7 +859,7 @@ export default function ClassesLive() {
                                   <span className="text-amber-500 text-[11px] italic">Unassigned</span>
                                 )}
                               </td>
-                              <td className="p-3 text-right">
+                              {canManage && <td className="p-3 text-right">
                                 <button
                                   onClick={() => void removeSubjectAssignment(as.id)}
                                   className="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg transition"
@@ -862,7 +867,7 @@ export default function ClassesLive() {
                                 >
                                   <Trash2 size={13}/>
                                 </button>
-                              </td>
+                              </td>}
                             </tr>
                           ))}
                         </tbody>
@@ -890,21 +895,21 @@ export default function ClassesLive() {
               <h2 className="text-base font-black text-foreground">Curriculum & Subjects Catalog</h2>
               <p className="text-xs text-muted-foreground">Configure compulsory and elective subjects, credit weights, and assigned grades</p>
             </div>
-            <button
+            {canManage && <button
               onClick={openNewSubjectModal}
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:brightness-110 transition shrink-0"
             >
               <Plus size={15}/> Add New Subject
-            </button>
+            </button>}
           </div>
 
           {filteredSubjects.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
               <BookOpen size={36} className="mx-auto text-muted-foreground/40" />
               <p className="font-bold text-foreground text-sm">No subjects found</p>
-              <button onClick={openNewSubjectModal} className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-xl">
+              {canManage && <button onClick={openNewSubjectModal} className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-xl">
                 <Plus size={14} /> Register First Subject
-              </button>
+              </button>}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -936,7 +941,7 @@ export default function ClassesLive() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
+                      {canManage && <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => openEditSubjectModal(sub)}
                           className="rounded-lg p-1.5 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 transition"
@@ -951,7 +956,7 @@ export default function ClassesLive() {
                         >
                           <Trash2 size={15}/>
                         </button>
-                      </div>
+                      </div>}
                     </div>
 
                     {sub.cleanDescription && (
@@ -993,12 +998,12 @@ export default function ClassesLive() {
               <h2 className="text-base font-black text-foreground">Teacher–Section–Subject Allocation Matrix</h2>
               <p className="text-xs text-muted-foreground">Overview of teacher subject workloads, section class teachers, and weekly period counts</p>
             </div>
-            <button
+            {canManage && <button
               onClick={() => setModal('assign')}
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:brightness-110 transition shrink-0"
             >
               <UserCheck size={15}/> + Assign Teacher to Subject
-            </button>
+            </button>}
           </div>
 
           {filteredTeacherMappings.length === 0 ? (
@@ -1050,13 +1055,13 @@ export default function ClassesLive() {
                               <span className="font-bold text-foreground">{as.subjectName}</span>
                               <span className="text-muted-foreground ml-1.5">({as.className})</span>
                             </div>
-                            <button
+                            {canManage && <button
                               onClick={() => void removeSubjectAssignment(as.id)}
                               className="text-rose-500 hover:bg-rose-500/10 p-1 rounded-md"
                               title="Remove Allocation"
                             >
                               <Trash2 size={12} />
-                            </button>
+                            </button>}
                           </div>
                         ))}
                       </div>
@@ -1079,12 +1084,12 @@ export default function ClassesLive() {
               <h2 className="text-base font-black text-foreground">Academic Years & Sessions</h2>
               <p className="text-xs text-muted-foreground">Manage active school sessions, previous year archives, and activate new academic terms</p>
             </div>
-            <button
+            {canManage && <button
               onClick={openAcademicYearModal}
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-500/20 hover:brightness-110 transition shrink-0"
             >
               <Plus size={15}/> + Activate New Session
-            </button>
+            </button>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1113,7 +1118,7 @@ export default function ClassesLive() {
                     </p>
                   </div>
 
-                  {!year.isCurrent && (
+                  {canManage && !year.isCurrent && (
                     <button
                       onClick={() => void deleteSession(year)}
                       className="text-muted-foreground hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-500/10 transition"
@@ -1139,7 +1144,7 @@ export default function ClassesLive() {
                   </div>
                 </div>
 
-                {!year.isCurrent && (
+                {canManage && !year.isCurrent && (
                   <button
                     onClick={() => void activateSession(year)}
                     className="w-full py-2 rounded-xl text-xs font-bold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition"

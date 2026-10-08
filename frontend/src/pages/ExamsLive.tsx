@@ -69,7 +69,10 @@ const inputStyle = 'w-full rounded-xl border border-border bg-card px-3.5 py-2.5
 
 export default function ExamsLive() {
   const { user } = useAuth();
-  const canManage = user?.role === 'SCHOOL_ADMIN' || user?.role === 'TEACHER';
+  const isAdmin = user?.role === 'SCHOOL_ADMIN';
+  const isTeacher = user?.role === 'TEACHER';
+  const canManage = isAdmin;
+  const canRecordMarks = isAdmin || isTeacher;
   const isStudent = user?.role === 'STUDENT';
 
   const [exams, setExams] = useState<Exam[]>([]);
@@ -462,7 +465,7 @@ export default function ExamsLive() {
               </div>
 
               {/* Subject Selector Bar - visible to admin/teacher only */}
-              {canManage && (
+              {canRecordMarks && (
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-2xl border border-border/60">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-muted-foreground">Select Subject:</span>
@@ -498,7 +501,7 @@ export default function ExamsLive() {
               )}
 
               {/* Students Marks Entry Table - Admin/Teacher only */}
-              {canManage ? (
+              {canRecordMarks ? (
                 loadingResults ? (
                   <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
                     Loading subject marks records...

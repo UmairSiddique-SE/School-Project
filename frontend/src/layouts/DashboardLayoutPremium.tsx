@@ -23,13 +23,13 @@ const NAV: NavGroup[] = [
   ] },
   { label: 'Academics', items: [
     { label: 'Classes & Subjects', path: '/classes', icon: BookOpen, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
-    { label: 'Homework', path: '/homework', icon: FileText, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-    { label: 'Exams & Results', path: '/exams', icon: ClipboardCheck, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-    { label: 'Timetable', path: '/timetable', icon: CalendarDays, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
+    { label: 'Homework', path: '/homework', icon: FileText, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
+    { label: 'Exams & Results', path: '/exams', icon: ClipboardCheck, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
+    { label: 'Timetable', path: '/timetable', icon: CalendarDays, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
   ] },
   { label: 'Daily Operations', items: [
-    { label: 'Attendance', path: '/attendance', icon: NotebookTabs, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-    { label: 'Fees & Finance', path: '/finance', icon: WalletCards, roles: ['SCHOOL_ADMIN', 'STUDENT'] },
+    { label: 'Attendance', path: '/attendance', icon: NotebookTabs, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
+    { label: 'Fees & Finance', path: '/finance', icon: WalletCards, roles: ['SCHOOL_ADMIN'] },
     { label: 'Notice Board', path: '/notices', icon: Bell, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
     { label: 'Transport', path: '/transport', icon: Bus, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
   ] },
