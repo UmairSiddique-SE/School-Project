@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { BarChart3, Bell, BookOpen, BriefcaseBusiness, Building2, Bus, CalendarDays, ChevronDown, ClipboardCheck, CreditCard, GraduationCap, LayoutDashboard, LockKeyhole, LogOut, Menu, Moon, NotebookTabs, PanelLeftClose, PanelLeftOpen, Search, Settings, ShieldCheck, School, Sun, UserRound, UsersRound, WalletCards, X, FileText } from 'lucide-react';
+import { Activity, BarChart3, Bell, BookOpen, BriefcaseBusiness, Building2, Bus, CalendarDays, ChevronDown, ClipboardCheck, CreditCard, GraduationCap, LayoutDashboard, LockKeyhole, LogOut, Menu, Moon, NotebookTabs, PanelLeftClose, PanelLeftOpen, Search, Settings, ShieldCheck, School, Sun, UserRound, UsersRound, WalletCards, X, FileText } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import type { UserRole } from '@/context/AuthContext';
@@ -28,6 +28,7 @@ const NAV: NavGroup[] = [
     { label: 'Timetable', path: '/timetable', icon: CalendarDays, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
   ] },
   { label: 'Daily Operations', items: [
+    { label: 'Operations Hub', path: '/daily-operations', icon: Activity, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
     { label: 'Attendance', path: '/attendance', icon: NotebookTabs, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
     { label: 'Fees & Finance', path: '/finance', icon: WalletCards, roles: ['SCHOOL_ADMIN'] },
     { label: 'Notice Board', path: '/notices', icon: Bell, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
