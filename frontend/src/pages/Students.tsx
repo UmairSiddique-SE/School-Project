@@ -182,6 +182,7 @@ export default function Students() {
   const [editing, setEditing] = useState<Student | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [credentials, setCredentials] = useState<any>(null);
+  const [lastAdmitted, setLastAdmitted] = useState<{ student: Student; creds: { loginId: string; password: string } } | null>(null);
   const [moveMode, setMoveMode] = useState<'promote' | 'transfer' | null>(null);
   const [targetSection, setTargetSection] = useState('');
 
@@ -419,10 +420,12 @@ export default function Students() {
       } else {
         const response = await apiClient.post('/people/students', payload);
         const createdCredentials = response.data?.credentials;
-        if (createdCredentials) {
+        const createdStudent = response.data?.student;
+        if (createdCredentials && createdStudent) {
           setCredentials(createdCredentials);
+          setLastAdmitted({ student: createdStudent, creds: createdCredentials });
         }
-        toast.success(`Student admitted — ${response.data?.student?.admissionNo || form.admissionNo}`);
+        toast.success(`✅ Student admitted — ${createdStudent?.admissionNo || form.admissionNo}`);
         setView('list');
       }
       await load();
@@ -464,16 +467,33 @@ export default function Students() {
     }
   };
 
-  const printId = (student: Student) => {
-    const popup = window.open('', '_blank', 'width=540,height=760');
+  const printId = (student: Student, creds?: { loginId: string; password: string }) => {
+    const popup = window.open('', '_blank', 'width=580,height=860');
     if (!popup) return toast.error('Please allow popups to print the ID card');
     const photo = student.avatarUrl || '';
-    popup.document.write(`<!doctype html><html><head><title>${student.name} - ID Card</title><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;padding:28px;display:flex;justify-content:center}.card{width:360px;border-radius:24px;overflow:hidden;background:#1e293b;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.5)}.head{padding:24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;text-align:center}.photo{width:90px;height:90px;border-radius:22px;object-fit:cover;background:#334155;margin:0 auto 12px;border:3px solid #fff;display:block}.body{padding:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #334155;padding:8px 0}.muted{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em}.value{font-weight:700;font-size:13px;color:#fff}</style></head><body><div class='card'><div class='head'>${photo ? `<img class='photo' src='${photo}'/>` : `<div class='photo' style='display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;'>${student.name.charAt(0)}</div>`}<div style='font-size:10px;letter-spacing:0.2em;opacity:.8;font-weight:900;'>EDUSPHERE STUDENT ID</div><h2 style='margin:4px 0 0;font-size:20px;font-weight:900;'>${student.name}</h2></div><div class='body'><div class='row'><span class='muted'>Admission No</span><span class='value'>${student.admissionNo || '—'}</span></div><div class='row'><span class='muted'>Roll No</span><span class='value'>${student.rollNo || '—'}</span></div><div class='row'><span class='muted'>Class / Sec</span><span class='value'>${student.section?.class?.name || '—'} / ${student.section?.name || '—'}</span></div><div class='row'><span class='muted'>Session</span><span class='value'>${student.session || currentSession}</span></div><div class='row'><span class='muted'>Blood Group</span><span class='value'>${student.bloodGroup || '—'}</span></div><div class='row' style='border:none;'><span class='muted'>Emergency</span><span class='value'>${student.fatherMobile1 || student.phone || '—'}</span></div></div></div><script>window.onload=()=>window.print()</script></body></html>`);
+    const admNo = student.admissionNo || '—';
+    // Generate barcode SVG bars from admission number text
+    const barcodeData = admNo.replace(/[^A-Z0-9-]/gi, '').padEnd(16, '0').slice(0, 16);
+    const bars = barcodeData.split('').map((ch) => {
+      const code = ch.charCodeAt(0);
+      return [(code & 1) ? 3 : 1, (code & 2) ? 3 : 1, (code & 4) ? 3 : 1, (code & 8) ? 2 : 1];
+    }).flat();
+    let barSvg = `<svg width="220" height="50" xmlns="http://www.w3.org/2000/svg">`;
+    let x = 4;
+    bars.forEach((w, i) => { barSvg += `<rect x="${x}" y="4" width="${w}" height="36" fill="${i % 2 === 0 ? '#fff' : 'transparent'}" />`; x += w + 1; });
+    barSvg += `<text x="110" y="48" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="monospace">${admNo}</text></svg>`;
+
+    const loginLine = creds ? `<div class='row'><span class='muted'>Login ID</span><span class='value mono' style='font-size:11px;color:#67e8f9'>${creds.loginId}</span></div><div class='row' style='border:none'><span class='muted'>Password</span><span class='value mono' style='color:#fcd34d'>${creds.password}</span></div>` : '';
+
+    popup.document.write(`<!doctype html><html><head><title>${student.name} — Student ID</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;gap:20px}.card{width:380px;border-radius:24px;overflow:hidden;background:#1e293b;border:2px solid #334155;box-shadow:0 24px 48px rgba(0,0,0,.6)}.head{padding:20px 22px 16px;background:linear-gradient(135deg,#0369a1,#1d4ed8,#4338ca);text-align:center;position:relative}.school{font-size:9px;letter-spacing:0.25em;font-weight:900;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:14px}.photo-wrap{width:88px;height:88px;border-radius:18px;overflow:hidden;margin:0 auto 12px;border:3px solid rgba(255,255,255,.9);background:#334155;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:white}.photo-wrap img{width:100%;height:100%;object-fit:cover}.name{font-size:18px;font-weight:900;color:white;margin-bottom:2px}.badge{display:inline-block;font-size:9px;font-weight:900;letter-spacing:.15em;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 10px;color:rgba(255,255,255,.9)}.body{padding:18px 22px}.row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;padding:8px 0;gap:8px}.muted{font-size:9.5px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap}.value{font-weight:700;font-size:12.5px;color:#f1f5f9;text-align:right}.mono{font-family:monospace}.barcode{padding:14px 22px 16px;border-top:1px solid #334155;display:flex;flex-direction:column;align-items:center;gap:4px}.bc-label{font-size:8.5px;color:#64748b;letter-spacing:.15em;text-transform:uppercase}.status{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:900;letter-spacing:.1em;background:#064e3b;border:1px solid #065f46;border-radius:999px;padding:3px 10px;color:#34d399;margin-top:8px}@media print{body{background:#fff;padding:0}.card{box-shadow:none;border-color:#e2e8f0;background:#fff}.head{-webkit-print-color-adjust:exact;print-color-adjust:exact}.body,.barcode{background:#fff}.muted{color:#64748b}.value{color:#0f172a}.row{border-color:#e2e8f0}.barcode{border-color:#e2e8f0}}</style></head><body><div class='card'><div class='head'><div class='school'>EduSphere Campus Management</div>${photo ? `<div class='photo-wrap'><img src='${photo}'/></div>` : `<div class='photo-wrap'>${student.name.charAt(0)}</div>`}<div class='name'>${student.name}</div><div style='margin-top:6px'><span class='badge'>STUDENT IDENTITY CARD</span></div></div><div class='body'><div class='row'><span class='muted'>Admission No</span><span class='value mono' style='color:#67e8f9'>${admNo}</span></div><div class='row'><span class='muted'>Roll Number</span><span class='value'>${student.rollNo || '—'}</span></div><div class='row'><span class='muted'>Class</span><span class='value'>${student.section?.class?.name || '—'}</span></div><div class='row'><span class='muted'>Section</span><span class='value'>${student.section?.name || '—'}</span></div><div class='row'><span class='muted'>Session</span><span class='value'>${student.session || '${currentSession}'}</span></div><div class='row'><span class='muted'>Blood Group</span><span class='value' style='color:#f87171'>${student.bloodGroup || '—'}</span></div><div class='row' style='border:none'><span class='muted'>Emergency</span><span class='value mono' style='font-size:11px'>${student.fatherMobile1 || student.phone || '—'}</span></div>${loginLine}</div><div class='barcode'><span class='bc-label'>Scan to Verify Identity</span>${barSvg}<span class='status'>✓ VERIFIED STUDENT</span></div></div><script>window.onload=()=>{window.print()}</script></body></html>`);
     popup.document.close();
   };
 
-  const copyCredentials = (student: Student) => {
-    const credText = `*EduSphere Portal Access*\nStudent: ${student.name}\nAdmission No: ${student.admissionNo}\nStudent Login: ${student.email || `${student.admissionNo?.toLowerCase()}@school.edu`}\nDefault Password: ${student.admissionNo}!2026\nParent Login: ${student.admissionNo?.toLowerCase()}_parent@school.edu\nParent Password: Parent${student.admissionNo}!2026`;
+  const copyCredentials = (student: Student, creds?: { loginId: string; password: string }) => {
+    const loginId = creds?.loginId || student.email || `${(student.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    const pass = creds?.password || '(Contact admin for password)';
+    const parentLogin = `${(student.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
+    const credText = `*EduSphere Portal Access*\n\nStudent: ${student.name}\nAdmission No: ${student.admissionNo}\n\n🎓 STUDENT LOGIN\nLogin ID: ${loginId}\nPassword: ${pass}\n\n👪 PARENT LOGIN\nLogin ID: ${parentLogin}\nPassword: (Provided separately)`;
     navigator.clipboard.writeText(credText);
     setCopied(true);
     toast.success('Login credentials copied to clipboard');
@@ -934,6 +954,70 @@ export default function Students() {
   // ══════════════════════════════════════════════════════════════
   return (
     <div className="mx-auto max-w-screen-2xl space-y-6 pb-20">
+      {/* ── POST-ADMISSION CREDENTIALS BANNER ── */}
+      {lastAdmitted && (
+        <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-cyan-950/60 p-6 shadow-2xl animate-fade-in">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+          <div className="relative flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+            {/* Left: Student Info */}
+            <div className="flex items-center gap-4 flex-1">
+              <div className="h-16 w-16 rounded-2xl overflow-hidden bg-slate-800 border-2 border-emerald-500/50 shrink-0 flex items-center justify-center font-black text-2xl text-emerald-400">
+                {lastAdmitted.student.avatarUrl ? (
+                  <img src={lastAdmitted.student.avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  lastAdmitted.student.name?.charAt(0)
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Admission Successful</span>
+                </div>
+                <h3 className="text-lg font-black text-white">{lastAdmitted.student.name}</h3>
+                <p className="text-xs text-slate-400 font-mono">{lastAdmitted.student.admissionNo}</p>
+              </div>
+            </div>
+
+            {/* Middle: Credentials */}
+            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+              <div className="flex-1 rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-wider text-cyan-400 mb-1">🎓 Student Login ID</p>
+                <p className="font-mono font-bold text-sm text-white break-all">{lastAdmitted.creds.loginId}</p>
+              </div>
+              <div className="flex-1 rounded-2xl border border-amber-500/30 bg-slate-900/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-wider text-amber-400 mb-1">🔑 Student Password</p>
+                <p className="font-mono font-bold text-sm text-amber-300 tracking-widest">{lastAdmitted.creds.password}</p>
+              </div>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => { copyCredentials(lastAdmitted.student, lastAdmitted.creds); }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-cyan-500 transition"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />} Copy
+              </button>
+              <button
+                onClick={() => printId(lastAdmitted.student, lastAdmitted.creds)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-600 bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-slate-700 transition"
+              >
+                <Printer size={14} /> Print ID
+              </button>
+              <button
+                onClick={() => setLastAdmitted(null)}
+                className="rounded-xl p-2.5 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          <p className="relative mt-3 text-[11px] text-amber-400/80 font-semibold">
+            ⚠️ Save these credentials now — the password cannot be recovered later. Share with student/parent immediately.
+          </p>
+        </div>
+      )}
+
       {/* Top Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-600/10 via-card to-blue-600/5 p-6 shadow-sm">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1374,130 +1458,150 @@ export default function Students() {
                 </div>
               )}
 
-              {/* ─── TAB: ID & PORTAL PASS (SIDE BY SIDE ID & PASSWORDS) ─── */}
-              {profileTab === 'credentials' && (
-                <div className="space-y-6 animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                    
-                    {/* Left: Physical ID Card Preview */}
-                    <div className="rounded-3xl border border-border bg-gradient-to-b from-card to-muted/20 p-6 flex flex-col justify-between shadow-sm">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-xs font-black uppercase tracking-wider text-cyan-500 flex items-center gap-1.5">
-                            <Sparkles size={14} /> Student Badge Preview
-                          </span>
-                          <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                            Session {profile.session || currentSession}
-                          </span>
+              {/* ─── TAB: ID & PORTAL PASS — PREMIUM BARCODE CARD + REAL CREDENTIALS ─── */}
+              {profileTab === 'credentials' && (() => {
+                const studentEmail = profile.email || `${(profile.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+                const parentEmail = `${(profile.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
+                // Barcode bars SVG
+                const barcodeRaw = (profile.admissionNo || 'ADM0000').replace(/[^A-Z0-9-]/gi, '').padEnd(16,'0').slice(0,16);
+                const bars = barcodeRaw.split('').map(ch => { const c = ch.charCodeAt(0); return [(c&1)?3:1,(c&2)?3:1,(c&4)?3:1,(c&8)?2:1]; }).flat();
+                let x = 0;
+                const rects = bars.map((w,i) => { const r = i%2===0 ? <rect key={i} x={x} y={0} width={w} height={34} fill="currentColor"/> : null; x+=w+0.8; return r; });
+                return (
+                  <div className="space-y-5 animate-fade-in">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+
+                      {/* ── LEFT: PREMIUM ID CARD WITH BARCODE ── */}
+                      <div className="flex flex-col gap-4">
+                        <div className="text-xs font-black uppercase tracking-wider text-cyan-500 flex items-center gap-1.5 mb-1">
+                          <Sparkles size={13} /> Student Identity Card
                         </div>
 
-                        {/* ID Card Graphic */}
-                        <div className="rounded-2xl border border-slate-700 bg-slate-900 text-white p-5 shadow-xl space-y-4">
-                          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                            <div>
-                              <p className="text-[10px] font-black tracking-widest uppercase text-cyan-400">EduSphere Campus</p>
-                              <h4 className="font-black text-sm">STUDENT IDENTITY CARD</h4>
+                        {/* Card */}
+                        <div className="rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900 text-white shadow-2xl">
+                          {/* Card Header */}
+                          <div className="px-5 pt-5 pb-4 bg-gradient-to-br from-blue-700 via-indigo-700 to-sky-700 relative overflow-hidden">
+                            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <p className="text-[9px] font-black tracking-[0.25em] uppercase text-blue-200/80">EduSphere Campus</p>
+                                <p className="text-[11px] font-black uppercase tracking-wider text-white mt-0.5">Student Identity Card</p>
+                              </div>
+                              <GraduationCap size={24} className="text-white/80" />
                             </div>
-                            <GraduationCap size={22} className="text-cyan-400" />
+                            {/* Photo + Info */}
+                            <div className="flex items-end gap-4">
+                              <div className="h-20 w-20 rounded-xl overflow-hidden border-2 border-white/80 bg-slate-800 shrink-0 flex items-center justify-center font-black text-3xl text-white shadow-lg">
+                                {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" /> : profile.name.charAt(0)}
+                              </div>
+                              <div className="pb-1">
+                                <h3 className="font-black text-lg text-white leading-tight">{profile.name}</h3>
+                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                  <span className="text-[10px] bg-white/15 border border-white/20 rounded-full px-2 py-0.5 text-white/90 font-bold">{profile.section?.class?.name || 'Class'} / {profile.section?.name || '—'}</span>
+                                  <span className="text-[10px] bg-white/15 border border-white/20 rounded-full px-2 py-0.5 text-amber-200 font-bold">{profile.session || currentSession}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="flex gap-4 items-center">
-                            <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 shrink-0 flex items-center justify-center font-bold text-xl">
-                              {profile.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" />
-                              ) : (
-                                profile.name.charAt(0)
+                          {/* Card Body */}
+                          <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-2">
+                            {[['Admission No', profile.admissionNo, 'text-cyan-400'],['Roll No', profile.rollNo || '—', 'text-white'],['Blood Group', profile.bloodGroup || '—', 'text-rose-400'],['DOB', profile.dateOfBirth ? String(profile.dateOfBirth).slice(0,10) : '—', 'text-white'],['Religion', profile.religion || '—', 'text-white'],['Gender', profile.gender || '—', 'text-white']].map(([label, val, color]) => (
+                              <div key={label as string} className="border-b border-slate-800 pb-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">{label}</p>
+                                <p className={`text-[12px] font-bold mt-0.5 font-mono ${color}`}>{val}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Barcode Strip */}
+                          <div className="px-5 py-4 border-t border-slate-800 flex flex-col items-center gap-2">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Scan to Verify Student Identity</p>
+                            <svg width="220" height="42" viewBox={`0 0 ${x} 34`} className="text-white" preserveAspectRatio="none">
+                              {rects}
+                            </svg>
+                            <p className="font-mono text-[10px] text-slate-500 tracking-wider">{profile.admissionNo}</p>
+                            <span className="mt-1 inline-flex items-center gap-1.5 text-[9px] font-black tracking-wider uppercase bg-emerald-900/60 border border-emerald-700/60 rounded-full px-3 py-1 text-emerald-400">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> VERIFIED STUDENT
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => printId(profile)}
+                          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-700 py-3 text-xs font-bold text-white shadow-lg hover:brightness-110 transition"
+                        >
+                          <Printer size={15} /> Print Professional ID Card
+                        </button>
+                      </div>
+
+                      {/* ── RIGHT: REAL LOGIN CREDENTIALS ── */}
+                      <div className="flex flex-col gap-4">
+                        <div className="text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-1.5 mb-1">
+                          <Key size={13} /> Portal Login Credentials
+                          <span className="ml-auto text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Active</span>
+                        </div>
+
+                        {/* Student Login */}
+                        <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 to-slate-900/60 p-4 space-y-3">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                            <GraduationCap size={12} /> Student Portal Access
+                          </p>
+                          <div className="space-y-2">
+                            <div className="rounded-xl bg-slate-900/80 border border-slate-700/60 p-3">
+                              <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Login ID / Email</p>
+                              <p className="font-mono font-bold text-sm text-cyan-300 break-all">{studentEmail}</p>
+                            </div>
+                            <div className="rounded-xl bg-slate-900/80 border border-slate-700/60 p-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Password</p>
+                                <button onClick={() => setShowPassword(!showPassword)} className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1 font-semibold">
+                                  {showPassword ? <EyeOff size={11} /> : <Eye size={11} />} {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                              </div>
+                              <p className="font-mono font-bold text-sm text-amber-300 tracking-widest">
+                                {showPassword
+                                  ? (credentials?.loginId === studentEmail ? credentials?.password : '(Password set at admission time)')
+                                  : '•••••••••••••'}
+                              </p>
+                              {!credentials && (
+                                <p className="text-[10px] text-slate-500 mt-1">Password was set at registration. Contact admin to reset.</p>
                               )}
                             </div>
-                            <div className="space-y-0.5 text-xs">
-                              <p className="font-black text-base text-white">{profile.name}</p>
-                              <p className="text-slate-400">Adm No: <strong className="text-cyan-400">{profile.admissionNo}</strong></p>
-                              <p className="text-slate-400">Class: <strong>{profile.section?.class?.name || 'Class'} ({profile.section?.name || 'A'})</strong></p>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
-                            <span>Blood: <b className="text-white">{profile.bloodGroup || 'O+'}</b></span>
-                            <span>Roll: <b className="text-white">{profile.rollNo || '01'}</b></span>
-                            <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-cyan-300">VERIFIED</span>
                           </div>
                         </div>
+
+                        {/* Parent Login */}
+                        <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-950/40 to-slate-900/60 p-4 space-y-3">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
+                            <Users size={12} /> Parent Portal Access
+                          </p>
+                          <div className="rounded-xl bg-slate-900/80 border border-slate-700/60 p-3">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Parent Login ID</p>
+                            <p className="font-mono font-bold text-sm text-violet-300 break-all">{parentEmail}</p>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Parent password was set during student admission. Reset from portal if needed.</p>
+                        </div>
+
+                        {/* Login URL Info */}
+                        <div className="rounded-2xl border border-slate-700/60 bg-slate-900/40 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Portal Login URL</p>
+                          <p className="font-mono text-xs text-slate-300">Use school-assigned portal or admin-provided URL to login.</p>
+                        </div>
+
+                        <button
+                          onClick={() => copyCredentials(profile, credentials?.loginId === studentEmail ? credentials : undefined)}
+                          className="w-full flex items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 py-3 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20 transition"
+                        >
+                          {copied ? <Check size={15} /> : <Copy size={15} />}
+                          {copied ? 'Copied to Clipboard!' : 'Copy All Login Credentials'}
+                        </button>
                       </div>
 
-                      <button
-                        onClick={() => printId(profile)}
-                        className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 py-3 text-xs font-bold text-white shadow-md hover:brightness-110 transition"
-                      >
-                        <Printer size={15} /> Print Physical ID Card
-                      </button>
                     </div>
-
-                    {/* Right: Login ID & Password Credentials */}
-                    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between space-y-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
-                            <Key size={14} /> Portal Credentials
-                          </span>
-                          <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                            Login Ready
-                          </span>
-                        </div>
-
-                        <div className="space-y-3">
-                          <div className="rounded-xl border border-border bg-muted/30 p-3">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">
-                              Student Portal Login ID / Email
-                            </span>
-                            <p className="font-mono font-bold text-sm text-foreground mt-0.5">
-                              {profile.email || `${profile.admissionNo?.toLowerCase()}@school.edu`}
-                            </p>
-                          </div>
-
-                          <div className="rounded-xl border border-border bg-muted/30 p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                Student Password
-                              </span>
-                              <button
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="text-xs text-cyan-500 hover:underline flex items-center gap-1 font-semibold"
-                              >
-                                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-                                {showPassword ? 'Hide' : 'Show'}
-                              </button>
-                            </div>
-                            <p className="font-mono font-bold text-sm text-foreground mt-1 tracking-wider">
-                              {showPassword ? (profile.admissionNo ? `${profile.admissionNo}!2026` : 'Student123!') : '••••••••••••'}
-                            </p>
-                          </div>
-
-                          <div className="rounded-xl border border-border bg-muted/30 p-3">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">
-                              Parent Portal Login
-                            </span>
-                            <p className="font-mono font-bold text-xs text-foreground mt-0.5">
-                              {`${profile.admissionNo?.toLowerCase()}_parent@school.edu`}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              Password: <code className="text-amber-500">Parent{profile.admissionNo}!2026</code>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => copyCredentials(profile)}
-                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 py-3 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition"
-                      >
-                        {copied ? <Check size={15} /> : <Copy size={15} />}
-                        {copied ? 'Copied to Clipboard!' : 'Copy All Login Credentials'}
-                      </button>
-                    </div>
-
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* ─── TAB: PERSONAL & FAMILY ─── */}
               {profileTab === 'family' && (
@@ -1614,6 +1718,12 @@ export default function Students() {
                   className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
                 >
                   <Printer size={14} className="text-cyan-500" /> Print ID Card
+                </button>
+                <button
+                  onClick={() => { setProfile(null); setProfileTab('credentials'); }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-500 hover:bg-amber-500/20 transition"
+                >
+                  <Key size={14} /> View Credentials
                 </button>
               </div>
 
