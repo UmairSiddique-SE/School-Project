@@ -8,7 +8,7 @@ import {
   FileBarChart2, TrendingUp, DollarSign, Award, Users, Calendar,
   Download, Printer, CheckCircle, AlertTriangle, ArrowUpRight,
   Layers, Sparkles, BookOpen, GraduationCap, X, RefreshCw,
-  CircleDashed
+  CircleDashed, FileText
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/api/apiClient';
@@ -91,17 +91,27 @@ export default function Reports() {
   const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(null);
   const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
   const [classes, setClasses] = useState<ClassRow[]>([]);
+  const [exams, setExams] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  const [reportCardData, setReportCardData] = useState<any>(null);
+  const [loadingReportCard, setLoadingReportCard] = useState(false);
+  const [selectedExamId, setSelectedExamId] = useState<string>('');
+  const [examAnalytics, setExamAnalytics] = useState<any>(null);
+  const [loadingExamAnalytics, setLoadingExamAnalytics] = useState(false);
 
   // ─── Load Data ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [peopleRes, financeRes, attendanceRes, classesRes] = await Promise.allSettled([
+        const [peopleRes, financeRes, attendanceRes, classesRes, examsRes, studentsRes] = await Promise.allSettled([
           apiClient.get<PeopleStats>('/people/stats'),
           apiClient.get<FinanceSummary>('/finance/summary'),
           apiClient.get<AttendanceSummary>('/attendance/summary'),
           apiClient.get<ClassRow[]>('/classes'),
+          apiClient.get<any[]>('/exams'),
+          apiClient.get<any[]>('/people/students'),
         ]);
 
         if (peopleRes.status === 'fulfilled') setStats(peopleRes.value.data);
@@ -111,6 +121,18 @@ export default function Reports() {
           const raw = classesRes.value.data;
           setClasses(Array.isArray(raw) ? raw : []);
         }
+        if (examsRes.status === 'fulfilled') {
+          const rawExams = examsRes.value.data;
+          const exList = Array.isArray(rawExams) ? rawExams : [];
+          setExams(exList);
+          if (exList.length > 0) setSelectedExamId(exList[0].id);
+        }
+        if (studentsRes.status === 'fulfilled') {
+          const rawStudents = studentsRes.value.data;
+          const stList = Array.isArray(rawStudents) ? rawStudents : [];
+          setStudents(stList);
+          if (stList.length > 0) setSelectedStudentId(stList[0].id);
+        }
       } catch (e) {
         // Individual errors handled by allSettled
       } finally {
@@ -119,6 +141,40 @@ export default function Reports() {
     };
     void load();
   }, [user?.schoolId, refreshKey]);
+
+  // Fetch Report Card when selectedStudentId changes
+  useEffect(() => {
+    if (!selectedStudentId) return;
+    const fetchCard = async () => {
+      setLoadingReportCard(true);
+      try {
+        const { data } = await apiClient.get(`/exams/report-card/${selectedStudentId}`);
+        setReportCardData(data);
+      } catch {
+        setReportCardData(null);
+      } finally {
+        setLoadingReportCard(false);
+      }
+    };
+    void fetchCard();
+  }, [selectedStudentId]);
+
+  // Fetch Exam Analytics when selectedExamId changes
+  useEffect(() => {
+    if (!selectedExamId) return;
+    const fetchExamStats = async () => {
+      setLoadingExamAnalytics(true);
+      try {
+        const { data } = await apiClient.get(`/exams/analytics/${selectedExamId}`);
+        setExamAnalytics(data);
+      } catch {
+        setExamAnalytics(null);
+      } finally {
+        setLoadingExamAnalytics(false);
+      }
+    };
+    void fetchExamStats();
+  }, [selectedExamId]);
 
   // ─── Derived Data ──────────────────────────────────────────────────────────
 
@@ -622,6 +678,261 @@ export default function Reports() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
+            {/* 1. Exam Performance Intelligence */}
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+                <div>
+                  <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                    <Award size={18} className="text-amber-500" /> Examination Performance Intelligence
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Class pass ratios, average scores, and top ranked candidates</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-muted-foreground">Select Exam:</span>
+                  <select
+                    value={selectedExamId}
+                    onChange={e => setSelectedExamId(e.target.value)}
+                    className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    {exams.map(ex => (
+                      <option key={ex.id} value={ex.id}>
+                        {ex.name} ({ex.type})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {loadingExamAnalytics ? (
+                <div className="py-8 text-center text-xs text-muted-foreground animate-pulse">
+                  Calculating examination analytics...
+                </div>
+              ) : !examAnalytics ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  Select an exam to view performance metrics.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Summary Tiles */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="rounded-2xl border border-border bg-muted/20 p-3.5 text-center">
+                      <p className="text-xl font-black text-foreground">{examAnalytics.summary?.totalStudents || 0}</p>
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Candidates</p>
+                    </div>
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-center">
+                      <p className="text-xl font-black text-emerald-500">{examAnalytics.summary?.passedStudents || 0}</p>
+                      <p className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400">Passed ({examAnalytics.summary?.passPercentage || 0}%)</p>
+                    </div>
+                    <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-center">
+                      <p className="text-xl font-black text-rose-500">{examAnalytics.summary?.failedStudents || 0}</p>
+                      <p className="text-[10px] uppercase font-bold text-rose-600 dark:text-rose-400">Needs Improvement</p>
+                    </div>
+                    <div className="rounded-2xl border border-primary/30 bg-primary/10 p-3.5 text-center">
+                      <p className="text-xl font-black text-primary">{examAnalytics.summary?.averagePercentage || 0}%</p>
+                      <p className="text-[10px] uppercase font-bold text-primary">Class Average</p>
+                    </div>
+                  </div>
+
+                  {/* Subject Breakdown & Toppers */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    {/* Subject-Wise Pass Rates */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Subject Pass Rates</h4>
+                      <div className="space-y-2.5">
+                        {(examAnalytics.subjectAnalytics || []).map((sub: any) => (
+                          <div key={sub.subjectId} className="bg-muted/20 border border-border/80 rounded-2xl p-3 space-y-1.5">
+                            <div className="flex justify-between text-xs font-bold">
+                              <span className="text-foreground">{sub.subjectName}</span>
+                              <span className="text-primary font-mono">{sub.passPercentage}% Pass Rate</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                              <div className="bg-primary h-full rounded-full" style={{ width: `${sub.passPercentage}%` }} />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-muted-foreground pt-0.5">
+                              <span>Average: {sub.averageMarks} Marks</span>
+                              <span>Highest: {sub.highestMarks}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Top 5 Toppers */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Award size={13} className="text-amber-500" /> Class Toppers Leaderboard
+                      </h4>
+                      <div className="rounded-2xl border border-border/80 overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                            <tr>
+                              <th className="p-2.5">Rank</th>
+                              <th className="p-2.5">Student</th>
+                              <th className="p-2.5">Percentage</th>
+                              <th className="p-2.5 text-center">Grade</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {(examAnalytics.students || []).slice(0, 5).map((st: any) => (
+                              <tr key={st.studentId} className="hover:bg-muted/20">
+                                <td className="p-2.5 font-bold">
+                                  <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-[11px] font-black ${
+                                    st.position === 1 ? 'bg-amber-500 text-white' :
+                                    st.position === 2 ? 'bg-slate-300 text-slate-800' :
+                                    st.position === 3 ? 'bg-amber-700 text-white' : 'bg-muted text-foreground'
+                                  }`}>
+                                    {st.position}
+                                  </span>
+                                </td>
+                                <td className="p-2.5 font-bold text-foreground">
+                                  {st.name} <span className="text-[10px] text-muted-foreground font-normal">({st.admissionNo})</span>
+                                </td>
+                                <td className="p-2.5 font-mono font-bold text-foreground">{st.percentage}%</td>
+                                <td className="p-2.5 text-center font-black text-primary">{st.grade}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Official Student Report Card Generator */}
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+                <div>
+                  <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                    <FileText size={18} className="text-primary" /> Official Student Report Card &amp; Marksheet Generator
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Generate and print full student academic transcripts with grades, GPAs, and remarks</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-muted-foreground">Select Candidate:</span>
+                  <select
+                    value={selectedStudentId}
+                    onChange={e => setSelectedStudentId(e.target.value)}
+                    className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 max-w-xs"
+                  >
+                    {students.map(st => (
+                      <option key={st.id} value={st.id}>
+                        {st.name} (Adm: {st.admissionNo || '—'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {loadingReportCard ? (
+                <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+                  Generating official report card transcript...
+                </div>
+              ) : !reportCardData || (reportCardData.exams || []).length === 0 ? (
+                <div className="py-12 text-center text-xs text-muted-foreground italic">
+                  No published exam results found for this student.
+                </div>
+              ) : (
+                <div className="rounded-3xl border-2 border-primary/20 bg-card p-6 shadow-md space-y-6">
+                  {/* Marksheet Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-border/80 pb-4">
+                    <div>
+                      <h4 className="text-xl font-black text-foreground uppercase tracking-tight">{schoolName}</h4>
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider">OFFICIAL ACADEMIC TRANSCRIPT &amp; REPORT CARD</p>
+                    </div>
+
+                    <button
+                      onClick={() => window.print()}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-md hover:brightness-110 transition"
+                    >
+                      <Printer size={14} /> Print Marksheet
+                    </button>
+                  </div>
+
+                  {/* Student Bio Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-muted/30 p-4 rounded-2xl border border-border/60 text-xs">
+                    <div>
+                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Student Name</span>
+                      <strong className="text-foreground text-sm">{reportCardData.student?.name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Admission No</span>
+                      <strong className="text-foreground font-mono">{reportCardData.student?.admissionNo || '—'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Class &amp; Section</span>
+                      <strong className="text-foreground">{reportCardData.student?.className} ({reportCardData.student?.sectionName})</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Father / Guardian</span>
+                      <strong className="text-foreground">{reportCardData.student?.fatherName || '—'}</strong>
+                    </div>
+                  </div>
+
+                  {/* Exam-wise Marksheets */}
+                  <div className="space-y-5">
+                    {reportCardData.exams.map((ex: any) => (
+                      <div key={ex.examId} className="rounded-2xl border border-border/80 overflow-hidden space-y-2">
+                        <div className="bg-muted/40 p-3.5 flex items-center justify-between border-b border-border/60">
+                          <div>
+                            <span className="font-black text-sm text-foreground">{ex.examName}</span>
+                            <span className="text-xs text-muted-foreground ml-2">({ex.examType})</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-mono font-bold text-foreground">
+                              {ex.marksObtainedTotal} / {ex.maxMarksTotal} ({ex.overallPercentage}%)
+                            </span>
+                            <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                              Grade {ex.overallGrade}
+                            </span>
+                          </div>
+                        </div>
+
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/20 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                            <tr>
+                              <th className="p-3">Subject</th>
+                              <th className="p-3">Total Marks</th>
+                              <th className="p-3">Passing</th>
+                              <th className="p-3">Marks Obtained</th>
+                              <th className="p-3 text-center">Grade</th>
+                              <th className="p-3 text-center">Result</th>
+                              <th className="p-3">Remarks</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {ex.subjects.map((sub: any) => (
+                              <tr key={sub.subjectId} className="hover:bg-muted/10">
+                                <td className="p-3 font-bold text-foreground">{sub.subjectName}</td>
+                                <td className="p-3 font-mono text-muted-foreground">{sub.totalMarks}</td>
+                                <td className="p-3 font-mono text-muted-foreground">{sub.passingMarks}</td>
+                                <td className="p-3 font-mono font-bold text-foreground">
+                                  {sub.isAbsent ? 'Absent' : sub.marksObtained}
+                                </td>
+                                <td className="p-3 text-center font-black text-primary">{sub.grade}</td>
+                                <td className="p-3 text-center">
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                    sub.isPassed ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                                  }`}>
+                                    {sub.isPassed ? 'PASS' : 'FAIL'}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-muted-foreground text-[11px]">{sub.remarks}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Class Enrollment & Institutional Overview */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Class Enrollment Chart */}
               <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">

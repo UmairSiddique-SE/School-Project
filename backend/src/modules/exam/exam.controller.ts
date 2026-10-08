@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query, Patch, Param, UseGuards,
+  Controller, Get, Post, Put, Patch, Delete, Body, Query, Param, UseGuards,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -23,6 +23,19 @@ export class ExamController {
     return this.examService.createExam(user.schoolId, dto);
   }
 
+  @Put(':id')
+  @Patch(':id')
+  @Roles('SCHOOL_ADMIN')
+  updateExam(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    return this.examService.updateExam(user.schoolId, id, dto);
+  }
+
+  @Delete(':id')
+  @Roles('SCHOOL_ADMIN')
+  deleteExam(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.examService.deleteExam(user.schoolId, id);
+  }
+
   @Patch(':id/publish')
   @Roles('SCHOOL_ADMIN')
   publishExam(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
@@ -40,7 +53,7 @@ export class ExamController {
   getResults(
     @CurrentUser() user: any,
     @Query('examId') examId: string,
-    @Query('subjectId') subjectId: string,
+    @Query('subjectId') subjectId?: string,
   ) {
     return this.examService.getExamResults(user.schoolId, examId, subjectId, user);
   }
@@ -53,5 +66,25 @@ export class ExamController {
       dto,
       user.role === 'TEACHER' ? user.email : undefined,
     );
+  }
+
+  @Get('analytics/:id')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  getExamAnalytics(
+    @CurrentUser() user: any,
+    @Param('id') examId: string,
+    @Query('sectionId') sectionId?: string,
+  ) {
+    return this.examService.getExamAnalytics(user.schoolId, examId, sectionId);
+  }
+
+  @Get('report-card/:studentId')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
+  getStudentReportCard(
+    @CurrentUser() user: any,
+    @Param('studentId') studentId: string,
+    @Query('academicYearId') academicYearId?: string,
+  ) {
+    return this.examService.getStudentReportCard(user.schoolId, studentId, academicYearId);
   }
 }

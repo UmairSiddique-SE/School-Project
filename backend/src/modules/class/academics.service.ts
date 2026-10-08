@@ -58,46 +58,183 @@ export class AcademicsService {
       const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null }, select: { sectionId: true } });
       if (!student?.sectionId) return [];
       where.sectionId = student.sectionId;
+    } else if (user?.role === 'TEACHER' && user.email) {
+      // Teachers can see their own timetable or full school timetable
+      // by default return full school timetable for viewing class/teacher schedules
     }
-    return this.prisma.timetable.findMany({ where, include: { section: { include: { class: true } }, subject: true, teacher: true }, orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] });
+    return this.prisma.timetable.findMany({
+      where,
+      include: {
+        section: { include: { class: true } },
+        subject: true,
+        teacher: { select: { id: true, name: true, employeeNo: true, email: true } },
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
   }
 
   async createTimetable(schoolId: string, data: any) {
     const dayOfWeek = Number(data.dayOfWeek);
     if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) throw new BadRequestException('Day of week must be between 0 and 6');
-    if (!data.startTime || !data.endTime || !data.sectionId || !data.subjectId || !data.teacherId) throw new BadRequestException('Section, subject, teacher, start time and end time are required');
+    if (!data.startTime || !data.endTime || !data.sectionId || !data.subjectId || !data.teacherId) {
+      throw new BadRequestException('Section, subject, teacher, start time, and end time are required');
+    }
     if (data.startTime >= data.endTime) throw new BadRequestException('End time must be after start time');
+
     const [section, subject, teacher] = await Promise.all([
-      this.prisma.section.findFirst({ where: { id: data.sectionId, class: { schoolId }, deletedAt: null } }),
+      this.prisma.section.findFirst({ where: { id: data.sectionId, class: { schoolId }, deletedAt: null }, include: { class: true } }),
       this.prisma.subject.findFirst({ where: { id: data.subjectId, schoolId, deletedAt: null } }),
       this.prisma.teacher.findFirst({ where: { id: data.teacherId, schoolId, deletedAt: null } }),
     ]);
     if (!section) throw new NotFoundException('Section not found');
     if (!subject) throw new NotFoundException('Subject not found');
     if (!teacher) throw new NotFoundException('Teacher not found');
-    const assignment = await this.prisma.classSubject.findFirst({ where: { classId: section.classId, subjectId: data.subjectId, teacherId: data.teacherId } });
-    if (!assignment) throw new ForbiddenException('Teacher is not assigned to this subject for the selected class');
-    const conflict = await this.prisma.timetable.findFirst({ where: { sectionId: data.sectionId, dayOfWeek, startTime: { lt: data.endTime }, endTime: { gt: data.startTime } } });
-    if (conflict) throw new BadRequestException('This section already has a timetable entry in the selected time slot');
-    return this.prisma.timetable.create({ data: { dayOfWeek, startTime: data.startTime, endTime: data.endTime, room: data.room || null, sectionId: data.sectionId, subjectId: data.subjectId, teacherId: data.teacherId } });
+
+    // Automatically sync/upsert teacher assignment on classSubject
+    await this.prisma.classSubject.upsert({
+      where: { classId_subjectId: { classId: section.classId, subjectId: data.subjectId } },
+      create: { classId: section.classId, subjectId: data.subjectId, teacherId: data.teacherId },
+      update: { teacherId: data.teacherId },
+    });
+
+    // 1. Conflict Check: Section duplicate period
+    const sectionConflict = await this.prisma.timetable.findFirst({
+      where: {
+        sectionId: data.sectionId,
+        dayOfWeek,
+        startTime: { lt: data.endTime },
+        endTime: { gt: data.startTime },
+      },
+      include: { subject: true },
+    });
+    if (sectionConflict) {
+      throw new BadRequestException(`Schedule Conflict: Section already has "${sectionConflict.subject.name}" period from ${sectionConflict.startTime} to ${sectionConflict.endTime} on this day.`);
+    }
+
+    // 2. Conflict Check: Teacher double-booking
+    const teacherConflict = await this.prisma.timetable.findFirst({
+      where: {
+        teacherId: data.teacherId,
+        dayOfWeek,
+        startTime: { lt: data.endTime },
+        endTime: { gt: data.startTime },
+      },
+      include: { section: { include: { class: true } }, subject: true },
+    });
+    if (teacherConflict) {
+      throw new BadRequestException(`Teacher Conflict: ${teacher.name} is already assigned to ${teacherConflict.section.class.name} (${teacherConflict.section.name}) for "${teacherConflict.subject.name}" from ${teacherConflict.startTime} to ${teacherConflict.endTime}.`);
+    }
+
+    // 3. Conflict Check: Room collision
+    const room = data.room?.trim() || null;
+    if (room) {
+      const roomConflict = await this.prisma.timetable.findFirst({
+        where: {
+          room,
+          section: { class: { schoolId } },
+          dayOfWeek,
+          startTime: { lt: data.endTime },
+          endTime: { gt: data.startTime },
+        },
+        include: { section: { include: { class: true } }, subject: true },
+      });
+      if (roomConflict) {
+        throw new BadRequestException(`Room Conflict: Room "${room}" is occupied by ${roomConflict.section.class.name} (${roomConflict.section.name}) from ${roomConflict.startTime} to ${roomConflict.endTime}.`);
+      }
+    }
+
+    return this.prisma.timetable.create({
+      data: {
+        dayOfWeek,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        room,
+        sectionId: data.sectionId,
+        subjectId: data.subjectId,
+        teacherId: data.teacherId,
+      },
+      include: {
+        section: { include: { class: true } },
+        subject: true,
+        teacher: { select: { id: true, name: true, employeeNo: true } },
+      },
+    });
   }
 
   async updateTimetable(id: string, schoolId: string, data: any) {
-    const timetable = await this.prisma.timetable.findFirst({ where: { id, section: { class: { schoolId } } } });
+    const timetable = await this.prisma.timetable.findFirst({
+      where: { id, section: { class: { schoolId } } },
+      include: { section: { include: { class: true } } },
+    });
     if (!timetable) throw new NotFoundException('Timetable entry not found');
-    const updateData: any = {};
-    if (data.dayOfWeek !== undefined) {
-      const dayOfWeek = Number(data.dayOfWeek);
-      if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) throw new BadRequestException('Day of week must be between 0 and 6');
-      updateData.dayOfWeek = dayOfWeek;
+
+    const dayOfWeek = data.dayOfWeek !== undefined ? Number(data.dayOfWeek) : timetable.dayOfWeek;
+    const startTime = data.startTime || timetable.startTime;
+    const endTime = data.endTime || timetable.endTime;
+    const sectionId = data.sectionId || timetable.sectionId;
+    const subjectId = data.subjectId || timetable.subjectId;
+    const teacherId = data.teacherId || timetable.teacherId;
+    const room = data.room !== undefined ? (data.room?.trim() || null) : timetable.room;
+
+    if (startTime >= endTime) throw new BadRequestException('End time must be after start time');
+
+    // Section Conflict Check
+    const sectionConflict = await this.prisma.timetable.findFirst({
+      where: {
+        id: { not: id },
+        sectionId,
+        dayOfWeek,
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
+      },
+      include: { subject: true },
+    });
+    if (sectionConflict) {
+      throw new BadRequestException(`Schedule Conflict: Section already has "${sectionConflict.subject.name}" from ${sectionConflict.startTime} to ${sectionConflict.endTime}.`);
     }
-    if (data.startTime) updateData.startTime = data.startTime;
-    if (data.endTime) updateData.endTime = data.endTime;
-    if (data.room !== undefined) updateData.room = data.room || null;
-    if (data.sectionId) updateData.sectionId = data.sectionId;
-    if (data.subjectId) updateData.subjectId = data.subjectId;
-    if (data.teacherId) updateData.teacherId = data.teacherId;
-    return this.prisma.timetable.update({ where: { id }, data: updateData });
+
+    // Teacher Conflict Check
+    const teacherConflict = await this.prisma.timetable.findFirst({
+      where: {
+        id: { not: id },
+        teacherId,
+        dayOfWeek,
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
+      },
+      include: { section: { include: { class: true } }, subject: true, teacher: true },
+    });
+    if (teacherConflict) {
+      throw new BadRequestException(`Teacher Conflict: ${teacherConflict.teacher.name} is already assigned to ${teacherConflict.section.class.name} (${teacherConflict.section.name}) from ${teacherConflict.startTime} to ${teacherConflict.endTime}.`);
+    }
+
+    // Room Conflict Check
+    if (room) {
+      const roomConflict = await this.prisma.timetable.findFirst({
+        where: {
+          id: { not: id },
+          room,
+          section: { class: { schoolId } },
+          dayOfWeek,
+          startTime: { lt: endTime },
+          endTime: { gt: startTime },
+        },
+        include: { section: { include: { class: true } }, subject: true },
+      });
+      if (roomConflict) {
+        throw new BadRequestException(`Room Conflict: Room "${room}" is occupied from ${roomConflict.startTime} to ${roomConflict.endTime}.`);
+      }
+    }
+
+    return this.prisma.timetable.update({
+      where: { id },
+      data: { dayOfWeek, startTime, endTime, sectionId, subjectId, teacherId, room },
+      include: {
+        section: { include: { class: true } },
+        subject: true,
+        teacher: { select: { id: true, name: true, employeeNo: true } },
+      },
+    });
   }
 
   async deleteTimetable(id: string, schoolId: string) {

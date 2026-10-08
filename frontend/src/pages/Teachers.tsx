@@ -271,7 +271,7 @@ export default function Teachers() {
       ...initialForm(),
       employeeNo: nextEmployeeNo,
       password: generatedPass,
-      email: `teacher.${nextEmployeeNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`,
+      email: '',
     });
     setView('add');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -748,17 +748,24 @@ export default function Teachers() {
                     <input
                       required
                       className={inputStyle}
-                      placeholder="e.g. Prof. Tariq Mahmood"
+                      placeholder="e.g. Prof. Tariq Mahmood / Ali Khan"
                       value={form.name}
                       onChange={(e) => {
                         const nameVal = e.target.value;
-                        setForm((prev) => ({
-                          ...prev,
-                          name: nameVal,
-                          email: !editing && prev.email.includes('@')
-                            ? `${nameVal.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher'}.${prev.employeeNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`
-                            : prev.email,
-                        }));
+                        const firstName = nameVal.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+                        setForm((prev) => {
+                          const isCustomGmail = prev.email.includes('@') && !prev.email.endsWith('@school.edu');
+                          let newEmail = prev.email;
+                          if (!isCustomGmail && !editing) {
+                            const randNum = Math.floor(100 + Math.random() * 900);
+                            newEmail = firstName ? `${firstName}${randNum}@school.edu` : '';
+                          }
+                          return {
+                            ...prev,
+                            name: nameVal,
+                            email: newEmail,
+                          };
+                        });
                       }}
                     />
                   </Field>
@@ -834,7 +841,7 @@ export default function Teachers() {
             </div>
           </div>
 
-          {/* SECTION 2: ACADEMIC & PROFESSIONAL CREDENTIALS */}
+          {/* SECTION 2: ACADEMIC QUALIFICATIONS & SALARY */}
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
             <h3 className="text-xs font-black uppercase tracking-[0.15em] text-indigo-500 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
@@ -845,22 +852,53 @@ export default function Teachers() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <Field label="Educational Qualification" required>
-                  <input
-                    required
-                    className={inputStyle}
-                    placeholder="e.g. M.Phil Mathematics / B.Ed"
-                    value={form.qualification}
-                    onChange={(e) => setForm((prev) => ({ ...prev, qualification: e.target.value }))}
-                  />
+                  <div className="relative">
+                    <input
+                      list="qualifications-list"
+                      required
+                      className={inputStyle}
+                      placeholder="M.Sc / M.Phil"
+                      value={form.qualification}
+                      onChange={(e) => setForm((prev) => ({ ...prev, qualification: e.target.value }))}
+                    />
+                    <datalist id="qualifications-list">
+                      <option value="M.Sc / M.Phil" />
+                      <option value="B.Sc / BS (Hons)" />
+                      <option value="M.A / M.Sc" />
+                      <option value="MS / M.Phil" />
+                      <option value="B.Ed / M.Ed" />
+                      <option value="PhD" />
+                      <option value="MCS / BSCS / BS-IT" />
+                      <option value="B.Com / M.Com / MBA" />
+                      <option value="F.A / F.Sc / Intermediate" />
+                      <option value="Matriculation" />
+                    </datalist>
+                  </div>
                 </Field>
 
                 <Field label="Specialization / Subject Focus">
-                  <input
-                    className={inputStyle}
-                    placeholder="e.g. Mathematics, Physics, English"
-                    value={form.specialization}
-                    onChange={(e) => setForm((prev) => ({ ...prev, specialization: e.target.value }))}
-                  />
+                  <div className="relative">
+                    <input
+                      list="specialization-list"
+                      className={inputStyle}
+                      placeholder="General Subjects"
+                      value={form.specialization}
+                      onChange={(e) => setForm((prev) => ({ ...prev, specialization: e.target.value }))}
+                    />
+                    <datalist id="specialization-list">
+                      <option value="General Subjects" />
+                      <option value="Mathematics" />
+                      <option value="Physics" />
+                      <option value="Chemistry" />
+                      <option value="Biology" />
+                      <option value="English Language & Literature" />
+                      <option value="Urdu & Islamiyat" />
+                      <option value="Computer Science / IT" />
+                      <option value="General Science" />
+                      <option value="Social Studies / Pak Studies" />
+                      <option value="Montessori & Primary Education" />
+                    </datalist>
+                  </div>
                 </Field>
 
                 <Field label="Teaching Experience (Years)">
@@ -869,7 +907,7 @@ export default function Teachers() {
                     min={0}
                     max={50}
                     className={inputStyle}
-                    placeholder="e.g. 5"
+                    placeholder="3"
                     value={form.experience}
                     onChange={(e) => setForm((prev) => ({ ...prev, experience: e.target.value }))}
                   />
@@ -882,7 +920,7 @@ export default function Teachers() {
                     min={0}
                     step="500"
                     className={`${inputStyle} font-mono font-bold text-emerald-600 dark:text-emerald-400`}
-                    placeholder="e.g. 45000"
+                    placeholder="45000"
                     value={form.salary}
                     onChange={(e) => setForm((prev) => ({ ...prev, salary: e.target.value }))}
                   />
@@ -901,7 +939,7 @@ export default function Teachers() {
 
             <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 via-purple-950/10 to-card p-6 space-y-4">
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                 
                 <Field label="Employee Code / No" required>
                   <div className="relative">
@@ -918,16 +956,34 @@ export default function Teachers() {
                   </div>
                 </Field>
 
-                <Field label="Professional School Login ID (Email)" required>
-                  <div className="relative">
-                    <input
-                      required
-                      type="email"
-                      className={`${inputStyle} font-mono font-bold text-cyan-600 dark:text-cyan-400`}
-                      placeholder="teacher.emp001@school.edu"
-                      value={form.email}
-                      onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                    />
+                <Field label="Teacher Login ID / Gmail" required>
+                  <div className="space-y-1.5">
+                    <div className="relative">
+                      <input
+                        required
+                        className={`${inputStyle} font-mono font-bold text-cyan-600 dark:text-cyan-400`}
+                        placeholder="apna Gmail ya name+digits (e.g. ali101@school.edu)"
+                        value={form.email}
+                        onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const fName = form.name.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+                          const randNum = Math.floor(100 + Math.random() * 900);
+                          const generated = `${fName}${randNum}@school.edu`;
+                          setForm((prev) => ({ ...prev, email: generated }));
+                          toast.info(`Auto Generated: ${generated}`);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded-lg transition"
+                        title="Auto-generate from first name + numbers"
+                      >
+                        Auto Name+No
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      💡 Teacher ka apna <strong>Gmail</strong> ho to wahi login ID ban jayega, nahi to first name + digits (jaise <code>ali101</code>) se auto-generate ho jayega.
+                    </p>
                   </div>
                 </Field>
 
@@ -973,7 +1029,7 @@ export default function Teachers() {
               <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
                 <ShieldCheck size={20} className="text-emerald-500 shrink-0" />
                 <p className="text-xs text-muted-foreground">
-                  The teacher will use this <strong>School Login ID</strong> and <strong>8-character Password</strong> to log in to their faculty portal, manage timetable, and record attendance. Admin can update password at any time.
+                  Teacher is <strong>Login ID</strong> ya <strong>Employee No</strong> aur <strong>Password</strong> se apne faculty portal mein login kar sakte hain.
                 </p>
               </div>
 

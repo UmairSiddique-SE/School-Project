@@ -54,17 +54,29 @@ export class PeopleService {
 
     let email = data.email ? String(data.email).trim().toLowerCase() : '';
     if (!email) {
-      const cleanName = String(data.name).toLowerCase().replace(/[^a-z0-9]/g, '');
-      email = `${cleanName || 'teacher'}.${employeeNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+      const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+      let randNum = Math.floor(100 + Math.random() * 900);
+      email = `${firstName}${randNum}@school.edu`;
+      let userExists = await this.prisma.user.findUnique({ where: { email } });
+      while (userExists) {
+        randNum = Math.floor(100 + Math.random() * 900);
+        email = `${firstName}${randNum}@school.edu`;
+        userExists = await this.prisma.user.findUnique({ where: { email } });
+      }
     }
 
     const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
     const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo }, { email }] } });
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingTeacher || existingStaff || existingUser) {
-      throw new ConflictException(`A teacher or user account with Employee No "${employeeNo}" or Email "${email}" already exists. Please choose a different Login ID.`);
+      throw new ConflictException(`A teacher or user account with Employee No "${employeeNo}" or Email/Login "${email}" already exists. Please choose a different Login ID.`);
     }
     
+    let qualification = data.qualification ? String(data.qualification).trim() : 'M.Sc / M.Phil';
+    if (data.specialization && String(data.specialization).trim() && !qualification.toLowerCase().includes(String(data.specialization).trim().toLowerCase())) {
+      qualification = `${qualification} (${String(data.specialization).trim()})`;
+    }
+
     let plainPassword = data.password && String(data.password).trim().length >= 6
       ? String(data.password).trim()
       : this.generate8CharPassword();
@@ -80,9 +92,9 @@ export class PeopleService {
             email,
             phone: data.phone || null,
             gender: data.gender || 'MALE',
-            qualification: data.qualification || null,
-            experience: data.experience ? parseInt(data.experience, 10) : null,
-            salary: data.salary ? parseFloat(data.salary) : null,
+            qualification,
+            experience: data.experience ? parseInt(data.experience, 10) : 3,
+            salary: data.salary ? parseFloat(data.salary) : 45000,
             bloodGroup: data.bloodGroup || null,
             avatarUrl: data.avatarUrl || null,
             dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,

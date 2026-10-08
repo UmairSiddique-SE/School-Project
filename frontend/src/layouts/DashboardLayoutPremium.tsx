@@ -11,7 +11,10 @@ interface NavItem { label: string; path: string; icon: React.ComponentType<{ siz
 interface NavGroup { label: string; items: NavItem[] }
 
 const NAV: NavGroup[] = [
-  { label: 'Overview', items: [{ label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] }] },
+  { label: 'Overview', items: [
+    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
+    { label: 'Student Portal', path: '/student-portal', icon: LayoutDashboard, roles: ['STUDENT'] },
+  ] },
   { label: 'People', items: [
     { label: 'Students', path: '/students', icon: GraduationCap, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
     { label: 'Teachers', path: '/teachers', icon: UserRound, roles: ['SCHOOL_ADMIN'] },
@@ -39,7 +42,6 @@ const NAV: NavGroup[] = [
     { label: 'Buildings', path: '/buildings', icon: Building2, roles: ['SCHOOL_ADMIN'] },
     { label: 'Settings', path: '/settings', icon: Settings, roles: ['SCHOOL_ADMIN'] },
   ] },
-  { label: 'My Account', items: [{ label: 'Student LMS', path: '/student-portal', icon: UserRound, roles: ['STUDENT'] }] },
 ];
 
 const roleLabel = (role?: UserRole | null) => role ? role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'User';

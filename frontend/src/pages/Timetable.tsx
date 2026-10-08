@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays, Clock, Edit2, Loader2, Plus, Printer, RefreshCw,
-  Sparkles, Trash2, UserCheck, Users, X, BookOpen, AlertCircle, CheckCircle,
-  LayoutGrid, ListFilter, SlidersHorizontal, ChevronRight, Layers3
+  Sparkles, Trash2, UserCheck, Users, X, BookOpen, AlertCircle, CheckCircle2,
+  LayoutGrid, ListFilter, SlidersHorizontal, ChevronRight, Layers3,
+  DoorOpen, ShieldAlert, GraduationCap, ArrowRight, User
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
@@ -10,7 +11,7 @@ import { toast } from 'sonner';
 
 type Section = { id: string; name: string; classId?: string; class?: { id?: string; name?: string } };
 type Subject = { id: string; name: string; code?: string | null };
-type Teacher = { id: string; name: string; email?: string };
+type Teacher = { id: string; name: string; employeeNo?: string; email?: string };
 type Slot = {
   id: string;
   dayOfWeek: number;
@@ -26,16 +27,15 @@ type Slot = {
 };
 
 const days = [
-  ['1', 'Monday'],
-  ['2', 'Tuesday'],
-  ['3', 'Wednesday'],
-  ['4', 'Thursday'],
-  ['5', 'Friday'],
-  ['6', 'Saturday'],
+  { id: 1, name: 'Monday' },
+  { id: 2, name: 'Tuesday' },
+  { id: 3, name: 'Wednesday' },
+  { id: 4, name: 'Thursday' },
+  { id: 5, name: 'Friday' },
+  { id: 6, name: 'Saturday' },
 ];
 
-const input = 'w-full rounded-xl border border-border bg-background/80 px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium transition';
-const button = 'inline-flex items-center justify-center gap-2 rounded-xl border border-border px-3.5 py-2 text-sm font-semibold transition hover:bg-accent';
+const input = 'w-full rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium transition';
 const primaryBtn = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-600/20 hover:brightness-110 transition disabled:opacity-60';
 
 export default function Timetable() {
@@ -50,39 +50,28 @@ export default function Timetable() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Filter state
+  // Filter & Mode state
+  const [filterMode, setFilterMode] = useState<'section' | 'teacher'>('section');
   const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedTeacher, setSelectedTeacher] = useState<string>('');
   const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [viewMode, setViewMode] = useState<'daily' | 'matrix'>('daily');
+  const [viewLayout, setViewLayout] = useState<'matrix' | 'timeline'>('matrix');
 
   // Modal states
   const [showAdd, setShowAdd] = useState(false);
-  const [showAuto, setShowAuto] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
   const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
 
   // Form states
   const [form, setForm] = useState({
     dayOfWeek: '1',
     startTime: '08:00',
     endTime: '08:45',
-    room: '',
+    room: 'Room 101',
     sectionId: '',
     subjectId: '',
     teacherId: '',
-  });
-
-  // Auto-generator settings state
-  const [autoConfig, setAutoConfig] = useState({
-    targetSectionId: '',
-    startTime: '08:00',
-    periodMinutes: '45',
-    periodsPerDay: '6',
-    breakAfterPeriod: '3',
-    breakMinutes: '20',
-    daysCount: '5', // 5 for Mon-Fri, 6 for Mon-Sat
   });
 
   const load = async () => {
@@ -100,9 +89,21 @@ export default function Timetable() {
       const allSections = Array.isArray(sectionRes.data) ? sectionRes.data : [];
       setSections(allSections);
       setSubjects(Array.isArray(subRes.data) ? subRes.data : []);
-      setTeachers(Array.isArray(trRes.data) ? trRes.data : []);
+      const allTeachers = Array.isArray(trRes.data) ? trRes.data : [];
+      setTeachers(allTeachers);
+
       if (!selectedSection && allSections.length > 0) {
         setSelectedSection(allSections[0].id);
+        setForm(f => ({ ...f, sectionId: allSections[0].id }));
+      }
+      if (!selectedTeacher && allTeachers.length > 0) {
+        setSelectedTeacher(allTeachers[0].id);
+      }
+      if (allTeachers.length > 0) {
+        setForm(f => ({ ...f, teacherId: allTeachers[0].id }));
+      }
+      if (Array.isArray(subRes.data) && subRes.data.length > 0) {
+        setForm(f => ({ ...f, subjectId: subRes.data[0].id }));
       }
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Unable to load timetable database');
@@ -118,14 +119,68 @@ export default function Timetable() {
 
   // Filtered slots for current view
   const visibleSlots = useMemo(() => {
-    return slots
-      .filter((s) => (!selectedSection || s.sectionId === selectedSection) && s.dayOfWeek === selectedDay)
+    if (filterMode === 'section') {
+      return slots.filter(s => !selectedSection || s.sectionId === selectedSection);
+    } else {
+      return slots.filter(s => !selectedTeacher || s.teacherId === selectedTeacher);
+    }
+  }, [slots, filterMode, selectedSection, selectedTeacher]);
+
+  const daySlots = useMemo(() => {
+    return visibleSlots
+      .filter(s => s.dayOfWeek === selectedDay)
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  }, [slots, selectedSection, selectedDay]);
+  }, [visibleSlots, selectedDay]);
+
+  // Live Conflict Detection for current form
+  const currentConflict = useMemo(() => {
+    if (!form.startTime || !form.endTime || !form.dayOfWeek) return null;
+    const day = Number(form.dayOfWeek);
+
+    // 1. Check section conflict
+    if (form.sectionId) {
+      const sConflict = slots.find(
+        s => (!editingSlot || s.id !== editingSlot.id) &&
+             s.sectionId === form.sectionId &&
+             s.dayOfWeek === day &&
+             s.startTime < form.endTime &&
+             s.endTime > form.startTime
+      );
+      if (sConflict) {
+        return {
+          type: 'SECTION',
+          message: `Section already has "${sConflict.subject?.name || 'Period'}" (${sConflict.startTime} - ${sConflict.endTime})`,
+        };
+      }
+    }
+
+    // 2. Check teacher double booking
+    if (form.teacherId) {
+      const tConflict = slots.find(
+        s => (!editingSlot || s.id !== editingSlot.id) &&
+             s.teacherId === form.teacherId &&
+             s.dayOfWeek === day &&
+             s.startTime < form.endTime &&
+             s.endTime > form.startTime
+      );
+      if (tConflict) {
+        return {
+          type: 'TEACHER',
+          message: `Teacher ${tConflict.teacher?.name || 'Faculty'} is already booked with ${tConflict.section?.class?.name || 'Class'} (${tConflict.section?.name || 'Sec'}) at ${tConflict.startTime} - ${tConflict.endTime}`,
+        };
+      }
+    }
+
+    return null;
+  }, [form, slots, editingSlot]);
 
   // Handle Add Single Period
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentConflict) {
+      toast.error(`Schedule Conflict: ${currentConflict.message}`);
+      return;
+    }
     setSaving(true);
     try {
       const { data } = await apiClient.post('/academics/timetables', {
@@ -134,25 +189,52 @@ export default function Timetable() {
       });
       setSlots((prev) => [...prev, data]);
       setShowAdd(false);
-      toast.success('Period added to timetable!');
-      setForm({
-        dayOfWeek: String(selectedDay),
-        startTime: '08:00',
-        endTime: '08:45',
-        room: '',
-        sectionId: selectedSection,
-        subjectId: '',
-        teacherId: '',
-      });
+      toast.success('Period added to timetable ✓');
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Failed to add timetable period');
+      toast.error(e?.response?.data?.message || 'Conflict or error creating timetable slot');
     } finally {
       setSaving(false);
     }
   };
 
-  // Open Edit Modal
-  const openEdit = (slot: Slot) => {
+  // Handle Update Period
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSlot) return;
+    if (currentConflict) {
+      toast.error(`Schedule Conflict: ${currentConflict.message}`);
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data } = await apiClient.patch(`/academics/timetables/${editingSlot.id}`, {
+        ...form,
+        dayOfWeek: Number(form.dayOfWeek),
+      });
+      setSlots((prev) => prev.map((s) => (s.id === editingSlot.id ? data : s)));
+      setShowEdit(false);
+      setEditingSlot(null);
+      toast.success('Period updated successfully ✓');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Error updating slot');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle Delete Period
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this timetable slot?')) return;
+    try {
+      await apiClient.delete(`/academics/timetables/${id}`);
+      setSlots((prev) => prev.filter((s) => s.id !== id));
+      toast.success('Period removed');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Error deleting slot');
+    }
+  };
+
+  const openEditModal = (slot: Slot) => {
     setEditingSlot(slot);
     setForm({
       dayOfWeek: String(slot.dayOfWeek),
@@ -166,746 +248,484 @@ export default function Timetable() {
     setShowEdit(true);
   };
 
-  // Handle Update Period
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingSlot) return;
-    setSaving(true);
-    try {
-      const { data } = await apiClient.patch(`/academics/timetables/${editingSlot.id}`, {
-        ...form,
-        dayOfWeek: Number(form.dayOfWeek),
-      });
-      setSlots((prev) => prev.map((s) => (s.id === editingSlot.id ? { ...s, ...data, ...form, dayOfWeek: Number(form.dayOfWeek) } : s)));
-      setShowEdit(false);
-      setEditingSlot(null);
-      toast.success('Timetable period updated successfully!');
-      void load();
-    } catch (e: any) {
-      // Fallback: If PATCH isn't supported, delete and create
-      try {
-        await apiClient.delete(`/academics/timetables/${editingSlot.id}`);
-        const res = await apiClient.post('/academics/timetables', {
-          ...form,
-          dayOfWeek: Number(form.dayOfWeek),
-        });
-        setSlots((prev) => [...prev.filter((s) => s.id !== editingSlot.id), res.data]);
-        setShowEdit(false);
-        setEditingSlot(null);
-        toast.success('Timetable period updated!');
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || e?.response?.data?.message || 'Failed to update period');
-      }
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle Delete Period
-  const handleRemove = async (id: string) => {
-    if (!window.confirm('Remove this period from timetable?')) return;
-    try {
-      await apiClient.delete(`/academics/timetables/${id}`);
-      setSlots((prev) => prev.filter((x) => x.id !== id));
-      toast.success('Period removed from schedule');
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Unable to delete period');
-    }
-  };
-
-  // ── Auto Generate Timetable Algorithm ──
-  const handleAutoGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const targetSec = autoConfig.targetSectionId || selectedSection;
-    if (!targetSec) {
-      return toast.error('Please select a target section for auto generation');
-    }
-    const secObj = sections.find((s) => s.id === targetSec);
-    if (!secObj) return toast.error('Section not found');
-
-    const classObj = classes.find((c) => c.id === secObj.class?.id || (c.sections || []).some((s: any) => s.id === targetSec));
-    const assignments: { subjectId: string; teacherId?: string }[] = classObj?.subjects?.map((a: any) => ({
-      subjectId: a.subject?.id || a.subjectId,
-      teacherId: a.teacher?.id || a.teacherId,
-    })) || [];
-
-    if (assignments.length === 0) {
-      return toast.error('No subjects assigned to this class. Please assign subjects & teachers in Academic Structure first.');
-    }
-
-    setGenerating(true);
-    try {
-      const periodsPerDay = Number(autoConfig.periodsPerDay) || 6;
-      const periodDuration = Number(autoConfig.periodMinutes) || 45;
-      const breakAfter = Number(autoConfig.breakAfterPeriod) || 3;
-      const breakDuration = Number(autoConfig.breakMinutes) || 20;
-      const totalDays = Number(autoConfig.daysCount) || 5;
-
-      const [startH, startM] = autoConfig.startTime.split(':').map(Number);
-      let createdCount = 0;
-
-      // Generate for each day
-      for (let dayIndex = 1; dayIndex <= totalDays; dayIndex++) {
-        let currentMinutes = startH * 60 + startM;
-
-        for (let p = 1; p <= periodsPerDay; p++) {
-          // If recess
-          if (p === breakAfter + 1 && breakDuration > 0) {
-            currentMinutes += breakDuration;
-          }
-
-          const slotStartH = Math.floor(currentMinutes / 60);
-          const slotStartM = currentMinutes % 60;
-          const endMinutes = currentMinutes + periodDuration;
-          const slotEndH = Math.floor(endMinutes / 60);
-          const slotEndM = endMinutes % 60;
-
-          const startTimeStr = `${String(slotStartH).padStart(2, '0')}:${String(slotStartM).padStart(2, '0')}`;
-          const endTimeStr = `${String(slotEndH).padStart(2, '0')}:${String(slotEndM).padStart(2, '0')}`;
-
-          // Pick subject & teacher cyclically with offset per day to balance
-          const assignmentIndex = (dayIndex * 2 + p - 1) % assignments.length;
-          const assignment = assignments[assignmentIndex];
-
-          // If teacher is missing, pick default teacher
-          const teacherId = assignment.teacherId || teachers[0]?.id;
-          const subjectId = assignment.subjectId;
-
-          if (subjectId && teacherId) {
-            try {
-              await apiClient.post('/academics/timetables', {
-                dayOfWeek: dayIndex,
-                startTime: startTimeStr,
-                endTime: endTimeStr,
-                room: `Room ${p + 100}`,
-                sectionId: targetSec,
-                subjectId: subjectId,
-                teacherId: teacherId,
-              });
-              createdCount++;
-            } catch {
-              // Ignore individual period conflict errors during bulk fill
-            }
-          }
-
-          currentMinutes = endMinutes + 5; // 5 min transition buffer
-        }
-      }
-
-      toast.success(`Smart Timetable generated successfully! (${createdCount} periods added)`);
-      setShowAuto(false);
-      await load();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Error generating timetable');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  // Print Timetable
-  const printTimetable = () => {
-    const secObj = sections.find((s) => s.id === selectedSection);
-    const title = secObj ? `${secObj.class?.name || ''} - Section ${secObj.name}` : 'All Sections';
-    const popup = window.open('', '_blank', 'width=900,height=650');
-    if (!popup) return toast.error('Please allow popups to print');
-
-    const html = `<!doctype html><html><head><title>Timetable - ${title}</title><style>body{font-family:Arial,sans-serif;padding:24px;background:#fff;color:#1e293b}h1{font-size:22px;margin:0 0 4px}p{font-size:12px;color:#64748b;margin:0 0 16px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:10px;text-align:left;font-size:12px}th{background:#f1f5f9;font-weight:bold}.time{font-family:monospace;font-weight:bold;color:#4338ca}</style></head><body><h1>EduSphere Academic Schedule</h1><p>${title} • Generated on ${new Date().toLocaleDateString()}</p><table><thead><tr><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr></thead><tbody>${slots.filter((s) => !selectedSection || s.sectionId === selectedSection).map((s) => `<tr><td>${days.find((d) => Number(d[0]) === s.dayOfWeek)?.[1] || ''}</td><td class='time'>${s.startTime} - ${s.endTime}</td><td><strong>${s.subject?.name || '—'}</strong></td><td>${s.teacher?.name || '—'}</td><td>${s.room || '—'}</td></tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()</script></body></html>`;
-    popup.document.write(html);
-    popup.document.close();
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="animate-spin text-violet-500" size={36} />
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Loading Academic Timetable…</p>
-      </div>
-    );
-  }
+  const currentSectionObj = sections.find(s => s.id === selectedSection);
+  const currentTeacherObj = teachers.find(t => t.id === selectedTeacher);
 
   return (
-    <div className="space-y-6 pb-16 max-w-[1500px] mx-auto">
-      {/* ── Top Header ── */}
-      <div className="rounded-[28px] border border-border bg-card p-6 shadow-xl relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
+    <div className="mx-auto max-w-screen-2xl space-y-6 pb-16">
+      {/* ── TOP HEADER ── */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-violet-600/10 via-card to-indigo-600/5 p-6 shadow-sm">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <span className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Academic Management</p>
+              <span className="text-[11px] font-black uppercase tracking-widest text-violet-400">Master Schedule Engine</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Class Timetables & Schedules</h1>
-            <p className="mt-1 text-xs text-muted-foreground font-medium">
-              Manage weekly periods, auto-generate conflict-free timetables, and assign classroom periods.
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Timetable & Schedule</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Conflict-free class periods, teacher allocation, room assignments, and printable routines.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => {
-                setRefreshing(true);
-                void load();
-              }}
-              className={button}
-            >
-              <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} /> Refresh
-            </button>
-            <button onClick={printTimetable} className={button}>
-              <Printer size={15} /> Print Timetable
-            </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {canEdit && (
-              <>
-                <button
-                  onClick={() => setShowAuto(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/20 hover:brightness-110 transition"
-                >
-                  <Sparkles size={16} /> Auto Timetable
-                </button>
-                <button
-                  onClick={() => {
-                    setForm((p) => ({
-                      ...p,
-                      dayOfWeek: String(selectedDay),
-                      sectionId: selectedSection,
-                    }));
-                    setShowAdd(true);
-                  }}
-                  className={primaryBtn}
-                >
-                  <Plus size={16} /> Add Period
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  setEditingSlot(null);
+                  setForm(f => ({
+                    ...f,
+                    dayOfWeek: String(selectedDay),
+                    sectionId: selectedSection || sections[0]?.id || '',
+                    teacherId: selectedTeacher || teachers[0]?.id || '',
+                    subjectId: subjects[0]?.id || '',
+                  }));
+                  setShowAdd(true);
+                }}
+                className={primaryBtn}
+              >
+                <Plus size={16} /> Add Class Period
+              </button>
             )}
-          </div>
-        </div>
-      </div>
 
-      {/* ── Filter & View Mode Controls ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-card border border-border p-4 rounded-2xl shadow-sm">
-        {/* Section Selector */}
-        <div className="lg:col-span-5 flex items-center gap-3">
-          <Layers3 className="text-violet-400 shrink-0" size={18} />
-          <select
-            value={selectedSection}
-            onChange={(e) => setSelectedSection(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-bold text-foreground focus:border-violet-500 outline-none"
-          >
-            <option value="">All Academic Sections</option>
-            {sections.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.class?.name ? `${s.class.name} — ` : ''}Section {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* View Toggle */}
-        <div className="lg:col-span-3 flex justify-center">
-          <div className="flex rounded-xl bg-background border border-border p-1 gap-1">
             <button
-              onClick={() => setViewMode('daily')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'daily' ? 'bg-violet-600 text-white shadow' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition"
             >
-              <CalendarDays size={14} /> Daily View
+              <Printer size={14} /> Print Schedule
             </button>
+
             <button
-              onClick={() => setViewMode('matrix')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'matrix' ? 'bg-violet-600 text-white shadow' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              onClick={() => void load()}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
             >
-              <LayoutGrid size={14} /> Weekly Matrix
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
           </div>
         </div>
 
-        {/* Stats Indicator */}
-        <div className="lg:col-span-4 text-right text-xs text-muted-foreground font-medium flex items-center justify-end gap-3">
-          <span className="bg-violet-500/10 px-3 py-1.5 rounded-xl border border-violet-500/20 text-violet-400 font-bold">
-            {slots.length} Total Periods Active
-          </span>
-        </div>
-      </div>
-
-      {/* ── Main Timetable Layout ── */}
-      {viewMode === 'daily' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-          {/* Day Selection Sidebar */}
-          <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-1 mb-2">Days of Week</p>
-            {days.map(([num, name]) => {
-              const dayNum = Number(num);
-              const count = slots.filter((s) => (!selectedSection || s.sectionId === selectedSection) && s.dayOfWeek === dayNum).length;
-              const isSelected = selectedDay === dayNum;
-              return (
-                <button
-                  key={num}
-                  onClick={() => setSelectedDay(dayNum)}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left font-bold transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-violet-600/20 to-indigo-600/10 border-violet-500 text-foreground shadow-lg'
-                      : 'border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${isSelected ? 'bg-violet-600 text-white' : 'bg-muted text-muted-foreground'}`}>
-                      <CalendarDays size={16} />
-                    </div>
-                    <span>{name}</span>
-                  </div>
-                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-black ${isSelected ? 'bg-violet-500/20 text-violet-300' : 'bg-muted text-muted-foreground'}`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+        {/* ── FILTER SWITCHER: Class Schedule vs Teacher Schedule ── */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border/50 pt-4">
+          <div className="flex items-center gap-2 bg-muted/60 p-1 rounded-2xl border border-border">
+            <button
+              onClick={() => setFilterMode('section')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
+                filterMode === 'section'
+                  ? 'bg-violet-600 text-white shadow-md shadow-violet-600/25'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <GraduationCap size={15} /> Class Timetable
+            </button>
+            <button
+              onClick={() => setFilterMode('teacher')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
+                filterMode === 'teacher'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <UserCheck size={15} /> Teacher Timetable
+            </button>
           </div>
 
-          {/* Daily Timeline Cards */}
-          <div className="rounded-3xl border border-border bg-card p-6 min-h-[480px]">
-            <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
-              <div>
-                <h2 className="text-xl font-black text-foreground">
-                  {days.find((d) => Number(d[0]) === selectedDay)?.[1]} Schedule
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {visibleSlots.length} periods programmed for this day
-                </p>
-              </div>
-              {canEdit && (
-                <button
-                  onClick={() => {
-                    setForm((p) => ({ ...p, dayOfWeek: String(selectedDay), sectionId: selectedSection }));
-                    setShowAdd(true);
-                  }}
-                  className={button}
+          <div className="flex items-center gap-3">
+            {filterMode === 'section' ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Select Section:</span>
+                <select
+                  value={selectedSection}
+                  onChange={e => setSelectedSection(e.target.value)}
+                  className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-violet-500/20"
                 >
-                  <Plus size={14} /> Add Period
-                </button>
-              )}
-            </div>
-
-            {visibleSlots.length === 0 ? (
-              <div className="h-72 flex flex-col items-center justify-center text-center p-8">
-                <Clock className="mx-auto text-muted-foreground mb-3 opacity-40" size={40} />
-                <p className="font-bold text-foreground text-lg">No periods scheduled for {days.find((d) => Number(d[0]) === selectedDay)?.[1]}</p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                  Click 'Add Period' to create one manually or click 'Auto Timetable' to generate a full weekly timetable automatically.
-                </p>
+                  {sections.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.class?.name ? `${s.class.name} — Section ${s.name}` : `Section ${s.name}`}
+                    </option>
+                  ))}
+                </select>
               </div>
             ) : (
-              <div className="space-y-3">
-                {visibleSlots.map((slot, index) => (
-                  <div
-                    key={slot.id}
-                    className="group rounded-2xl border border-border bg-gradient-to-r from-background via-background to-violet-500/[0.02] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-violet-500/40 hover:shadow-md transition-all duration-300"
-                  >
-                    {/* Time & Period Order */}
-                    <div className="flex items-center gap-4 min-w-[200px]">
-                      <div className="h-10 w-10 shrink-0 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 font-mono font-black text-sm flex items-center justify-center">
-                        P{index + 1}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Select Faculty:</span>
+                <select
+                  value={selectedTeacher}
+                  onChange={e => setSelectedTeacher(e.target.value)}
+                  className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-amber-500/20"
+                >
+                  {teachers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.employeeNo || t.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1 border border-border bg-card p-1 rounded-xl">
+              <button
+                onClick={() => setViewLayout('matrix')}
+                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'matrix' ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                title="Weekly Matrix"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                onClick={() => setViewLayout('timeline')}
+                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'timeline' ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                title="Daily Timeline"
+              >
+                <ListFilter size={15} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Active View Summary Banner ── */}
+      <div className="rounded-2xl border border-border/80 bg-card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20 flex items-center justify-center font-black">
+            {filterMode === 'section' ? <GraduationCap size={20} /> : <User size={20} />}
+          </div>
+          <div>
+            <h2 className="font-black text-base text-foreground">
+              {filterMode === 'section'
+                ? `Class Routine: ${currentSectionObj?.class?.name || 'Class'} (Section ${currentSectionObj?.name || 'A'})`
+                : `Faculty Routine: ${currentTeacherObj?.name || 'Teacher'} (${currentTeacherObj?.employeeNo || 'Staff'})`}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Total {visibleSlots.length} weekly periods scheduled • Automatic teacher double-booking check active
+            </p>
+          </div>
+        </div>
+
+        {/* Day Selector (for Timeline View) */}
+        {viewLayout === 'timeline' && (
+          <div className="flex flex-wrap gap-1.5">
+            {days.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDay(d.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
+                  selectedDay === d.id
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* 1. WEEKLY MATRIX VIEW (MON-SAT GRID)                       */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      {viewLayout === 'matrix' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {days.map((day) => {
+            const dayPeriods = visibleSlots
+              .filter(s => s.dayOfWeek === day.id)
+              .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            return (
+              <div key={day.id} className="rounded-3xl border border-border/80 bg-card p-5 space-y-3.5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-violet-500/10 text-violet-500 font-black text-xs flex items-center justify-center">
+                      {day.id}
+                    </div>
+                    <h3 className="font-black text-base text-foreground">{day.name}</h3>
+                  </div>
+                  <span className="text-xs font-bold text-muted-foreground px-2 py-0.5 rounded-full bg-muted">
+                    {dayPeriods.length} {dayPeriods.length === 1 ? 'Period' : 'Periods'}
+                  </span>
+                </div>
+
+                {dayPeriods.length === 0 ? (
+                  <div className="py-10 text-center text-xs text-muted-foreground/60 italic">
+                    No periods scheduled
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {dayPeriods.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="group relative rounded-2xl border border-border/70 bg-muted/20 p-3.5 hover:border-violet-500/40 hover:bg-muted/40 transition space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="font-black text-sm text-foreground block">
+                              {slot.subject?.name || 'Subject'}
+                            </span>
+                            {filterMode === 'section' ? (
+                              <span className="text-xs font-medium text-emerald-500 flex items-center gap-1 mt-0.5">
+                                <UserCheck size={12} /> {slot.teacher?.name || 'No Faculty'}
+                              </span>
+                            ) : (
+                              <span className="text-xs font-medium text-cyan-500 flex items-center gap-1 mt-0.5">
+                                <GraduationCap size={12} /> {slot.section?.class?.name} ({slot.section?.name})
+                              </span>
+                            )}
+                          </div>
+
+                          {canEdit && (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+                              <button
+                                onClick={() => openEditModal(slot)}
+                                className="p-1.5 rounded-lg text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
+                                title="Edit Slot"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                onClick={() => void handleDelete(slot.id)}
+                                className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
+                                title="Delete Slot"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground border-t border-border/50 pt-2">
+                          <span className="inline-flex items-center gap-1 font-mono text-foreground">
+                            <Clock size={11} className="text-violet-500" />
+                            {slot.startTime} — {slot.endTime}
+                          </span>
+                          {slot.room && (
+                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                              <DoorOpen size={11} /> {slot.room}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-mono font-black text-sm text-foreground flex items-center gap-1.5">
-                          <Clock size={13} className="text-violet-400" />
-                          {slot.startTime} – {slot.endTime}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {slot.room ? `Room: ${slot.room}` : 'No Room Specified'}
-                        </p>
-                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* 2. DAILY TIMELINE VIEW                                    */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      {viewLayout === 'timeline' && (
+        <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-border/60 pb-4">
+            <h3 className="font-black text-lg text-foreground">
+              {days.find(d => d.id === selectedDay)?.name} Schedule Timeline
+            </h3>
+            <span className="text-xs font-bold text-muted-foreground">
+              {daySlots.length} Periods Scheduled
+            </span>
+          </div>
+
+          {daySlots.length === 0 ? (
+            <div className="py-16 text-center text-muted-foreground space-y-2">
+              <CalendarDays size={36} className="mx-auto opacity-40" />
+              <p className="font-bold text-sm">No periods scheduled for this day</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {daySlots.map((slot, index) => (
+                <div
+                  key={slot.id}
+                  className="flex items-center gap-4 rounded-2xl border border-border/80 bg-muted/20 p-4 hover:border-violet-500/40 transition group"
+                >
+                  <div className="h-10 w-10 rounded-xl bg-violet-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-violet-600/20">
+                    P{index + 1}
+                  </div>
+
+                  <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                    <div>
+                      <h4 className="font-black text-base text-foreground truncate">{slot.subject?.name}</h4>
+                      <p className="text-xs text-muted-foreground font-mono">{slot.subject?.code || 'Core'}</p>
                     </div>
 
-                    {/* Subject & Teacher */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black text-base text-foreground truncate">
-                          {slot.subject?.name || 'Subject Period'}
-                        </span>
-                        {slot.subject?.code && (
-                          <span className="text-[10px] font-mono font-black bg-muted px-2 py-0.5 rounded text-muted-foreground">
-                            {slot.subject.code}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                        <span>{slot.section?.class?.name ? `${slot.section.class.name} • ` : ''}Sec {slot.section?.name || '—'}</span>
-                        <span>•</span>
-                        <span className="text-violet-400 font-bold">{slot.teacher?.name || 'Teacher Not Assigned'}</span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <UserCheck size={14} className="text-emerald-500" /> {slot.teacher?.name || 'Unassigned'}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        <GraduationCap size={14} className="text-cyan-500" /> {slot.section?.class?.name} ({slot.section?.name})
                       </p>
                     </div>
 
-                    {/* Actions */}
-                    {canEdit && (
-                      <div className="flex items-center gap-1 self-end sm:self-center">
-                        <button
-                          onClick={() => openEdit(slot)}
-                          className="h-9 w-9 rounded-xl border border-border bg-background hover:bg-violet-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
-                          title="Edit Period"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          onClick={() => handleRemove(slot.id)}
-                          className="h-9 w-9 rounded-xl border border-border bg-background hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center text-muted-foreground"
-                          title="Delete Period"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="text-right sm:text-right">
+                      <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-foreground bg-card px-2.5 py-1 rounded-lg border border-border">
+                        <Clock size={12} className="text-violet-500" /> {slot.startTime} — {slot.endTime}
+                      </span>
+                      {slot.room && (
+                        <span className="text-[11px] text-muted-foreground block mt-1">Room: {slot.room}</span>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        /* ── Weekly Matrix Grid View ── */
-        <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-muted/40 text-xs font-black uppercase tracking-wider text-muted-foreground">
-                  <th className="p-4 text-left w-32">Day</th>
-                  <th className="p-4 text-left">Periods & Time Slots</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {days.map(([num, dayName]) => {
-                  const dayNum = Number(num);
-                  const daySlots = slots
-                    .filter((s) => (!selectedSection || s.sectionId === selectedSection) && s.dayOfWeek === dayNum)
-                    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-                  return (
-                    <tr key={num} className="hover:bg-muted/10 transition">
-                      <td className="p-4 font-black text-sm text-foreground bg-muted/20 align-top">
-                        {dayName}
-                        <span className="block text-[10px] text-muted-foreground font-mono mt-1">
-                          {daySlots.length} periods
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {daySlots.length === 0 ? (
-                          <span className="text-xs text-muted-foreground italic">No periods programmed</span>
-                        ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-                            {daySlots.map((s, idx) => (
-                              <div
-                                key={s.id}
-                                className="rounded-xl border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.06] to-background p-3 relative group"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono font-bold text-violet-400 mb-1">
-                                  <span>{s.startTime} - {s.endTime}</span>
-                                  {canEdit && (
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                      <button onClick={() => openEdit(s)} className="text-muted-foreground hover:text-white" title="Edit">
-                                        <Edit2 size={12} />
-                                      </button>
-                                      <button onClick={() => handleRemove(s.id)} className="text-muted-foreground hover:text-rose-400" title="Delete">
-                                        <Trash2 size={12} />
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                                <p className="font-black text-sm text-foreground truncate">{s.subject?.name || 'Subject'}</p>
-                                <p className="text-[11px] text-muted-foreground truncate mt-0.5">{s.teacher?.name || 'Teacher'}</p>
-                                {s.room && <p className="text-[10px] text-muted-foreground/70 font-mono mt-1">{s.room}</p>}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  {canEdit && (
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+                      <button
+                        onClick={() => openEditModal(slot)}
+                        className="p-2 rounded-xl text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                      <button
+                        onClick={() => void handleDelete(slot.id)}
+                        className="p-2 rounded-xl text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* ── Add / Edit Period Modal ── */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* ADD / EDIT PERIOD MODAL                                   */}
+      {/* ══════════════════════════════════════════════════════════ */}
       {(showAdd || showEdit) && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
-          <form
-            onSubmit={showEdit ? handleUpdate : handleCreate}
-            className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 space-y-4 shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <h2 className="text-xl font-black text-foreground">
-                {showEdit ? 'Edit Timetable Period' : 'Add Period to Schedule'}
-              </h2>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAdd(false);
-                  setShowEdit(false);
-                  setEditingSlot(null);
-                }}
-                className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Day of Week *</label>
-                <select
-                  required
-                  value={form.dayOfWeek}
-                  onChange={(e) => setForm((p) => ({ ...p, dayOfWeek: e.target.value }))}
-                  className={input}
-                >
-                  {days.map(([n, name]) => (
-                    <option key={n} value={n}>{name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Class & Section *</label>
-                <select
-                  required
-                  value={form.sectionId}
-                  onChange={(e) => setForm((p) => ({ ...p, sectionId: e.target.value }))}
-                  className={input}
-                >
-                  <option value="">Select section</option>
-                  {sections.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.class?.name ? `${s.class.name} • ` : ''}Section {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Subject *</label>
-                <select
-                  required
-                  value={form.subjectId}
-                  onChange={(e) => setForm((p) => ({ ...p, subjectId: e.target.value }))}
-                  className={input}
-                >
-                  <option value="">Select subject</option>
-                  {subjects.map((sub) => (
-                    <option key={sub.id} value={sub.id}>{sub.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Assigned Teacher *</label>
-                <select
-                  required
-                  value={form.teacherId}
-                  onChange={(e) => setForm((p) => ({ ...p, teacherId: e.target.value }))}
-                  className={input}
-                >
-                  <option value="">Select teacher</option>
-                  {teachers.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Start Time *</label>
-                <input
-                  required
-                  type="time"
-                  value={form.startTime}
-                  onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value }))}
-                  className={input}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">End Time *</label>
-                <input
-                  required
-                  type="time"
-                  value={form.endTime}
-                  onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value }))}
-                  className={input}
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Classroom / Room No</label>
-                <input
-                  placeholder="e.g. Room 204 or Science Lab"
-                  value={form.room}
-                  onChange={(e) => setForm((p) => ({ ...p, room: e.target.value }))}
-                  className={input}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button
-                type="button"
-                className={button}
-                onClick={() => {
-                  setShowAdd(false);
-                  setShowEdit(false);
-                  setEditingSlot(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button disabled={saving} className={primaryBtn}>
-                {saving && <Loader2 size={16} className="animate-spin" />}
-                {showEdit ? 'Save Changes' : 'Add Period'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ── Auto Timetable Generator Modal ── */}
-      {showAuto && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
-          <form
-            onSubmit={handleAutoGenerate}
-            className="w-full max-w-2xl rounded-3xl border border-amber-500/30 bg-card p-6 space-y-5 shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowAdd(false); setShowEdit(false); }} />
+          <div className="relative z-10 w-full max-w-lg rounded-3xl border border-border/80 bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 p-5">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                  <Sparkles size={20} />
+                <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center font-bold">
+                  <CalendarDays size={18} />
+                </div>
+                <h2 className="font-black text-base text-foreground">
+                  {showEdit ? 'Edit Timetable Period' : 'Add Class Period'}
+                </h2>
+              </div>
+              <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={showEdit ? handleUpdate : handleCreate} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {/* Conflict Warning banner */}
+              {currentConflict && (
+                <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-3 text-xs text-rose-500 font-semibold">
+                  <ShieldAlert size={18} className="shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block uppercase tracking-wider text-[10px]">Conflict Detected</span>
+                    {currentConflict.message}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Day of Week *</label>
+                  <select
+                    value={form.dayOfWeek}
+                    onChange={e => setForm(f => ({ ...f, dayOfWeek: e.target.value }))}
+                    className={input}
+                  >
+                    {days.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Classroom / Hall</label>
+                  <input
+                    value={form.room}
+                    onChange={e => setForm(f => ({ ...f, room: e.target.value }))}
+                    placeholder="e.g. Room 102"
+                    className={input}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Start Time *</label>
+                  <input
+                    type="time"
+                    value={form.startTime}
+                    onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))}
+                    className={input}
+                    required
+                  />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-foreground">Smart Auto Timetable Generator</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Automatically balance periods, assigned teachers, and break slots across the week.
-                  </p>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">End Time *</label>
+                  <input
+                    type="time"
+                    value={form.endTime}
+                    onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))}
+                    className={input}
+                    required
+                  />
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowAuto(false)}
-                className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Target Section *</label>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Class & Section *</label>
                 <select
-                  required
-                  value={autoConfig.targetSectionId || selectedSection}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, targetSectionId: e.target.value }))}
+                  value={form.sectionId}
+                  onChange={e => setForm(f => ({ ...f, sectionId: e.target.value }))}
                   className={input}
+                  required
                 >
-                  <option value="">Select Section</option>
-                  {sections.map((s) => (
+                  {sections.map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.class?.name ? `${s.class.name} • ` : ''}Section {s.name}
+                      {s.class?.name} — Section {s.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Day Start Time</label>
-                <input
-                  type="time"
-                  value={autoConfig.startTime}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, startTime: e.target.value }))}
-                  className={input}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Period Duration (Minutes)</label>
-                <input
-                  type="number"
-                  min="20"
-                  max="90"
-                  value={autoConfig.periodMinutes}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, periodMinutes: e.target.value }))}
-                  className={input}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Periods Per Day</label>
-                <input
-                  type="number"
-                  min="3"
-                  max="10"
-                  value={autoConfig.periodsPerDay}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, periodsPerDay: e.target.value }))}
-                  className={input}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Days Per Week</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Curriculum Subject *</label>
                 <select
-                  value={autoConfig.daysCount}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, daysCount: e.target.value }))}
+                  value={form.subjectId}
+                  onChange={e => setForm(f => ({ ...f, subjectId: e.target.value }))}
                   className={input}
+                  required
                 >
-                  <option value="5">5 Days (Monday to Friday)</option>
-                  <option value="6">6 Days (Monday to Saturday)</option>
+                  {subjects.map(sub => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name} ({sub.code || 'NO-CODE'})
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Recess / Break After Period</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={autoConfig.breakAfterPeriod}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, breakAfterPeriod: e.target.value }))}
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Assigned Faculty Teacher *</label>
+                <select
+                  value={form.teacherId}
+                  onChange={e => setForm(f => ({ ...f, teacherId: e.target.value }))}
                   className={input}
-                />
+                  required
+                >
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.employeeNo || t.email})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Break Duration (Minutes)</label>
-                <input
-                  type="number"
-                  min="10"
-                  max="60"
-                  value={autoConfig.breakMinutes}
-                  onChange={(e) => setAutoConfig((p) => ({ ...p, breakMinutes: e.target.value }))}
-                  className={input}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-xs text-amber-200">
-              <p className="font-bold flex items-center gap-1.5">
-                <Sparkles size={14} /> How Auto Generator Works:
-              </p>
-              <p className="mt-1 opacity-80">
-                It uses the subjects and teacher assignments configured for this class, distributes them across Monday to Friday/Saturday evenly, computes period start and finish timestamps with the break interval, and publishes them directly to the database.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button type="button" className={button} onClick={() => setShowAuto(false)}>
-                Cancel
-              </button>
               <button
-                disabled={generating}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/20 hover:brightness-110 transition disabled:opacity-60"
+                type="submit"
+                disabled={saving || Boolean(currentConflict)}
+                className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-xs font-black text-white shadow-lg shadow-violet-500/25 hover:brightness-110 transition disabled:opacity-50"
               >
-                {generating && <Loader2 size={16} className="animate-spin" />}
-                Generate & Publish Schedule
+                {saving ? 'Saving...' : showEdit ? 'Update Period' : 'Save to Schedule'}
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       )}
     </div>
