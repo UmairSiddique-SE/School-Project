@@ -412,13 +412,13 @@ export default function Students() {
     const photo = student.avatarUrl || '';
     const admNo = student.admissionNo || 'ADM-0000';
     const barcodeData = admNo.replace(/[^A-Z0-9-]/gi, '').padEnd(16, '0').slice(0, 16);
-    const bars = barcodeData.split('').map((ch) => {
+    const bars = barcodeData.split('').map((ch: string) => {
       const code = ch.charCodeAt(0);
       return [(code & 1) ? 3 : 1, (code & 2) ? 3 : 1, (code & 4) ? 3 : 1, (code & 8) ? 2 : 1];
     }).flat();
     let barSvg = `<svg width="${orientation === 'portrait' ? '240' : '220'}" height="44" xmlns="http://www.w3.org/2000/svg">`;
     let x = 4;
-    bars.forEach((w, i) => {
+    bars.forEach((w: number, i: number) => {
       barSvg += `<rect x="${x}" y="2" width="${w}" height="32" fill="${i % 2 === 0 ? '#0f172a' : 'transparent'}" />`;
       x += w + 1;
     });

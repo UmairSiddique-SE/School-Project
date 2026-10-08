@@ -183,22 +183,127 @@ return { school, user };
   }
 
   async login(dto: LoginDto) {
-    const identifier = dto.email.trim().toLowerCase();
-    let user = await this.prisma.user.findUnique({
-      where: { email: identifier },
-      include: {
-        school: {
-          select: {
-            name: true,
-            slug: true,
-            isActive: true,
-            subscription: {
-              select: { plan: true, status: true, endDate: true },
-            },
+    const rawIdentifier = dto.email ? String(dto.email).trim() : '';
+    const identifier = rawIdentifier.toLowerCase();
+    const cleanId = identifier.replace(/[^a-z0-9]/g, '');
+
+    const userInclude = {
+      school: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          isActive: true,
+          subscription: {
+            select: { plan: true, status: true, endDate: true },
           },
         },
       },
+    };
+
+    let user = await this.prisma.user.findFirst({
+      where: { email: { equals: rawIdentifier, mode: 'insensitive' } },
+      include: userInclude,
     });
+
+    // 1. Check if identifier is a Teacher Employee No / ID or Teacher phone / email
+    if (!user && rawIdentifier) {
+      let teacher = await this.prisma.teacher.findFirst({
+        where: {
+          OR: [
+            { employeeNo: { equals: rawIdentifier, mode: 'insensitive' } },
+            { email: { equals: rawIdentifier, mode: 'insensitive' } },
+            { phone: rawIdentifier },
+          ],
+          deletedAt: null,
+        },
+      });
+
+      if (!teacher && cleanId.length >= 2) {
+        const teachers = await this.prisma.teacher.findMany({
+          where: { deletedAt: null },
+          select: { id: true, employeeNo: true, email: true, schoolId: true },
+        });
+        teacher = teachers.find((t) => {
+          const empClean = (t.employeeNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          return empClean === cleanId;
+        }) as any;
+      }
+
+      if (teacher?.email) {
+        user = await this.prisma.user.findFirst({
+          where: { email: { equals: teacher.email, mode: 'insensitive' } },
+          include: userInclude,
+        });
+
+        if (!user && teacher.schoolId) {
+          user = await this.prisma.user.findFirst({
+            where: { schoolId: teacher.schoolId, role: 'TEACHER', deletedAt: null },
+            include: userInclude,
+          });
+        }
+      }
+    }
+
+    // 2. Check if identifier is a Student Admission No / ID or Student phone / bForm
+    if (!user && rawIdentifier) {
+      let student = await this.prisma.student.findFirst({
+        where: {
+          OR: [
+            { admissionNo: { equals: rawIdentifier, mode: 'insensitive' } },
+            { email: { equals: rawIdentifier, mode: 'insensitive' } },
+            { phone: rawIdentifier },
+            { bFormNumber: rawIdentifier },
+          ],
+          deletedAt: null,
+        },
+      });
+
+      if (!student && cleanId.length >= 2) {
+        const students = await this.prisma.student.findMany({
+          where: { deletedAt: null },
+          select: { id: true, admissionNo: true, email: true, schoolId: true },
+        });
+        student = students.find((s) => {
+          const admClean = (s.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (admClean === cleanId) return true;
+          const admDigits = (s.admissionNo || '').replace(/\D/g, '');
+          const idDigits = cleanId.replace(/\D/g, '');
+          return Boolean(idDigits && idDigits.length >= 3 && admDigits.endsWith(idDigits));
+        }) as any;
+      }
+
+      if (student) {
+        if (student.email) {
+          user = await this.prisma.user.findFirst({
+            where: { email: { equals: student.email, mode: 'insensitive' } },
+            include: userInclude,
+          });
+        }
+        if (!user && student.admissionNo) {
+          const cleanAdm = student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '');
+          user = await this.prisma.user.findFirst({
+            where: { email: { equals: `${cleanAdm}@school.edu`, mode: 'insensitive' } },
+            include: userInclude,
+          });
+        }
+      }
+    }
+
+    // 3. Fallback for generated student email templates (e.g. adm20260001 -> adm20260001@school.edu)
+    if (!user && cleanId.length >= 4) {
+      user = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
+            { email: { startsWith: cleanId, mode: 'insensitive' } },
+          ],
+        },
+        include: userInclude,
+      });
+    }
+
+    // 4. Legacy format: first123@student.schoolslug.pk
     if (!user && identifier.includes('@student.')) {
       const match = identifier.match(
         /^([a-z0-9]+?)(\d+)@student\.([a-z0-9-]+)\.pk$/i,
@@ -228,48 +333,18 @@ return { school, user };
               suffix === admissionSuffix
             );
           });
-          if (student?.email)
-            user = await this.prisma.user.findUnique({
-              where: { email: student.email.toLowerCase() },
-              include: {
-                school: {
-                  select: {
-                    name: true,
-                    slug: true,
-                    isActive: true,
-                    subscription: {
-                      select: { plan: true, status: true, endDate: true },
-                    },
-                  },
-                },
-              },
+          if (student?.email) {
+            user = await this.prisma.user.findFirst({
+              where: { email: { equals: student.email, mode: 'insensitive' } },
+              include: userInclude,
             });
+          }
         }
       }
     }
-    if (!user) {
-      const student = await this.prisma.student.findUnique({
-        where: { admissionNo: dto.email.trim() },
-      });
-      if (student?.email)
-        user = await this.prisma.user.findUnique({
-          where: { email: student.email.toLowerCase() },
-          include: {
-            school: {
-              select: {
-                name: true,
-                slug: true,
-                isActive: true,
-                subscription: {
-                  select: { plan: true, status: true, endDate: true },
-                },
-              },
-            },
-          },
-        });
-    }
+
     if (!user)
-      throw new UnauthorizedException('No account found for this Login ID');
+      throw new UnauthorizedException('No account found for this Login ID or email');
     if (user.role === 'PARENT')
       throw new UnauthorizedException(
         'Parent accounts do not have portal login access',
@@ -339,10 +414,17 @@ return { school, user };
     }
     if (!(await bcrypt.compare(dto.password, user.passwordHash)))
       throw new UnauthorizedException('Invalid Login ID or password');
-    if (!user.emailVerified && user.role !== 'STUDENT')
+    if (!user.emailVerified && !['STUDENT', 'TEACHER'].includes(user.role))
       throw new UnauthorizedException(
         'Please verify your email before signing in',
       );
+    if (!user.emailVerified && ['STUDENT', 'TEACHER'].includes(user.role)) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      });
+      user.emailVerified = true;
+    }
     const subscription = user.school?.subscription;
     if (
       subscription &&
@@ -366,7 +448,9 @@ return { school, user };
     const activationStatus = user.school
       ? subscription?.status === 'ACTIVE' && subscription.endDate > now
         ? 'ACTIVE'
-        : 'PAYMENT_PENDING'
+        : ['STUDENT', 'TEACHER'].includes(user.role) && user.school.isActive
+          ? 'ACTIVE'
+          : 'PAYMENT_PENDING'
       : 'ACTIVE';
     return {
       user: {

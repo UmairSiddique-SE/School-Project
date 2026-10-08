@@ -72,7 +72,7 @@ export class PeopleService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId } });
+        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true } });
         const teacher = await tx.teacher.create({
           data: {
             employeeNo,
@@ -141,10 +141,10 @@ export class PeopleService {
     const email = teacher.email;
     const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
     if (user) {
-      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
     } else {
       await this.prisma.user.create({
-        data: { name: teacher.name, email, passwordHash, role: 'TEACHER', schoolId },
+        data: { name: teacher.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
       });
     }
     return { success: true, message: 'Teacher password updated successfully', loginId: email, password: password.trim() };
@@ -350,7 +350,7 @@ export class PeopleService {
     if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email.`);
     try {
       const student = await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId } });
+        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true } });
         const createdStudent = await tx.student.create({ data: { admissionNo, name: data.name, avatarUrl: data.avatarUrl || null, rollNo, email, phone: data.phone || data.studentMobile || null, address: data.address || data.currentAddress || null, gender: data.gender || 'MALE', dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null, bloodGroup: data.bloodGroup || null, religion: data.religion || null, sectionId: data.sectionId || null, status: data.status || 'ACTIVE', session: data.session || null, bFormNumber: data.bFormNumber || null, currentAddress: data.currentAddress || null, permanentAddress: data.permanentAddress || null, emergencyContact: data.emergencyContact || null, previousSchool: data.previousSchool || null, previousClass: data.previousClass || null, leavingCertificateUrl: data.leavingCertificateUrl || null, admissionType: data.admissionType || 'NEW', previousAcademicRecord: data.previousAcademicRecord || null, medicalNotes: data.medicalNotes || null, specialRequirements: data.specialRequirements || null, transportRequired: data.transportRequired === true || data.transportRequired === 'true', hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true', remarks: data.remarks || null, schoolId } });
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
@@ -411,10 +411,10 @@ export class PeopleService {
     const email = student.email || `${student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
     const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
     if (user) {
-      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
     } else {
       await this.prisma.user.create({
-        data: { name: student.name, email, passwordHash, role: 'STUDENT', schoolId },
+        data: { name: student.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true },
       });
     }
     return { success: true, message: 'Student password updated successfully', loginId: email, password: password.trim() };

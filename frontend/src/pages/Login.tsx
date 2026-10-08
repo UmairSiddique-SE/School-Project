@@ -7,9 +7,9 @@ import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
 
 function normalizeLoginIdentifier(value: string) {
-  const identifier = value.trim().toLowerCase();
-  const match = identifier.match(/^(.+)@student\.edu\.pk$/i);
-  return match ? match[1] : identifier;
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(.+)@student\.edu\.pk$/i);
+  return match ? match[1].trim() : trimmed;
 }
 
 export default function LoginPage() {
@@ -50,14 +50,14 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const loginIdentifier = normalizeLoginIdentifier(identifier);
-      const res = await apiClient.post("/auth/login", { email: loginIdentifier, password });
+      const res = await apiClient.post("/auth/login", {
+        email: loginIdentifier,
+        password,
+        schoolSlug: urlSchoolSlug,
+      });
       const { user, accessToken, refreshToken } = res.data;
       if (!["SCHOOL_ADMIN", "TEACHER", "STUDENT"].includes(user.role)) {
         toast.error("This account does not have school portal access.");
-        return;
-      }
-      if ((portalRole === "STUDENT" || portalRole === "TEACHER") && user.role !== portalRole) {
-        toast.error(`This login is for ${portalRole.toLowerCase()} accounts.`);
         return;
       }
       login(accessToken, user, refreshToken);
@@ -65,8 +65,10 @@ export default function LoginPage() {
       const slug = user.schoolSlug || urlSchoolSlug || "edusphere";
       if (user.role === "STUDENT") {
         navigate(`/${slug}/student-portal`, { replace: true });
+      } else if (user.role === "TEACHER") {
+        navigate(`/${slug}/teacher/classes`, { replace: true });
       } else if (user.activationStatus === "ACTIVE") {
-        navigate(user.role === "TEACHER" && portalRole === "TEACHER" ? `/${slug}/teacher/classes` : `/${slug}/dashboard`, { replace: true });
+        navigate(`/${slug}/dashboard`, { replace: true });
       } else {
         toast.info("Your school portal is locked until approval. You can continue from onboarding.");
         navigate("/onboarding", { replace: true });
@@ -139,9 +141,9 @@ export default function LoginPage() {
                 <label className="text-xs font-black uppercase tracking-[.14em] text-slate-300">Login ID / Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
-                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="Enter the Login ID shown after registration" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
+                  <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoComplete="username" placeholder="Admission ID (e.g. ADM-2026-0001), Employee ID, or Email" className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10" />
                 </div>
-                <p className="text-[11px] leading-5 text-slate-500">Students: use the Login ID and password issued by your school. Teachers and administrators: use your registered email and password.</p>
+                <p className="text-[11px] leading-5 text-slate-500">Students: use your Admission ID (e.g. ADM-2026-0001) or Login ID. Teachers: use your Employee ID (e.g. TCH-001) or registered email.</p>
               </div>
 
               <div className="space-y-2">
