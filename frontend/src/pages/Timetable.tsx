@@ -317,16 +317,18 @@ export default function Timetable() {
             >
               <GraduationCap size={15} /> Class Timetable
             </button>
-            <button
-              onClick={() => setFilterMode('teacher')}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
-                filterMode === 'teacher'
-                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <UserCheck size={15} /> Teacher Timetable
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => setFilterMode('teacher')}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
+                  filterMode === 'teacher'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <UserCheck size={15} /> Teacher Timetable
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 interface Exam {
   id: string;
@@ -67,6 +68,10 @@ function computeGradeClient(percentage: number): { grade: string; isPassed: bool
 const inputStyle = 'w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium transition';
 
 export default function ExamsLive() {
+  const { user } = useAuth();
+  const canManage = user?.role === 'SCHOOL_ADMIN' || user?.role === 'TEACHER';
+  const isStudent = user?.role === 'STUDENT';
+
   const [exams, setExams] = useState<Exam[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -302,12 +307,14 @@ export default function ExamsLive() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              onClick={() => setShowCreate(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/20 hover:brightness-110 transition"
-            >
-              <Plus size={16} /> + Schedule New Exam
-            </button>
+            {canManage && (
+              <button
+                onClick={() => setShowCreate(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/20 hover:brightness-110 transition"
+              >
+                <Plus size={16} /> + Schedule New Exam
+              </button>
+            )}
 
             <button
               onClick={() => void load()}
@@ -378,29 +385,33 @@ export default function ExamsLive() {
                     </div>
 
                     <div className="flex items-center justify-between pt-1 text-xs">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void viewAnalytics(exam);
-                        }}
-                        className="text-indigo-500 hover:underline font-bold inline-flex items-center gap-1"
-                      >
-                        <BarChart3 size={13} /> View Analytics
-                      </button>
+                      {canManage && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void viewAnalytics(exam);
+                          }}
+                          className="text-indigo-500 hover:underline font-bold inline-flex items-center gap-1"
+                        >
+                          <BarChart3 size={13} /> View Analytics
+                        </button>
+                      )}
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void togglePublish(exam);
-                        }}
-                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
-                          exam.isPublished
-                            ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
-                            : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-                        }`}
-                      >
-                        {exam.isPublished ? 'Unpublish' : 'Publish'}
-                      </button>
+                      {canManage && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void togglePublish(exam);
+                          }}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
+                            exam.isPublished
+                              ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          {exam.isPublished ? 'Unpublish' : 'Publish'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -429,169 +440,191 @@ export default function ExamsLive() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => void viewAnalytics(selectedExam)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
-                  >
-                    <BarChart3 size={14} className="text-indigo-500" /> Analytics
-                  </button>
-                  <button
-                    onClick={() => void togglePublish(selectedExam)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition ${
-                      selectedExam.isPublished ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                    }`}
-                  >
-                    {selectedExam.isPublished ? 'Unpublish Results' : 'Publish Results'}
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => void viewAnalytics(selectedExam)}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
+                      >
+                        <BarChart3 size={14} className="text-indigo-500" /> Analytics
+                      </button>
+                      <button
+                        onClick={() => void togglePublish(selectedExam)}
+                        className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition ${
+                          selectedExam.isPublished ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+                        }`}
+                      >
+                        {selectedExam.isPublished ? 'Unpublish Results' : 'Publish Results'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Subject Selector Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-2xl border border-border/60">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-muted-foreground">Select Subject:</span>
-                  <select
-                    value={selectedSubjectId}
-                    onChange={e => setSelectedSubjectId(e.target.value)}
-                    className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20"
-                  >
-                    {subjects.map((sub) => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name} ({sub.code || 'Core'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Subject Selector Bar - visible to admin/teacher only */}
+              {canManage && (
+                <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-2xl border border-border/60">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-muted-foreground">Select Subject:</span>
+                    <select
+                      value={selectedSubjectId}
+                      onChange={e => setSelectedSubjectId(e.target.value)}
+                      className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    >
+                      {subjects.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name} ({sub.code || 'Core'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={quickFillPassing}
-                    className="text-[11px] font-bold text-indigo-500 hover:underline bg-indigo-500/10 px-2.5 py-1 rounded-lg"
-                  >
-                    Fill Passing Marks ({selectedExam.passingMarks})
-                  </button>
-                  <button
-                    onClick={saveMarks}
-                    disabled={savingResults || examStudents.length === 0}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:brightness-110 transition disabled:opacity-50"
-                  >
-                    <CheckCircle2 size={14} /> {savingResults ? 'Saving...' : 'Save Subject Marks'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Students Marks Entry Table */}
-              {loadingResults ? (
-                <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
-                  Loading subject marks records...
-                </div>
-              ) : examStudents.length === 0 ? (
-                <div className="py-12 text-center text-xs text-muted-foreground italic">
-                  No enrolled students found for this exam's class / section.
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-border/80 overflow-hidden shadow-sm">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
-                      <tr>
-                        <th className="p-3">Roll / Adm #</th>
-                        <th className="p-3">Candidate Name</th>
-                        <th className="p-3">Marks Obtained (Max: {selectedExam.totalMarks})</th>
-                        <th className="p-3 text-center">Percentage</th>
-                        <th className="p-3 text-center">Grade</th>
-                        <th className="p-3 text-center">Status</th>
-                        <th className="p-3 text-center">Absent?</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
-                      {examStudents.map((st) => {
-                        const row = marksRecords[st.id] || { marks: '', isAbsent: false, remarks: '' };
-                        const isAbsent = Boolean(row.isAbsent);
-                        const numericMarks = isAbsent ? 0 : Number(row.marks || 0);
-                        const pct = selectedExam.totalMarks > 0 ? (numericMarks / selectedExam.totalMarks) * 100 : 0;
-                        const grading = computeGradeClient(pct);
-                        const isPassed = !isAbsent && numericMarks >= selectedExam.passingMarks;
-
-                        return (
-                          <tr key={st.id} className="hover:bg-muted/20 transition">
-                            <td className="p-3 font-mono font-bold text-foreground">
-                              {st.rollNo || st.admissionNo || '—'}
-                            </td>
-                            <td className="p-3 font-bold text-foreground">
-                              {st.name}
-                            </td>
-                            <td className="p-3">
-                              <input
-                                type="number"
-                                min="0"
-                                max={selectedExam.totalMarks}
-                                disabled={isAbsent}
-                                value={row.marks}
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  setMarksRecords(prev => ({
-                                    ...prev,
-                                    [st.id]: {
-                                      ...prev[st.id],
-                                      marks: val,
-                                      isAbsent: false,
-                                      remarks: prev[st.id]?.remarks || '',
-                                    },
-                                  }));
-                                }}
-                                placeholder="0"
-                                className="w-24 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40"
-                              />
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold text-foreground">
-                              {isAbsent ? '0.0%' : `${pct.toFixed(1)}%`}
-                            </td>
-                            <td className="p-3 text-center">
-                              <span className={`font-black text-xs px-2 py-0.5 rounded-md ${
-                                isAbsent ? 'bg-rose-500/10 text-rose-500' :
-                                grading.grade === 'A+' || grading.grade === 'A' ? 'bg-emerald-500/10 text-emerald-500 font-bold' :
-                                grading.grade === 'B' ? 'bg-cyan-500/10 text-cyan-500 font-bold' :
-                                grading.grade === 'C' ? 'bg-amber-500/10 text-amber-500 font-bold' :
-                                'bg-rose-500/10 text-rose-500'
-                              }`}>
-                                {isAbsent ? 'F' : grading.grade}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                                isAbsent ? 'bg-rose-500 text-white' :
-                                isPassed ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                                'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                              }`}>
-                                {isAbsent ? 'ABSENT' : isPassed ? 'PASS' : 'FAIL'}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={isAbsent}
-                                onChange={e => {
-                                  const checked = e.target.checked;
-                                  setMarksRecords(prev => ({
-                                    ...prev,
-                                    [st.id]: {
-                                      ...prev[st.id],
-                                      isAbsent: checked,
-                                      marks: checked ? '0' : prev[st.id]?.marks || '0',
-                                      remarks: checked ? 'Absent' : '',
-                                    },
-                                  }));
-                                }}
-                                className="rounded border-border text-rose-600 focus:ring-rose-500"
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={quickFillPassing}
+                      className="text-[11px] font-bold text-indigo-500 hover:underline bg-indigo-500/10 px-2.5 py-1 rounded-lg"
+                    >
+                      Fill Passing Marks ({selectedExam.passingMarks})
+                    </button>
+                    <button
+                      onClick={saveMarks}
+                      disabled={savingResults || examStudents.length === 0}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:brightness-110 transition disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={14} /> {savingResults ? 'Saving...' : 'Save Subject Marks'}
+                    </button>
+                  </div>
                 </div>
               )}
+
+              {/* Students Marks Entry Table - Admin/Teacher only */}
+              {canManage ? (
+                loadingResults ? (
+                  <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+                    Loading subject marks records...
+                  </div>
+                ) : examStudents.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-muted-foreground italic">
+                    No enrolled students found for this exam's class / section.
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border/80 overflow-hidden shadow-sm">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                        <tr>
+                          <th className="p-3">Roll / Adm #</th>
+                          <th className="p-3">Candidate Name</th>
+                          <th className="p-3">Marks Obtained (Max: {selectedExam.totalMarks})</th>
+                          <th className="p-3 text-center">Percentage</th>
+                          <th className="p-3 text-center">Grade</th>
+                          <th className="p-3 text-center">Status</th>
+                          <th className="p-3 text-center">Absent?</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {examStudents.map((st) => {
+                          const row = marksRecords[st.id] || { marks: '', isAbsent: false, remarks: '' };
+                          const isAbsent = Boolean(row.isAbsent);
+                          const numericMarks = isAbsent ? 0 : Number(row.marks || 0);
+                          const pct = selectedExam.totalMarks > 0 ? (numericMarks / selectedExam.totalMarks) * 100 : 0;
+                          const grading = computeGradeClient(pct);
+                          const isPassed = !isAbsent && numericMarks >= selectedExam.passingMarks;
+
+                          return (
+                            <tr key={st.id} className="hover:bg-muted/20 transition">
+                              <td className="p-3 font-mono font-bold text-foreground">
+                                {st.rollNo || st.admissionNo || '—'}
+                              </td>
+                              <td className="p-3 font-bold text-foreground">
+                                {st.name}
+                              </td>
+                              <td className="p-3">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={selectedExam.totalMarks}
+                                  disabled={isAbsent}
+                                  value={row.marks}
+                                  onChange={e => {
+                                    const val = e.target.value;
+                                    setMarksRecords(prev => ({
+                                      ...prev,
+                                      [st.id]: {
+                                        ...prev[st.id],
+                                        marks: val,
+                                        isAbsent: false,
+                                        remarks: prev[st.id]?.remarks || '',
+                                      },
+                                    }));
+                                  }}
+                                  placeholder="0"
+                                  className="w-24 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40"
+                                />
+                              </td>
+                              <td className="p-3 text-center font-mono font-bold text-foreground">
+                                {isAbsent ? '0.0%' : `${pct.toFixed(1)}%`}
+                              </td>
+                              <td className="p-3 text-center">
+                                <span className={`font-black text-xs px-2 py-0.5 rounded-md ${
+                                  isAbsent ? 'bg-rose-500/10 text-rose-500' :
+                                  grading.grade === 'A+' || grading.grade === 'A' ? 'bg-emerald-500/10 text-emerald-500 font-bold' :
+                                  grading.grade === 'B' ? 'bg-cyan-500/10 text-cyan-500 font-bold' :
+                                  grading.grade === 'C' ? 'bg-amber-500/10 text-amber-500 font-bold' :
+                                  'bg-rose-500/10 text-rose-500'
+                                }`}>
+                                  {isAbsent ? 'F' : grading.grade}
+                                </span>
+                              </td>
+                              <td className="p-3 text-center">
+                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                  isAbsent ? 'bg-rose-500 text-white' :
+                                  isPassed ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                  'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                }`}>
+                                  {isAbsent ? 'ABSENT' : isPassed ? 'PASS' : 'FAIL'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isAbsent}
+                                  onChange={e => {
+                                    const checked = e.target.checked;
+                                    setMarksRecords(prev => ({
+                                      ...prev,
+                                      [st.id]: {
+                                        ...prev[st.id],
+                                        isAbsent: checked,
+                                        marks: checked ? '0' : prev[st.id]?.marks || '0',
+                                        remarks: checked ? 'Absent' : '',
+                                      },
+                                    }));
+                                  }}
+                                  className="rounded border-border text-rose-600 focus:ring-rose-500"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              ) : (
+                /* Student view — results will appear once published */
+                <div className="py-10 text-center rounded-2xl border border-dashed border-border bg-muted/20">
+                  <GraduationCap size={36} className="mx-auto text-indigo-400 mb-3" />
+                  <p className="text-sm font-bold text-foreground">
+                    {selectedExam.isPublished ? 'Results are published' : 'Results not yet published'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedExam.isPublished
+                      ? 'Check your student portal for your individual result card.'
+                      : 'Your teacher will publish results after marking. Please check back later.'}
+                  </p>
+                </div>
+              )}
+
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-border p-16 text-center text-muted-foreground">
