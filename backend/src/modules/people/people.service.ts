@@ -53,15 +53,19 @@ export class PeopleService {
     if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
 
     let email = data.email ? String(data.email).trim().toLowerCase() : '';
-    if (!email) {
-      const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
-      let randNum = Math.floor(100 + Math.random() * 900);
-      email = `${firstName}${randNum}@school.edu`;
+    const isCustomEmail = Boolean(email && email.includes('@') && !email.endsWith('@school.edu'));
+    
+    const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+    const regDigits = String(employeeNo).match(/(\d+)$/)?.[1] || String(employeeNo).replace(/\D/g, '').slice(-3) || '001';
+
+    if (!email || !isCustomEmail) {
+      email = `${firstName}${regDigits}@school.edu`;
       let userExists = await this.prisma.user.findUnique({ where: { email } });
+      let counter = 1;
       while (userExists) {
-        randNum = Math.floor(100 + Math.random() * 900);
-        email = `${firstName}${randNum}@school.edu`;
+        email = `${firstName}${regDigits}_${counter}@school.edu`;
         userExists = await this.prisma.user.findUnique({ where: { email } });
+        counter++;
       }
     }
 
@@ -103,7 +107,14 @@ export class PeopleService {
         });
         return teacher;
       });
-      return { teacher: result, credentials: { loginId: email, password: plainPassword } };
+      return {
+        teacher: result,
+        credentials: {
+          loginId: isCustomEmail ? email : `${firstName}${regDigits}`,
+          fullEmail: email,
+          password: plainPassword,
+        },
+      };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists.`);
       if (error?.status) throw error;

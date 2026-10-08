@@ -202,43 +202,68 @@ return { school, user };
     };
 
     let user = await this.prisma.user.findFirst({
-      where: { email: { equals: rawIdentifier, mode: 'insensitive' } },
+      where: {
+        OR: [
+          { email: { equals: rawIdentifier, mode: 'insensitive' } },
+          { email: { equals: `${rawIdentifier}@school.edu`, mode: 'insensitive' } },
+          { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
+        ],
+      },
       include: userInclude,
     });
 
-    // 1. Check if identifier is a Teacher Employee No / ID or Teacher phone / email
+    // 1. Comprehensive Teacher Resolution: Gmail, Name+RegNo, EmployeeNo, Phone, Name
     if (!user && rawIdentifier) {
-      let teacher = await this.prisma.teacher.findFirst({
-        where: {
-          OR: [
-            { employeeNo: { equals: rawIdentifier, mode: 'insensitive' } },
-            { email: { equals: rawIdentifier, mode: 'insensitive' } },
-            { phone: rawIdentifier },
-          ],
-          deletedAt: null,
-        },
+      const teachers = await this.prisma.teacher.findMany({
+        where: { deletedAt: null },
+        select: { id: true, name: true, employeeNo: true, email: true, phone: true, schoolId: true },
       });
 
-      if (!teacher && cleanId.length >= 2) {
-        const teachers = await this.prisma.teacher.findMany({
-          where: { deletedAt: null },
-          select: { id: true, employeeNo: true, email: true, schoolId: true },
-        });
-        teacher = teachers.find((t) => {
-          const empClean = (t.employeeNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          return empClean === cleanId;
-        }) as any;
-      }
+      const matchedTeacher = teachers.find((t) => {
+        if (!t) return false;
+        // Direct exact matches
+        if (t.email && t.email.toLowerCase() === identifier) return true;
+        if (t.employeeNo && t.employeeNo.toLowerCase() === identifier) return true;
+        if (t.phone && t.phone.replace(/\D/g, '') === cleanId && cleanId.length >= 7) return true;
 
-      if (teacher?.email) {
+        const empClean = (t.employeeNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (empClean && empClean === cleanId) return true;
+
+        const regDigits = (t.employeeNo || '').replace(/\D/g, '');
+        const shortRegDigits = regDigits.slice(-3); // e.g. "001" from "EMP-2026-001"
+        const firstName = (t.name || '').trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+        const fullNameClean = (t.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Match Name + Registration combinations: ali001, ammar002, ali-001, ammar-2026-002, alitch001
+        if (firstName && shortRegDigits && (cleanId === `${firstName}${shortRegDigits}` || identifier === `${firstName}-${shortRegDigits}`)) return true;
+        if (firstName && regDigits && (cleanId === `${firstName}${regDigits}` || cleanId === `${firstName}${empClean}`)) return true;
+        if (fullNameClean && shortRegDigits && cleanId === `${fullNameClean}${shortRegDigits}`) return true;
+        if (fullNameClean && regDigits && cleanId === `${fullNameClean}${regDigits}`) return true;
+
+        // Match if user entered only the short registration number (e.g. "001" or "002")
+        if (shortRegDigits && (cleanId === shortRegDigits || cleanId === regDigits) && cleanId.length >= 2) return true;
+
+        // Match first name or full name if unique or exact
+        if (firstName && cleanId === firstName) return true;
+        if (fullNameClean && cleanId === fullNameClean) return true;
+
+        return false;
+      });
+
+      if (matchedTeacher?.email) {
         user = await this.prisma.user.findFirst({
-          where: { email: { equals: teacher.email, mode: 'insensitive' } },
+          where: { email: { equals: matchedTeacher.email, mode: 'insensitive' } },
           include: userInclude,
         });
 
-        if (!user && teacher.schoolId) {
+        if (!user && matchedTeacher.schoolId) {
           user = await this.prisma.user.findFirst({
-            where: { schoolId: teacher.schoolId, role: 'TEACHER', deletedAt: null },
+            where: {
+              schoolId: matchedTeacher.schoolId,
+              role: 'TEACHER',
+              name: { equals: matchedTeacher.name, mode: 'insensitive' },
+              deletedAt: null,
+            },
             include: userInclude,
           });
         }

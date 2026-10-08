@@ -743,22 +743,21 @@ export default function Teachers() {
 
                 {/* Personal Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
-                  
                   <Field label="Teacher Full Name" required>
                     <input
                       required
                       className={inputStyle}
-                      placeholder="e.g. Prof. Tariq Mahmood / Ali Khan"
+                      placeholder="e.g. Tariq Mahmood / Ali Khan"
                       value={form.name}
                       onChange={(e) => {
                         const nameVal = e.target.value;
                         const firstName = nameVal.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
                         setForm((prev) => {
-                          const isCustomGmail = prev.email.includes('@') && !prev.email.endsWith('@school.edu');
+                          const isCustomGmail = Boolean(prev.email && prev.email.includes('@') && !prev.email.endsWith('@school.edu'));
                           let newEmail = prev.email;
                           if (!isCustomGmail && !editing) {
-                            const randNum = Math.floor(100 + Math.random() * 900);
-                            newEmail = firstName ? `${firstName}${randNum}@school.edu` : '';
+                            const regNum = prev.employeeNo.match(/(\d+)$/)?.[1] || prev.employeeNo.replace(/\D/g, '').slice(-3) || '001';
+                            newEmail = firstName ? `${firstName}${regNum}@school.edu` : '';
                           }
                           return {
                             ...prev,
@@ -962,7 +961,7 @@ export default function Teachers() {
                       <input
                         required
                         className={`${inputStyle} font-mono font-bold text-cyan-600 dark:text-cyan-400`}
-                        placeholder="apna Gmail ya name+digits (e.g. ali101@school.edu)"
+                        placeholder="apna Gmail ya name+digits (e.g. ali001)"
                         value={form.email}
                         onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       />
@@ -970,19 +969,19 @@ export default function Teachers() {
                         type="button"
                         onClick={() => {
                           const fName = form.name.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
-                          const randNum = Math.floor(100 + Math.random() * 900);
-                          const generated = `${fName}${randNum}@school.edu`;
+                          const regNum = form.employeeNo.match(/(\d+)$/)?.[1] || form.employeeNo.replace(/\D/g, '').slice(-3) || '001';
+                          const generated = `${fName}${regNum}@school.edu`;
                           setForm((prev) => ({ ...prev, email: generated }));
-                          toast.info(`Auto Generated: ${generated}`);
+                          toast.info(`Auto Generated: ${fName}${regNum}`);
                         }}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded-lg transition"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 px-2.5 py-1 rounded-lg transition"
                         title="Auto-generate from first name + numbers"
                       >
                         Auto Name+No
                       </button>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      💡 Teacher ka apna <strong>Gmail</strong> ho to wahi login ID ban jayega, nahi to first name + digits (jaise <code>ali101</code>) se auto-generate ho jayega.
+                      💡 Teacher ka apna <strong>Gmail</strong> ho to wahi login ID ban jayega, nahi to first name + registration digits (jaise <code>ali001</code>) se auto-generate ho jayega.
                     </p>
                   </div>
                 </Field>
