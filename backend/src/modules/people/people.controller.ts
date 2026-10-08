@@ -105,6 +105,8 @@ export class PeopleController {
   }
 
   @Post('teachers/:id/change-password')
+  @Patch('teachers/:id/change-password')
+  @Patch('teachers/:id/password')
   @Roles('SCHOOL_ADMIN')
   async updateTeacherPassword(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
     if (!id?.trim()) throw new BadRequestException('Teacher ID is required');
@@ -202,6 +204,8 @@ export class PeopleController {
   }
 
   @Post('students/:id/change-password')
+  @Patch('students/:id/change-password')
+  @Patch('students/:id/password')
   @Roles('SCHOOL_ADMIN')
   async updateStudentPassword(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
     if (!id?.trim()) throw new BadRequestException('Student ID is required');
@@ -369,8 +373,11 @@ export class PeopleController {
       if (date > new Date()) throw new BadRequestException('Date of birth cannot be in the future');
     }
     if (dto.bFormNumber !== undefined && dto.bFormNumber !== null && dto.bFormNumber !== '') {
-      const bForm = String(dto.bFormNumber).trim();
-      if (!/^\d{5}-\d{7}-\d$/.test(bForm)) throw new BadRequestException('B-Form / CNIC must use format 35202-1234567-1');
+      let bForm = String(dto.bFormNumber).trim().replace(/[^\d-]/g, '');
+      const rawDigits = bForm.replace(/\D/g, '');
+      if (rawDigits.length === 13) {
+        bForm = `${rawDigits.slice(0, 5)}-${rawDigits.slice(5, 12)}-${rawDigits.slice(12)}`;
+      }
       dto.bFormNumber = bForm;
     }
     if (dto.rollNo !== undefined && dto.rollNo !== null && dto.rollNo !== '') {
@@ -381,33 +388,46 @@ export class PeopleController {
     if (dto.status !== undefined && !['ACTIVE', 'INACTIVE', 'LEFT', 'GRADUATED'].includes(String(dto.status))) {
       throw new BadRequestException('Invalid student enrollment status');
     }
-    if (dto.gender !== undefined && !['MALE', 'FEMALE', 'OTHER'].includes(String(dto.gender))) {
+    if (dto.gender !== undefined && !['MALE', 'FEMALE', 'OTHER'].includes(String(dto.gender).toUpperCase())) {
       throw new BadRequestException('Invalid student gender');
     }
+    if (dto.gender) dto.gender = String(dto.gender).toUpperCase();
     if (dto.session !== undefined && dto.session !== null && dto.session !== '' && !/^\d{4}-\d{4}$/.test(String(dto.session))) {
-      throw new BadRequestException('Session must use YYYY-YYYY format');
+      throw new BadRequestException('Session must use YYYY-YYYY format (e.g. 2026-2027)');
     }
-    if (dto.admissionType !== undefined && dto.admissionType !== null && dto.admissionType !== '' && !['NEW', 'TRANSFER'].includes(String(dto.admissionType))) {
-      throw new BadRequestException('Invalid admission type');
+    if (dto.admissionType !== undefined && dto.admissionType !== null && dto.admissionType !== '') {
+      const at = String(dto.admissionType).toUpperCase();
+      dto.admissionType = ['NEW', 'TRANSFER'].includes(at) ? at : 'NEW';
     }
-    const phoneFields = ['phone', 'studentMobile', 'fatherMobile1', 'fatherWhatsapp', 'motherMobile', 'guardianMobile'];
+    const phoneFields = ['phone', 'studentMobile', 'fatherMobile1', 'fatherMobile2', 'fatherWhatsapp', 'motherMobile', 'guardianMobile'];
     for (const field of phoneFields) {
       if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '') {
-        const phone = String(dto[field]).trim();
-        if (!/^\d{4}-\d{7}$/.test(phone)) throw new BadRequestException(`${field} must use format 0300-1234567`);
+        let phone = String(dto[field]).trim().replace(/[^\d-]/g, '');
+        const raw = phone.replace(/\D/g, '');
+        if (raw.length === 11) {
+          phone = `${raw.slice(0, 4)}-${raw.slice(4)}`;
+        }
         dto[field] = phone;
       }
     }
-    if (dto.fatherCnic !== undefined && dto.fatherCnic !== null && dto.fatherCnic !== '') {
-      const cnic = String(dto.fatherCnic).trim();
-      if (!/^\d{5}-\d{7}-\d$/.test(cnic)) throw new BadRequestException('Father CNIC must use format 35202-1234567-1');
-      dto.fatherCnic = cnic;
+    const cnicFields = ['fatherCnic', 'motherCnic', 'guardianCnic'];
+    for (const field of cnicFields) {
+      if (dto[field] !== undefined && dto[field] !== null && dto[field] !== '') {
+        let cnic = String(dto[field]).trim().replace(/[^\d-]/g, '');
+        const raw = cnic.replace(/\D/g, '');
+        if (raw.length === 13) {
+          cnic = `${raw.slice(0, 5)}-${raw.slice(5, 12)}-${raw.slice(12)}`;
+        }
+        dto[field] = cnic;
+      }
     }
-    if (dto.fatherStatus !== undefined && !['ALIVE', 'DECEASED'].includes(String(dto.fatherStatus))) {
-      throw new BadRequestException('Invalid father status');
+    if (dto.fatherStatus !== undefined && dto.fatherStatus !== null && dto.fatherStatus !== '') {
+      const fs = String(dto.fatherStatus).toUpperCase();
+      dto.fatherStatus = ['ALIVE', 'DECEASED'].includes(fs) ? fs : 'ALIVE';
     }
-    if (dto.guardianRelation !== undefined && dto.guardianRelation !== null && dto.guardianRelation !== '' && !['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'].includes(String(dto.guardianRelation))) {
-      throw new BadRequestException('Invalid guardian relation');
+    if (dto.guardianRelation !== undefined && dto.guardianRelation !== null && dto.guardianRelation !== '') {
+      const gr = String(dto.guardianRelation).toUpperCase();
+      dto.guardianRelation = ['UNCLE', 'AUNT', 'GRANDPARENT', 'SIBLING', 'OTHER'].includes(gr) ? gr : 'OTHER';
     }
   }
 

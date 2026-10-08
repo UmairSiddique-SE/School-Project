@@ -48,37 +48,13 @@ function Navbar({ onSearch, onPortal }: { onSearch: () => void; onPortal: (role:
             {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          {/* Dedicated Separate Portal Buttons */}
+          {/* Single Primary School Login Button */}
           <button
             type="button"
-            onClick={() => onPortal("SCHOOL_ADMIN")}
-            className="flex items-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-3.5 py-2.5 text-xs font-bold text-cyan-200 hover:bg-cyan-500/25 transition shadow-sm"
+            onClick={() => navigate("/school-login")}
+            className="flex items-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2.5 text-xs font-bold text-cyan-200 hover:bg-cyan-500/25 transition shadow-sm"
           >
             <School size={14} /> School Login
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onPortal("TEACHER")}
-            className="flex items-center gap-1.5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2.5 text-xs font-bold text-emerald-100 hover:bg-emerald-400/20 transition shadow-sm"
-          >
-            <Users size={14} /> Teacher Portal
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onPortal("STUDENT")}
-            className="flex items-center gap-1.5 rounded-xl border border-indigo-400/20 bg-indigo-400/10 px-3 py-2.5 text-xs font-bold text-indigo-100 hover:bg-indigo-400/20 transition shadow-sm"
-          >
-            <GraduationCap size={14} /> Student LMS
-          </button>
-
-          <button
-            type="button"
-            onClick={() => navigate("/admin-login")}
-            className="flex items-center gap-1.5 rounded-xl border border-violet-400/20 bg-violet-500/10 px-3 py-2.5 text-xs font-bold text-violet-200 hover:bg-violet-500/20 transition shadow-sm"
-          >
-            <ShieldCheck size={14} /> Super Admin
           </button>
 
           <button
@@ -107,36 +83,15 @@ function Navbar({ onSearch, onPortal }: { onSearch: () => void; onPortal: (role:
               <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => { setOpen(false); onPortal("SCHOOL_ADMIN"); }}
-                  className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 py-2.5 text-sm font-bold text-cyan-200 flex items-center justify-center gap-2"
+                  onClick={() => { setOpen(false); navigate("/school-login"); }}
+                  className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 py-3 text-sm font-bold text-cyan-200 flex items-center justify-center gap-2"
                 >
                   <School size={16} /> School Login
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setOpen(false); onPortal("TEACHER"); }}
-                  className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 py-2.5 text-sm font-bold text-emerald-100 flex items-center justify-center gap-2"
-                >
-                  <Users size={16} /> Teacher Portal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setOpen(false); onPortal("STUDENT"); }}
-                  className="rounded-xl border border-indigo-400/20 bg-indigo-400/10 py-2.5 text-sm font-bold text-indigo-100 flex items-center justify-center gap-2"
-                >
-                  <GraduationCap size={16} /> Student LMS
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setOpen(false); navigate("/admin-login"); }}
-                  className="rounded-xl border border-violet-400/20 bg-violet-500/10 py-2.5 text-sm font-bold text-violet-200 flex items-center justify-center gap-2"
-                >
-                  <ShieldCheck size={16} /> Super Admin
-                </button>
-                <button
-                  type="button"
                   onClick={() => { setOpen(false); go("pricing"); }}
-                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-black text-white"
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3 text-sm font-black text-white"
                 >
                   Register School
                 </button>
@@ -149,7 +104,8 @@ function Navbar({ onSearch, onPortal }: { onSearch: () => void; onPortal: (role:
   );
 }
 
-function Hero({ onSearch, onPortal }: { onSearch: () => void; onPortal: (role: "SCHOOL_ADMIN" | "STUDENT" | "TEACHER") => void }) {
+function Hero({ onSearch }: { onSearch: () => void; onPortal?: any }) {
+  const navigate = useNavigate();
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden px-5 pb-20 pt-32">
       <div className="absolute -left-40 -top-40 h-[620px] w-[620px] rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -169,33 +125,19 @@ function Hero({ onSearch, onPortal }: { onSearch: () => void; onPortal: (role: "
             Students, teachers, attendance, exams, fees, communication, reports and school administration in one secure multi-tenant SaaS platform.
           </p>
 
-          {/* Clear Distinct Portal Buttons in Hero */}
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Single Clear School Login Button in Hero */}
+          <div className="mt-8 flex flex-wrap gap-4">
             <button
               type="button"
-              onClick={() => onPortal("SCHOOL_ADMIN")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-cyan-500/20 hover:brightness-110 transition"
+              onClick={() => navigate("/school-login")}
+              className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-xl shadow-cyan-500/25 hover:brightness-110 transition"
             >
-              <School size={18} /> School Login <ArrowRight size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onPortal("TEACHER")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-5 py-4 text-sm font-black text-emerald-100 transition hover:border-emerald-300/50 hover:bg-emerald-400/15"
-            >
-              <Users size={18} className="text-emerald-300" /> Teacher Portal
-            </button>
-            <button
-              type="button"
-              onClick={() => onPortal("STUDENT")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-400/30 bg-indigo-400/10 px-5 py-4 text-sm font-black text-indigo-100 transition hover:border-indigo-300/50 hover:bg-indigo-400/15"
-            >
-              <GraduationCap size={18} className="text-indigo-300" /> Student LMS
+              <School size={20} /> School Login <ArrowRight size={18} />
             </button>
             <button
               type="button"
               onClick={() => go("pricing")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-black text-slate-300 hover:text-white hover:bg-white/10 transition"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-bold text-slate-200 hover:bg-white/10 transition"
             >
               Register School
             </button>

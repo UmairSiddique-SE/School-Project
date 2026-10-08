@@ -35,6 +35,29 @@ type FormState = {
   transportRequired: boolean;
   hostelRequired: boolean;
   avatarUrl: string;
+
+  // Father Details
+  fatherName: string;
+  fatherMobile1: string;
+  fatherMobile2: string;
+  fatherWhatsapp: string;
+  fatherCnic: string;
+  fatherOccupation: string;
+  fatherStatus: 'ALIVE' | 'DECEASED';
+
+  // Guardian Details (Required if father is deceased)
+  guardianName: string;
+  guardianRelation: string;
+  guardianMobile: string;
+  guardianCnic: string;
+  guardianOccupation: string;
+
+  // Mother Details
+  motherName: string;
+  motherMobile: string;
+  motherCnic: string;
+  motherOccupation: string;
+  motherStatus: 'ALIVE' | 'DECEASED';
 };
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 dark:border-border/80 bg-white dark:bg-background/90 px-4 py-3 text-sm text-foreground outline-none shadow-sm transition placeholder:text-muted-foreground/60 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 font-medium';
@@ -43,6 +66,13 @@ const primaryBtnClass = 'inline-flex items-center justify-center gap-2 rounded-x
 const currentSession = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
 const religions = ['Muslim', 'Christian', 'Hindu', 'Sikh', 'Buddhist', 'Other'];
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const guardianRelations = [
+  { value: 'UNCLE', label: 'Uncle (Chacha / Mamoo)' },
+  { value: 'GRANDPARENT', label: 'Grandfather / Grandmother (Dada / Nana)' },
+  { value: 'SIBLING', label: 'Older Brother / Sister (Bhai / Baji)' },
+  { value: 'AUNT', label: 'Aunt (Khala / Phopho)' },
+  { value: 'OTHER', label: 'Other Relative / Legal Guardian' },
+];
 
 function generate8CharPassword() {
   const chars = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
@@ -76,6 +106,26 @@ const emptyForm = (): FormState => ({
   transportRequired: false,
   hostelRequired: false,
   avatarUrl: '',
+
+  fatherName: '',
+  fatherMobile1: '',
+  fatherMobile2: '',
+  fatherWhatsapp: '',
+  fatherCnic: '',
+  fatherOccupation: '',
+  fatherStatus: 'ALIVE',
+
+  guardianName: '',
+  guardianRelation: 'UNCLE',
+  guardianMobile: '',
+  guardianCnic: '',
+  guardianOccupation: '',
+
+  motherName: '',
+  motherMobile: '',
+  motherCnic: '',
+  motherOccupation: '',
+  motherStatus: 'ALIVE',
 });
 
 function formatPhone(raw: string) {
@@ -261,6 +311,7 @@ export default function Students() {
   const openEdit = (student: Student) => {
     setEditing(student);
     const matchedSection = sections.find((s) => s.id === student.sectionId);
+    const primaryParent = student.parents?.[0]?.parent;
 
     setForm({
       ...emptyForm(),
@@ -286,6 +337,26 @@ export default function Students() {
       transportRequired: Boolean(student.transportRequired),
       hostelRequired: Boolean(student.hostelRequired),
       dateOfBirth: student.dateOfBirth ? String(student.dateOfBirth).slice(0, 10) : '',
+
+      fatherName: primaryParent?.fatherName || '',
+      fatherMobile1: formatPhone(primaryParent?.fatherMobile1 || ''),
+      fatherMobile2: formatPhone(primaryParent?.fatherMobile2 || ''),
+      fatherWhatsapp: formatPhone(primaryParent?.fatherWhatsapp || ''),
+      fatherCnic: formatCnic(primaryParent?.fatherCnic || ''),
+      fatherOccupation: primaryParent?.fatherOccupation || '',
+      fatherStatus: (primaryParent?.fatherStatus as any) || 'ALIVE',
+
+      guardianName: primaryParent?.guardianName || '',
+      guardianRelation: primaryParent?.guardianRelation || 'UNCLE',
+      guardianMobile: formatPhone(primaryParent?.guardianMobile || ''),
+      guardianCnic: formatCnic(primaryParent?.guardianCnic || ''),
+      guardianOccupation: primaryParent?.guardianOccupation || '',
+
+      motherName: primaryParent?.motherName || '',
+      motherMobile: formatPhone(primaryParent?.motherMobile || ''),
+      motherCnic: formatCnic(primaryParent?.motherCnic || ''),
+      motherOccupation: primaryParent?.motherOccupation || '',
+      motherStatus: (primaryParent?.motherStatus as any) || 'ALIVE',
     });
     setView('add');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -321,8 +392,33 @@ export default function Students() {
     if (form.emergencyContact && (!phoneValid(form.emergencyContact) || form.emergencyContact.replace(/\D/g, '').length !== 11)) {
       return toast.error('Emergency Contact must contain 11 digits: 0300-1234567');
     }
+
+    // Father & Guardian validations
+    if (form.fatherStatus === 'DECEASED') {
+      if (!form.guardianName.trim()) {
+        return toast.error('Father is marked as Deceased. Guardian Name is required.');
+      }
+      if (!form.guardianMobile.trim() || !phoneValid(form.guardianMobile) || form.guardianMobile.replace(/\D/g, '').length !== 11) {
+        return toast.error('Father is marked as Deceased. Valid Guardian Mobile is required (0300-1234567).');
+      }
+    } else {
+      if (form.fatherMobile1 && (!phoneValid(form.fatherMobile1) || form.fatherMobile1.replace(/\D/g, '').length !== 11)) {
+        return toast.error('Father Mobile must contain 11 digits: 0300-1234567');
+      }
+      if (form.fatherCnic && (!cnicValid(form.fatherCnic) || form.fatherCnic.replace(/\D/g, '').length !== 13)) {
+        return toast.error('Father CNIC must contain 13 digits: 35202-1234567-1');
+      }
+    }
+
+    if (form.motherMobile && (!phoneValid(form.motherMobile) || form.motherMobile.replace(/\D/g, '').length !== 11)) {
+      return toast.error('Mother Mobile must contain 11 digits: 0300-1234567');
+    }
+    if (form.motherCnic && (!cnicValid(form.motherCnic) || form.motherCnic.replace(/\D/g, '').length !== 13)) {
+      return toast.error('Mother CNIC must contain 13 digits: 35202-1234567-1');
+    }
+
     if (!editing && (!form.password || form.password.trim().length < 6)) {
-      return toast.error('Password must be at least 6 characters (8 characters auto-generated)');
+      return toast.error('Password must be at least 6 characters (8 digits recommended)');
     }
 
     setSaving(true);
@@ -349,6 +445,28 @@ export default function Students() {
         previousClass: form.previousClass || undefined,
         transportRequired: form.transportRequired,
         hostelRequired: form.hostelRequired,
+
+        // Father Information
+        fatherName: form.fatherName.trim() || undefined,
+        fatherMobile1: form.fatherMobile1 || undefined,
+        fatherMobile2: form.fatherMobile2 || undefined,
+        fatherWhatsapp: form.fatherWhatsapp || undefined,
+        fatherCnic: form.fatherCnic || undefined,
+        fatherOccupation: form.fatherOccupation.trim() || undefined,
+        fatherStatus: form.fatherStatus,
+
+        // Guardian Information
+        guardianName: form.guardianName.trim() || undefined,
+        guardianRelation: form.guardianRelation || undefined,
+        guardianMobile: form.guardianMobile || undefined,
+        guardianCnic: form.guardianCnic || undefined,
+        guardianOccupation: form.guardianOccupation.trim() || undefined,
+
+        // Mother Information
+        motherName: form.motherName.trim() || undefined,
+        motherMobile: form.motherMobile || undefined,
+        motherCnic: form.motherCnic || undefined,
+        motherOccupation: form.motherOccupation.trim() || undefined,
       };
 
       if (!editing) {
@@ -998,21 +1116,417 @@ export default function Students() {
             </div>
           </div>
 
-          {/* 2. 8-CHARACTER AUTO-GENERATED LOGIN PASSWORD */}
+          {/* 2. ACADEMIC & ADMISSION HISTORY */}
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
             <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              2. STUDENT PORTAL LOGIN CREDENTIALS
+              2. ACADEMIC & ADMISSION DETAILS
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Academic Session">
+                <input
+                  className={inputClass}
+                  placeholder="2025-2026"
+                  value={form.session}
+                  onChange={(e) => update('session', e.target.value)}
+                />
+              </Field>
+
+              <Field label="Admission Type">
+                <select
+                  className={inputClass}
+                  value={form.admissionType}
+                  onChange={(e) => update('admissionType', e.target.value as 'NEW' | 'TRANSFER')}
+                >
+                  <option value="NEW">New Admission</option>
+                  <option value="TRANSFER">Transfer from Other School</option>
+                </select>
+              </Field>
+
+              <Field label="Previous School Name (If Transfer)">
+                <input
+                  className={inputClass}
+                  placeholder="Previous School / Institute"
+                  value={form.previousSchool}
+                  onChange={(e) => update('previousSchool', e.target.value)}
+                />
+              </Field>
+
+              <Field label="Previous Class Passed">
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Class 4 / Playgroup"
+                  value={form.previousClass}
+                  onChange={(e) => update('previousClass', e.target.value)}
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 3. FATHER INFORMATION (WAALID KI TAFSEELAT) */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                3. FATHER INFORMATION (والد کی تفصیلات)
+              </h3>
+
+              {/* Alive / Deceased Status Selector */}
+              <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-2xl border border-border/80">
+                <button
+                  type="button"
+                  onClick={() => update('fatherStatus', 'ALIVE')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    form.fatherStatus === 'ALIVE'
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                  Alive (حیات)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update('fatherStatus', 'DECEASED')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    form.fatherStatus === 'DECEASED'
+                      ? 'bg-rose-500 text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-rose-300" />
+                  Deceased (مرحوم / انتقال)
+                </button>
+              </div>
+            </div>
+
+            {form.fatherStatus === 'DECEASED' && (
+              <div className="mb-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-300 flex items-start gap-3">
+                <span className="text-base">⚠️</span>
+                <div>
+                  <p className="font-bold text-rose-200">Father is Deceased (والد صاحب مرحوم ہیں)</p>
+                  <p className="text-rose-300/90 text-[11px] mt-0.5">
+                    Guardian (سرپرست) details and phone number below are <strong>mandatory</strong> for official communication and emergency alerts.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field
+                label={form.fatherStatus === 'DECEASED' ? 'Father Name (Late / مرحوم)' : 'Father Full Name'}
+                required={form.fatherStatus === 'ALIVE'}
+              >
+                <input
+                  required={form.fatherStatus === 'ALIVE'}
+                  className={inputClass}
+                  placeholder="e.g. Muhammad Tariq"
+                  value={form.fatherName}
+                  onChange={(e) => update('fatherName', e.target.value)}
+                />
+              </Field>
+
+              <Field
+                label="Father Mobile 1 (Primary SMS / Call)"
+                required={form.fatherStatus === 'ALIVE'}
+              >
+                <input
+                  inputMode="numeric"
+                  maxLength={12}
+                  required={form.fatherStatus === 'ALIVE'}
+                  className={`${inputClass} font-mono`}
+                  placeholder="0300-1234567"
+                  value={form.fatherMobile1}
+                  onChange={(e) => update('fatherMobile1', formatPhone(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Father WhatsApp Number">
+                <input
+                  inputMode="numeric"
+                  maxLength={12}
+                  className={`${inputClass} font-mono`}
+                  placeholder="0300-1234567"
+                  value={form.fatherWhatsapp}
+                  onChange={(e) => update('fatherWhatsapp', formatPhone(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Father Secondary Mobile">
+                <input
+                  inputMode="numeric"
+                  maxLength={12}
+                  className={`${inputClass} font-mono`}
+                  placeholder="0321-7654321"
+                  value={form.fatherMobile2}
+                  onChange={(e) => update('fatherMobile2', formatPhone(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Father CNIC">
+                <input
+                  inputMode="numeric"
+                  maxLength={15}
+                  className={`${inputClass} font-mono`}
+                  placeholder="35201-xxxxxxx-x"
+                  value={form.fatherCnic}
+                  onChange={(e) => update('fatherCnic', formatCnic(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Father Occupation / Profession">
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Businessman / Govt Employee / Doctor"
+                  value={form.fatherOccupation}
+                  onChange={(e) => update('fatherOccupation', e.target.value)}
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 4. GUARDIAN INFORMATION (SARPARAST KI TAFSEELAT) */}
+          <div className={`rounded-3xl border p-6 sm:p-8 shadow-sm transition-all ${
+            form.fatherStatus === 'DECEASED'
+              ? 'border-amber-500/50 bg-card ring-1 ring-amber-500/20'
+              : 'border-border bg-card'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h3 className="text-xs font-black uppercase tracking-[0.15em] text-amber-500 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                4. GUARDIAN INFORMATION (سرپرست کی تفصیلات)
+                {form.fatherStatus === 'DECEASED' && (
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    Mandatory (لازمی)
+                  </span>
+                )}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field
+                label="Guardian Full Name"
+                required={form.fatherStatus === 'DECEASED'}
+              >
+                <input
+                  required={form.fatherStatus === 'DECEASED'}
+                  className={inputClass}
+                  placeholder="e.g. Abdul Rehman"
+                  value={form.guardianName}
+                  onChange={(e) => update('guardianName', e.target.value)}
+                />
+              </Field>
+
+              <Field label="Relationship with Student" required={form.fatherStatus === 'DECEASED'}>
+                <select
+                  className={inputClass}
+                  value={form.guardianRelation}
+                  onChange={(e) => update('guardianRelation', e.target.value)}
+                >
+                  <option value="UNCLE">Uncle (Chacha / Taya / Mamu)</option>
+                  <option value="GRANDFATHER">Grandfather (Dada / Nana)</option>
+                  <option value="BROTHER">Elder Brother (Bara Bhai)</option>
+                  <option value="AUNT">Aunt (Khala / Phuppo)</option>
+                  <option value="GRANDMOTHER">Grandmother (Dadi / Nani)</option>
+                  <option value="MOTHER">Mother as Legal Guardian</option>
+                  <option value="OTHER">Other Guardian</option>
+                </select>
+              </Field>
+
+              <Field
+                label="Guardian Mobile Number"
+                required={form.fatherStatus === 'DECEASED'}
+              >
+                <input
+                  inputMode="numeric"
+                  maxLength={12}
+                  required={form.fatherStatus === 'DECEASED'}
+                  className={`${inputClass} font-mono`}
+                  placeholder="0300-1234567"
+                  value={form.guardianMobile}
+                  onChange={(e) => update('guardianMobile', formatPhone(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Guardian CNIC">
+                <input
+                  inputMode="numeric"
+                  maxLength={15}
+                  className={`${inputClass} font-mono`}
+                  placeholder="35201-xxxxxxx-x"
+                  value={form.guardianCnic}
+                  onChange={(e) => update('guardianCnic', formatCnic(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Guardian Occupation">
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Business / Service"
+                  value={form.guardianOccupation}
+                  onChange={(e) => update('guardianOccupation', e.target.value)}
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 5. MOTHER INFORMATION (WAALIDA KI TAFSEELAT) */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                5. MOTHER INFORMATION (والدہ کی تفصیلات)
+              </h3>
+
+              <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-2xl border border-border/80">
+                <button
+                  type="button"
+                  onClick={() => update('motherStatus', 'ALIVE')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    form.motherStatus === 'ALIVE'
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                  Alive (حیات)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update('motherStatus', 'DECEASED')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    form.motherStatus === 'DECEASED'
+                      ? 'bg-rose-500 text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-rose-300" />
+                  Deceased (مرحومہ)
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label={form.motherStatus === 'DECEASED' ? 'Mother Name (Late / مرحومہ)' : 'Mother Full Name'}>
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Parveen Bibi"
+                  value={form.motherName}
+                  onChange={(e) => update('motherName', e.target.value)}
+                />
+              </Field>
+
+              <Field label="Mother Mobile Number">
+                <input
+                  inputMode="numeric"
+                  maxLength={12}
+                  className={`${inputClass} font-mono`}
+                  placeholder="0300-1234567"
+                  value={form.motherMobile}
+                  onChange={(e) => update('motherMobile', formatPhone(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Mother CNIC">
+                <input
+                  inputMode="numeric"
+                  maxLength={15}
+                  className={`${inputClass} font-mono`}
+                  placeholder="35201-xxxxxxx-x"
+                  value={form.motherCnic}
+                  onChange={(e) => update('motherCnic', formatCnic(e.target.value))}
+                />
+              </Field>
+
+              <Field label="Mother Occupation">
+                <input
+                  className={inputClass}
+                  placeholder="Housewife / Teacher / Doctor"
+                  value={form.motherOccupation}
+                  onChange={(e) => update('motherOccupation', e.target.value)}
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 6. RESIDENTIAL ADDRESS & FACILITIES */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              6. RESIDENTIAL ADDRESS & SCHOOL FACILITIES
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Current Residential Address">
+                  <input
+                    className={inputClass}
+                    placeholder="House #, Street #, Mohallah / Sector, City"
+                    value={form.currentAddress}
+                    onChange={(e) => update('currentAddress', e.target.value)}
+                  />
+                </Field>
+                <Field label="Permanent Home Address">
+                  <input
+                    className={inputClass}
+                    placeholder="Village / Tehsil / District (if different)"
+                    value={form.permanentAddress}
+                    onChange={(e) => update('permanentAddress', e.target.value)}
+                  />
+                </Field>
+              </div>
+
+              {/* Transport & Hostel check options */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <label className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition ${
+                  form.transportRequired ? 'border-cyan-500 bg-cyan-500/10' : 'border-border bg-muted/20 hover:bg-muted/40'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded accent-cyan-500"
+                    checked={form.transportRequired}
+                    onChange={(e) => update('transportRequired', e.target.checked)}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">🚌 School Transport Required</span>
+                    <span className="text-[11px] text-muted-foreground">Pick & Drop van/bus service for this student</span>
+                  </div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition ${
+                  form.hostelRequired ? 'border-amber-500 bg-amber-500/10' : 'border-border bg-muted/20 hover:bg-muted/40'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded accent-amber-500"
+                    checked={form.hostelRequired}
+                    onChange={(e) => update('hostelRequired', e.target.checked)}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">🏠 Hostel Accommodation Required</span>
+                    <span className="text-[11px] text-muted-foreground">Boarding & hostel room facility</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* 7. STUDENT PORTAL LOGIN CREDENTIALS */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              7. STUDENT PORTAL LOGIN CREDENTIALS
             </h3>
 
             <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/20 via-sky-950/10 to-card p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                 <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
-                    Student Login Password (8 Characters Auto-Generated)
+                    Student Login Password (8 Digits / Characters)
                   </label>
                   <p className="text-[11px] text-muted-foreground mb-2">
-                    Auto-generates an 8-character password for student portal access. Admin can customize or update anytime.
+                    Admin can type any custom 8-digit password or auto-generate one to provide to the student.
                   </p>
                   
                   <div className="flex items-center gap-2">
@@ -1020,7 +1534,7 @@ export default function Students() {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         className={`${inputClass} font-mono font-bold tracking-wider text-amber-500 pr-10`}
-                        placeholder="8-character password"
+                        placeholder="8-digit password"
                         value={form.password}
                         onChange={(e) => update('password', e.target.value)}
                       />
@@ -1038,51 +1552,23 @@ export default function Students() {
                       onClick={() => {
                         const generated = generate8CharPassword();
                         update('password', generated);
-                        toast.success(`Generated 8-char password: ${generated}`);
+                        toast.success(`Generated 8-digit password: ${generated}`);
                       }}
                       className="inline-flex items-center gap-1.5 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-xs font-bold text-cyan-500 hover:bg-cyan-500/20 transition shrink-0"
                     >
-                      <RefreshCw size={14} /> Re-Generate (8 Chars)
+                      <RefreshCw size={14} /> Auto-Generate
                     </button>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-border/80 bg-muted/30 p-4 space-y-2 text-xs">
                   <div className="flex items-center gap-2 text-emerald-500 font-bold">
-                    <Sparkles size={15} /> Instant Portal Activation
+                    <Sparkles size={15} /> Easy Student Access
                   </div>
                   <p className="text-muted-foreground text-[11px] leading-relaxed">
-                    Once saved, the student can log in using their student email / admission ID and this 8-character password. Admin can edit or reset this password at any time.
+                    Student can log in using their Name + Registration No (e.g. <span className="font-mono text-cyan-400">ali20</span>), Admission No, or Email with this 8-digit password. Admin can change it anytime.
                   </p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. RESIDENTIAL ADDRESS */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-500 mb-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              3. RESIDENTIAL ADDRESS
-            </h3>
-            <div className="rounded-2xl border border-border bg-muted/15 p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Current Residential Address">
-                  <input
-                    className={inputClass}
-                    placeholder="House / Street / Area / City"
-                    value={form.currentAddress}
-                    onChange={(e) => update('currentAddress', e.target.value)}
-                  />
-                </Field>
-                <Field label="Permanent Address">
-                  <input
-                    className={inputClass}
-                    placeholder="Permanent Home Address"
-                    value={form.permanentAddress}
-                    onChange={(e) => update('permanentAddress', e.target.value)}
-                  />
-                </Field>
               </div>
             </div>
           </div>

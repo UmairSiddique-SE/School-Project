@@ -2312,6 +2312,75 @@ export default function Teachers() {
         </div>
       )}
 
+      {/* ── Teacher Password Update Modal ── */}
+      {passwordModalTeacher && (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-500 font-black text-sm">
+                <Key size={18} /> Update Teacher Portal Password
+              </div>
+              <button
+                onClick={() => setPasswordModalTeacher(null)}
+                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Set or generate an 8-digit login password for <strong>{passwordModalTeacher.name}</strong> ({passwordModalTeacher.employeeNo}).
+            </p>
+
+            <form onSubmit={handleUpdatePassword} className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">New 8-Digit Password</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    required
+                    type="text"
+                    className={`${inputStyle} font-mono font-bold text-amber-500`}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter 8-digit password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const generated = generate8CharPassword();
+                      setNewPassword(generated);
+                      toast.success(`Generated: ${generated}`);
+                    }}
+                    className="p-3 rounded-2xl border border-border hover:bg-muted text-indigo-500 shrink-0"
+                    title="Re-Generate 8-digit password"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPasswordModalTeacher(null)}
+                  className={buttonStyle}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingPassword}
+                  className={primaryBtnStyle}
+                >
+                  {updatingPassword ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  Save Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
