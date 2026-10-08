@@ -37,6 +37,13 @@ export default function LoginPage() {
   const schoolName = urlSchoolSlug ? urlSchoolSlug.replace(/-/g, " ") : "your school";
 
   useEffect(() => {
+    const roleParam = searchParams.get("role")?.toUpperCase();
+    if (roleParam === "TEACHER") setActiveRole("TEACHER");
+    else if (roleParam === "STUDENT") setActiveRole("STUDENT");
+    else if (roleParam === "SCHOOL_ADMIN" || roleParam === "ADMIN") setActiveRole("SCHOOL_ADMIN");
+  }, [searchParams]);
+
+  useEffect(() => {
     if (urlSchoolSlug) {
       apiClient
         .get(`/public/tenant/slug/${encodeURIComponent(urlSchoolSlug)}`)
@@ -175,7 +182,7 @@ export default function LoginPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-black shadow-lg shadow-cyan-500/20">E</span>
           <span className="hidden text-sm font-black sm:block">EduSphere <span className="text-cyan-300">ERP</span></span>
         </Link>
-        <Link to="/school-login" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3.5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-white/20 hover:text-white">
+        <Link to={`/school-login?role=${activeRole.toLowerCase()}`} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3.5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-white/20 hover:text-white">
           <ArrowLeft size={15} /> Back to Schools
         </Link>
       </header>
