@@ -212,17 +212,6 @@ export default function DailyOperations() {
         console.warn('Transport routes not loaded', e);
       }
 
-      // 6. Student gate passes and eligible students (API-backed, school-scoped)
-      try {
-        const [passesRes, studentsRes] = await Promise.all([
-          apiClient.get('/gate-passes'),
-          apiClient.get('/people/students'),
-        ]);
-        setGatePasses(Array.isArray(passesRes.data) ? passesRes.data : []);
-        setGatePassStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
-      } catch (e) {
-        console.warn('Student gate pass data not loaded', e);
-      }
     } catch (err: any) {
       toast.error('Could not refresh all daily operations data');
     } finally {
@@ -234,6 +223,19 @@ export default function DailyOperations() {
   useEffect(() => {
     loadDailyData();
   }, []);
+
+  useEffect(() => {
+    if (user?.role !== 'SCHOOL_ADMIN') return;
+    let cancelled = false;
+    Promise.all([apiClient.get('/gate-passes'), apiClient.get('/people/students')])
+      .then(([passesRes, studentsRes]) => {
+        if (cancelled) return;
+        setGatePasses(Array.isArray(passesRes.data) ? passesRes.data : []);
+        setGatePassStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      })
+      .catch((error) => console.warn('Student gate pass data not loaded', error));
+    return () => { cancelled = true; };
+  }, [user?.role]);
 
   const handleCreateGatePass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,12 +330,14 @@ export default function DailyOperations() {
               <WalletCards size={15} /> Collect Fee
             </button>
 
-            <button
-              onClick={() => setShowGatePassModal(true)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition"
-            >
-              <Ticket size={15} /> Issue Gate Pass
-            </button>
+            {user?.role === 'SCHOOL_ADMIN' && (
+              <button
+                onClick={() => setShowGatePassModal(true)}
+                className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition"
+              >
+                <Ticket size={15} /> Issue Gate Pass
+              </button>
+            )}
 
             <button
               onClick={() => loadDailyData(true)}
@@ -426,6 +430,7 @@ export default function DailyOperations() {
           </p>
         </div>
 
+        {user?.role === 'SCHOOL_ADMIN' && (
         {/* 4. Student Gate Passes */}
         <div
           onClick={() => setActiveTab('gatepass')}
@@ -448,6 +453,7 @@ export default function DailyOperations() {
             Total {gatePasses.length} student passes recorded
           </p>
         </div>
+        )}
 
       </div>
 
@@ -459,7 +465,7 @@ export default function DailyOperations() {
           { key: 'finance', label: 'Fee Cash Desk', icon: WalletCards },
           { key: 'transport', label: 'Transport Dispatch', icon: Bus },
           { key: 'gatepass', label: 'Student Gate Passes', icon: Ticket },
-        ].map((tab) => {
+        ].filter((tab) => tab.key !== 'gatepass' || user?.role === 'SCHOOL_ADMIN').map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
           return (
@@ -797,7 +803,7 @@ export default function DailyOperations() {
       )}
 
       {/* ── TAB 5: STUDENT GATE PASS REGISTER ── */}
-      {activeTab === 'gatepass' && (
+      {activeTab === 'gatepass' && user?.role === 'SCHOOL_ADMIN' && (
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
