@@ -39,6 +39,7 @@ model School {
   payments           FeePayment[]
   feeStructures      FeeStructure[]
   homeworks          Homework[]
+  gatePasses         GatePass[]
   hostels            Hostel[]
   leaveRequests      LeaveRequest[]
   notifications      Notification[]
@@ -355,6 +356,7 @@ model Student {
   documents              Document[]
   examResults            ExamResult[]
   feePayments            FeePayment[]
+  gatePasses             GatePass[]
   homeworkSubmissions    HomeworkSubmission[]
   hostelAllocation       HostelAllocation?
   school                 School               @relation(fields: [schoolId], references: [id])
@@ -905,6 +907,30 @@ model AuditLog {
   @@index([schoolId, createdAt])
   @@index([userId])
   @@index([entity])
+}
+
+model GatePass {
+  id              String   @id @default(uuid())
+  passNo          String   @unique
+  reasonType      String   @default("EARLY_LEAVE")
+  reason          String
+  status          String   @default("APPROVED")
+  issuedById      String
+  approvedById    String
+  exitMarkedById  String?
+  issuedAt        DateTime @default(now())
+  approvedAt      DateTime @default(now())
+  exitAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  schoolId        String
+  studentId       String
+  school          School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId, createdAt])
+  @@index([studentId, createdAt])
+  @@index([schoolId, status])
 }
 
 model PlatformPlan {
