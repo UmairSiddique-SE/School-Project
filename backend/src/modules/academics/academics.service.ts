@@ -110,13 +110,39 @@ export class AcademicsService {
   }
 
   async issueBook(schoolId: string, data: any) {
-    const book = await this.prisma.book.findFirst({ where: { id: data.bookId, schoolId } });
-    if (!book || book.available < 1) throw new NotFoundException('Book not available');
-    const student = await this.prisma.student.findFirst({ where: { id: data.studentId, schoolId } });
-    if (!student) throw new NotFoundException('Student not found');
+    const bookId = String(data?.bookId || '').trim();
+    const studentId = String(data?.studentId || '').trim();
+    const dueDate = new Date(data?.dueDate);
+    if (!bookId || !studentId) throw new NotFoundException('Book and student are required');
+    if (!data?.dueDate || Number.isNaN(dueDate.getTime())) {
+      throw new NotFoundException('A valid book due date is required');
+    }
 
-    await this.prisma.book.update({ where: { id: book.id }, data: { available: book.available - 1 } });
-    return this.prisma.bookIssue.create({ data: { bookId: data.bookId, studentId: data.studentId, dueDate: new Date(data.dueDate) } });
+    return this.prisma.$transaction(async (tx) => {
+      const book = await tx.book.findFirst({
+        where: { id: bookId, schoolId, deletedAt: null },
+        select: { id: true, available: true },
+      });
+      if (!book || book.available < 1) throw new NotFoundException('Book not available');
+
+      const student = await tx.student.findFirst({
+        where: { id: studentId, schoolId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!student) throw new NotFoundException('Student not found in this school');
+
+      // Conditional decrement prevents concurrent requests from issuing the
+      // final copy twice and keeps inventory consistent with the issue record.
+      const updated = await tx.book.updateMany({
+        where: { id: book.id, schoolId, deletedAt: null, available: { gt: 0 } },
+        data: { available: { decrement: 1 } },
+      });
+      if (updated.count !== 1) throw new NotFoundException('No copies are currently available');
+
+      return tx.bookIssue.create({
+        data: { bookId: book.id, studentId: student.id, dueDate },
+      });
+    });
   }
 
   async deleteBook(id: string, schoolId: string) {
