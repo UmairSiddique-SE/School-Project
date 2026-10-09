@@ -2,11 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Activity, Calendar, CheckCircle2, Clock, DollarSign, Users,
-  Bus, Bell, ShieldCheck, ArrowUpRight, Search, Plus, Printer,
-  RefreshCw, ChevronRight, XCircle, AlertCircle, FileText,
-  UserCheck, Sparkles, Building2, WalletCards, NotebookTabs,
-  BadgeAlert, Phone, MapPin, Check, X, LogIn, LogOut, Ticket
+  Activity, Calendar, CheckCircle2, DollarSign, Bus, Bell,
+  ArrowUpRight, Plus, Printer, RefreshCw, WalletCards, NotebookTabs,
+  Phone, MapPin, X, LogOut, Ticket
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
@@ -59,19 +57,32 @@ interface TransportRoute {
   _count?: { assignments?: number };
 }
 
+type GatePassReasonType = 'EARLY_LEAVE' | 'HALF_DAY' | 'MEDICAL' | 'OTHER';
+
 interface GatePass {
   id: string;
   passNo: string;
-  type: 'VISITOR' | 'STUDENT_EARLY_EXIT' | 'DELIVERY';
-  personName: string;
-  phone: string;
-  cnic?: string;
-  purpose: string;
-  studentName?: string;
-  studentRoll?: string;
-  entryTime: string;
-  exitTime?: string;
-  status: 'INSIDE' | 'CHECKED_OUT';
+  reasonType: GatePassReasonType;
+  reason: string;
+  status: 'APPROVED' | 'EXITED';
+  issuedAt: string;
+  approvedAt: string;
+  exitAt?: string | null;
+  student: {
+    id: string;
+    name: string;
+    admissionNo: string;
+    rollNo?: string | null;
+    section?: { name: string; class?: { name: string } } | null;
+  };
+}
+
+interface GatePassStudent {
+  id: string;
+  name: string;
+  admissionNo: string;
+  rollNo?: string | null;
+  section?: { name: string; class?: { name: string } } | null;
 }
 
 const money = (val: number) => `PKR ${Number(val || 0).toLocaleString('en-PK')}`;
@@ -96,28 +107,17 @@ export default function DailyOperations() {
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [routes, setRoutes] = useState<TransportRoute[]>([]);
 
-  // Gate Passes State (Stored per school)
-  const storageKey = `edusphere_gate_passes_${user?.schoolId || 'default'}`;
-  const [gatePasses, setGatePasses] = useState<GatePass[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Gate passes and student choices are loaded from the school-scoped API.
+  const [gatePasses, setGatePasses] = useState<GatePass[]>([]);
+  const [gatePassStudents, setGatePassStudents] = useState<GatePassStudent[]>([]);
 
   // Modal States
   const [showGatePassModal, setShowGatePassModal] = useState(false);
   const [selectedPassForPrint, setSelectedPassForPrint] = useState<GatePass | null>(null);
   const [gatePassForm, setGatePassForm] = useState({
-    type: 'VISITOR' as GatePass['type'],
-    personName: '',
-    phone: '',
-    cnic: '',
-    purpose: '',
-    studentName: '',
-    studentRoll: '',
+    studentId: '',
+    reasonType: 'EARLY_LEAVE' as GatePassReasonType,
+    reason: '',
   });
 
   // Load All Daily Operations Data
@@ -211,6 +211,7 @@ export default function DailyOperations() {
       } catch (e) {
         console.warn('Transport routes not loaded', e);
       }
+
     } catch (err: any) {
       toast.error('Could not refresh all daily operations data');
     } finally {
@@ -223,59 +224,51 @@ export default function DailyOperations() {
     loadDailyData();
   }, []);
 
-  // Save Gate Passes to Local Storage
-  const saveGatePasses = (list: GatePass[]) => {
-    setGatePasses(list);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(list));
-    } catch {
-      // ignore
-    }
-  };
+  useEffect(() => {
+    if (user?.role !== 'SCHOOL_ADMIN') return;
+    let cancelled = false;
+    Promise.all([apiClient.get('/gate-passes'), apiClient.get('/people/students')])
+      .then(([passesRes, studentsRes]) => {
+        if (cancelled) return;
+        setGatePasses(Array.isArray(passesRes.data) ? passesRes.data : []);
+        setGatePassStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      })
+      .catch((error) => console.warn('Student gate pass data not loaded', error));
+    return () => { cancelled = true; };
+  }, [user?.role]);
 
-  const handleCreateGatePass = (e: React.FormEvent) => {
+  const handleCreateGatePass = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gatePassForm.personName.trim()) {
-      return toast.error('Person name is required');
+    if (!gatePassForm.studentId) return toast.error('Please select a student');
+    if (!gatePassForm.reason.trim()) return toast.error('Gate pass reason is required');
+
+    try {
+      const response = await apiClient.post('/gate-passes', {
+        studentId: gatePassForm.studentId,
+        reasonType: gatePassForm.reasonType,
+        reason: gatePassForm.reason.trim(),
+      });
+      const newPass = response.data as GatePass;
+      setGatePasses((current) => [newPass, ...current]);
+      toast.success(`Gate Pass ${newPass.passNo} issued and approved`);
+      setShowGatePassModal(false);
+      setSelectedPassForPrint(newPass);
+      setGatePassForm({ studentId: '', reasonType: 'EARLY_LEAVE', reason: '' });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not issue the gate pass');
     }
-
-    const newPass: GatePass = {
-      id: `GP-${Date.now()}`,
-      passNo: `PASS-${String(gatePasses.length + 1).padStart(4, '0')}`,
-      type: gatePassForm.type,
-      personName: gatePassForm.personName.trim(),
-      phone: gatePassForm.phone.trim(),
-      cnic: gatePassForm.cnic.trim(),
-      purpose: gatePassForm.purpose.trim() || 'Official School Visit',
-      studentName: gatePassForm.studentName.trim() || undefined,
-      studentRoll: gatePassForm.studentRoll.trim() || undefined,
-      entryTime: new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' }),
-      status: 'INSIDE',
-    };
-
-    const updated = [newPass, ...gatePasses];
-    saveGatePasses(updated);
-    toast.success(`Gate Pass ${newPass.passNo} issued for ${newPass.personName}`);
-    setShowGatePassModal(false);
-    setSelectedPassForPrint(newPass);
-    setGatePassForm({
-      type: 'VISITOR',
-      personName: '',
-      phone: '',
-      cnic: '',
-      purpose: '',
-      studentName: '',
-      studentRoll: '',
-    });
   };
 
-  const handleCheckOutPass = (id: string) => {
-    const time = new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
-    const updated = gatePasses.map((p) =>
-      p.id === id ? { ...p, status: 'CHECKED_OUT' as const, exitTime: time } : p
-    );
-    saveGatePasses(updated);
-    toast.success('Visitor marked checked out');
+  const handleCheckOutPass = async (id: string) => {
+    try {
+      const response = await apiClient.patch(`/gate-passes/${id}/exit`);
+      const updatedPass = response.data as GatePass;
+      setGatePasses((current) => current.map((pass) => pass.id === id ? updatedPass : pass));
+      if (selectedPassForPrint?.id === id) setSelectedPassForPrint(updatedPass);
+      toast.success('Student exit time saved');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not record student exit');
+    }
   };
 
   // Date Formatting for Display
@@ -337,12 +330,14 @@ export default function DailyOperations() {
               <WalletCards size={15} /> Collect Fee
             </button>
 
-            <button
-              onClick={() => setShowGatePassModal(true)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition"
-            >
-              <Ticket size={15} /> Issue Gate Pass
-            </button>
+            {user?.role === 'SCHOOL_ADMIN' && (
+              <button
+                onClick={() => setShowGatePassModal(true)}
+                className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition"
+              >
+                <Ticket size={15} /> Issue Gate Pass
+              </button>
+            )}
 
             <button
               onClick={() => loadDailyData(true)}
@@ -435,14 +430,15 @@ export default function DailyOperations() {
           </p>
         </div>
 
-        {/* 4. Gate Passes & Visitors */}
+        {/* 4. Student Gate Passes */}
+        {user?.role === 'SCHOOL_ADMIN' && (
         <div
           onClick={() => setActiveTab('gatepass')}
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-amber-500/20 bg-card p-5 shadow-sm transition hover:border-amber-500/50 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-              Visitors & Gate Passes
+              Student Gate Passes
             </span>
             <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-500">
               <Ticket size={18} />
@@ -450,13 +446,14 @@ export default function DailyOperations() {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-black text-foreground">
-              {gatePasses.filter((g) => g.status === 'INSIDE').length} Inside Campus
+              {gatePasses.filter((g) => g.status === 'APPROVED').length} Awaiting Exit
             </span>
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground truncate">
-            Total {gatePasses.length} gate passes recorded today
+            Total {gatePasses.length} student passes recorded
           </p>
         </div>
+        )}
 
       </div>
 
@@ -467,8 +464,8 @@ export default function DailyOperations() {
           { key: 'attendance', label: 'Attendance Roster', icon: NotebookTabs },
           { key: 'finance', label: 'Fee Cash Desk', icon: WalletCards },
           { key: 'transport', label: 'Transport Dispatch', icon: Bus },
-          { key: 'gatepass', label: 'Visitor & Gate Pass Register', icon: Ticket },
-        ].map((tab) => {
+          { key: 'gatepass', label: 'Student Gate Passes', icon: Ticket },
+        ].filter((tab) => tab.key !== 'gatepass' || user?.role === 'SCHOOL_ADMIN').map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
           return (
@@ -805,21 +802,21 @@ export default function DailyOperations() {
         </div>
       )}
 
-      {/* ── TAB 5: VISITOR & GATE PASS REGISTER ── */}
-      {activeTab === 'gatepass' && (
+      {/* ── TAB 5: STUDENT GATE PASS REGISTER ── */}
+      {activeTab === 'gatepass' && user?.role === 'SCHOOL_ADMIN' && (
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-foreground">Visitor Log & Gate Pass Register</h3>
+              <h3 className="text-lg font-black text-foreground">Student Gate Pass Register</h3>
               <p className="text-xs text-muted-foreground">
-                Digital campus security register for parents, visitors, and student early exit permissions.
+                School-admin-approved early departures, half-day leaves, and student exit records.
               </p>
             </div>
             <button
               onClick={() => setShowGatePassModal(true)}
               className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-amber-500 shadow-md"
             >
-              <Plus size={15} /> Issue New Gate Pass
+              <Plus size={15} /> Issue Student Pass
             </button>
           </div>
 
@@ -828,11 +825,10 @@ export default function DailyOperations() {
               <thead className="bg-muted/40 border-b border-border text-[10px] font-black uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Pass No</th>
-                  <th className="px-4 py-3">Visitor Name</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Contact</th>
-                  <th className="px-4 py-3">Purpose / Student</th>
-                  <th className="px-4 py-3">Time In / Out</th>
+                  <th className="px-4 py-3">Student</th>
+                  <th className="px-4 py-3">Class / Roll No</th>
+                  <th className="px-4 py-3">Reason</th>
+                  <th className="px-4 py-3">Issued / Exit Time</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
@@ -840,58 +836,51 @@ export default function DailyOperations() {
               <tbody className="divide-y divide-border/60">
                 {gatePasses.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No gate passes issued yet today. Click "Issue New Gate Pass" above.
+                    <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No student gate passes yet. Issue a pass to record an approved early departure.
                     </td>
                   </tr>
                 ) : (
                   gatePasses.map((p) => (
                     <tr key={p.id} className="hover:bg-muted/20 transition">
                       <td className="px-4 py-3 font-mono font-bold text-amber-500">{p.passNo}</td>
-                      <td className="px-4 py-3 font-bold text-foreground">{p.personName}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-muted text-foreground">
-                          {p.type.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-muted-foreground">{p.phone}</td>
-                      <td className="px-4 py-3">
-                        <p className="text-foreground font-medium">{p.purpose}</p>
-                        {p.studentName && (
-                          <p className="text-[10px] text-muted-foreground">
-                            Student: {p.studentName} ({p.studentRoll || '—'})
-                          </p>
-                        )}
+                        <p className="font-bold text-foreground">{p.student?.name || 'Student'}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.student?.admissionNo || '—'}</p>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        <span>In: {p.entryTime}</span>
-                        {p.exitTime && <span className="block text-emerald-500">Out: {p.exitTime}</span>}
+                        {p.student?.section?.class?.name || '—'}{p.student?.section?.name ? ` / ${p.student.section.name}` : ''}
+                        <span className="block text-[10px]">Roll: {p.student?.rollNo || '—'}</span>
                       </td>
                       <td className="px-4 py-3">
-                        {p.status === 'INSIDE' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                            ● Inside Campus
-                          </span>
+                        <p className="font-semibold text-foreground">{p.reasonType.replace(/_/g, ' ')}</p>
+                        <p className="text-[10px] text-muted-foreground max-w-[240px] whitespace-normal">{p.reason}</p>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        <span>Issued: {new Date(p.issuedAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>
+                        {p.exitAt && <span className="block text-emerald-500">Exit: {new Date(p.exitAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        {p.status === 'APPROVED' ? (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">Approved</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                            ✓ Checked Out
-                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Exited</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right space-x-2">
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setSelectedPassForPrint(p)}
                           className="px-2.5 py-1 rounded-lg text-xs font-bold text-cyan-500 hover:bg-cyan-500/10"
-                          title="Print Pass Slip"
+                          title="Print student gate pass"
                         >
-                          <Printer size={13} className="inline mr-1" /> Slip
+                          <Printer size={13} className="inline mr-1" /> Print
                         </button>
-                        {p.status === 'INSIDE' && (
+                        {p.status === 'APPROVED' && (
                           <button
                             onClick={() => handleCheckOutPass(p.id)}
                             className="px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-500 hover:bg-emerald-500/10"
                           >
-                            <LogOut size={13} className="inline mr-1" /> Exit
+                            <LogOut size={13} className="inline mr-1" /> Mark Exit
                           </button>
                         )}
                       </td>
@@ -904,13 +893,13 @@ export default function DailyOperations() {
         </div>
       )}
 
-      {/* ── ISSUE GATE PASS MODAL ── */}
+      {/* ── ISSUE STUDENT GATE PASS MODAL ── */}
       {showGatePassModal && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-500 font-black text-base">
-                <Ticket size={18} /> Issue Gate Pass / Visitor Entry
+                <Ticket size={18} /> Issue Student Gate Pass
               </div>
               <button
                 onClick={() => setShowGatePassModal(false)}
@@ -922,114 +911,61 @@ export default function DailyOperations() {
 
             <form onSubmit={handleCreateGatePass} className="space-y-4 pt-1">
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">
-                  Pass Type
-                </label>
+                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Select Student *</label>
                 <select
+                  required
                   className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-semibold text-foreground"
-                  value={gatePassForm.type}
-                  onChange={(e) => setGatePassForm({ ...gatePassForm, type: e.target.value as any })}
+                  value={gatePassForm.studentId}
+                  onChange={(e) => setGatePassForm({ ...gatePassForm, studentId: e.target.value })}
                 >
-                  <option value="VISITOR">Official Visitor / Parent Meeting</option>
-                  <option value="STUDENT_EARLY_EXIT">Student Early Exit / Sick Leave</option>
-                  <option value="DELIVERY">Vendor / Delivery / Service Person</option>
+                  <option value="">Choose student</option>
+                  {gatePassStudents.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name} — {student.admissionNo}{student.section?.class?.name ? ` — ${student.section.class.name}` : ''}{student.section?.name ? ` / ${student.section.name}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {gatePassStudents.length === 0 && (
+                  <p className="mt-1 text-[10px] text-amber-500">No active students available. Add/enroll students first.</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Reason Type *</label>
+                <select
+                  required
+                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-semibold text-foreground"
+                  value={gatePassForm.reasonType}
+                  onChange={(e) => setGatePassForm({ ...gatePassForm, reasonType: e.target.value as GatePassReasonType })}
+                >
+                  <option value="EARLY_LEAVE">Early Leave</option>
+                  <option value="HALF_DAY">Half Day</option>
+                  <option value="MEDICAL">Medical / Sick</option>
+                  <option value="OTHER">Other Reason</option>
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">
-                    Visitor / Guardian Name *
-                  </label>
-                  <input
-                    required
-                    className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs text-foreground"
-                    placeholder="e.g. Tariq Mehmood"
-                    value={gatePassForm.personName}
-                    onChange={(e) => setGatePassForm({ ...gatePassForm, personName: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">
-                    Mobile Phone Number *
-                  </label>
-                  <input
-                    required
-                    className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-mono text-foreground"
-                    placeholder="0300-1234567"
-                    value={gatePassForm.phone}
-                    onChange={(e) => setGatePassForm({ ...gatePassForm, phone: e.target.value })}
-                  />
-                </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Reason / Permission Note *</label>
+                <textarea
+                  required
+                  rows={3}
+                  maxLength={500}
+                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs text-foreground"
+                  placeholder="e.g. Parent requested half-day leave for a family appointment"
+                  value={gatePassForm.reason}
+                  onChange={(e) => setGatePassForm({ ...gatePassForm, reason: e.target.value })}
+                />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">
-                    CNIC / National ID
-                  </label>
-                  <input
-                    className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-mono text-foreground"
-                    placeholder="35201-xxxxxxx-x"
-                    value={gatePassForm.cnic}
-                    onChange={(e) => setGatePassForm({ ...gatePassForm, cnic: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">
-                    Purpose of Visit
-                  </label>
-                  <input
-                    className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs text-foreground"
-                    placeholder="Fee submission / Parent meeting / Early pick"
-                    value={gatePassForm.purpose}
-                    onChange={(e) => setGatePassForm({ ...gatePassForm, purpose: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {gatePassForm.type === 'STUDENT_EARLY_EXIT' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl border border-amber-500/30 bg-amber-500/10">
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-amber-300 block mb-1">
-                      Student Name
-                    </label>
-                    <input
-                      className="w-full rounded-xl border border-amber-500/30 bg-card px-3 py-2 text-xs text-foreground"
-                      placeholder="e.g. Muhammad Ali"
-                      value={gatePassForm.studentName}
-                      onChange={(e) => setGatePassForm({ ...gatePassForm, studentName: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-amber-300 block mb-1">
-                      Class / Roll No
-                    </label>
-                    <input
-                      className="w-full rounded-xl border border-amber-500/30 bg-card px-3 py-2 text-xs text-foreground"
-                      placeholder="e.g. Class 5 (Roll #12)"
-                      value={gatePassForm.studentRoll}
-                      onChange={(e) => setGatePassForm({ ...gatePassForm, studentRoll: e.target.value })}
-                    />
-                  </div>
-                </div>
-              )}
+              <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-muted-foreground">
+                Issuing this pass records the School Admin's approval. Print the slip for the student; security marks the actual exit time at the gate.
+              </p>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setShowGatePassModal(false)}
-                  className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-white hover:bg-amber-600 shadow-md"
-                >
-                  Issue Pass & Slip
+                <button type="button" onClick={() => setShowGatePassModal(false)} className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted">Cancel</button>
+                <button type="submit" disabled={gatePassStudents.length === 0} className="rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-white hover:bg-amber-600 shadow-md disabled:opacity-50">
+                  Approve & Create Pass
                 </button>
               </div>
             </form>
@@ -1037,62 +973,57 @@ export default function DailyOperations() {
         </div>
       )}
 
-      {/* ── PRINTABLE GATE PASS SLIP MODAL ── */}
+      {/* ── PRINTABLE STUDENT GATE PASS SLIP ── */}
       {selectedPassForPrint && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4 text-center">
-            <div className="flex justify-end">
-              <button
-                onClick={() => setSelectedPassForPrint(null)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground"
-              >
-                <X size={16} />
-              </button>
+        <div className="gate-pass-print-root fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
+          <style>{`
+            @media print {
+              body * { visibility: hidden !important; }
+              .gate-pass-print-root, .gate-pass-print-root * { visibility: visible !important; }
+              .gate-pass-print-root { position: absolute !important; inset: 0 !important; display: block !important; padding: 0 !important; background: white !important; color: black !important; }
+              .gate-pass-print-card { border: 2px solid #111 !important; border-radius: 0 !important; box-shadow: none !important; max-width: none !important; width: 100% !important; color: black !important; background: white !important; }
+              .gate-pass-print-actions { display: none !important; }
+            }
+          `}</style>
+          <div className="gate-pass-print-card w-full max-w-sm rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4 text-center">
+            <div className="gate-pass-print-actions flex justify-end">
+              <button onClick={() => setSelectedPassForPrint(null)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground"><X size={16} /></button>
             </div>
 
             <div className="border-2 border-dashed border-amber-500/50 p-5 rounded-2xl space-y-3 bg-amber-500/5">
               <div className="border-b border-border/80 pb-2">
-                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">
-                  {user?.schoolName || 'EduSphere School'}
-                </h3>
-                <p className="text-[10px] font-black uppercase text-amber-500">Official Campus Gate Pass</p>
+                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">{user?.schoolName || 'EduSphere School'}</h3>
+                <p className="text-[10px] font-black uppercase text-amber-500">Student Early Exit Gate Pass</p>
                 <p className="font-mono font-bold text-xs text-foreground mt-1">{selectedPassForPrint.passNo}</p>
               </div>
 
               <div className="text-left text-xs space-y-1.5 py-1">
-                <p><span className="text-muted-foreground">Visitor:</span> <strong>{selectedPassForPrint.personName}</strong></p>
-                <p><span className="text-muted-foreground">Phone:</span> <span className="font-mono">{selectedPassForPrint.phone}</span></p>
-                <p><span className="text-muted-foreground">Type:</span> {selectedPassForPrint.type.replace(/_/g, ' ')}</p>
-                <p><span className="text-muted-foreground">Purpose:</span> {selectedPassForPrint.purpose}</p>
-                {selectedPassForPrint.studentName && (
-                  <p><span className="text-muted-foreground">Student:</span> {selectedPassForPrint.studentName} ({selectedPassForPrint.studentRoll || '—'})</p>
-                )}
-                <p><span className="text-muted-foreground">Time In:</span> <strong>{selectedPassForPrint.entryTime}</strong></p>
+                <p><span className="text-muted-foreground">Student:</span> <strong>{selectedPassForPrint.student?.name || '—'}</strong></p>
+                <p><span className="text-muted-foreground">Admission No:</span> <span className="font-mono">{selectedPassForPrint.student?.admissionNo || '—'}</span></p>
+                <p><span className="text-muted-foreground">Class / Section:</span> {selectedPassForPrint.student?.section?.class?.name || '—'} / {selectedPassForPrint.student?.section?.name || '—'}</p>
+                <p><span className="text-muted-foreground">Roll No:</span> {selectedPassForPrint.student?.rollNo || '—'}</p>
+                <p><span className="text-muted-foreground">Reason Type:</span> {selectedPassForPrint.reasonType.replace(/_/g, ' ')}</p>
+                <p><span className="text-muted-foreground">Reason:</span> {selectedPassForPrint.reason}</p>
+                <p><span className="text-muted-foreground">Issued:</span> <strong>{new Date(selectedPassForPrint.issuedAt).toLocaleString('en-PK')}</strong></p>
+                <p><span className="text-muted-foreground">Approval:</span> School Admin</p>
+                {selectedPassForPrint.exitAt && <p><span className="text-muted-foreground">Actual Exit:</span> <strong>{new Date(selectedPassForPrint.exitAt).toLocaleString('en-PK')}</strong></p>}
               </div>
 
               <div className="pt-3 border-t border-border/80 text-[10px] text-muted-foreground">
-                Please return this slip to the security gate when leaving the school campus.
+                Valid only for the student named above. Security must verify this pass and record the exit time.
               </div>
+              <div className="pt-2 text-left text-[10px] text-muted-foreground">Authorized signature: ____________________</div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white hover:bg-amber-600 shadow"
-              >
-                <Printer size={14} /> Print Pass
-              </button>
-              <button
-                onClick={() => setSelectedPassForPrint(null)}
-                className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
-              >
-                Close
-              </button>
+            <div className="gate-pass-print-actions flex items-center justify-center gap-2 pt-2">
+              <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white hover:bg-amber-600 shadow"><Printer size={14} /> Print Pass</button>
+              <button onClick={() => setSelectedPassForPrint(null)} className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted">Close</button>
             </div>
           </div>
         </div>
       )}
 
+      
     </div>
   );
 }

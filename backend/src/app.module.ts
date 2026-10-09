@@ -18,6 +18,7 @@ import { PublicModule } from './modules/public/public.module';
 import { BuildingModule } from './modules/building/building.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MediaModule } from './modules/media/media.module';
+import { GatePassModule } from './modules/gate-pass/gate-pass.module';
 import { StudentAccountInterceptor } from './common/interceptors/student-account-interceptor';
 
 @Module({
@@ -38,6 +39,7 @@ import { StudentAccountInterceptor } from './common/interceptors/student-account
     BuildingModule,
     NotificationModule,
     MediaModule,
+    GatePassModule,
   ],
   controllers: [AppController],
   providers: [
