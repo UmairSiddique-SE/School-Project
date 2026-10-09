@@ -430,8 +430,8 @@ export default function DailyOperations() {
           </p>
         </div>
 
-        {user?.role === 'SCHOOL_ADMIN' && (
         {/* 4. Student Gate Passes */}
+        {user?.role === 'SCHOOL_ADMIN' && (
         <div
           onClick={() => setActiveTab('gatepass')}
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-amber-500/20 bg-card p-5 shadow-sm transition hover:border-amber-500/50 hover:shadow-md"
