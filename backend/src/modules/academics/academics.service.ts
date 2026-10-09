@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -113,9 +113,9 @@ export class AcademicsService {
     const bookId = String(data?.bookId || '').trim();
     const studentId = String(data?.studentId || '').trim();
     const dueDate = new Date(data?.dueDate);
-    if (!bookId || !studentId) throw new NotFoundException('Book and student are required');
+    if (!bookId || !studentId) throw new BadRequestException('Book and student are required');
     if (!data?.dueDate || Number.isNaN(dueDate.getTime())) {
-      throw new NotFoundException('A valid book due date is required');
+      throw new BadRequestException('A valid book due date is required');
     }
 
     return this.prisma.$transaction(async (tx) => {
