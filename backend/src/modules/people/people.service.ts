@@ -195,74 +195,85 @@ export class PeopleService {
   }
 
   async payTeacherSalary(id: string, schoolId: string, data: any) {
-    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id, schoolId, deletedAt: null },
+    });
     if (!teacher) throw new NotFoundException('Teacher not found');
 
-    const month = Number(data.month) || new Date().getMonth() + 1;
-    const year = Number(data.year) || new Date().getFullYear();
+    const month = data.month === undefined || data.month === null || data.month === ''
+      ? new Date().getMonth() + 1
+      : Number(data.month);
+    const year = data.year === undefined || data.year === null || data.year === ''
+      ? new Date().getFullYear()
+      : Number(data.year);
     const basicSalary = Number(data.basicSalary ?? teacher.salary ?? 0);
     const allowances = Number(data.allowances ?? 0);
     const deductions = Number(data.deductions ?? 0);
-    const netSalary = Math.max(0, basicSalary + allowances - deductions);
 
-    const existing = await this.prisma.payroll.findFirst({
-      where: { teacherId: id, schoolId, month, year },
-    });
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      throw new BadRequestException('Month must be between 1 and 12');
+    }
+    if (!Number.isInteger(year) || year < 2000 || year > 2200) {
+      throw new BadRequestException('Enter a valid payroll year');
+    }
+    if (![basicSalary, allowances, deductions].every(Number.isFinite)) {
+      throw new BadRequestException('Salary amounts must be valid numbers');
+    }
+    if (basicSalary < 0 || allowances < 0 || deductions < 0) {
+      throw new BadRequestException('Salary amounts cannot be negative');
+    }
+    if (deductions > basicSalary + allowances) {
+      throw new BadRequestException('Deductions cannot exceed salary plus allowances');
+    }
 
-    if (existing) {
-      const updated = await this.prisma.payroll.update({
-        where: { id: existing.id },
-        data: {
-          basicSalary,
-          allowances,
-          deductions,
-          netSalary,
-          isPaid: true,
-          paidDate: new Date(),
-        },
+    const netSalary = basicSalary + allowances - deductions;
+    const paidDate = new Date();
+
+    // Keep the payroll record and ledger entry atomic so a failed ledger write
+    // cannot leave a salary marked as paid without its accounting entry.
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.payroll.findFirst({
+        where: { teacherId: id, schoolId, month, year },
       });
-      await this.prisma.accountEntry.create({
+
+      if (existing?.isPaid) {
+        throw new ConflictException('Salary has already been paid for this teacher and month');
+      }
+
+      const payroll = existing
+        ? await tx.payroll.update({
+            where: { id: existing.id },
+            data: { basicSalary, allowances, deductions, netSalary, isPaid: true, paidDate },
+          })
+        : await tx.payroll.create({
+            data: {
+              month,
+              year,
+              basicSalary,
+              allowances,
+              deductions,
+              netSalary,
+              isPaid: true,
+              paidDate,
+              schoolId,
+              teacherId: id,
+            },
+          });
+
+      await tx.accountEntry.create({
         data: {
           type: 'EXPENSE',
           category: 'SALARY',
           description: `Salary paid to ${teacher.name} (${teacher.employeeNo}) for ${month}/${year}`,
           amount: netSalary,
-          date: new Date(),
+          date: paidDate,
           reference: `PAY-${year}-${month}-${teacher.employeeNo}`,
           schoolId,
         },
       });
-      return updated;
-    }
 
-    const payroll = await this.prisma.payroll.create({
-      data: {
-        month,
-        year,
-        basicSalary,
-        allowances,
-        deductions,
-        netSalary,
-        isPaid: true,
-        paidDate: new Date(),
-        schoolId,
-        teacherId: id,
-      },
+      return payroll;
     });
-
-    await this.prisma.accountEntry.create({
-      data: {
-        type: 'EXPENSE',
-        category: 'SALARY',
-        description: `Salary paid to ${teacher.name} (${teacher.employeeNo}) for ${month}/${year}`,
-        amount: netSalary,
-        date: new Date(),
-        reference: `PAY-${year}-${month}-${teacher.employeeNo}`,
-        schoolId,
-      },
-    });
-
-    return payroll;
   }
 
   async assignTeacherSection(id: string, schoolId: string, sectionId: string) {
