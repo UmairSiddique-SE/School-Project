@@ -12,6 +12,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { CreateGatePassDto } from './dto/create-gate-pass.dto';
 import { GatePassService } from './gate-pass.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +27,7 @@ export class GatePassController {
   }
 
   @Post()
-  create(@CurrentUser() user: any, @Body() dto: any) {
+  create(@CurrentUser() user: any, @Body() dto: CreateGatePassDto) {
     if (!user?.id) throw new BadRequestException('Authenticated user is required');
     return this.gatePassService.create(user.schoolId, user.id, dto);
   }
