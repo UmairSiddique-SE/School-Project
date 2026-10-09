@@ -112,13 +112,21 @@ export class FinanceService {
       if (Number.isNaN(dueDate.getTime())) throw new BadRequestException('Invalid due date');
     }
     const receiptNo = `FEE-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`;
-    const payment = await this.prisma.feePayment.create({
-      data: { amount, discount, fine, totalPaid, method, status, dueDate, paidDate: totalPaid > 0 ? new Date() : null, receiptNo, remarks: data?.remarks?.trim() || null, schoolId, studentId: student.id, feeStructureId: structure?.id || null },
+    const paidDate = totalPaid > 0 ? new Date() : null;
+
+    // Store the receipt and its accounting entry together. If either write fails,
+    // the transaction rolls back so finance summaries cannot drift from receipts.
+    return this.prisma.$transaction(async (tx) => {
+      const payment = await tx.feePayment.create({
+        data: { amount, discount, fine, totalPaid, method, status, dueDate, paidDate, receiptNo, remarks: data?.remarks?.trim() || null, schoolId, studentId: student.id, feeStructureId: structure?.id || null },
+      });
+      if (totalPaid > 0) {
+        await tx.accountEntry.create({
+          data: { type: 'INCOME', category: 'FEES', description: `Fee payment ${receiptNo}`, amount: totalPaid, date: paidDate!, reference: receiptNo, schoolId },
+        });
+      }
+      return payment;
     });
-    if (totalPaid > 0) {
-      await this.prisma.accountEntry.create({ data: { type: 'INCOME', category: 'FEES', description: `Fee payment ${receiptNo}`, amount: totalPaid, date: new Date(), reference: receiptNo, schoolId } });
-    }
-    return payment;
   }
 
   async getAccountEntries(schoolId: string, query: any = {}) {
