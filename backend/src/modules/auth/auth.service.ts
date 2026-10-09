@@ -483,6 +483,16 @@ return { school, user };
 
     if (!user)
       throw new UnauthorizedException('No account found for this Login ID or email');
+
+    // A supplied school slug is an explicit tenant boundary. Never accept a
+    // matching account found by a later global fallback from another school.
+    if (dto.schoolSlug) {
+      const requestedSlug = dto.schoolSlug.trim().toLowerCase();
+      if (!user.school || user.school.slug !== requestedSlug) {
+        throw new UnauthorizedException('This account does not belong to the selected school');
+      }
+    }
+
     if (user.role === 'PARENT')
       throw new UnauthorizedException(
         'Parent accounts do not have portal login access',
@@ -566,11 +576,7 @@ return { school, user };
     if (!(await bcrypt.compare(dto.password, user.passwordHash)))
       throw new UnauthorizedException('Invalid Login ID or password');
     if (!user.emailVerified) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true },
-      });
-      user.emailVerified = true;
+      throw new UnauthorizedException('Please verify your email before signing in');
     }
     const subscription = user.school?.subscription;
     if (
