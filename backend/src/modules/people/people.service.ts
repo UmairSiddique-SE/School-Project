@@ -1,7 +1,6 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class PeopleService {
@@ -52,7 +51,7 @@ export class PeopleService {
 
     if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
 
-    let rawEmail = data.email ? String(data.email).trim().toLowerCase() : '';
+    const rawEmail = data.email ? String(data.email).trim().toLowerCase() : '';
     const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
     const regDigits = String(employeeNo).match(/(\d+)$/)?.[1] || String(employeeNo).replace(/\D/g, '').slice(-3) || '001';
 
@@ -91,7 +90,7 @@ export class PeopleService {
       qualification = `${qualification} (${String(data.specialization).trim()})`;
     }
 
-    let plainPassword = data.password && String(data.password).trim().length >= 6
+    const plainPassword = data.password && String(data.password).trim().length >= 6
       ? String(data.password).trim()
       : this.generate8CharPassword();
     const passwordHash = await bcrypt.hash(plainPassword, 10);
