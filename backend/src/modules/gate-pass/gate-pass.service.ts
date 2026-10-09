@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../database/prisma.service';
+import { CreateGatePassDto } from './dto/create-gate-pass.dto';
 
 const REASON_TYPES = ['EARLY_LEAVE', 'HALF_DAY', 'MEDICAL', 'OTHER'] as const;
 
@@ -31,7 +32,7 @@ export class GatePassService {
     });
   }
 
-  async create(schoolId: string | undefined, userId: string, dto: any) {
+  async create(schoolId: string | undefined, userId: string, dto: CreateGatePassDto) {
     if (!schoolId) throw new BadRequestException('A school account is required');
     const studentId = String(dto?.studentId || '').trim();
     const reason = String(dto?.reason || '').trim();
