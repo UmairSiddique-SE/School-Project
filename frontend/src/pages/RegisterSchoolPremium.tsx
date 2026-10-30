@@ -42,7 +42,7 @@ export default function RegisterSchoolPremium() {
     apiClient.get<Plan[]>('/public/plans').then((r) => { const list = Array.isArray(r.data) ? r.data : []; setPlans(list); if (!list.some((p) => p.planKey === savedPlan) && list[0]) setPlanKey(list[0].planKey); }).catch(() => undefined);
   }, []);
   useEffect(() => { if (!cooldown) return; const timer = window.setInterval(() => setCooldown((v) => Math.max(0, v - 1)), 1000); return () => window.clearInterval(timer); }, [cooldown]);
-  useEffect(() => { if (form.schoolName && !verificationUserId) update('schoolSlug', slugify(form.schoolName)); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [form.schoolName]);
+  useEffect(() => { if (form.schoolName && !verificationUserId) update('schoolSlug', slugify(form.schoolName));   }, [form.schoolName]);
   const passwordHint = useMemo(() => !form.adminPassword ? 'Minimum 8 characters' : form.adminPassword.length >= 12 ? 'Strong password' : form.adminPassword.length >= 8 ? 'Good password' : `${8 - form.adminPassword.length} more characters required`, [form.adminPassword]);
 
   const handleLogo = async (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; setLogoBusy(true); try { update('logoUrl', await compressImage(file)); toast.success('School logo added.'); } catch (e: any) { toast.error(e?.message || 'Unable to add logo.'); } finally { setLogoBusy(false); } };
