@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowLeft, Camera, GraduationCap, Loader2, Pencil, Plus, Printer, RefreshCw, Search, Trash2,
+  ArrowLeft, ArrowRight, Camera, GraduationCap, Loader2, Pencil, Plus, Printer, RefreshCw, Search, Trash2,
   UserRound, Users, X, MapPin, User,
-  Eye, EyeOff, Check, HeartPulse, FileText, Key, Clock, Sparkles, Layout, Smartphone
+  Eye, EyeOff, Check, HeartPulse, FileText, Key, Clock, Sparkles, Layout, Smartphone,
+  CheckCircle2, AlertTriangle, ShieldCheck, Copy, Share2, Bus, Home, Building2, Calendar, Phone, Mail, Award, CheckCircle
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
@@ -19,21 +20,31 @@ type FormState = {
   gender: string;
   bloodGroup: string;
   religion: string;
+  nationality: string;
   bFormNumber: string;
   email: string;
   phone: string;
   emergencyContact: string;
   password: string;
   admissionType: 'NEW' | 'TRANSFER';
+  admissionNo: string;
+  admissionDate: string;
   sectionId: string;
   classId: string;
   session: string;
   previousSchool: string;
   previousClass: string;
+  previousAcademicRecord: string;
   currentAddress: string;
   permanentAddress: string;
+  city: string;
+  province: string;
   transportRequired: boolean;
+  transportStop: string;
   hostelRequired: boolean;
+  medicalNotes: string;
+  specialRequirements: string;
+  remarks: string;
   avatarUrl: string;
 
   // Father Details
@@ -71,6 +82,7 @@ const guardianRelations = [
   { value: 'GRANDPARENT', label: 'Grandfather / Grandmother (Dada / Nana)' },
   { value: 'SIBLING', label: 'Older Brother / Sister (Bhai / Baji)' },
   { value: 'AUNT', label: 'Aunt (Khala / Phopho)' },
+  { value: 'MOTHER', label: 'Mother as Legal Guardian' },
   { value: 'OTHER', label: 'Other Relative / Legal Guardian' },
 ];
 
@@ -83,6 +95,21 @@ function generate8CharPassword() {
   return pass;
 }
 
+function calculateAge(dobString: string): string {
+  if (!dobString) return '';
+  const dob = new Date(dobString);
+  if (isNaN(dob.getTime())) return '';
+  const now = new Date();
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  if (months < 0 || (months === 0 && now.getDate() < dob.getDate())) {
+    years--;
+    months += 12;
+  }
+  if (years < 0) return '';
+  return `${years} Years, ${months} Months`;
+}
+
 const emptyForm = (): FormState => ({
   rollNo: '',
   name: '',
@@ -90,21 +117,31 @@ const emptyForm = (): FormState => ({
   gender: 'MALE',
   bloodGroup: 'O+',
   religion: 'Muslim',
+  nationality: 'Pakistani',
   bFormNumber: '',
   email: '',
   phone: '',
   emergencyContact: '',
   password: generate8CharPassword(),
   admissionType: 'NEW',
+  admissionNo: '',
+  admissionDate: new Date().toISOString().slice(0, 10),
   classId: '',
   sectionId: '',
   session: currentSession,
   previousSchool: '',
   previousClass: '',
+  previousAcademicRecord: '',
   currentAddress: '',
   permanentAddress: '',
+  city: '',
+  province: 'Punjab',
   transportRequired: false,
+  transportStop: '',
   hostelRequired: false,
+  medicalNotes: '',
+  specialRequirements: '',
+  remarks: '',
   avatarUrl: '',
 
   fatherName: '',
@@ -182,6 +219,7 @@ export default function Students() {
 
   // Navigation views: 'list' | 'add'
   const [view, setView] = useState<'list' | 'add'>('list');
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [editing, setEditing] = useState<Student | null>(null);
   const [profile, setProfile] = useState<Student | null>(null);
   const [profileTab, setProfileTab] = useState<'overview' | 'academics' | 'attendance' | 'fees' | 'reports' | 'timetable' | 'credentials'>('overview');
@@ -196,8 +234,9 @@ export default function Students() {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Success Banner after admission
-  const [lastAdmitted, setLastAdmitted] = useState<{ student: Student; creds: { loginId: string; password: string } } | null>(null);
+  // Success Banner after admission & Modal Dialog
+  const [lastAdmitted, setLastAdmitted] = useState<{ student: Student; creds: { loginId: string; password: string; fullEmail?: string } } | null>(null);
+  const [admittedModal, setAdmittedModal] = useState<{ student: Student; creds: { loginId: string; password: string; fullEmail?: string } } | null>(null);
 
   // Move / Transfer state
   const [moveMode, setMoveMode] = useState<'promote' | 'transfer' | null>(null);
@@ -214,6 +253,75 @@ export default function Students() {
       if (!isNaN(num) && num > maxRoll) maxRoll = num;
     }
     return String(maxRoll + 1);
+  };
+
+  const validateStep = (stepNumber: number): { valid: boolean; error?: string } => {
+    if (stepNumber === 1) {
+      if (!form.name.trim()) return { valid: false, error: 'Student full name is required' };
+      if (form.name.trim().length < 2) return { valid: false, error: 'Student name must have at least 2 characters' };
+      if (!form.gender) return { valid: false, error: 'Student gender is required' };
+      if (form.bFormNumber && (!cnicValid(form.bFormNumber) || form.bFormNumber.replace(/\D/g, '').length !== 13)) {
+        return { valid: false, error: 'B-Form / CNIC must contain exactly 13 digits (35201-xxxxxxx-x)' };
+      }
+      if (form.phone && (!phoneValid(form.phone) || form.phone.replace(/\D/g, '').length !== 11)) {
+        return { valid: false, error: 'Student mobile must contain 11 digits (0300-1234567)' };
+      }
+      if (form.emergencyContact && (!phoneValid(form.emergencyContact) || form.emergencyContact.replace(/\D/g, '').length !== 11)) {
+        return { valid: false, error: 'Emergency contact must contain 11 digits (0300-1234567)' };
+      }
+      return { valid: true };
+    }
+    if (stepNumber === 2) {
+      if (!form.classId) return { valid: false, error: 'Please select a Class Level' };
+      if (!form.sectionId) return { valid: false, error: 'Please assign a classroom Section' };
+      if (form.admissionType === 'TRANSFER') {
+        if (!form.previousSchool.trim()) return { valid: false, error: 'Previous school name is required for transfer students' };
+        if (!form.previousClass.trim()) return { valid: false, error: 'Previous class passed is required for transfer students' };
+      }
+      if (form.session && !/^\d{4}-\d{4}$/.test(form.session)) {
+        return { valid: false, error: 'Session must use YYYY-YYYY format (e.g. 2026-2027)' };
+      }
+      return { valid: true };
+    }
+    if (stepNumber === 3) {
+      if (form.fatherStatus === 'DECEASED') {
+        if (!form.guardianName.trim()) return { valid: false, error: 'Father is deceased. Guardian full name is required' };
+        if (!form.guardianMobile.trim() || !phoneValid(form.guardianMobile) || form.guardianMobile.replace(/\D/g, '').length !== 11) {
+          return { valid: false, error: 'Father is deceased. Valid 11-digit Guardian mobile is required (0300-1234567)' };
+        }
+        if (form.guardianCnic && (!cnicValid(form.guardianCnic) || form.guardianCnic.replace(/\D/g, '').length !== 13)) {
+          return { valid: false, error: 'Guardian CNIC must contain 13 digits (35201-xxxxxxx-x)' };
+        }
+      } else {
+        if (!form.fatherName.trim()) return { valid: false, error: 'Father full name is required' };
+        if (form.fatherMobile1 && (!phoneValid(form.fatherMobile1) || form.fatherMobile1.replace(/\D/g, '').length !== 11)) {
+          return { valid: false, error: 'Father primary mobile must contain 11 digits (0300-1234567)' };
+        }
+        if (form.fatherCnic && (!cnicValid(form.fatherCnic) || form.fatherCnic.replace(/\D/g, '').length !== 13)) {
+          return { valid: false, error: 'Father CNIC must contain 13 digits (35201-xxxxxxx-x)' };
+        }
+      }
+      if (form.motherMobile && (!phoneValid(form.motherMobile) || form.motherMobile.replace(/\D/g, '').length !== 11)) {
+        return { valid: false, error: 'Mother mobile must contain 11 digits (0300-1234567)' };
+      }
+      if (form.motherCnic && (!cnicValid(form.motherCnic) || form.motherCnic.replace(/\D/g, '').length !== 13)) {
+        return { valid: false, error: 'Mother CNIC must contain 13 digits (35201-xxxxxxx-x)' };
+      }
+      return { valid: true };
+    }
+    if (stepNumber === 4) {
+      if (!form.currentAddress.trim()) {
+        return { valid: false, error: 'Current residential address is required' };
+      }
+      return { valid: true };
+    }
+    if (stepNumber === 5) {
+      if (!editing && (!form.password || form.password.trim().length < 6)) {
+        return { valid: false, error: 'Password must be at least 6 characters (8 characters recommended)' };
+      }
+      return { valid: true };
+    }
+    return { valid: true };
   };
 
   const load = async () => {
@@ -289,6 +397,7 @@ export default function Students() {
 
   const openCreate = () => {
     setEditing(null);
+    setCurrentStep(1);
     const initialPass = generate8CharPassword();
     const initialForm = emptyForm();
     initialForm.password = initialPass;
@@ -310,6 +419,7 @@ export default function Students() {
 
   const openEdit = (student: Student) => {
     setEditing(student);
+    setCurrentStep(1);
     const matchedSection = sections.find((s) => s.id === student.sectionId);
     const primaryParent = student.parents?.[0]?.parent;
 
@@ -320,10 +430,13 @@ export default function Students() {
       gender: student.gender || 'MALE',
       bloodGroup: student.bloodGroup || 'O+',
       religion: student.religion || 'Muslim',
+      nationality: student.nationality || 'Pakistani',
       classId: matchedSection?.classId || student.section?.classId || '',
       sectionId: student.sectionId || '',
       currentAddress: student.currentAddress || student.address || '',
       permanentAddress: student.permanentAddress || '',
+      city: primaryParent?.addressCity || '',
+      province: primaryParent?.addressProvince || 'Punjab',
       phone: formatPhone(student.phone || ''),
       emergencyContact: formatPhone(student.emergencyContact || ''),
       bFormNumber: formatCnic(student.bFormNumber || ''),
@@ -332,9 +445,16 @@ export default function Students() {
       password: '',
       session: student.session || currentSession,
       admissionType: student.admissionType === 'TRANSFER' ? 'TRANSFER' : 'NEW',
+      admissionNo: student.admissionNo || '',
+      admissionDate: student.admissionDate ? String(student.admissionDate).slice(0, 10) : new Date().toISOString().slice(0, 10),
       previousSchool: student.previousSchool || '',
       previousClass: student.previousClass || '',
+      previousAcademicRecord: student.previousAcademicRecord || '',
+      medicalNotes: student.medicalNotes || '',
+      specialRequirements: student.specialRequirements || '',
+      remarks: student.remarks || '',
       transportRequired: Boolean(student.transportRequired),
+      transportStop: '',
       hostelRequired: Boolean(student.hostelRequired),
       dateOfBirth: student.dateOfBirth ? String(student.dateOfBirth).slice(0, 10) : '',
 
