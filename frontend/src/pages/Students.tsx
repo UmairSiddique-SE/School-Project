@@ -1054,11 +1054,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
   // ══════════════════════════════════════════════════════════════
   if (view === 'add') {
     const steps = [
-      { id: 1, title: 'Personal Info', urdu: 'ذاتی معلومات', icon: UserRound, desc: 'Name, photo, DOB & B-Form' },
-      { id: 2, title: 'Academic & Class', urdu: 'تعلیمی و کلاس', icon: GraduationCap, desc: 'Class, section & roll no' },
-      { id: 3, title: 'Parent & Guardian', urdu: 'والدین و سرپرست', icon: Users, desc: 'Father, mother & guardian' },
-      { id: 4, title: 'Address & Facilities', urdu: 'رہائش و سہولیات', icon: MapPin, desc: 'Address, transport & medical' },
-      { id: 5, title: 'Portal Login & Review', urdu: 'لاگ ان و جائزہ', icon: Key, desc: 'Password & final review' },
+      { id: 1, title: 'Personal Info', icon: UserRound, desc: 'Name, photo, DOB & B-Form' },
+      { id: 2, title: 'Academic & Class', icon: GraduationCap, desc: 'Class, section & roll no' },
+      { id: 3, title: 'Parent & Guardian', icon: Users, desc: 'Father, mother & guardian' },
+      { id: 4, title: 'Address & Facilities', icon: MapPin, desc: 'Address, transport & medical' },
+      { id: 5, title: 'Portal Login & Review', icon: Key, desc: 'Password & final review' },
     ];
 
     const currentSectionObj = sections.find((s) => s.id === form.sectionId);
@@ -1103,25 +1103,25 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
     return (
       <div className="w-full min-h-screen pb-20 space-y-6 max-w-6xl mx-auto animate-fade-in">
-        {/* Top Header Card */}
-        <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-950/40 via-slate-900/80 to-sky-950/40 p-6 shadow-xl backdrop-blur-md">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Top Header Card with Vibrant Cyan Banner matching reference image */}
+        <div className="overflow-hidden rounded-3xl border border-cyan-200/80 bg-white shadow-md">
+          <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-5 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-sky-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 shadow-inner shrink-0">
-                <GraduationCap size={28} />
+              <div className="h-12 w-12 rounded-2xl bg-white/20 text-white flex items-center justify-center backdrop-blur-md shadow-inner shrink-0">
+                <GraduationCap size={26} className="text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    {editing ? 'UPDATE STUDENT PROFILE' : 'NEW STUDENT ADMISSION WIZARD'}
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
+                    {editing ? 'UPDATE STUDENT PROFILE' : 'STUDENT ADMISSION WIZARD'}
                   </span>
-                  <span className="text-xs text-muted-foreground font-semibold">Session {form.session}</span>
+                  <span className="text-xs text-white/90 font-bold">Session {form.session}</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
                   {editing ? `Edit Record: ${editing.name}` : 'Student Admission & Registration'}
                 </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-cyan-50 font-medium mt-0.5">
                   Professional 5-step admission workflow with student portal login generation and verified record storage.
                 </p>
               </div>
@@ -1130,15 +1130,15 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <button
               type="button"
               onClick={() => setView('list')}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-4 py-2 text-sm font-bold text-foreground hover:bg-muted transition-all shadow-sm shrink-0"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm shrink-0 backdrop-blur-sm"
             >
               <ArrowLeft size={16} /> Exit to Student List
             </button>
           </div>
         </div>
 
-        {/* ── 5-STEP STEPPER BAR ── */}
-        <div className="rounded-3xl border border-border bg-card p-4 sm:p-5 shadow-sm">
+        {/* ── 5-STEP STEPPER BAR (LIGHT THEME) ── */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
             {steps.map((st) => {
               const Icon = st.icon;
@@ -1152,10 +1152,10 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   onClick={() => jumpToStep(st.id)}
                   className={`flex flex-col items-start p-3 sm:p-3.5 rounded-2xl text-left transition-all relative overflow-hidden ${
                     isCurrent
-                      ? 'bg-gradient-to-br from-cyan-500/15 via-sky-500/10 to-transparent border-2 border-cyan-500/60 shadow-md ring-2 ring-cyan-500/20'
+                      ? 'bg-gradient-to-br from-cyan-50 via-sky-50 to-white border-2 border-cyan-500 shadow-md ring-2 ring-cyan-500/20'
                       : isPassed
-                      ? 'bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/30'
-                      : 'bg-muted/20 hover:bg-muted/40 border border-border/80'
+                      ? 'bg-emerald-50/70 hover:bg-emerald-50 border border-emerald-300'
+                      : 'bg-slate-50 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-1.5">
@@ -1164,30 +1164,30 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                         ? 'bg-cyan-500 text-white shadow-sm'
                         : isPassed
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-muted text-muted-foreground'
+                        : 'bg-slate-200 text-slate-600'
                     }`}>
                       {isPassed ? <Check size={14} /> : st.id}
                     </span>
-                    <Icon size={16} className={isCurrent ? 'text-cyan-400' : isPassed ? 'text-emerald-500' : 'text-muted-foreground'} />
+                    <Icon size={16} className={isCurrent ? 'text-cyan-600' : isPassed ? 'text-emerald-600' : 'text-slate-400'} />
                   </div>
-                  <span className={`text-xs font-black tracking-tight line-clamp-1 ${isCurrent ? 'text-cyan-400' : isPassed ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <span className={`text-xs font-black tracking-tight line-clamp-1 ${isCurrent ? 'text-cyan-900' : isPassed ? 'text-slate-800' : 'text-slate-500'}`}>
                     {st.title}
                   </span>
-                  <span className="text-[10px] text-muted-foreground/80 font-medium line-clamp-1 mt-0.5">
-                    {st.urdu}
+                  <span className="text-[10px] text-slate-500 font-medium line-clamp-1 mt-0.5">
+                    {st.desc}
                   </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Progress bar */}
-          <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+          {/* Stepper Progress bar */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span className="font-bold flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              Step {currentStep} of 5: <span className="text-foreground font-black">{steps[currentStep - 1]?.title}</span>
+              <span className="h-2 w-2 rounded-full bg-cyan-500" />
+              Step {currentStep} of 5: <span className="text-slate-900 font-black">{steps[currentStep - 1]?.title}</span>
             </span>
-            <span className="font-mono font-bold text-cyan-400">{Math.round((currentStep / 5) * 100)}% Completed</span>
+            <span className="font-mono font-bold text-cyan-600">{Math.round((currentStep / 5) * 100)}% Completed</span>
           </div>
         </div>
 
@@ -1195,1084 +1195,1126 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
         <form onSubmit={save} className="space-y-6">
 
           {/* ══════════════════════════════════════════════════════════ */}
-          {/* STEP 1: PERSONAL INFORMATION (ذاتی معلومات)               */}
+          {/* STEP 1: PERSONAL INFORMATION                               */}
           {/* ══════════════════════════════════════════════════════════ */}
           {currentStep === 1 && (
-            <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-                <div>
-                  <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                    <UserRound size={20} className="text-cyan-400" />
-                    Step 1: Student Personal Information (بنیادی و ذاتی معلومات)
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Basic identification, photo, date of birth, blood group, and NADRA B-Form / CNIC number.
-                  </p>
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden animate-fade-in">
+              {/* Vibrant Cyan Header Banner */}
+              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <UserRound size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-white flex items-center gap-2">
+                      Step 1: Student Personal Information
+                    </h2>
+                    <p className="text-xs text-cyan-50 font-normal">
+                      Basic identification, official full name, date of birth, photo, and NADRA B-Form.
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 self-start sm:self-auto">
+                <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                   Step 1 of 5
                 </span>
               </div>
 
-              {/* Photo & Main Identification */}
-              <div className="flex flex-col md:flex-row gap-6 items-start rounded-2xl border border-border bg-muted/15 p-5 sm:p-6">
-                
-                {/* Photo Upload Area */}
-                <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
-                  <label className="relative flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-cyan-500/40 bg-card shadow-inner hover:border-cyan-400 transition-all group">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={compressing}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) void handlePhoto(file);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                    {form.avatarUrl ? (
-                      <>
-                        <img src={form.avatarUrl} alt="Student" className="h-full w-full object-cover" />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[11px] font-black uppercase tracking-wider transition-opacity gap-1">
-                          <Camera size={20} />
-                          Change Photo
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground text-center p-3">
-                        {compressing ? <Loader2 size={26} className="animate-spin text-cyan-500" /> : <Camera size={30} className="text-cyan-500" />}
-                        <span className="text-[11px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
-                          {compressing ? 'Compressing...' : 'Upload Photo'}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground">Click to select photo</span>
-                      </div>
-                    )}
-                  </label>
-                  {form.avatarUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => update('avatarUrl', '')}
-                      className="text-[11px] font-bold text-rose-500 hover:text-rose-400 uppercase tracking-wider inline-flex items-center gap-1"
-                    >
-                      <Trash2 size={12} /> Remove Photo
-                    </button>
-                  ) : (
-                    <span className="text-[10px] text-muted-foreground">Passport size JPG/PNG</span>
-                  )}
-                </div>
-
-                {/* Primary Student Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
-                  <div className="sm:col-span-2 lg:col-span-3">
-                    <Field label="Student Full Name (طالب علم کا مکمل نام)" required>
+              <div className="p-6 sm:p-8 space-y-6">
+                {/* Photo & Main Identification Card */}
+                <div className="flex flex-col md:flex-row gap-6 items-start rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+                  
+                  {/* Photo Upload Area */}
+                  <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
+                    <label className="relative flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-cyan-400 bg-white shadow-inner hover:border-cyan-500 transition-all group">
                       <input
-                        required
-                        className={`${inputClass} text-base font-bold`}
-                        placeholder="e.g. Muhammad Ali Siddique"
-                        value={form.name}
-                        onChange={(e) => update('name', e.target.value)}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={compressing}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) void handlePhoto(file);
+                          e.currentTarget.value = '';
+                        }}
+                      />
+                      {form.avatarUrl ? (
+                        <>
+                          <img src={form.avatarUrl} alt="Student" className="h-full w-full object-cover" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[11px] font-black uppercase tracking-wider transition-opacity gap-1">
+                            <Camera size={20} />
+                            Change Photo
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-slate-500 text-center p-3">
+                          {compressing ? <Loader2 size={26} className="animate-spin text-cyan-500" /> : <Camera size={30} className="text-cyan-500" />}
+                          <span className="text-[11px] font-black uppercase tracking-wider text-cyan-600">
+                            {compressing ? 'Compressing...' : 'Upload Photo'}
+                          </span>
+                          <span className="text-[9px] text-slate-400">Click to select photo</span>
+                        </div>
+                      )}
+                    </label>
+                    {form.avatarUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => update('avatarUrl', '')}
+                        className="text-[11px] font-bold text-rose-500 hover:text-rose-600 uppercase tracking-wider inline-flex items-center gap-1"
+                      >
+                        <Trash2 size={12} /> Remove Photo
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">Passport size JPG/PNG</span>
+                    )}
+                  </div>
+
+                  {/* Primary Student Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
+                    <div className="sm:col-span-2 lg:col-span-3">
+                      <Field label="Student Full Name" required>
+                        <input
+                          required
+                          className={`${inputClass} text-base font-bold text-slate-900`}
+                          placeholder="e.g. Muhammad Ali Siddique"
+                          value={form.name}
+                          onChange={(e) => update('name', e.target.value)}
+                        />
+                      </Field>
+                    </div>
+
+                    <Field label="Date of Birth">
+                      <div className="space-y-1">
+                        <input
+                          type="date"
+                          className={inputClass}
+                          value={form.dateOfBirth}
+                          onChange={(e) => update('dateOfBirth', e.target.value)}
+                        />
+                        {calculatedAge && (
+                          <p className="text-[11px] font-bold text-cyan-600 flex items-center gap-1">
+                            <Clock size={12} /> Age: {calculatedAge}
+                          </p>
+                        )}
+                      </div>
+                    </Field>
+
+                    <Field label="Gender" required>
+                      <div className="grid grid-cols-3 gap-2 pt-0.5">
+                        {[
+                          { val: 'MALE', label: 'Male' },
+                          { val: 'FEMALE', label: 'Female' },
+                          { val: 'OTHER', label: 'Other' },
+                        ].map((g) => (
+                          <button
+                            key={g.val}
+                            type="button"
+                            onClick={() => update('gender', g.val)}
+                            className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition text-center ${
+                              form.gender === g.val
+                                ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
+                                : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                          >
+                            {g.label}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+
+                    <Field label="Blood Group">
+                      <select
+                        className={inputClass}
+                        value={form.bloodGroup}
+                        onChange={(e) => update('bloodGroup', e.target.value)}
+                      >
+                        {bloodGroups.map((bg) => (
+                          <option key={bg} value={bg}>{bg}</option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="NADRA B-Form / CNIC">
+                      <div className="relative">
+                        <input
+                          inputMode="numeric"
+                          maxLength={15}
+                          className={`${inputClass} font-mono`}
+                          placeholder="35201-xxxxxxx-x"
+                          value={form.bFormNumber}
+                          onChange={(e) => update('bFormNumber', formatCnic(e.target.value))}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400">
+                          {form.bFormNumber.replace(/\D/g, '').length}/13
+                        </span>
+                      </div>
+                    </Field>
+
+                    <Field label="Religion">
+                      <select
+                        className={inputClass}
+                        value={form.religion}
+                        onChange={(e) => update('religion', e.target.value)}
+                      >
+                        {religions.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="Nationality">
+                      <input
+                        className={inputClass}
+                        placeholder="Pakistani"
+                        value={form.nationality}
+                        onChange={(e) => update('nationality', e.target.value)}
+                      />
+                    </Field>
+
+                    <Field label="Student Personal Mobile (Optional)">
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.phone}
+                        onChange={(e) => update('phone', formatPhone(e.target.value))}
+                      />
+                    </Field>
+
+                    <Field label="Emergency Contact Mobile">
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.emergencyContact}
+                        onChange={(e) => update('emergencyContact', formatPhone(e.target.value))}
                       />
                     </Field>
                   </div>
-
-                  <Field label="Date of Birth (تاریخ پیدائش)">
-                    <div className="space-y-1">
-                      <input
-                        type="date"
-                        className={inputClass}
-                        value={form.dateOfBirth}
-                        onChange={(e) => update('dateOfBirth', e.target.value)}
-                      />
-                      {calculatedAge && (
-                        <p className="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
-                          <Clock size={12} /> Age: {calculatedAge}
-                        </p>
-                      )}
-                    </div>
-                  </Field>
-
-                  <Field label="Gender (جنس)" required>
-                    <div className="grid grid-cols-3 gap-2 pt-0.5">
-                      {[
-                        { val: 'MALE', label: 'Male (لڑکا)' },
-                        { val: 'FEMALE', label: 'Female (لڑکی)' },
-                        { val: 'OTHER', label: 'Other' },
-                      ].map((g) => (
-                        <button
-                          key={g.val}
-                          type="button"
-                          onClick={() => update('gender', g.val)}
-                          className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition text-center ${
-                            form.gender === g.val
-                              ? 'bg-cyan-500 text-white border-cyan-400 shadow-sm'
-                              : 'bg-card border-border text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {g.label}
-                        </button>
-                      ))}
-                    </div>
-                  </Field>
-
-                  <Field label="Blood Group (بلڈ گروپ)">
-                    <select
-                      className={inputClass}
-                      value={form.bloodGroup}
-                      onChange={(e) => update('bloodGroup', e.target.value)}
-                    >
-                      {bloodGroups.map((bg) => (
-                        <option key={bg} value={bg}>{bg}</option>
-                      ))}
-                    </select>
-                  </Field>
-
-                  <Field label="NADRA B-Form / CNIC (بے فارم نمبر)">
-                    <div className="relative">
-                      <input
-                        inputMode="numeric"
-                        maxLength={15}
-                        className={`${inputClass} font-mono`}
-                        placeholder="35201-xxxxxxx-x"
-                        value={form.bFormNumber}
-                        onChange={(e) => update('bFormNumber', formatCnic(e.target.value))}
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">
-                        {form.bFormNumber.replace(/\D/g, '').length}/13
-                      </span>
-                    </div>
-                  </Field>
-
-                  <Field label="Religion (مذہب)">
-                    <select
-                      className={inputClass}
-                      value={form.religion}
-                      onChange={(e) => update('religion', e.target.value)}
-                    >
-                      {religions.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </Field>
-
-                  <Field label="Nationality (قومیت)">
-                    <input
-                      className={inputClass}
-                      placeholder="Pakistani"
-                      value={form.nationality}
-                      onChange={(e) => update('nationality', e.target.value)}
-                    />
-                  </Field>
-
-                  <Field label="Student Personal Mobile (Optional)">
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.phone}
-                      onChange={(e) => update('phone', formatPhone(e.target.value))}
-                    />
-                  </Field>
-
-                  <Field label="Emergency Contact Mobile (ہنگامی رابطہ)">
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.emergencyContact}
-                      onChange={(e) => update('emergencyContact', formatPhone(e.target.value))}
-                    />
-                  </Field>
                 </div>
               </div>
             </div>
           )}
 
           {/* ══════════════════════════════════════════════════════════ */}
-          {/* STEP 2: ACADEMIC & CLASSROOM ASSIGNMENT (تعلیمی و کلاس)   */}
+          {/* STEP 2: ACADEMIC & CLASSROOM ASSIGNMENT                   */}
           {/* ══════════════════════════════════════════════════════════ */}
           {currentStep === 2 && (
-            <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-                <div>
-                  <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                    <GraduationCap size={20} className="text-cyan-400" />
-                    Step 2: Academic & Classroom Assignment (تعلیمی و داخلہ تفصیلات)
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Assign student to their grade/class level, classroom section with live capacity, and roll number.
-                  </p>
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden animate-fade-in">
+              {/* Vibrant Cyan Header Banner */}
+              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <GraduationCap size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-white flex items-center gap-2">
+                      Step 2: Academic & Classroom Assignment
+                    </h2>
+                    <p className="text-xs text-cyan-50 font-normal">
+                      Assign student to grade level, classroom section with live capacity, and official roll number.
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 self-start sm:self-auto">
+                <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                   Step 2 of 5
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                <Field label="Class Level (کلاس کا انتخاب)" required>
-                  <select
-                    required
-                    className={`${inputClass} font-bold text-foreground`}
-                    value={form.classId}
-                    onChange={(e) => {
-                      const newClassId = e.target.value;
-                      const classSecs = sections.filter((s) => s.classId === newClassId);
-                      const firstSecId = classSecs[0]?.id || '';
-                      const nextRoll = calculateNextRollNo(firstSecId, students);
-                      setForm((prev) => ({
-                        ...prev,
-                        classId: newClassId,
-                        sectionId: firstSecId,
-                        rollNo: nextRoll,
-                      }));
-                    }}
-                  >
-                    <option value="">Select Class Level *</option>
-                    {classes.map((cls) => (
-                      <option key={cls.id} value={cls.id}>{cls.name}</option>
-                    ))}
-                  </select>
-                </Field>
+              <div className="p-6 sm:p-8 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <Field label="Class Level" required>
+                    <select
+                      required
+                      className={`${inputClass} font-bold text-slate-900`}
+                      value={form.classId}
+                      onChange={(e) => {
+                        const newClassId = e.target.value;
+                        const classSecs = sections.filter((s) => s.classId === newClassId);
+                        const firstSecId = classSecs[0]?.id || '';
+                        const nextRoll = calculateNextRollNo(firstSecId, students);
+                        setForm((prev) => ({
+                          ...prev,
+                          classId: newClassId,
+                          sectionId: firstSecId,
+                          rollNo: nextRoll,
+                        }));
+                      }}
+                    >
+                      <option value="">Select Class Level *</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                  </Field>
 
-                <Field label="Section Assignment (سیکشن کا تعین)" required>
-                  <select
-                    required
-                    className={`${inputClass} font-bold text-foreground`}
-                    value={form.sectionId}
-                    onChange={(e) => {
-                      const secId = e.target.value;
-                      const nextRoll = calculateNextRollNo(secId, students);
-                      setForm((prev) => ({
-                        ...prev,
-                        sectionId: secId,
-                        rollNo: nextRoll,
-                      }));
-                    }}
-                  >
-                    <option value="">Select Section *</option>
-                    {availableFormSections.map((sec) => (
-                      <option key={sec.id} value={sec.id}>
-                        {sec.className} — Section {sec.name} {sec.teacher?.name ? `(${sec.teacher.name})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+                  <Field label="Section Assignment" required>
+                    <select
+                      required
+                      className={`${inputClass} font-bold text-slate-900`}
+                      value={form.sectionId}
+                      onChange={(e) => {
+                        const secId = e.target.value;
+                        const nextRoll = calculateNextRollNo(secId, students);
+                        setForm((prev) => ({
+                          ...prev,
+                          sectionId: secId,
+                          rollNo: nextRoll,
+                        }));
+                      }}
+                    >
+                      <option value="">Select Section *</option>
+                      {availableFormSections.map((sec) => (
+                        <option key={sec.id} value={sec.id}>
+                          {sec.className} — Section {sec.name} {sec.teacher?.name ? `(${sec.teacher.name})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
 
-                <Field label="Roll Number (رول نمبر)">
-                  <div className="relative">
-                    <input
-                      className={`${inputClass} font-mono font-bold text-cyan-500`}
-                      placeholder="e.g. 1, 2, 3..."
-                      value={form.rollNo}
-                      onChange={(e) => update('rollNo', e.target.value)}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-wider bg-cyan-500/15 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                      Auto Calculated
-                    </span>
-                  </div>
-                </Field>
-
-                <Field label="Admission Number (داخلہ نمبر)">
-                  <div className="relative">
-                    <input
-                      className={`${inputClass} font-mono font-bold text-sky-400`}
-                      placeholder="Leave blank for Auto ADM-YYYY-0001"
-                      value={form.admissionNo}
-                      onChange={(e) => update('admissionNo', e.target.value)}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-wider bg-sky-500/15 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">
-                      Auto if Empty
-                    </span>
-                  </div>
-                </Field>
-
-                <Field label="Academic Session (تعلیمی سال)">
-                  <input
-                    className={inputClass}
-                    placeholder="2026-2027"
-                    value={form.session}
-                    onChange={(e) => update('session', e.target.value)}
-                  />
-                </Field>
-
-                <Field label="Admission Date (تاریخ داخلہ)">
-                  <input
-                    type="date"
-                    className={inputClass}
-                    value={form.admissionDate}
-                    onChange={(e) => update('admissionDate', e.target.value)}
-                  />
-                </Field>
-              </div>
-
-              {/* Classroom Section Live Capacity Card */}
-              {currentSectionObj && (
-                <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/20 to-sky-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                      {currentSectionObj.name}
+                  <Field label="Roll Number">
+                    <div className="relative">
+                      <input
+                        className={`${inputClass} font-mono font-bold text-cyan-600`}
+                        placeholder="e.g. 1, 2, 3..."
+                        value={form.rollNo}
+                        onChange={(e) => update('rollNo', e.target.value)}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-wider bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-200">
+                        Auto Calculated
+                      </span>
                     </div>
-                    <div>
-                      <p className="font-bold text-foreground">
-                        {currentSectionObj.className} — Section {currentSectionObj.name}
-                      </p>
-                      <p className="text-muted-foreground text-[11px]">
-                        Class Teacher: {currentSectionObj.teacher?.name || 'Not assigned'}
-                      </p>
+                  </Field>
+
+                  <Field label="Admission Number">
+                    <div className="relative">
+                      <input
+                        className={`${inputClass} font-mono font-bold text-sky-600`}
+                        placeholder="Leave blank for Auto ADM-YYYY-0001"
+                        value={form.admissionNo}
+                        onChange={(e) => update('admissionNo', e.target.value)}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-wider bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200">
+                        Auto if Empty
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                      Capacity: {currentSectionObj.capacity || 40} Students
-                    </span>
-                  </div>
+                  </Field>
+
+                  <Field label="Academic Session">
+                    <input
+                      className={inputClass}
+                      placeholder="2026-2027"
+                      value={form.session}
+                      onChange={(e) => update('session', e.target.value)}
+                    />
+                  </Field>
+
+                  <Field label="Admission Date">
+                    <input
+                      type="date"
+                      className={inputClass}
+                      value={form.admissionDate}
+                      onChange={(e) => update('admissionDate', e.target.value)}
+                    />
+                  </Field>
                 </div>
-              )}
 
-              {/* Admission Type Selection */}
-              <div className="rounded-2xl border border-border bg-muted/15 p-5 space-y-4">
-                <Field label="Admission Type (داخلے کی قسم)">
-                  <div className="grid grid-cols-2 gap-3 max-w-md">
+                {/* Classroom Section Live Capacity Card */}
+                {currentSectionObj && (
+                  <div className="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center font-bold shadow-sm">
+                        {currentSectionObj.name}
+                      </div>
+                      <div>
+                        <p className="font-bold text-cyan-950">
+                          {currentSectionObj.className} — Section {currentSectionObj.name}
+                        </p>
+                        <p className="text-cyan-700 text-[11px]">
+                          Class Teacher: {currentSectionObj.teacher?.name || 'Not assigned'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-cyan-800 border border-cyan-200 shadow-sm">
+                        Capacity: {currentSectionObj.capacity || 40} Students
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Admission Type Selection */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
+                  <div className="bg-slate-200/70 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <Sparkles size={14} className="text-cyan-600" />
+                    Admission Category & Previous Schooling
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
                     <button
                       type="button"
                       onClick={() => update('admissionType', 'NEW')}
-                      className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 ${
+                      className={`p-3.5 rounded-2xl border text-left transition flex items-center gap-3 ${
                         form.admissionType === 'NEW'
-                          ? 'bg-cyan-500/15 border-cyan-500 text-cyan-400 shadow-sm'
-                          : 'bg-card border-border text-muted-foreground hover:text-foreground'
+                          ? 'bg-cyan-50 border-cyan-500 text-cyan-900 shadow-sm ring-1 ring-cyan-500/30'
+                          : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                      <span className={`h-2.5 w-2.5 rounded-full ${form.admissionType === 'NEW' ? 'bg-cyan-500' : 'bg-slate-300'}`} />
                       <div>
-                        <p className="text-xs font-bold text-foreground">New Admission (نیا داخلہ)</p>
-                        <p className="text-[10px] text-muted-foreground">First time enrollment in this school</p>
+                        <p className="text-xs font-bold text-slate-900">New Admission</p>
+                        <p className="text-[10px] text-slate-500">First time enrollment in this school</p>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => update('admissionType', 'TRANSFER')}
-                      className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 ${
+                      className={`p-3.5 rounded-2xl border text-left transition flex items-center gap-3 ${
                         form.admissionType === 'TRANSFER'
-                          ? 'bg-amber-500/15 border-amber-500 text-amber-400 shadow-sm'
-                          : 'bg-card border-border text-muted-foreground hover:text-foreground'
+                          ? 'bg-amber-50 border-amber-500 text-amber-900 shadow-sm ring-1 ring-amber-500/30'
+                          : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-amber-400" />
+                      <span className={`h-2.5 w-2.5 rounded-full ${form.admissionType === 'TRANSFER' ? 'bg-amber-500' : 'bg-slate-300'}`} />
                       <div>
-                        <p className="text-xs font-bold text-foreground">Transfer (دیگر سکول سے آمد)</p>
-                        <p className="text-[10px] text-muted-foreground">Migration / School Leaving Certificate</p>
+                        <p className="text-xs font-bold text-slate-900">Transfer / Migration</p>
+                        <p className="text-[10px] text-slate-500">School Leaving Certificate / Transfer</p>
                       </div>
                     </button>
                   </div>
-                </Field>
 
-                {form.admissionType === 'TRANSFER' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-border">
-                    <Field label="Previous School Name *" required>
-                      <input
-                        required
-                        className={inputClass}
-                        placeholder="e.g. Army Public School / The City School"
-                        value={form.previousSchool}
-                        onChange={(e) => update('previousSchool', e.target.value)}
-                      />
-                    </Field>
-                    <Field label="Previous Class Passed *" required>
-                      <input
-                        required
-                        className={inputClass}
-                        placeholder="e.g. Class 4 / Grade 8"
-                        value={form.previousClass}
-                        onChange={(e) => update('previousClass', e.target.value)}
-                      />
-                    </Field>
-                    <Field label="Previous Academic Record / Marks %">
-                      <input
-                        className={inputClass}
-                        placeholder="e.g. 88% / Grade A+"
-                        value={form.previousAcademicRecord}
-                        onChange={(e) => update('previousAcademicRecord', e.target.value)}
-                      />
-                    </Field>
-                  </div>
-                )}
+                  {form.admissionType === 'TRANSFER' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-200">
+                      <Field label="Previous School Name" required>
+                        <input
+                          required
+                          className={inputClass}
+                          placeholder="e.g. Army Public School / City School"
+                          value={form.previousSchool}
+                          onChange={(e) => update('previousSchool', e.target.value)}
+                        />
+                      </Field>
+                      <Field label="Previous Class Passed" required>
+                        <input
+                          required
+                          className={inputClass}
+                          placeholder="e.g. Class 4 / Grade 8"
+                          value={form.previousClass}
+                          onChange={(e) => update('previousClass', e.target.value)}
+                        />
+                      </Field>
+                      <Field label="Previous Academic Record / Marks %">
+                        <input
+                          className={inputClass}
+                          placeholder="e.g. 88% / Grade A+"
+                          value={form.previousAcademicRecord}
+                          onChange={(e) => update('previousAcademicRecord', e.target.value)}
+                        />
+                      </Field>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {/* ══════════════════════════════════════════════════════════ */}
-          {/* STEP 3: PARENT & GUARDIAN (والدین اور سرپرست)              */}
+          {/* STEP 3: PARENT & GUARDIAN DETAILS                          */}
           {/* ══════════════════════════════════════════════════════════ */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-fade-in">
               
-              {/* Father Information */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
-                  <div>
-                    <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                      <Users size={20} className="text-cyan-400" />
-                      Father Information (والد صاحب کی تفصیلات)
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Father contact numbers are used for automated SMS alerts, attendance, and fee notices.
-                    </p>
+              {/* Father Information Card */}
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Users size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-white">Father Information</h2>
+                      <p className="text-xs text-cyan-50 font-normal">Primary contact numbers used for SMS alerts, attendance, and fee notices.</p>
+                    </div>
                   </div>
 
                   {/* Father Status Toggle */}
-                  <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-2xl border border-border">
+                  <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
                     <button
                       type="button"
                       onClick={() => update('fatherStatus', 'ALIVE')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         form.fatherStatus === 'ALIVE'
-                          ? 'bg-emerald-500 text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-white text-cyan-900 shadow-sm'
+                          : 'text-white/80 hover:text-white'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-emerald-300" />
-                      Alive (حیات)
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      Alive
                     </button>
                     <button
                       type="button"
                       onClick={() => update('fatherStatus', 'DECEASED')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         form.fatherStatus === 'DECEASED'
-                          ? 'bg-rose-500 text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-rose-600 text-white shadow-sm'
+                          : 'text-white/80 hover:text-white'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-rose-300" />
-                      Deceased (مرحوم)
+                      <span className="h-2 w-2 rounded-full bg-rose-200" />
+                      Deceased
                     </button>
                   </div>
                 </div>
 
-                {form.fatherStatus === 'DECEASED' && (
-                  <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs text-amber-300 flex items-start gap-3">
-                    <AlertTriangle size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                <div className="p-6 sm:p-8 space-y-4">
+                  {form.fatherStatus === 'DECEASED' && (
+                    <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
+                      <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-amber-950">Father is marked as Deceased</p>
+                        <p className="text-amber-800 text-[11px] mt-0.5">
+                          Please provide Guardian details below. Guardian Mobile is mandatory for all school communication and emergency contacts.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Field
+                      label={form.fatherStatus === 'DECEASED' ? 'Father Name (Late)' : 'Father Full Name'}
+                      required={form.fatherStatus === 'ALIVE'}
+                    >
+                      <input
+                        required={form.fatherStatus === 'ALIVE'}
+                        className={inputClass}
+                        placeholder="e.g. Tariq Mehmood"
+                        value={form.fatherName}
+                        onChange={(e) => update('fatherName', e.target.value)}
+                      />
+                    </Field>
+
+                    <Field
+                      label="Father Primary Mobile"
+                      required={form.fatherStatus === 'ALIVE'}
+                    >
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        required={form.fatherStatus === 'ALIVE'}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.fatherMobile1}
+                        onChange={(e) => update('fatherMobile1', formatPhone(e.target.value))}
+                      />
+                    </Field>
+
+                    <Field label="Father WhatsApp Number">
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.fatherWhatsapp}
+                        onChange={(e) => update('fatherWhatsapp', formatPhone(e.target.value))}
+                      />
+                    </Field>
+
+                    <Field label="Father Secondary Mobile">
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0321-7654321"
+                        value={form.fatherMobile2}
+                        onChange={(e) => update('fatherMobile2', formatPhone(e.target.value))}
+                      />
+                    </Field>
+
+                    <Field label="Father CNIC">
+                      <div className="relative">
+                        <input
+                          inputMode="numeric"
+                          maxLength={15}
+                          className={`${inputClass} font-mono`}
+                          placeholder="35201-xxxxxxx-x"
+                          value={form.fatherCnic}
+                          onChange={(e) => update('fatherCnic', formatCnic(e.target.value))}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400">
+                          {form.fatherCnic.replace(/\D/g, '').length}/13
+                        </span>
+                      </div>
+                    </Field>
+
+                    <Field label="Father Occupation">
+                      <input
+                        className={inputClass}
+                        placeholder="e.g. Govt Officer / Businessman / Doctor"
+                        value={form.fatherOccupation}
+                        onChange={(e) => update('fatherOccupation', e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guardian Information Card */}
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-500 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <ShieldCheck size={20} className="text-white" />
+                    </div>
                     <div>
-                      <p className="font-bold text-amber-200">Father is marked as Deceased (والد صاحب مرحوم ہیں)</p>
-                      <p className="text-amber-300/90 text-[11px] mt-0.5">
-                        Please provide Guardian (سرپرست) details below. Guardian Mobile is mandatory for all school communication and emergency contact.
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-black text-white">Guardian Information</h2>
+                        {form.fatherStatus === 'DECEASED' && (
+                          <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 text-white px-2.5 py-0.5 rounded-full border border-white/30">
+                            Mandatory
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-amber-50 font-normal">Legal guardian responsible if father is absent, abroad, or deceased.</p>
                     </div>
                   </div>
-                )}
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Field
-                    label={form.fatherStatus === 'DECEASED' ? 'Father Name (Late / مرحوم)' : 'Father Full Name (والد کا نام)'}
-                    required={form.fatherStatus === 'ALIVE'}
-                  >
-                    <input
-                      required={form.fatherStatus === 'ALIVE'}
-                      className={inputClass}
-                      placeholder="e.g. Tariq Mehmood"
-                      value={form.fatherName}
-                      onChange={(e) => update('fatherName', e.target.value)}
-                    />
-                  </Field>
+                <div className="p-6 sm:p-8 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Field label="Guardian Full Name" required={form.fatherStatus === 'DECEASED'}>
+                      <input
+                        required={form.fatherStatus === 'DECEASED'}
+                        className={inputClass}
+                        placeholder="e.g. Abdul Rehman"
+                        value={form.guardianName}
+                        onChange={(e) => update('guardianName', e.target.value)}
+                      />
+                    </Field>
 
-                  <Field
-                    label="Father Primary Mobile (پرائمری موبائل نمبر)"
-                    required={form.fatherStatus === 'ALIVE'}
-                  >
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      required={form.fatherStatus === 'ALIVE'}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.fatherMobile1}
-                      onChange={(e) => update('fatherMobile1', formatPhone(e.target.value))}
-                    />
-                  </Field>
+                    <Field label="Relationship with Student" required={form.fatherStatus === 'DECEASED'}>
+                      <select
+                        className={inputClass}
+                        value={form.guardianRelation}
+                        onChange={(e) => update('guardianRelation', e.target.value)}
+                      >
+                        {guardianRelations.map((gr) => (
+                          <option key={gr.value} value={gr.value}>{gr.label}</option>
+                        ))}
+                      </select>
+                    </Field>
 
-                  <Field label="Father WhatsApp Number (واٹس ایپ)">
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.fatherWhatsapp}
-                      onChange={(e) => update('fatherWhatsapp', formatPhone(e.target.value))}
-                    />
-                  </Field>
+                    <Field label="Guardian Mobile Number" required={form.fatherStatus === 'DECEASED'}>
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        required={form.fatherStatus === 'DECEASED'}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.guardianMobile}
+                        onChange={(e) => update('guardianMobile', formatPhone(e.target.value))}
+                      />
+                    </Field>
 
-                  <Field label="Father Secondary Mobile">
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0321-7654321"
-                      value={form.fatherMobile2}
-                      onChange={(e) => update('fatherMobile2', formatPhone(e.target.value))}
-                    />
-                  </Field>
-
-                  <Field label="Father CNIC (والد کا شناختی کارڈ)">
-                    <div className="relative">
+                    <Field label="Guardian CNIC">
                       <input
                         inputMode="numeric"
                         maxLength={15}
                         className={`${inputClass} font-mono`}
                         placeholder="35201-xxxxxxx-x"
-                        value={form.fatherCnic}
-                        onChange={(e) => update('fatherCnic', formatCnic(e.target.value))}
+                        value={form.guardianCnic}
+                        onChange={(e) => update('guardianCnic', formatCnic(e.target.value))}
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">
-                        {form.fatherCnic.replace(/\D/g, '').length}/13
-                      </span>
+                    </Field>
+
+                    <Field label="Guardian Occupation">
+                      <input
+                        className={inputClass}
+                        placeholder="e.g. Business / Lawyer / Teacher"
+                        value={form.guardianOccupation}
+                        onChange={(e) => update('guardianOccupation', e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mother Information Card */}
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <HeartPulse size={20} className="text-white" />
                     </div>
-                  </Field>
-
-                  <Field label="Father Occupation (پیشہ / ملازمت)">
-                    <input
-                      className={inputClass}
-                      placeholder="e.g. Govt Officer / Businessman / Doctor"
-                      value={form.fatherOccupation}
-                      onChange={(e) => update('fatherOccupation', e.target.value)}
-                    />
-                  </Field>
-                </div>
-              </div>
-
-              {/* Guardian Information (Mandatory if father is deceased) */}
-              <div className={`rounded-3xl border p-6 sm:p-8 shadow-sm space-y-4 transition ${
-                form.fatherStatus === 'DECEASED'
-                  ? 'border-amber-500/60 bg-card ring-2 ring-amber-500/20'
-                  : 'border-border bg-card'
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-                  <div>
-                    <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                      <ShieldCheck size={20} className="text-amber-400" />
-                      Guardian Information (سرپرست کی تفصیلات)
-                      {form.fatherStatus === 'DECEASED' && (
-                        <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-                          Mandatory (لازمی)
-                        </span>
-                      )}
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Legal guardian responsible for the student if father is absent, abroad, or deceased.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Field label="Guardian Full Name" required={form.fatherStatus === 'DECEASED'}>
-                    <input
-                      required={form.fatherStatus === 'DECEASED'}
-                      className={inputClass}
-                      placeholder="e.g. Abdul Rehman"
-                      value={form.guardianName}
-                      onChange={(e) => update('guardianName', e.target.value)}
-                    />
-                  </Field>
-
-                  <Field label="Relationship with Student" required={form.fatherStatus === 'DECEASED'}>
-                    <select
-                      className={inputClass}
-                      value={form.guardianRelation}
-                      onChange={(e) => update('guardianRelation', e.target.value)}
-                    >
-                      {guardianRelations.map((gr) => (
-                        <option key={gr.value} value={gr.value}>{gr.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-
-                  <Field label="Guardian Mobile Number" required={form.fatherStatus === 'DECEASED'}>
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      required={form.fatherStatus === 'DECEASED'}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.guardianMobile}
-                      onChange={(e) => update('guardianMobile', formatPhone(e.target.value))}
-                    />
-                  </Field>
-
-                  <Field label="Guardian CNIC">
-                    <input
-                      inputMode="numeric"
-                      maxLength={15}
-                      className={`${inputClass} font-mono`}
-                      placeholder="35201-xxxxxxx-x"
-                      value={form.guardianCnic}
-                      onChange={(e) => update('guardianCnic', formatCnic(e.target.value))}
-                    />
-                  </Field>
-
-                  <Field label="Guardian Occupation">
-                    <input
-                      className={inputClass}
-                      placeholder="e.g. Business / Lawyer / Teacher"
-                      value={form.guardianOccupation}
-                      onChange={(e) => update('guardianOccupation', e.target.value)}
-                    />
-                  </Field>
-                </div>
-              </div>
-
-              {/* Mother Information */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-                  <div>
-                    <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                      <HeartPulse size={20} className="text-rose-400" />
-                      Mother Information (والدہ محترمہ کی تفصیلات)
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Mother name, status, contact, and CNIC number.
-                    </p>
+                    <div>
+                      <h2 className="text-base font-black text-white">Mother Information</h2>
+                      <p className="text-xs text-rose-50 font-normal">Mother name, status, contact, and CNIC number.</p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-2xl border border-border">
+                  {/* Mother Status Toggle */}
+                  <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
                     <button
                       type="button"
                       onClick={() => update('motherStatus', 'ALIVE')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         form.motherStatus === 'ALIVE'
-                          ? 'bg-emerald-500 text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-white text-rose-900 shadow-sm'
+                          : 'text-white/80 hover:text-white'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-emerald-300" />
-                      Alive (حیات)
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      Alive
                     </button>
                     <button
                       type="button"
                       onClick={() => update('motherStatus', 'DECEASED')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         form.motherStatus === 'DECEASED'
-                          ? 'bg-rose-500 text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-rose-800 text-white shadow-sm'
+                          : 'text-white/80 hover:text-white'
                       }`}
                     >
-                      <span className="h-2 w-2 rounded-full bg-rose-300" />
-                      Deceased (مرحومہ)
+                      <span className="h-2 w-2 rounded-full bg-rose-200" />
+                      Deceased
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Field label={form.motherStatus === 'DECEASED' ? 'Mother Name (Late / مرحومہ)' : 'Mother Full Name'}>
-                    <input
-                      className={inputClass}
-                      placeholder="e.g. Parveen Bibi"
-                      value={form.motherName}
-                      onChange={(e) => update('motherName', e.target.value)}
-                    />
-                  </Field>
+                <div className="p-6 sm:p-8 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Field label={form.motherStatus === 'DECEASED' ? 'Mother Name (Late)' : 'Mother Full Name'}>
+                      <input
+                        className={inputClass}
+                        placeholder="e.g. Parveen Bibi"
+                        value={form.motherName}
+                        onChange={(e) => update('motherName', e.target.value)}
+                      />
+                    </Field>
 
-                  <Field label="Mother Mobile Number">
-                    <input
-                      inputMode="numeric"
-                      maxLength={12}
-                      className={`${inputClass} font-mono`}
-                      placeholder="0300-1234567"
-                      value={form.motherMobile}
-                      onChange={(e) => update('motherMobile', formatPhone(e.target.value))}
-                    />
-                  </Field>
+                    <Field label="Mother Mobile Number">
+                      <input
+                        inputMode="numeric"
+                        maxLength={12}
+                        className={`${inputClass} font-mono`}
+                        placeholder="0300-1234567"
+                        value={form.motherMobile}
+                        onChange={(e) => update('motherMobile', formatPhone(e.target.value))}
+                      />
+                    </Field>
 
-                  <Field label="Mother CNIC">
-                    <input
-                      inputMode="numeric"
-                      maxLength={15}
-                      className={`${inputClass} font-mono`}
-                      placeholder="35201-xxxxxxx-x"
-                      value={form.motherCnic}
-                      onChange={(e) => update('motherCnic', formatCnic(e.target.value))}
-                    />
-                  </Field>
+                    <Field label="Mother CNIC">
+                      <input
+                        inputMode="numeric"
+                        maxLength={15}
+                        className={`${inputClass} font-mono`}
+                        placeholder="35201-xxxxxxx-x"
+                        value={form.motherCnic}
+                        onChange={(e) => update('motherCnic', formatCnic(e.target.value))}
+                      />
+                    </Field>
 
-                  <Field label="Mother Occupation">
-                    <input
-                      className={inputClass}
-                      placeholder="Housewife / Teacher / Doctor"
-                      value={form.motherOccupation}
-                      onChange={(e) => update('motherOccupation', e.target.value)}
-                    />
-                  </Field>
+                    <Field label="Mother Occupation">
+                      <input
+                        className={inputClass}
+                        placeholder="Housewife / Teacher / Doctor"
+                        value={form.motherOccupation}
+                        onChange={(e) => update('motherOccupation', e.target.value)}
+                      />
+                    </Field>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* ══════════════════════════════════════════════════════════ */}
-          {/* STEP 4: ADDRESS, HEALTH & FACILITIES (رہائش و سہولیات)   */}
+          {/* STEP 4: ADDRESS, HEALTH & FACILITIES                      */}
           {/* ══════════════════════════════════════════════════════════ */}
           {currentStep === 4 && (
-            <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-                <div>
-                  <h2 className="text-lg font-black text-foreground flex items-center gap-2">
-                    <MapPin size={20} className="text-cyan-400" />
-                    Step 4: Residential Address, School Facilities & Health (رہائش و سہولیات)
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Home address, school bus transport pickup, hostel accommodation, and medical history.
-                  </p>
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden animate-fade-in">
+              {/* Vibrant Cyan Header Banner */}
+              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <MapPin size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-white flex items-center gap-2">
+                      Step 4: Residential Address, School Facilities & Health
+                    </h2>
+                    <p className="text-xs text-cyan-50 font-normal">
+                      Home address, school transport pick-and-drop, hostel accommodation, and medical history.
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 self-start sm:self-auto">
+                <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                   Step 4 of 5
                 </span>
               </div>
 
-              {/* Addresses */}
-              <div className="space-y-4">
-                <Field label="Current Residential Address (موجودہ رہائشی پتہ) *" required>
-                  <input
-                    required
-                    className={inputClass}
-                    placeholder="House #, Street #, Mohallah / Sector / Area, City"
-                    value={form.currentAddress}
-                    onChange={(e) => update('currentAddress', e.target.value)}
-                  />
-                </Field>
+              <div className="p-6 sm:p-8 space-y-6">
+                {/* Addresses */}
+                <div className="space-y-4">
+                  <Field label="Current Residential Address" required>
+                    <input
+                      required
+                      className={inputClass}
+                      placeholder="House #, Street #, Mohallah / Sector / Area, City"
+                      value={form.currentAddress}
+                      onChange={(e) => update('currentAddress', e.target.value)}
+                    />
+                  </Field>
 
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                      Permanent Home Address (مستقل پتہ)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => update('permanentAddress', form.currentAddress)}
-                      className="text-[11px] font-bold text-cyan-500 hover:text-cyan-400 flex items-center gap-1"
-                    >
-                      <Copy size={12} /> Same as Current Address
-                    </button>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">
+                        Permanent Home Address
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => update('permanentAddress', form.currentAddress)}
+                        className="text-[11px] font-bold text-cyan-600 hover:text-cyan-700 flex items-center gap-1"
+                      >
+                        <Copy size={12} /> Same as Current Address
+                      </button>
+                    </div>
+                    <input
+                      className={inputClass}
+                      placeholder="Village / Tehsil / District (if different)"
+                      value={form.permanentAddress}
+                      onChange={(e) => update('permanentAddress', e.target.value)}
+                    />
                   </div>
-                  <input
-                    className={inputClass}
-                    placeholder="Village / Tehsil / District (if different)"
-                    value={form.permanentAddress}
-                    onChange={(e) => update('permanentAddress', e.target.value)}
-                  />
                 </div>
-              </div>
 
-              {/* School Facilities: Transport & Hostel */}
-              <div className="rounded-2xl border border-border bg-muted/15 p-5 space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-wider text-cyan-500 flex items-center gap-2">
-                  <Bus size={16} /> School Facilities Required
-                </h3>
+                {/* School Facilities: Transport & Hostel */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
+                  <div className="bg-slate-200/70 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <Bus size={15} className="text-cyan-600" />
+                    School Facilities Required
+                  </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Transport */}
+                    <div className={`p-4 rounded-2xl border transition ${
+                      form.transportRequired ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-white'
+                    }`}>
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded accent-cyan-600"
+                          checked={form.transportRequired}
+                          onChange={(e) => update('transportRequired', e.target.checked)}
+                        />
+                        <div className="flex-1">
+                          <span className="text-xs font-bold text-slate-900 block">🚌 School Transport / Van Service</span>
+                          <span className="text-[11px] text-slate-500">Pick & drop van service for this student</span>
+                        </div>
+                      </label>
+
+                      {form.transportRequired && (
+                        <div className="mt-3 pt-3 border-t border-cyan-200">
+                          <Field label="Pickup Stop / Area Location">
+                            <input
+                              className={inputClass}
+                              placeholder="e.g. Shadman Chowk / Main Market stop"
+                              value={form.transportStop}
+                              onChange={(e) => update('transportStop', e.target.value)}
+                            />
+                          </Field>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hostel */}
+                    <div className={`p-4 rounded-2xl border transition ${
+                      form.hostelRequired ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-slate-200 bg-white'
+                    }`}>
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded accent-amber-600"
+                          checked={form.hostelRequired}
+                          onChange={(e) => update('hostelRequired', e.target.checked)}
+                        />
+                        <div className="flex-1">
+                          <span className="text-xs font-bold text-slate-900 block">🏠 Hostel Accommodation Facility</span>
+                          <span className="text-[11px] text-slate-500">Boarding school accommodation & room</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Health & Special Requirements */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Transport */}
-                  <div className={`p-4 rounded-2xl border transition ${
-                    form.transportRequired ? 'border-cyan-500 bg-cyan-500/10 shadow-sm' : 'border-border bg-card'
-                  }`}>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4 rounded accent-cyan-500"
-                        checked={form.transportRequired}
-                        onChange={(e) => update('transportRequired', e.target.checked)}
-                      />
-                      <div className="flex-1">
-                        <span className="text-xs font-bold text-foreground block">🚌 School Transport / Van Service</span>
-                        <span className="text-[11px] text-muted-foreground">Pick & drop van service for this student</span>
-                      </div>
-                    </label>
+                  <Field label="Medical History / Allergies">
+                    <input
+                      className={inputClass}
+                      placeholder="e.g. Asthma / Peanut Allergy / Wears Eyeglasses / None"
+                      value={form.medicalNotes}
+                      onChange={(e) => update('medicalNotes', e.target.value)}
+                    />
+                  </Field>
 
-                    {form.transportRequired && (
-                      <div className="mt-3 pt-3 border-t border-cyan-500/20">
-                        <Field label="Pickup Stop / Area Location">
-                          <input
-                            className={inputClass}
-                            placeholder="e.g. Shadman Chowk / Main Market stop"
-                            value={form.transportStop}
-                            onChange={(e) => update('transportStop', e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Hostel */}
-                  <div className={`p-4 rounded-2xl border transition ${
-                    form.hostelRequired ? 'border-amber-500 bg-amber-500/10 shadow-sm' : 'border-border bg-card'
-                  }`}>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4 rounded accent-amber-500"
-                        checked={form.hostelRequired}
-                        onChange={(e) => update('hostelRequired', e.target.checked)}
-                      />
-                      <div className="flex-1">
-                        <span className="text-xs font-bold text-foreground block">🏠 Hostel Accommodation Facility</span>
-                        <span className="text-[11px] text-muted-foreground">Boarding school accommodation & room</span>
-                      </div>
-                    </label>
-                  </div>
+                  <Field label="Special Requirements / Physical Support">
+                    <input
+                      className={inputClass}
+                      placeholder="e.g. Front bench requirement / Wheelchair access / None"
+                      value={form.specialRequirements}
+                      onChange={(e) => update('specialRequirements', e.target.value)}
+                    />
+                  </Field>
                 </div>
-              </div>
 
-              {/* Health & Special Requirements */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Medical History / Allergies (طبی ریکارڈ و الرجی)">
+                <Field label="General Remarks / Office Notes">
                   <input
                     className={inputClass}
-                    placeholder="e.g. Asthma / Peanut Allergy / Wears Eyeglasses / None"
-                    value={form.medicalNotes}
-                    onChange={(e) => update('medicalNotes', e.target.value)}
-                  />
-                </Field>
-
-                <Field label="Special Requirements / Physical Support">
-                  <input
-                    className={inputClass}
-                    placeholder="e.g. Front bench requirement / Wheelchair access / None"
-                    value={form.specialRequirements}
-                    onChange={(e) => update('specialRequirements', e.target.value)}
+                    placeholder="Any additional notes or instructions regarding this student admission"
+                    value={form.remarks}
+                    onChange={(e) => update('remarks', e.target.value)}
                   />
                 </Field>
               </div>
-
-              <Field label="General Remarks / Office Notes (دفتری نوٹس)">
-                <input
-                  className={inputClass}
-                  placeholder="Any additional notes or instructions regarding this student admission"
-                  value={form.remarks}
-                  onChange={(e) => update('remarks', e.target.value)}
-                />
-              </Field>
             </div>
           )}
 
           {/* ══════════════════════════════════════════════════════════ */}
-          {/* STEP 5: PORTAL LOGIN & FINAL REVIEW (لاگ ان و تصدیق)       */}
+          {/* STEP 5: PORTAL LOGIN & FINAL REVIEW                        */}
           {/* ══════════════════════════════════════════════════════════ */}
           {currentStep === 5 && (
             <div className="space-y-6 animate-fade-in">
               
               {/* Student Portal Login Credentials Generator */}
-              <div className="rounded-3xl border border-cyan-500/40 bg-gradient-to-br from-cyan-950/30 via-slate-900/80 to-sky-950/30 p-6 sm:p-8 shadow-xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                    <Key size={20} />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-black text-foreground">
-                      Student Online Portal Login Credentials (پورٹل لاگ ان)
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Verified login pattern allowing the student to access LMS, view attendance, report cards & fees.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                  {/* Friendly Login ID */}
-                  <div className="rounded-2xl border border-cyan-500/30 bg-card/60 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-cyan-400 mb-1">
-                      🎓 Friendly Login ID / Username
-                    </p>
-                    <p className="font-mono font-bold text-base text-foreground break-all">
-                      {candidateLoginId}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Student name + roll no for fast typing
-                    </p>
-                  </div>
-
-                  {/* Portal Email */}
-                  <div className="rounded-2xl border border-border/80 bg-card/60 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
-                      📧 Official Portal Email
-                    </p>
-                    <p className="font-mono font-bold text-sm text-foreground break-all">
-                      {candidateEmail}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Unique school account identifier
-                    </p>
-                  </div>
-
-                  {/* Password Generator */}
-                  <div className="rounded-2xl border border-amber-500/40 bg-card/60 p-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">
-                        🔑 8-Digit Password *
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Key size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-white">
+                        Student Online Portal Login Credentials
+                      </h2>
+                      <p className="text-xs text-cyan-50 font-normal">
+                        Verified login pattern allowing the student to access LMS, attendance, report cards & fees.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const generated = generate8CharPassword();
-                          update('password', generated);
-                          toast.success(`Generated: ${generated}`);
-                        }}
-                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1"
-                      >
-                        <RefreshCw size={11} /> Auto-Generate
-                      </button>
-                    </div>
-
-                    <div className="relative mt-1">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        required={!editing}
-                        className={`${inputClass} font-mono font-bold tracking-widest text-amber-400 pr-10`}
-                        placeholder="8-digit password"
-                        value={form.password}
-                        onChange={(e) => update('password', e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
                     </div>
                   </div>
+                  <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+                    Step 5 of 5
+                  </span>
                 </div>
 
-                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-300 flex items-center gap-3">
-                  <Sparkles size={18} className="text-emerald-400 shrink-0" />
-                  <div>
-                    <span className="font-bold">Multi-Format Easy Student Login:</span> Student can sign in using their{' '}
-                    <span className="font-mono font-bold text-white">{candidateLoginId}</span>, their Admission Number, or their Email with this 8-digit password.
+                <div className="p-6 sm:p-8 space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Friendly Login ID */}
+                    <div className="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-cyan-800 mb-1">
+                        🎓 Friendly Login ID / Username
+                      </p>
+                      <p className="font-mono font-bold text-base text-cyan-950 break-all">
+                        {candidateLoginId}
+                      </p>
+                      <p className="text-[10px] text-cyan-700 mt-1">
+                        Student name + roll no for fast typing
+                      </p>
+                    </div>
+
+                    {/* Portal Email */}
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-600 mb-1">
+                        📧 Official Portal Email
+                      </p>
+                      <p className="font-mono font-bold text-sm text-slate-900 break-all">
+                        {candidateEmail}
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Unique school account identifier
+                      </p>
+                    </div>
+
+                    {/* Password Generator */}
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">
+                          🔑 8-Digit Password *
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const generated = generate8CharPassword();
+                            update('password', generated);
+                            toast.success(`Generated: ${generated}`);
+                          }}
+                          className="text-[10px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1"
+                        >
+                          <RefreshCw size={11} /> Auto-Generate
+                        </button>
+                      </div>
+
+                      <div className="relative mt-1">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required={!editing}
+                          className={`${inputClass} font-mono font-bold tracking-widest text-amber-900 pr-10 bg-white`}
+                          placeholder="8-digit password"
+                          value={form.password}
+                          onChange={(e) => update('password', e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900 flex items-center gap-3">
+                    <Sparkles size={18} className="text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-bold">Multi-Identifier Easy Login:</span> Student can sign in using their{' '}
+                      <span className="font-mono font-bold text-emerald-950">{candidateLoginId}</span>, their Admission Number, or their Email with this 8-digit password.
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Complete Review Summary Card */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-5">
-                <h3 className="text-sm font-black uppercase tracking-wider text-foreground flex items-center gap-2">
-                  <CheckCircle2 size={18} className="text-cyan-400" />
-                  Admission Summary & Checklist (حتمی تصدیق)
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Student Details Card */}
-                  <div className="rounded-2xl border border-border bg-muted/15 p-4 space-y-3">
-                    <div className="flex items-center gap-3 border-b border-border pb-3">
-                      <div className="h-12 w-12 rounded-xl bg-slate-800 border border-cyan-500/30 overflow-hidden flex items-center justify-center font-bold text-lg text-cyan-400 shrink-0">
-                        {form.avatarUrl ? (
-                          <img src={form.avatarUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          form.name?.charAt(0) || 'S'
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-black text-foreground">{form.name || 'Student Name'}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {classes.find((c) => c.id === form.classId)?.name || 'Class'} — Section {currentSectionObj?.name || 'A'} | Roll #{form.rollNo || '1'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Gender / Blood:</span>
-                        <span className="font-bold text-foreground">{form.gender} ({form.bloodGroup})</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Date of Birth / Age:</span>
-                        <span className="font-bold text-foreground">{form.dateOfBirth || 'Not set'} ({calculatedAge || '-'})</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">B-Form / CNIC:</span>
-                        <span className="font-mono font-bold text-foreground">{form.bFormNumber || 'Not provided'}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Emergency Phone:</span>
-                        <span className="font-mono font-bold text-foreground">{form.emergencyContact || form.phone || 'Not set'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Parents & Facilities Card */}
-                  <div className="rounded-2xl border border-border bg-muted/15 p-4 space-y-3">
-                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider border-b border-border pb-2">
-                      Parents & Facilities
-                    </h4>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Father / Status:</span>
-                        <span className="font-bold text-foreground">{form.fatherName || '-'} ({form.fatherStatus})</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Father Mobile:</span>
-                        <span className="font-mono font-bold text-foreground">{form.fatherMobile1 || '-'}</span>
-                      </div>
-                      {form.fatherStatus === 'DECEASED' && (
-                        <>
-                          <div>
-                            <span className="text-muted-foreground block text-[10px]">Guardian Name:</span>
-                            <span className="font-bold text-amber-400">{form.guardianName} ({form.guardianRelation})</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground block text-[10px]">Guardian Mobile:</span>
-                            <span className="font-mono font-bold text-amber-400">{form.guardianMobile}</span>
-                          </div>
-                        </>
-                      )}
-                      <div>
-                        <span className="text-muted-foreground block text-[10px]">Transport / Hostel:</span>
-                        <span className="font-bold text-foreground">
-                          {form.transportRequired ? '🚌 Bus Required' : 'No Transport'} / {form.hostelRequired ? '🏠 Hostel' : 'Day Scholar'}
-                        </span>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="text-muted-foreground block text-[10px]">Residential Address:</span>
-                        <span className="font-medium text-foreground line-clamp-1">{form.currentAddress || 'Not set'}</span>
-                      </div>
-                    </div>
-                  </div>
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-800 via-slate-850 to-slate-900 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-cyan-400" />
+                    Admission Summary & Verification Checklist
+                  </h3>
+                  <span className="text-[11px] font-mono text-slate-300">Pre-Submission Review</span>
                 </div>
 
-                {/* Step Validation Status Bar */}
-                <div className="rounded-2xl border border-border bg-card p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-4 flex-wrap">
-                    {[1, 2, 3, 4].map((s) => {
-                      const valid = validateStep(s).valid;
-                      return (
-                        <div key={s} className="flex items-center gap-1.5 font-bold">
-                          {valid ? (
-                            <span className="text-emerald-500 flex items-center gap-1">
-                              <CheckCircle size={14} /> Step {s} OK
-                            </span>
+                <div className="p-6 sm:p-8 space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Student Details Card */}
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+                      <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+                        <div className="h-12 w-12 rounded-xl bg-white border border-cyan-300 overflow-hidden flex items-center justify-center font-bold text-lg text-cyan-600 shrink-0 shadow-sm">
+                          {form.avatarUrl ? (
+                            <img src={form.avatarUrl} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => jumpToStep(s)}
-                              className="text-amber-500 hover:text-amber-400 flex items-center gap-1 underline"
-                            >
-                              <AlertTriangle size={14} /> Fix Step {s}
-                            </button>
+                            form.name?.charAt(0) || 'S'
                           )}
                         </div>
-                      );
-                    })}
+                        <div>
+                          <h4 className="font-black text-slate-900">{form.name || 'Student Name'}</h4>
+                          <p className="text-xs text-slate-500">
+                            {classes.find((c) => c.id === form.classId)?.name || 'Class'} — Section {currentSectionObj?.name || 'A'} | Roll #{form.rollNo || '1'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Gender / Blood:</span>
+                          <span className="font-bold text-slate-900">{form.gender} ({form.bloodGroup})</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Date of Birth / Age:</span>
+                          <span className="font-bold text-slate-900">{form.dateOfBirth || 'Not set'} ({calculatedAge || '-'})</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">B-Form / CNIC:</span>
+                          <span className="font-mono font-bold text-slate-900">{form.bFormNumber || 'Not provided'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Emergency Phone:</span>
+                          <span className="font-mono font-bold text-slate-900">{form.emergencyContact || form.phone || 'Not set'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Parents & Facilities Card */}
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+                      <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-200 pb-2">
+                        Parents & Facilities
+                      </h4>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Father / Status:</span>
+                          <span className="font-bold text-slate-900">{form.fatherName || '-'} ({form.fatherStatus})</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Father Mobile:</span>
+                          <span className="font-mono font-bold text-slate-900">{form.fatherMobile1 || '-'}</span>
+                        </div>
+                        {form.fatherStatus === 'DECEASED' && (
+                          <>
+                            <div>
+                              <span className="text-slate-500 block text-[10px] font-bold">Guardian Name:</span>
+                              <span className="font-bold text-amber-700">{form.guardianName} ({form.guardianRelation})</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 block text-[10px] font-bold">Guardian Mobile:</span>
+                              <span className="font-mono font-bold text-amber-700">{form.guardianMobile}</span>
+                            </div>
+                          </>
+                        )}
+                        <div>
+                          <span className="text-slate-500 block text-[10px] font-bold">Transport / Hostel:</span>
+                          <span className="font-bold text-slate-900">
+                            {form.transportRequired ? '🚌 Bus Required' : 'No Transport'} / {form.hostelRequired ? '🏠 Hostel' : 'Day Scholar'}
+                          </span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-slate-500 block text-[10px] font-bold">Residential Address:</span>
+                          <span className="font-medium text-slate-800 line-clamp-1">{form.currentAddress || 'Not set'}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-muted-foreground text-[11px]">Ready for official registration</span>
+
+                  {/* Step Validation Status Bar */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {[1, 2, 3, 4].map((s) => {
+                        const valid = validateStep(s).valid;
+                        return (
+                          <div key={s} className="flex items-center gap-1.5 font-bold">
+                            {valid ? (
+                              <span className="text-emerald-600 flex items-center gap-1">
+                                <CheckCircle size={14} /> Step {s} Complete
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => jumpToStep(s)}
+                                className="text-amber-600 hover:text-amber-700 flex items-center gap-1 underline"
+                              >
+                                <AlertTriangle size={14} /> Complete Step {s}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <span className="text-slate-500 text-[11px] font-medium">Ready for official school database enrollment</span>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* ── STEPPER CONTROLS & SUBMIT BUTTONS ── */}
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-border">
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200">
             <div>
               {currentStep > 1 && (
                 <button
                   type="button"
                   onClick={handlePrevStep}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm"
                 >
                   <ArrowLeft size={16} /> Previous Step
                 </button>
@@ -3231,132 +3273,155 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
       {/* ── CELEBRATORY ADMISSION SUCCESS & CREDENTIALS MODAL ── */}
       {admittedModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-2xl rounded-3xl border-2 border-emerald-500/50 bg-gradient-to-br from-card via-card to-emerald-950/20 shadow-2xl p-6 sm:p-8 space-y-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-2xl rounded-3xl border border-cyan-200 bg-white shadow-2xl overflow-hidden">
             
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
+            {/* Top Cyan Banner matching the reference image */}
+            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0">
-                  <Sparkles size={28} />
+                <div className="h-9 w-9 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 shadow-inner">
+                  <CheckCircle2 size={22} className="text-white" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Admission Successful 🎉
-                    </span>
-                    <span className="text-xs text-muted-foreground font-semibold">Student Registered</span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-foreground">
-                    {admittedModal.student.name}
+                  <h2 className="text-lg font-bold text-white tracking-tight">
+                    Student Admission Successful
                   </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Official registration complete. Student login credentials generated below.
+                  <p className="text-xs text-cyan-50 font-medium">
+                    Official student profile registered & verified
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setAdmittedModal(null)}
-                className="rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                className="rounded-full p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Student ID & Academic Info */}
-            <div className="rounded-2xl border border-border bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Admission No:</span>
-                <span className="font-mono font-bold text-cyan-400">{admittedModal.student.admissionNo || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Class & Sec:</span>
-                <span className="font-bold text-foreground">
-                  {admittedModal.student.section?.className || ''} {admittedModal.student.section?.name ? `(${admittedModal.student.section.name})` : ''}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Roll Number:</span>
-                <span className="font-mono font-bold text-foreground">#{admittedModal.student.rollNo || '1'}</span>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Academic Session:</span>
-                <span className="font-bold text-foreground">{admittedModal.student.session || currentSession}</span>
-              </div>
-            </div>
-
-            {/* Credentials Box */}
-            <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/30 via-slate-900/60 to-emerald-950/20 p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                  <Key size={15} /> Student Portal Online Login Credentials
-                </h3>
-                <span className="text-[10px] font-mono text-muted-foreground">Multi-Identifier Login Ready</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-xl border border-border/80 bg-card/80 p-3">
-                  <span className="text-[10px] font-black uppercase text-muted-foreground block mb-0.5">🎓 Friendly Login ID:</span>
-                  <span className="font-mono font-bold text-sm text-foreground break-all">{admittedModal.creds.loginId}</span>
+            <div className="p-6 sm:p-8 space-y-6">
+              {/* Student Identity Card */}
+              <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+                <div className="h-14 w-14 rounded-2xl bg-cyan-50 border-2 border-cyan-300 text-cyan-700 flex items-center justify-center shadow-sm shrink-0 font-black text-xl">
+                  {admittedModal.student.avatarUrl ? (
+                    <img src={admittedModal.student.avatarUrl} alt="" className="h-full w-full object-cover rounded-2xl" />
+                  ) : (
+                    admittedModal.student.name?.charAt(0) || 'S'
+                  )}
                 </div>
-                <div className="rounded-xl border border-border/80 bg-card/80 p-3">
-                  <span className="text-[10px] font-black uppercase text-muted-foreground block mb-0.5">📧 Portal Email:</span>
-                  <span className="font-mono font-bold text-xs text-foreground break-all">
-                    {admittedModal.creds.fullEmail || admittedModal.student.email || 'N/A'}
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      Enrolled & Active
+                    </span>
+                    <span className="text-xs text-slate-500 font-semibold">Session {admittedModal.student.session || currentSession}</span>
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">
+                    {admittedModal.student.name}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Admission Number: <span className="font-mono font-bold text-cyan-600">{admittedModal.student.admissionNo || 'N/A'}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Student ID & Academic Info */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500 block">Admission No:</span>
+                  <span className="font-mono font-bold text-cyan-700">{admittedModal.student.admissionNo || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500 block">Class & Sec:</span>
+                  <span className="font-bold text-slate-900">
+                    {admittedModal.student.section?.className || ''} {admittedModal.student.section?.name ? `(${admittedModal.student.section.name})` : ''}
                   </span>
                 </div>
-                <div className="rounded-xl border border-amber-500/40 bg-card/80 p-3">
-                  <span className="text-[10px] font-black uppercase text-amber-400 block mb-0.5">🔑 8-Digit Password:</span>
-                  <span className="font-mono font-black text-sm text-amber-400 tracking-wider">{admittedModal.creds.password}</span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500 block">Roll Number:</span>
+                  <span className="font-mono font-bold text-slate-900">#{admittedModal.student.rollNo || '1'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500 block">Academic Session:</span>
+                  <span className="font-bold text-slate-900">{admittedModal.student.session || currentSession}</span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Student or parent can log in at <span className="font-mono text-cyan-400">{window.location.origin}/{user?.schoolSlug || ''}/login</span> using either their Friendly Login ID, Admission Number, or Email with this password.
-              </p>
-            </div>
+              {/* Credentials Box (Light Theme) */}
+              <div className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-cyan-900 flex items-center gap-1.5">
+                    <Key size={15} className="text-cyan-600" /> Student Online Portal Login Credentials
+                  </h3>
+                  <span className="text-[10px] font-bold text-cyan-700 bg-white px-2 py-0.5 rounded-full border border-cyan-200">
+                    Multi-Identifier Ready
+                  </span>
+                </div>
 
-            {/* Quick Actions Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => copyWhatsAppCredentials(admittedModal.student, admittedModal.creds)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-emerald-600/25 hover:brightness-110 transition"
-              >
-                <Share2 size={16} /> Copy WhatsApp Message for Parent
-              </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-cyan-200 bg-white p-3 shadow-sm">
+                    <span className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">🎓 Friendly Login ID:</span>
+                    <span className="font-mono font-bold text-sm text-cyan-950 break-all">{admittedModal.creds.loginId}</span>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <span className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">📧 Portal Email:</span>
+                    <span className="font-mono font-bold text-xs text-slate-900 break-all">
+                      {admittedModal.creds.fullEmail || admittedModal.student.email || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 shadow-sm">
+                    <span className="text-[10px] font-bold uppercase text-amber-800 block mb-0.5">🔑 8-Digit Password:</span>
+                    <span className="font-mono font-black text-sm text-amber-900 tracking-wider">{admittedModal.creds.password}</span>
+                  </div>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => printAdmissionSlip(admittedModal.student, admittedModal.creds)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-xs font-black text-cyan-400 hover:bg-cyan-500/20 transition"
-              >
-                <Printer size={16} /> Print Official Admission Slip
-              </button>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Student or parent can log in at <span className="font-mono font-bold text-cyan-700">{window.location.origin}/{user?.schoolSlug || ''}/login</span> using their Friendly Login ID, Admission Number, or Email with this password.
+                </p>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  const s = admittedModal.student;
-                  setAdmittedModal(null);
-                  setIdCardStudent(s);
-                }}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-xs font-bold text-foreground hover:bg-muted transition"
-              >
-                <FileText size={16} /> View & Print Student ID Card
-              </button>
+              {/* Quick Actions Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => copyWhatsAppCredentials(admittedModal.student, admittedModal.creds)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-emerald-600/25 hover:brightness-110 transition"
+                >
+                  <Share2 size={16} /> Copy WhatsApp Message for Parent
+                </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setAdmittedModal(null);
-                  openCreate();
-                }}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-500/50 bg-gradient-to-r from-cyan-600/20 to-sky-600/20 px-4 py-3 text-xs font-black text-cyan-400 hover:bg-cyan-600/30 transition"
-              >
-                <Plus size={16} /> Admit Another Student
-              </button>
+                <button
+                  type="button"
+                  onClick={() => printAdmissionSlip(admittedModal.student, admittedModal.creds)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-400 bg-cyan-50 px-4 py-3 text-xs font-black text-cyan-800 hover:bg-cyan-100 transition shadow-sm"
+                >
+                  <Printer size={16} /> Print Official Admission Slip
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const s = admittedModal.student;
+                    setAdmittedModal(null);
+                    setIdCardStudent(s);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-800 hover:bg-slate-50 transition shadow-sm"
+                >
+                  <FileText size={16} /> View & Print Student ID Card
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdmittedModal(null);
+                    openCreate();
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300 bg-gradient-to-r from-cyan-50 to-sky-50 px-4 py-3 text-xs font-black text-cyan-800 hover:bg-cyan-100 transition shadow-sm"
+                >
+                  <Plus size={16} /> Admit Another Student
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -3368,9 +3433,9 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+      <span className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
         {label}
-        {required ? ' *' : ''}
+        {required ? <span className="text-rose-500 font-black ml-1">*</span> : ''}
       </span>
       {children}
     </label>
