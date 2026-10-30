@@ -62,17 +62,17 @@ export class PeopleService {
     if (rawEmail) {
       if (rawEmail.includes('@')) {
         email = rawEmail;
-        isCustomEmail = !rawEmail.endsWith('@school.edu');
+        isCustomEmail = !rawEmail.endsWith('@school.edu.pk');
       } else {
         customShortId = rawEmail.replace(/[^a-z0-9_-]/g, '');
-        email = `${customShortId}@school.edu`;
+        email = `${customShortId}@school.edu.pk`;
       }
     } else {
-      email = `${firstName}${regDigits}@school.edu`;
+      email = `${firstName}${regDigits}@school.edu.pk`;
       let userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
       let counter = 1;
       while (userExists) {
-        email = `${firstName}${regDigits}_${counter}@school.edu`;
+        email = `${firstName}${regDigits}_${counter}@school.edu.pk`;
         userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
         counter++;
       }
@@ -397,7 +397,7 @@ export class PeopleService {
       ? String(data.password).trim()
       : '12345678';
     const passwordHash = await bcrypt.hash(generatedPassword, 10);
-    const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email.`);
     try {
@@ -406,7 +406,7 @@ export class PeopleService {
         const createdStudent = await tx.student.create({ data: { admissionNo, name: data.name, avatarUrl: data.avatarUrl || null, rollNo, email, phone: data.phone || data.studentMobile || null, address: data.address || data.currentAddress || null, gender: data.gender || 'MALE', dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null, bloodGroup: data.bloodGroup || null, religion: data.religion || null, sectionId: data.sectionId || null, status: data.status || 'ACTIVE', session: data.session || null, bFormNumber: data.bFormNumber || null, currentAddress: data.currentAddress || null, permanentAddress: data.permanentAddress || null, emergencyContact: data.emergencyContact || null, previousSchool: data.previousSchool || null, previousClass: data.previousClass || null, leavingCertificateUrl: data.leavingCertificateUrl || null, admissionType: data.admissionType || 'NEW', previousAcademicRecord: data.previousAcademicRecord || null, medicalNotes: data.medicalNotes || null, specialRequirements: data.specialRequirements || null, transportRequired: data.transportRequired === true || data.transportRequired === 'true', hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true', remarks: data.remarks || null, schoolId } });
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
-          const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
+          const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu.pk`;
           const rawParentPass = data.parentPassword && data.parentPassword.length >= 6 ? data.parentPassword : '12345678';
           const parentPasswordHash = await bcrypt.hash(rawParentPass, 10);
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
@@ -468,7 +468,7 @@ export class PeopleService {
     const student = await this.prisma.student.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!student) throw new NotFoundException('Student not found');
     const passwordHash = await bcrypt.hash(password.trim(), 10);
-    const email = student.email || `${student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    const email = student.email || `${student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
     const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
     if (user) {
       await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
