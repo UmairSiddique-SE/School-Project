@@ -183,7 +183,7 @@ export class ExamService {
     });
   }
 
-  async recordResults(schoolId: string, data: any, teacherEmail?: string) {
+  async recordResults(schoolId: string, data: any, _teacherEmail?: string) {
     if (!data.examId || !Array.isArray(data.results) || data.results.length === 0) {
       throw new BadRequestException('Exam and at least one result are required');
     }
