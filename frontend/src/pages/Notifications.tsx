@@ -154,11 +154,11 @@ export default function Notifications() {
                 {unreadCount} Unread Alert{unreadCount > 1 ? 's' : ''}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">• All caught up</span>
+              <span className="text-xs text-slate-500 dark:text-muted-foreground">• All caught up</span>
             )}
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">Notifications & Alerts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Notifications & Alerts</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
             Real-time administrative broadcasts, academic updates, fee receipts, and security dispatches.
           </p>
         </div>
@@ -167,7 +167,7 @@ export default function Notifications() {
           <button
             onClick={() => void loadNotifications(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl border border-border bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
             title="Refresh Feed"
           >
             <RefreshCw size={16} className={refreshing ? 'animate-spin text-primary' : ''} />
@@ -191,7 +191,7 @@ export default function Notifications() {
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
               activeCategory === 'all'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             All ({notifications.length})
@@ -201,7 +201,7 @@ export default function Notifications() {
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
               activeCategory === 'unread'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Unread ({unreadCount})
@@ -211,7 +211,7 @@ export default function Notifications() {
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
               activeCategory === 'FINANCE'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Fees & Finance
@@ -221,7 +221,7 @@ export default function Notifications() {
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
               activeCategory === 'ACADEMIC'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Academics
@@ -231,7 +231,7 @@ export default function Notifications() {
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
               activeCategory === 'SYSTEM'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             System
@@ -239,12 +239,12 @@ export default function Notifications() {
         </div>
 
         <div className="relative sm:w-64">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search alerts..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
           />
         </div>
       </div>
@@ -253,13 +253,13 @@ export default function Notifications() {
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Loader2 size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Updating notification stream...</p>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Updating notification stream...</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 p-12 text-center">
-          <Bell className="mx-auto mb-3 text-muted-foreground/30" size={44} />
-          <h2 className="text-base font-bold text-foreground">No alerts to display</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <Bell className="mx-auto mb-3 text-slate-500 dark:text-muted-foreground/30" size={44} />
+          <h2 className="text-base font-bold text-slate-900 dark:text-foreground">No alerts to display</h2>
+          <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
             {activeCategory === 'unread'
               ? 'You have read all pending notifications.'
               : 'New institutional alerts will appear here as they arrive.'}
@@ -296,7 +296,7 @@ export default function Notifications() {
                         <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
                       )}
                     </div>
-                    <span className="text-[11px] text-muted-foreground font-mono">
+                    <span className="text-[11px] text-slate-500 dark:text-muted-foreground font-mono">
                       {formatTime(item.createdAt)}
                     </span>
                   </div>
@@ -309,7 +309,7 @@ export default function Notifications() {
                     {item.title}
                   </h3>
 
-                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground leading-relaxed">
                     {item.message}
                   </p>
 

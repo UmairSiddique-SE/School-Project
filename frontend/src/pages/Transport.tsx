@@ -295,10 +295,10 @@ export default function Transport() {
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <ShieldCheck size={12} /> Campus Transit Network
             </span>
-            <span className="text-xs text-muted-foreground">• Fleet & Logistics</span>
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">• Fleet & Logistics</span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight">Transport Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1">
             Manage institutional transit routes, bus fleets, student pick/drop stops, and fee collections.
           </p>
         </div>
@@ -307,7 +307,7 @@ export default function Transport() {
           <button
             onClick={load}
             disabled={loading}
-            className="p-2.5 rounded-xl border border-border bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
             title="Refresh Fleet"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin text-primary' : ''} />
@@ -316,7 +316,7 @@ export default function Transport() {
           {assignments.length > 0 && (
             <button
               onClick={exportCsv}
-              className="px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-xs font-bold flex items-center gap-2 hover:bg-accent transition-all active:scale-95"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-foreground text-xs font-bold flex items-center gap-2 hover:bg-accent transition-all active:scale-95"
             >
               <Download size={14} /> Export Manifest
             </button>
@@ -403,7 +403,7 @@ export default function Transport() {
             gradient: 'from-violet-500/[0.08] via-card/70 to-card',
             border: 'border-violet-500/25 hover:border-violet-500/50',
             glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
-            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
             labelColor: 'text-violet-600 dark:text-violet-400',
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
@@ -427,7 +427,7 @@ export default function Transport() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -444,7 +444,7 @@ export default function Transport() {
           <button
             onClick={() => setTab('overview')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              tab === 'overview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              tab === 'overview' ? 'bg-card text-foreground shadow-sm' : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Overview
@@ -452,7 +452,7 @@ export default function Transport() {
           <button
             onClick={() => setTab('routes')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              tab === 'routes' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              tab === 'routes' ? 'bg-card text-foreground shadow-sm' : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Routes ({routes.length})
@@ -460,7 +460,7 @@ export default function Transport() {
           <button
             onClick={() => setTab('vehicles')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              tab === 'vehicles' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              tab === 'vehicles' ? 'bg-card text-foreground shadow-sm' : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Fleet ({vehicles.length})
@@ -470,7 +470,7 @@ export default function Transport() {
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
               tab === 'assignments'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             Student Riders ({assignments.length})
@@ -479,13 +479,13 @@ export default function Transport() {
 
         {tab !== 'overview' && (
           <div className="relative sm:w-72">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${tab}...`}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
         )}
@@ -495,21 +495,21 @@ export default function Transport() {
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Loader2 size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Synchronizing transport database...</p>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Synchronizing transport database...</p>
         </div>
       ) : tab === 'overview' ? (
         /* ─── Tab: Overview ─────────────────────────────────────────────────── */
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm hover:border-amber-500/40 transition-all">
+          <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm hover:border-amber-500/40 transition-all">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3">
               <RouteIcon size={20} />
             </div>
             <h3 className="font-bold text-foreground text-base">Configured Routes</h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
               {routes.length} active routes established across city zones.
             </p>
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Manage route details</span>
+              <span className="text-slate-500 dark:text-muted-foreground">Manage route details</span>
               <button
                 onClick={() => setTab('routes')}
                 className="font-bold text-primary flex items-center gap-1 hover:underline"
@@ -519,16 +519,16 @@ export default function Transport() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm hover:border-sky-500/40 transition-all">
+          <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm hover:border-sky-500/40 transition-all">
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center mb-3">
               <Bus size={20} />
             </div>
             <h3 className="font-bold text-foreground text-base">Vehicle Fleet</h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
               {activeVehicles} road-ready buses and coasters with {totalCapacity} seats.
             </p>
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Inspect vehicle status</span>
+              <span className="text-slate-500 dark:text-muted-foreground">Inspect vehicle status</span>
               <button
                 onClick={() => setTab('vehicles')}
                 className="font-bold text-primary flex items-center gap-1 hover:underline"
@@ -538,16 +538,16 @@ export default function Transport() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm hover:border-emerald-500/40 transition-all">
+          <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm hover:border-emerald-500/40 transition-all">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
               <Users size={20} />
             </div>
             <h3 className="font-bold text-foreground text-base">Student Commuters</h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
               {assignments.length} enrolled students assigned to morning & afternoon transit.
             </p>
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Check pickup points</span>
+              <span className="text-slate-500 dark:text-muted-foreground">Check pickup points</span>
               <button
                 onClick={() => setTab('assignments')}
                 className="font-bold text-primary flex items-center gap-1 hover:underline"
@@ -562,9 +562,9 @@ export default function Transport() {
         <div className="space-y-4">
           {filteredRoutes.length === 0 ? (
             <div className="py-20 rounded-2xl border border-dashed border-border bg-card/40 text-center p-8">
-              <RouteIcon size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-              <h3 className="font-bold text-foreground">No Routes Found</h3>
-              <p className="text-xs text-muted-foreground mt-1">Add your school's transit corridors to begin.</p>
+              <RouteIcon size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+              <h3 className="font-bold text-slate-900 dark:text-foreground">No Routes Found</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Add your school's transit corridors to begin.</p>
               {canManage && (
                 <button
                   onClick={() => setModal('route')}
@@ -592,7 +592,7 @@ export default function Transport() {
                       {canManage && (
                         <button
                           onClick={() => remove('route', r.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                          className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                           title="Delete route"
                         >
                           <Trash2 size={15} />
@@ -600,12 +600,12 @@ export default function Transport() {
                       )}
                     </div>
 
-                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mt-2 flex items-center gap-1">
                       <MapPin size={13} className="text-amber-500 shrink-0" />
                       <span>{r.startPoint || 'Campus'}</span> → <span>{r.endPoint || 'Terminal'}</span>
                     </p>
 
-                    {r.description && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{r.description}</p>}
+                    {r.description && <p className="text-xs text-slate-500 dark:text-muted-foreground mt-2 line-clamp-2">{r.description}</p>}
 
                     {Array.isArray(r.stops) && r.stops.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-1">
@@ -622,8 +622,8 @@ export default function Transport() {
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold">
-                    <span className="text-muted-foreground">{r.distance ?? 0} km • {r.estimatedTime || '45 mins'}</span>
-                    <span className="font-bold text-foreground">{money(r.fee)}/mo</span>
+                    <span className="text-slate-500 dark:text-muted-foreground">{r.distance ?? 0} km • {r.estimatedTime || '45 mins'}</span>
+                    <span className="font-bold text-slate-900 dark:text-foreground">{money(r.fee)}/mo</span>
                   </div>
                 </div>
               ))}
@@ -635,9 +635,9 @@ export default function Transport() {
         <div className="space-y-4">
           {filteredVehicles.length === 0 ? (
             <div className="py-20 rounded-2xl border border-dashed border-border bg-card/40 text-center p-8">
-              <Bus size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-              <h3 className="font-bold text-foreground">No Vehicles Registered</h3>
-              <p className="text-xs text-muted-foreground mt-1">Register school buses, vans, and drivers.</p>
+              <Bus size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+              <h3 className="font-bold text-slate-900 dark:text-foreground">No Vehicles Registered</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Register school buses, vans, and drivers.</p>
               {canManage && (
                 <button
                   onClick={() => setModal('vehicle')}
@@ -664,7 +664,7 @@ export default function Transport() {
                           <span className="font-mono text-xs font-bold text-foreground bg-accent/60 px-2 py-0.5 rounded-md">
                             {v.vehicleNo}
                           </span>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
                             {v.model || v.type || 'Standard Bus'} • {v.fuelType || 'Diesel'}
                           </p>
                         </div>
@@ -672,7 +672,7 @@ export default function Transport() {
                       {canManage && (
                         <button
                           onClick={() => remove('vehicle', v.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                          className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -681,21 +681,21 @@ export default function Transport() {
 
                     <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                       <div className="p-2.5 rounded-xl bg-background border border-border">
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase">Capacity</span>
-                        <p className="font-bold text-foreground">{v.capacity || 30} Seats</p>
+                        <span className="text-[10px] text-slate-500 dark:text-muted-foreground font-bold uppercase">Capacity</span>
+                        <p className="font-bold text-slate-900 dark:text-foreground">{v.capacity || 30} Seats</p>
                       </div>
                       <div className="p-2.5 rounded-xl bg-background border border-border">
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase">Assigned Route</span>
+                        <span className="text-[10px] text-slate-500 dark:text-muted-foreground font-bold uppercase">Assigned Route</span>
                         <p className="font-bold text-foreground truncate">{v.route?.name || 'Unassigned'}</p>
                       </div>
                     </div>
 
                     <div className="mt-3 p-2.5 rounded-xl bg-accent/30 text-xs flex items-center justify-between">
-                      <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-slate-500 dark:text-muted-foreground flex items-center gap-1.5">
                         <UserCheck size={14} className="text-primary" /> {v.driverName || 'No Driver Assigned'}
                       </span>
                       {v.driverPhone && (
-                        <span className="font-mono text-muted-foreground text-[11px]">{v.driverPhone}</span>
+                        <span className="font-mono text-slate-500 dark:text-muted-foreground text-[11px]">{v.driverPhone}</span>
                       )}
                     </div>
                   </div>
@@ -710,7 +710,7 @@ export default function Transport() {
                     >
                       {v.status || 'Active in Service'}
                     </span>
-                    <span className="text-muted-foreground">Model {v.year || 2024}</span>
+                    <span className="text-slate-500 dark:text-muted-foreground">Model {v.year || 2024}</span>
                   </div>
                 </div>
               ))}
@@ -722,9 +722,9 @@ export default function Transport() {
         <div className="space-y-4">
           {filteredAssignments.length === 0 ? (
             <div className="py-20 rounded-2xl border border-dashed border-border bg-card/40 text-center p-8">
-              <Users size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-              <h3 className="font-bold text-foreground">No Student Assignments</h3>
-              <p className="text-xs text-muted-foreground mt-1">Assign registered students to transport routes.</p>
+              <Users size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+              <h3 className="font-bold text-slate-900 dark:text-foreground">No Student Assignments</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Assign registered students to transport routes.</p>
               {canManage && (
                 <button
                   onClick={() => setModal('assignment')}
@@ -735,22 +735,22 @@ export default function Transport() {
               )}
             </div>
           ) : (
-            <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+            <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="bg-accent/40 border-b border-border">
-                      <th className="px-5 py-3.5 text-[10px] font-black uppercase text-muted-foreground">Student</th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground">Route</th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground">Vehicle</th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground">
+                      <th className="px-5 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">Student</th>
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">Route</th>
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">Vehicle</th>
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                         Pickup / Drop Point
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground">Timing</th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">Timing</th>
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground text-right">
                         Monthly Fee
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground text-right">
                         Actions
                       </th>
                     </tr>
@@ -759,28 +759,28 @@ export default function Transport() {
                     {filteredAssignments.map((a) => (
                       <tr key={a.id} className="hover:bg-accent/30 transition-colors">
                         <td className="px-5 py-3.5">
-                          <p className="font-bold text-foreground">{a.student?.name || a.studentId}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">
+                          <p className="font-bold text-slate-900 dark:text-foreground">{a.student?.name || a.studentId}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-muted-foreground font-mono">
                             {a.student?.admissionNo || 'Student'}
                           </p>
                         </td>
-                        <td className="px-4 py-3.5 font-semibold text-foreground">{a.route?.name || 'Assigned Route'}</td>
-                        <td className="px-4 py-3.5 font-mono text-muted-foreground">{a.vehicle?.vehicleNo || 'Bus'}</td>
+                        <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-foreground">{a.route?.name || 'Assigned Route'}</td>
+                        <td className="px-4 py-3.5 font-mono text-slate-500 dark:text-muted-foreground">{a.vehicle?.vehicleNo || 'Bus'}</td>
                         <td className="px-4 py-3.5">
-                          <p className="text-foreground">{a.pickupPoint || 'Campus'}</p>
-                          <p className="text-[10px] text-muted-foreground">Drop: {a.dropPoint || 'Home'}</p>
+                          <p className="text-slate-900 dark:text-foreground">{a.pickupPoint || 'Campus'}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-muted-foreground">Drop: {a.dropPoint || 'Home'}</p>
                         </td>
-                        <td className="px-4 py-3.5 text-muted-foreground font-mono">
+                        <td className="px-4 py-3.5 text-slate-500 dark:text-muted-foreground font-mono">
                           {a.pickupTime || '07:15 AM'} - {a.dropTime || '02:30 PM'}
                         </td>
-                        <td className="px-4 py-3.5 text-right font-bold text-foreground">
+                        <td className="px-4 py-3.5 text-right font-bold text-slate-900 dark:text-foreground">
                           {money(a.monthlyFee)}
                         </td>
                         <td className="px-4 py-3.5 text-right">
                           {canManage && (
                             <button
                               onClick={() => remove('assignment', a.id)}
-                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                             >
                               <Trash2 size={15} />
                             </button>
@@ -812,7 +812,7 @@ export default function Transport() {
               value={routeForm.name}
               onChange={(e) => setRouteForm({ ...routeForm, name: e.target.value })}
               placeholder="e.g. Blue Line (Gulberg to Campus)"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -823,7 +823,7 @@ export default function Transport() {
                 value={routeForm.startPoint}
                 onChange={(e) => setRouteForm({ ...routeForm, startPoint: e.target.value })}
                 placeholder="e.g. Gulberg Main Market"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -832,7 +832,7 @@ export default function Transport() {
                 value={routeForm.endPoint}
                 onChange={(e) => setRouteForm({ ...routeForm, endPoint: e.target.value })}
                 placeholder="e.g. School Main Gate"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -845,7 +845,7 @@ export default function Transport() {
                 value={routeForm.distance}
                 onChange={(e) => setRouteForm({ ...routeForm, distance: e.target.value })}
                 placeholder="15"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -854,7 +854,7 @@ export default function Transport() {
                 value={routeForm.estimatedTime}
                 onChange={(e) => setRouteForm({ ...routeForm, estimatedTime: e.target.value })}
                 placeholder="40 mins"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -864,7 +864,7 @@ export default function Transport() {
                 value={routeForm.fee}
                 onChange={(e) => setRouteForm({ ...routeForm, fee: e.target.value })}
                 placeholder="3500"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -875,7 +875,7 @@ export default function Transport() {
               value={routeForm.stops}
               onChange={(e) => setRouteForm({ ...routeForm, stops: e.target.value })}
               placeholder="Liberty Roundabout, Jail Road, Canal Bank..."
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -886,7 +886,7 @@ export default function Transport() {
               value={routeForm.description}
               onChange={(e) => setRouteForm({ ...routeForm, description: e.target.value })}
               placeholder="Additional route notes..."
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -926,7 +926,7 @@ export default function Transport() {
                 value={vehicleForm.vehicleNo}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleNo: e.target.value })}
                 placeholder="e.g. LES-1234"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -934,7 +934,7 @@ export default function Transport() {
               <select
                 value={vehicleForm.type}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, type: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="BUS">School Bus</option>
                 <option value="COASTER">Coaster</option>
@@ -952,7 +952,7 @@ export default function Transport() {
                 required
                 value={vehicleForm.capacity}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, capacity: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -961,7 +961,7 @@ export default function Transport() {
                 value={vehicleForm.model}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, model: e.target.value })}
                 placeholder="Toyota Coaster"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -969,7 +969,7 @@ export default function Transport() {
               <select
                 value={vehicleForm.fuelType}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, fuelType: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="DIESEL">Diesel</option>
                 <option value="PETROL">Petrol</option>
@@ -984,7 +984,7 @@ export default function Transport() {
             <select
               value={vehicleForm.routeId}
               onChange={(e) => setVehicleForm({ ...vehicleForm, routeId: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             >
               <option value="">-- No Route Assigned --</option>
               {routes.map((r) => (
@@ -1002,7 +1002,7 @@ export default function Transport() {
                 value={vehicleForm.driverName}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, driverName: e.target.value })}
                 placeholder="Driver full name"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -1011,7 +1011,7 @@ export default function Transport() {
                 value={vehicleForm.driverPhone}
                 onChange={(e) => setVehicleForm({ ...vehicleForm, driverPhone: e.target.value })}
                 placeholder="0300-1234567"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -1050,7 +1050,7 @@ export default function Transport() {
               required
               value={assignmentForm.studentId}
               onChange={(e) => setAssignmentForm({ ...assignmentForm, studentId: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             >
               <option value="">-- Choose student --</option>
               {students.map((s) => (
@@ -1075,7 +1075,7 @@ export default function Transport() {
                     monthlyFee: r?.fee ? String(r.fee) : assignmentForm.monthlyFee,
                   });
                 }}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="">-- Choose route --</option>
                 {routes.map((r) => (
@@ -1091,7 +1091,7 @@ export default function Transport() {
                 required
                 value={assignmentForm.vehicleId}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, vehicleId: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="">-- Choose vehicle --</option>
                 {vehicles.map((v) => (
@@ -1111,7 +1111,7 @@ export default function Transport() {
                 value={assignmentForm.pickupPoint}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, pickupPoint: e.target.value })}
                 placeholder="e.g. Model Town Stop #4"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -1120,7 +1120,7 @@ export default function Transport() {
                 value={assignmentForm.dropPoint}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, dropPoint: e.target.value })}
                 placeholder="e.g. Main Gate"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -1132,7 +1132,7 @@ export default function Transport() {
                 type="time"
                 value={assignmentForm.pickupTime}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, pickupTime: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -1141,7 +1141,7 @@ export default function Transport() {
                 type="time"
                 value={assignmentForm.dropTime}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, dropTime: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -1151,7 +1151,7 @@ export default function Transport() {
                 value={assignmentForm.monthlyFee}
                 onChange={(e) => setAssignmentForm({ ...assignmentForm, monthlyFee: e.target.value })}
                 placeholder="3500"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>

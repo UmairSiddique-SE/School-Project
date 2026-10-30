@@ -100,7 +100,7 @@ const formatDate = (value?: string) => {
 };
 
 const EmptyState = ({ label }: { label: string }) => (
-  <div className="flex min-h-[130px] items-center justify-center rounded-2xl border border-dashed border-border bg-background/60 px-5 text-center">
+  <div className="flex min-h-[130px] items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-border bg-slate-50/70 dark:bg-background/60 px-5 text-center">
     <div>
       <CircleDashed className="mx-auto mb-2 text-muted-foreground/60" size={22} />
       <p className="text-xs font-semibold text-muted-foreground">{label}</p>
@@ -122,12 +122,12 @@ const SectionTitle = ({
 }) => (
   <div className="mb-4 flex items-start justify-between gap-3">
     <div className="flex items-center gap-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
         <Icon size={16} />
       </span>
       <div>
-        <h2 className="text-base font-bold text-foreground">{title}</h2>
-        <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+        <h2 className="text-base font-bold text-slate-800 dark:text-foreground">{title}</h2>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-muted-foreground">{subtitle}</p>
       </div>
     </div>
     {action ? <span className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">{action}</span> : null}
@@ -210,7 +210,7 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-screen-2xl space-y-7 pb-10">
-      <motion.section initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <motion.section initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm sm:p-8">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div>
             <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -225,19 +225,19 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2">
             {isTeacher ? (
               <>
-                <button onClick={() => navigate(`${basePath}/attendance`)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm"><ClipboardCheck size={15} /> Mark Attendance</button>
-                <button onClick={() => navigate(`${basePath}/homework`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><FileText size={15} /> Homework</button>
-                <button onClick={() => navigate(`${basePath}/exams`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><GraduationCap size={15} /> Exams & Marks</button>
-                <button onClick={() => navigate(`${basePath}/timetable`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><CalendarDays size={15} /> Timetable</button>
+                <button onClick={() => navigate(`${basePath}/attendance`)} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-90 transition-opacity"><ClipboardCheck size={15} /> Mark Attendance</button>
+                <button onClick={() => navigate(`${basePath}/homework`)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-foreground hover:bg-slate-50 transition-colors"><FileText size={15} /> Homework</button>
+                <button onClick={() => navigate(`${basePath}/exams`)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-foreground hover:bg-slate-50 transition-colors"><GraduationCap size={15} /> Exams & Marks</button>
+                <button onClick={() => navigate(`${basePath}/timetable`)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-foreground hover:bg-slate-50 transition-colors"><CalendarDays size={15} /> Timetable</button>
               </>
             ) : (
               <>
-                <button onClick={() => navigate(`${basePath}/students`)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm"><UserPlus size={15} /> Add Student</button>
-                <button onClick={() => navigate(`${basePath}/finance`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Receipt size={15} /> Fees</button>
-                <button onClick={() => navigate(`${basePath}/notices`)} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground"><Megaphone size={15} /> Notice Board</button>
+                <button onClick={() => navigate(`${basePath}/students`)} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-90 transition-opacity"><UserPlus size={15} /> Add Student</button>
+                <button onClick={() => navigate(`${basePath}/finance`)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-foreground hover:bg-slate-50 transition-colors"><Receipt size={15} /> Fees</button>
+                <button onClick={() => navigate(`${basePath}/notices`)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-foreground hover:bg-slate-50 transition-colors"><Megaphone size={15} /> Notice Board</button>
               </>
             )}
-            <button onClick={() => void loadDashboard()} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-muted-foreground" title="Refresh live database data"><RefreshCw size={15} className={loading ? 'animate-spin' : ''} /></button>
+            <button onClick={() => void loadDashboard()} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-3 py-2.5 text-xs font-bold text-slate-500 dark:text-muted-foreground hover:bg-slate-50 transition-colors" title="Refresh live database data"><RefreshCw size={15} className={loading ? 'animate-spin' : ''} /></button>
           </div>
         </div>
         {error ? <div className="mt-5 rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</div> : null}
@@ -250,7 +250,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="glass-card p-6 xl:col-span-2">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 xl:col-span-2">
           <SectionTitle icon={LayoutDashboard} title="Live School Overview" subtitle="Only current records returned by the database" action={`${totalPeople} people`} />
           {totalPeople === 0 && stats.classesCount === 0 ? <EmptyState label="Your school has no live academic/people records yet." /> : (
             <div className="h-[285px] w-full">
@@ -267,7 +267,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="glass-card p-6">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
           <SectionTitle icon={ClipboardCheck} title="Attendance Details" subtitle="Today from live attendance records" />
           {attendanceTotal === 0 ? <EmptyState label="No attendance has been recorded today." /> : (
             <div className="space-y-5">
@@ -282,8 +282,8 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Present</p><p className="mt-1 text-xl font-black text-foreground">{stats.presentToday}</p></div>
-                <div className="rounded-xl border border-rose-500/15 bg-rose-500/5 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Absent</p><p className="mt-1 text-xl font-black text-foreground">{stats.absentToday}</p></div>
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Present</p><p className="mt-1 text-xl font-black text-foreground">{stats.presentToday}</p></div>
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Absent</p><p className="mt-1 text-xl font-black text-foreground">{stats.absentToday}</p></div>
               </div>
             </div>
           )}
@@ -291,13 +291,13 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="glass-card p-6">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
           <SectionTitle icon={BookOpen} title="Classes & Sections" subtitle="Live academic structure" action={`${classes.length} classes`} />
           {classes.length === 0 ? <EmptyState label="No classes found for this school." /> : (
             <div className="space-y-2.5">
               {classes.slice(0, 8).map((item) => (
-                <button key={item.id} onClick={() => navigate(`${basePath}/classes`)} className="flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-left hover:bg-muted/40">
-                  <div className="min-w-0"><p className="truncate text-sm font-bold text-foreground">{item.name}</p><p className="mt-0.5 text-[11px] text-muted-foreground">{item.sections?.length || 0} sections · {item.subjects?.length || 0} subjects</p></div>
+                <button key={item.id} onClick={() => navigate(`${basePath}/classes`)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-muted/40 transition-colors">
+                  <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-800 dark:text-foreground">{item.name}</p><p className="mt-0.5 text-[11px] text-muted-foreground">{item.sections?.length || 0} sections · {item.subjects?.length || 0} subjects</p></div>
                   <ArrowRight size={14} className="shrink-0 text-muted-foreground" />
                 </button>
               ))}
@@ -305,13 +305,13 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="glass-card p-6">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
           <SectionTitle icon={UserPlus} title="Recent Admissions" subtitle="Latest students stored in the database" />
           {stats.recentAdmissions.length === 0 ? <EmptyState label="No student admissions found." /> : (
             <div className="space-y-2.5">
               {stats.recentAdmissions.map((student) => (
-                <div key={student.id} className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background px-4 py-3">
-                  <div className="flex min-w-0 items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><GraduationCap size={16} /></span><div className="min-w-0"><p className="truncate text-sm font-bold text-foreground">{student.name}</p><p className="text-[11px] text-muted-foreground">{student.section?.class?.name || 'Class not assigned'}</p></div></div>
+                <div key={student.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-3 hover:bg-slate-50 transition-colors">
+                  <div className="flex min-w-0 items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"><GraduationCap size={16} /></span><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-800 dark:text-foreground">{student.name}</p><p className="text-[11px] text-muted-foreground">{student.section?.class?.name || 'Class not assigned'}</p></div></div>
                   <span className="shrink-0 text-[10px] font-bold text-muted-foreground">{formatDate(student.admissionDate)}</span>
                 </div>
               ))}
@@ -326,8 +326,8 @@ export default function Dashboard() {
           {stats.upcomingExams.length === 0 ? <EmptyState label="No upcoming exams found." /> : (
             <div className="space-y-2.5">
               {stats.upcomingExams.map((exam) => (
-                <div key={exam.id} className="flex flex-col gap-2 rounded-xl border border-border bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><FileText size={16} /></span><div><p className="text-sm font-bold text-foreground">{exam.name}</p><p className="text-[11px] text-muted-foreground">{exam.type || 'Exam'} · {formatDate(exam.startDate)}</p></div></div>
+                <div key={exam.id} className="flex flex-col gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"><FileText size={16} /></span><div><p className="text-sm font-bold text-foreground">{exam.name}</p><p className="text-[11px] text-muted-foreground">{exam.type || 'Exam'} · {formatDate(exam.startDate)}</p></div></div>
                   <button onClick={() => navigate(`${basePath}/exams`)} className="text-xs font-bold text-primary">Open Exams <ArrowRight className="ml-1 inline" size={12} /></button>
                 </div>
               ))}
@@ -335,12 +335,12 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="glass-card p-6">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
           <SectionTitle icon={Bell} title="Notice Board" subtitle="Latest school announcements" />
           {stats.announcements.length === 0 ? <EmptyState label="No announcements found." /> : (
             <div className="space-y-2.5">
               {stats.announcements.slice(0, 5).map((item) => (
-                <div key={item.id} className="rounded-xl border border-border bg-background p-3"><p className="text-xs font-bold text-foreground">{item.title}</p><p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{item.content}</p><p className="mt-2 text-[10px] font-semibold text-muted-foreground">{formatDate(item.publishedAt)}</p></div>
+                <div key={item.id} className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background p-3 hover:bg-slate-50 transition-colors"><p className="text-xs font-bold text-foreground">{item.title}</p><p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{item.content}</p><p className="mt-2 text-[10px] font-semibold text-muted-foreground">{formatDate(item.publishedAt)}</p></div>
               ))}
             </div>
           )}
@@ -350,20 +350,20 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {isTeacher ? (
           <>
-            <button onClick={() => navigate(`${basePath}/homework`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Homework Assigned</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} active tasks</span></span></button>
-            <button onClick={() => navigate(`${basePath}/timetable`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><CalendarDays size={18} /></span><span><span className="block text-sm font-bold text-foreground">My Timetable</span><span className="mt-0.5 block text-xs text-muted-foreground">Class & period schedule</span></span></button>
-            <button onClick={() => navigate(`${basePath}/exams`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"><GraduationCap size={18} /></span><span><span className="block text-sm font-bold text-foreground">Exams & Gradebook</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.upcomingExams.length} upcoming exams</span></span></button>
+            <button onClick={() => navigate(`${basePath}/homework`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Homework Assigned</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} active tasks</span></span></button>
+            <button onClick={() => navigate(`${basePath}/timetable`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400"><CalendarDays size={18} /></span><span><span className="block text-sm font-bold text-foreground">My Timetable</span><span className="mt-0.5 block text-xs text-muted-foreground">Class & period schedule</span></span></button>
+            <button onClick={() => navigate(`${basePath}/exams`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"><GraduationCap size={18} /></span><span><span className="block text-sm font-bold text-foreground">Exams & Gradebook</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.upcomingExams.length} upcoming exams</span></span></button>
           </>
         ) : (
           <>
-            <button onClick={() => navigate(`${basePath}/homework`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Pending Homework</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} live records</span></span></button>
-            <button onClick={() => navigate(`${basePath}/staff`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400"><Clock3 size={18} /></span><span><span className="block text-sm font-bold text-foreground">Staff & Leaves</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingLeaves} live records</span></span></button>
-            <button onClick={() => navigate(`${basePath}/reports`)} className="glass-card flex items-center gap-3 p-5 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"><LayoutDashboard size={18} /></span><span><span className="block text-sm font-bold text-foreground">School Reports</span><span className="mt-0.5 block text-xs text-muted-foreground">Live analytics</span></span></button>
+            <button onClick={() => navigate(`${basePath}/homework`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400"><FileText size={18} /></span><span><span className="block text-sm font-bold text-foreground">Pending Homework</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingHomeworks} live records</span></span></button>
+            <button onClick={() => navigate(`${basePath}/staff`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400"><Clock3 size={18} /></span><span><span className="block text-sm font-bold text-foreground">Staff & Leaves</span><span className="mt-0.5 block text-xs text-muted-foreground">{stats.pendingLeaves} live records</span></span></button>
+            <button onClick={() => navigate(`${basePath}/reports`)} className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm flex items-center gap-3 p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"><LayoutDashboard size={18} /></span><span><span className="block text-sm font-bold text-foreground">School Reports</span><span className="mt-0.5 block text-xs text-muted-foreground">Live analytics</span></span></button>
           </>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/20 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/20 px-4 py-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 size={14} className="text-emerald-500" /> Dashboard data source: live school database via NestJS API</div>
         <button onClick={() => void loadDashboard()} className="inline-flex items-center gap-2 text-xs font-bold text-primary"><RefreshCw size={13} /> Refresh data</button>
       </div>

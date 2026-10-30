@@ -68,7 +68,7 @@ const CHART_COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#e
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 const EmptyChart = ({ label }: { label: string }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[200px] gap-3 text-muted-foreground">
+  <div className="flex flex-col items-center justify-center h-full min-h-[200px] gap-3 text-slate-500 dark:text-muted-foreground">
     <CircleDashed size={28} className="opacity-40" />
     <p className="text-xs font-semibold text-center">{label}</p>
     <p className="text-[11px] opacity-60">Data will appear as records are added.</p>
@@ -243,7 +243,7 @@ export default function Reports() {
             </span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight">System Reports &amp; Insights</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
+          <p className="text-slate-500 dark:text-muted-foreground text-sm mt-0.5">
             Live telemetry, financial ledgers, academic audits, and instant data exports.
           </p>
         </div>
@@ -252,7 +252,7 @@ export default function Reports() {
           <button
             onClick={() => setRefreshKey(k => k + 1)}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             {loading ? 'Loading…' : 'Refresh'}
@@ -260,7 +260,7 @@ export default function Reports() {
 
           <button
             onClick={() => setShowPrintModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card hover:bg-accent text-foreground text-xs font-bold transition-all shadow-sm"
           >
             <Printer size={15} /> Print Dossier
           </button>
@@ -282,8 +282,8 @@ export default function Reports() {
             <DollarSign size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Fee Collected</p>
-            <p className="text-xl font-black text-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Fee Collected</p>
+            <p className="text-xl font-black text-slate-900 dark:text-foreground">
               {loading ? '—' : money(stats?.totalRevenue ?? 0)}
             </p>
             {stats?.totalRevenue ? (
@@ -291,7 +291,7 @@ export default function Reports() {
                 <ArrowUpRight size={12} /> Live finance data
               </p>
             ) : (
-              <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">No payments yet</p>
+              <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold mt-0.5">No payments yet</p>
             )}
           </div>
         </div>
@@ -302,8 +302,8 @@ export default function Reports() {
             <TrendingUp size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Today Attendance</p>
-            <p className="text-xl font-black text-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Today Attendance</p>
+            <p className="text-xl font-black text-slate-900 dark:text-foreground">
               {loading ? '—' : pct(stats?.todayAttendancePercentage ?? 0)}
             </p>
             <p className="text-[10px] text-blue-400 font-semibold mt-0.5">
@@ -318,8 +318,8 @@ export default function Reports() {
             <AlertTriangle size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Pending Fees</p>
-            <p className="text-xl font-black text-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Pending Fees</p>
+            <p className="text-xl font-black text-slate-900 dark:text-foreground">
               {loading ? '—' : money(stats?.pendingFees ?? 0)}
             </p>
             <p className="text-[10px] text-amber-400 font-semibold mt-0.5">
@@ -334,8 +334,8 @@ export default function Reports() {
             <Users size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Active Students</p>
-            <p className="text-xl font-black text-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Active Students</p>
+            <p className="text-xl font-black text-slate-900 dark:text-foreground">
               {loading ? '—' : (stats?.studentsCount ?? 0)}
             </p>
             <p className="text-[10px] text-violet-400 font-semibold mt-0.5">
@@ -363,7 +363,7 @@ export default function Reports() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent/40'
               }`}
             >
               <Icon size={15} />
@@ -394,7 +394,7 @@ export default function Reports() {
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                       <DollarSign size={18} className="text-emerald-500" /> Revenue vs Expenses
                     </h3>
-                    <p className="text-xs text-muted-foreground">Monthly cash flow (PKR)</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">Monthly cash flow (PKR)</p>
                   </div>
                   {collectionRate > 0 && (
                     <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
@@ -437,7 +437,7 @@ export default function Reports() {
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                       <TrendingUp size={18} className="text-violet-500" /> Attendance Distribution
                     </h3>
-                    <p className="text-xs text-muted-foreground">Weekly attendance trend</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">Weekly attendance trend</p>
                   </div>
                   {stats?.todayAttendancePercentage ? (
                     <span className="text-xs font-bold text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">
@@ -489,7 +489,7 @@ export default function Reports() {
                   <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                     <GraduationCap size={18} className="text-primary" /> Grade-wise Academic Overview
                   </h3>
-                  <p className="text-xs text-muted-foreground">Class roster and section enrollment</p>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">Class roster and section enrollment</p>
                 </div>
                 <button
                   onClick={() => handleExportCSV('Class_Performance_Report')}
@@ -503,7 +503,7 @@ export default function Reports() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-border text-muted-foreground font-black uppercase text-[10px] tracking-wider">
+                      <tr className="border-b border-border text-slate-500 dark:text-muted-foreground font-black uppercase text-[10px] tracking-wider">
                         <th className="py-3 px-4">Class</th>
                         <th className="py-3 px-4">Sections</th>
                         <th className="py-3 px-4">Enrolled Students</th>
@@ -513,14 +513,14 @@ export default function Reports() {
                     <tbody className="divide-y divide-border">
                       {classPerformance.map(c => (
                         <tr key={c.className} className="hover:bg-accent/20 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-foreground">{c.className}</td>
-                          <td className="py-3.5 px-4 font-mono text-muted-foreground">{c.sections}</td>
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-foreground">{c.className}</td>
+                          <td className="py-3.5 px-4 font-mono text-slate-500 dark:text-muted-foreground">{c.sections}</td>
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-2">
                               <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
                                 <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(c.students * 3, 100)}%` }} />
                               </div>
-                              <span className="font-bold text-foreground">{c.students}</span>
+                              <span className="font-bold text-slate-900 dark:text-foreground">{c.students}</span>
                             </div>
                           </td>
                           <td className="py-3.5 px-4 text-right">
@@ -534,7 +534,7 @@ export default function Reports() {
                   </table>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-500 dark:text-muted-foreground">
                   <CircleDashed size={28} className="opacity-40" />
                   <p className="text-xs font-semibold">No classes found</p>
                   <p className="text-[11px] opacity-60">Add classes to see academic overview.</p>
@@ -585,8 +585,8 @@ export default function Reports() {
                       <Icon size={22} />
                     </div>
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                      <p className="text-lg font-black text-foreground">{loading ? '—' : card.value}</p>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">{card.label}</p>
+                      <p className="text-lg font-black text-slate-900 dark:text-foreground">{loading ? '—' : card.value}</p>
                     </div>
                   </div>
                 );
@@ -600,7 +600,7 @@ export default function Reports() {
                   <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
                     <DollarSign size={18} className="text-emerald-500" /> Revenue Streams
                   </h3>
-                  <p className="text-xs text-muted-foreground mb-4">Fee type composition</p>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mb-4">Fee type composition</p>
                 </div>
                 <div className="h-56 w-full">
                   {feeBreakdown.length > 0 ? (
@@ -622,7 +622,7 @@ export default function Reports() {
                   <div className="space-y-2 pt-2 border-t border-border">
                     {feeBreakdown.map((item, i) => (
                       <div key={item.name} className="flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-2 text-muted-foreground">
+                        <span className="flex items-center gap-2 text-slate-500 dark:text-muted-foreground">
                           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color ?? CHART_COLORS[i % CHART_COLORS.length] }} />
                           {item.name}
                         </span>
@@ -640,7 +640,7 @@ export default function Reports() {
                     <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                       <TrendingUp size={18} className="text-primary" /> Target vs Actual Realization
                     </h3>
-                    <p className="text-xs text-muted-foreground">Expected invoices vs settled dues</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">Expected invoices vs settled dues</p>
                   </div>
                   {collectionRate > 0 && (
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
@@ -685,15 +685,15 @@ export default function Reports() {
                   <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                     <Award size={18} className="text-amber-500" /> Examination Performance Intelligence
                   </h3>
-                  <p className="text-xs text-muted-foreground">Class pass ratios, average scores, and top ranked candidates</p>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">Class pass ratios, average scores, and top ranked candidates</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-muted-foreground">Select Exam:</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Select Exam:</span>
                   <select
                     value={selectedExamId}
                     onChange={e => setSelectedExamId(e.target.value)}
-                    className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+                    className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {exams.map(ex => (
                       <option key={ex.id} value={ex.id}>
@@ -705,20 +705,20 @@ export default function Reports() {
               </div>
 
               {loadingExamAnalytics ? (
-                <div className="py-8 text-center text-xs text-muted-foreground animate-pulse">
+                <div className="py-8 text-center text-xs text-slate-500 dark:text-muted-foreground animate-pulse">
                   Calculating examination analytics...
                 </div>
               ) : !examAnalytics ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">
+                <div className="py-8 text-center text-xs text-slate-500 dark:text-muted-foreground">
                   Select an exam to view performance metrics.
                 </div>
               ) : (
                 <div className="space-y-6">
                   {/* Summary Tiles */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="rounded-2xl border border-border bg-muted/20 p-3.5 text-center">
-                      <p className="text-xl font-black text-foreground">{examAnalytics.summary?.totalStudents || 0}</p>
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Candidates</p>
+                    <div className="rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 p-3.5 text-center">
+                      <p className="text-xl font-black text-slate-900 dark:text-foreground">{examAnalytics.summary?.totalStudents || 0}</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Candidates</p>
                     </div>
                     <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-center">
                       <p className="text-xl font-black text-emerald-500">{examAnalytics.summary?.passedStudents || 0}</p>
@@ -738,18 +738,18 @@ export default function Reports() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {/* Subject-Wise Pass Rates */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Subject Pass Rates</h4>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Subject Pass Rates</h4>
                       <div className="space-y-2.5">
                         {(examAnalytics.subjectAnalytics || []).map((sub: any) => (
-                          <div key={sub.subjectId} className="bg-muted/20 border border-border/80 rounded-2xl p-3 space-y-1.5">
+                          <div key={sub.subjectId} className="bg-slate-50 dark:bg-muted/20 border border-border/80 rounded-2xl p-3 space-y-1.5">
                             <div className="flex justify-between text-xs font-bold">
-                              <span className="text-foreground">{sub.subjectName}</span>
+                              <span className="text-slate-900 dark:text-foreground">{sub.subjectName}</span>
                               <span className="text-primary font-mono">{sub.passPercentage}% Pass Rate</span>
                             </div>
                             <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                               <div className="bg-primary h-full rounded-full" style={{ width: `${sub.passPercentage}%` }} />
                             </div>
-                            <div className="flex justify-between text-[10px] text-muted-foreground pt-0.5">
+                            <div className="flex justify-between text-[10px] text-slate-500 dark:text-muted-foreground pt-0.5">
                               <span>Average: {sub.averageMarks} Marks</span>
                               <span>Highest: {sub.highestMarks}</span>
                             </div>
@@ -760,12 +760,12 @@ export default function Reports() {
 
                     {/* Top 5 Toppers */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground flex items-center gap-1.5">
                         <Award size={13} className="text-amber-500" /> Class Toppers Leaderboard
                       </h4>
                       <div className="rounded-2xl border border-border/80 overflow-hidden">
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                          <thead className="bg-muted/50 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                             <tr>
                               <th className="p-2.5">Rank</th>
                               <th className="p-2.5">Student</th>
@@ -775,7 +775,7 @@ export default function Reports() {
                           </thead>
                           <tbody className="divide-y divide-border/60">
                             {(examAnalytics.students || []).slice(0, 5).map((st: any) => (
-                              <tr key={st.studentId} className="hover:bg-muted/20">
+                              <tr key={st.studentId} className="hover:bg-slate-50 dark:bg-muted/20">
                                 <td className="p-2.5 font-bold">
                                   <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-[11px] font-black ${
                                     st.position === 1 ? 'bg-amber-500 text-white' :
@@ -785,10 +785,10 @@ export default function Reports() {
                                     {st.position}
                                   </span>
                                 </td>
-                                <td className="p-2.5 font-bold text-foreground">
-                                  {st.name} <span className="text-[10px] text-muted-foreground font-normal">({st.admissionNo})</span>
+                                <td className="p-2.5 font-bold text-slate-900 dark:text-foreground">
+                                  {st.name} <span className="text-[10px] text-slate-500 dark:text-muted-foreground font-normal">({st.admissionNo})</span>
                                 </td>
-                                <td className="p-2.5 font-mono font-bold text-foreground">{st.percentage}%</td>
+                                <td className="p-2.5 font-mono font-bold text-slate-900 dark:text-foreground">{st.percentage}%</td>
                                 <td className="p-2.5 text-center font-black text-primary">{st.grade}</td>
                               </tr>
                             ))}
@@ -808,15 +808,15 @@ export default function Reports() {
                   <h3 className="font-extrabold text-base text-foreground flex items-center gap-2">
                     <FileText size={18} className="text-primary" /> Official Student Report Card &amp; Marksheet Generator
                   </h3>
-                  <p className="text-xs text-muted-foreground">Generate and print full student academic transcripts with grades, GPAs, and remarks</p>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">Generate and print full student academic transcripts with grades, GPAs, and remarks</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-muted-foreground">Select Candidate:</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Select Candidate:</span>
                   <select
                     value={selectedStudentId}
                     onChange={e => setSelectedStudentId(e.target.value)}
-                    className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 max-w-xs"
+                    className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 max-w-xs"
                   >
                     {students.map(st => (
                       <option key={st.id} value={st.id}>
@@ -828,11 +828,11 @@ export default function Reports() {
               </div>
 
               {loadingReportCard ? (
-                <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground animate-pulse">
                   Generating official report card transcript...
                 </div>
               ) : !reportCardData || (reportCardData.exams || []).length === 0 ? (
-                <div className="py-12 text-center text-xs text-muted-foreground italic">
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground italic">
                   No published exam results found for this student.
                 </div>
               ) : (
@@ -855,20 +855,20 @@ export default function Reports() {
                   {/* Student Bio Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-muted/30 p-4 rounded-2xl border border-border/60 text-xs">
                     <div>
-                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Student Name</span>
+                      <span className="text-slate-500 dark:text-muted-foreground text-[10px] font-bold uppercase block">Student Name</span>
                       <strong className="text-foreground text-sm">{reportCardData.student?.name}</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Admission No</span>
+                      <span className="text-slate-500 dark:text-muted-foreground text-[10px] font-bold uppercase block">Admission No</span>
                       <strong className="text-foreground font-mono">{reportCardData.student?.admissionNo || '—'}</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Class &amp; Section</span>
-                      <strong className="text-foreground">{reportCardData.student?.className} ({reportCardData.student?.sectionName})</strong>
+                      <span className="text-slate-500 dark:text-muted-foreground text-[10px] font-bold uppercase block">Class &amp; Section</span>
+                      <strong className="text-slate-900 dark:text-foreground">{reportCardData.student?.className} ({reportCardData.student?.sectionName})</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground text-[10px] font-bold uppercase block">Father / Guardian</span>
-                      <strong className="text-foreground">{reportCardData.student?.fatherName || '—'}</strong>
+                      <span className="text-slate-500 dark:text-muted-foreground text-[10px] font-bold uppercase block">Father / Guardian</span>
+                      <strong className="text-slate-900 dark:text-foreground">{reportCardData.student?.fatherName || '—'}</strong>
                     </div>
                   </div>
 
@@ -876,13 +876,13 @@ export default function Reports() {
                   <div className="space-y-5">
                     {reportCardData.exams.map((ex: any) => (
                       <div key={ex.examId} className="rounded-2xl border border-border/80 overflow-hidden space-y-2">
-                        <div className="bg-muted/40 p-3.5 flex items-center justify-between border-b border-border/60">
+                        <div className="bg-slate-100/70 dark:bg-muted/40 p-3.5 flex items-center justify-between border-b border-border/60">
                           <div>
-                            <span className="font-black text-sm text-foreground">{ex.examName}</span>
-                            <span className="text-xs text-muted-foreground ml-2">({ex.examType})</span>
+                            <span className="font-black text-sm text-slate-900 dark:text-foreground">{ex.examName}</span>
+                            <span className="text-xs text-slate-500 dark:text-muted-foreground ml-2">({ex.examType})</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs font-mono font-bold text-foreground">
+                            <span className="text-xs font-mono font-bold text-slate-900 dark:text-foreground">
                               {ex.marksObtainedTotal} / {ex.maxMarksTotal} ({ex.overallPercentage}%)
                             </span>
                             <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
@@ -892,7 +892,7 @@ export default function Reports() {
                         </div>
 
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-muted/20 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                          <thead className="bg-slate-50 dark:bg-muted/20 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                             <tr>
                               <th className="p-3">Subject</th>
                               <th className="p-3">Total Marks</th>
@@ -906,10 +906,10 @@ export default function Reports() {
                           <tbody className="divide-y divide-border/60">
                             {ex.subjects.map((sub: any) => (
                               <tr key={sub.subjectId} className="hover:bg-muted/10">
-                                <td className="p-3 font-bold text-foreground">{sub.subjectName}</td>
-                                <td className="p-3 font-mono text-muted-foreground">{sub.totalMarks}</td>
-                                <td className="p-3 font-mono text-muted-foreground">{sub.passingMarks}</td>
-                                <td className="p-3 font-mono font-bold text-foreground">
+                                <td className="p-3 font-bold text-slate-900 dark:text-foreground">{sub.subjectName}</td>
+                                <td className="p-3 font-mono text-slate-500 dark:text-muted-foreground">{sub.totalMarks}</td>
+                                <td className="p-3 font-mono text-slate-500 dark:text-muted-foreground">{sub.passingMarks}</td>
+                                <td className="p-3 font-mono font-bold text-slate-900 dark:text-foreground">
                                   {sub.isAbsent ? 'Absent' : sub.marksObtained}
                                 </td>
                                 <td className="p-3 text-center font-black text-primary">{sub.grade}</td>
@@ -920,7 +920,7 @@ export default function Reports() {
                                     {sub.isPassed ? 'PASS' : 'FAIL'}
                                   </span>
                                 </td>
-                                <td className="p-3 text-muted-foreground text-[11px]">{sub.remarks}</td>
+                                <td className="p-3 text-slate-500 dark:text-muted-foreground text-[11px]">{sub.remarks}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -939,7 +939,7 @@ export default function Reports() {
                 <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
                   <GraduationCap size={18} className="text-primary" /> Class Enrollment Distribution
                 </h3>
-                <p className="text-xs text-muted-foreground mb-6">Students enrolled per class</p>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground mb-6">Students enrolled per class</p>
                 <div className="h-64 w-full text-xs">
                   {classPerformance.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -966,7 +966,7 @@ export default function Reports() {
                 <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
                   <Sparkles size={18} className="text-violet-500" /> School Snapshot
                 </h3>
-                <p className="text-xs text-muted-foreground mb-5">Live institutional metrics</p>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground mb-5">Live institutional metrics</p>
                 <div className="space-y-5">
                   {[
                     {
@@ -1002,7 +1002,7 @@ export default function Reports() {
                   ].map(row => (
                     <div key={row.label} className="space-y-1.5 text-xs">
                       <div className="flex justify-between font-bold">
-                        <span className="text-foreground">{row.label}</span>
+                        <span className="text-slate-900 dark:text-foreground">{row.label}</span>
                         <span className="font-mono text-primary">{loading ? '—' : row.value}</span>
                       </div>
                       <div className="h-2.5 rounded-full bg-muted overflow-hidden">
@@ -1058,7 +1058,7 @@ export default function Reports() {
               ].map(card => (
                 <div key={card.label} className={`bg-card border rounded-2xl p-5 shadow-sm ${card.bg.split(' ')[1]}`}>
                   <p className={`text-[11px] font-bold uppercase tracking-wider ${card.color} mb-1`}>{card.label}</p>
-                  <p className="text-2xl font-black text-foreground">{loading ? '—' : card.value}</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-foreground">{loading ? '—' : card.value}</p>
                 </div>
               ))}
             </div>
@@ -1068,7 +1068,7 @@ export default function Reports() {
               <h3 className="font-extrabold text-base text-foreground mb-1 flex items-center gap-2">
                 <TrendingUp size={18} className="text-blue-500" /> Daily Attendance Trend
               </h3>
-              <p className="text-xs text-muted-foreground mb-6">Weekly attendance percentage</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mb-6">Weekly attendance percentage</p>
               <div className="h-80 w-full text-xs">
                 {attendanceTrend.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -1161,10 +1161,10 @@ export default function Reports() {
                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                         {rep.category}
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground">Live data</span>
+                      <span className="text-[10px] font-mono text-slate-500 dark:text-muted-foreground">Live data</span>
                     </div>
                     <h4 className="font-extrabold text-sm text-foreground mb-1">{rep.title}</h4>
-                    <p className="text-xs text-muted-foreground">{rep.description}</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">{rep.description}</p>
                   </div>
 
                   <div className="flex gap-2 pt-2 border-t border-border">
@@ -1176,7 +1176,7 @@ export default function Reports() {
                     </button>
                     <button
                       onClick={() => setShowPrintModal(true)}
-                      className="px-3 py-2 rounded-xl border border-border hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+                      className="px-3 py-2 rounded-xl border border-border hover:bg-accent text-slate-500 dark:text-muted-foreground hover:text-foreground transition-all"
                       title="Print Report"
                     >
                       <Printer size={14} />

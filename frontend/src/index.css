@@ -107,7 +107,7 @@
     --ring: 258 90% 66%;
   }
 
-  /* Light theme variables */
+  /* Light theme variables - Ultra First Class Clean */
   .light {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
@@ -115,7 +115,7 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 258 90% 60%;
+    --primary: 199 89% 48%;
     --primary-foreground: 210 20% 98%;
     --secondary: 214 32% 91%;
     --secondary-foreground: 222 47% 11%;
@@ -127,7 +127,7 @@
     --destructive-foreground: 210 20% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 258 90% 60%;
+    --ring: 199 89% 48%;
 
     --surface-1: 0 0% 100%;
     --surface-2: 210 40% 96%;
@@ -174,8 +174,9 @@
 }
 
 .light .glass {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .glass-elevated {
@@ -186,8 +187,8 @@
 }
 
 .light .glass-elevated {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
@@ -200,14 +201,39 @@
 }
 
 .light .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
 }
 
 .light .stat-card {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+}
+
+/* Light Theme First-Class Inputs & Selects */
+.light input:not([type="checkbox"]):not([type="radio"]):not(.bg-transparent),
+.light select:not(.bg-transparent),
+.light textarea:not(.bg-transparent) {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+.light input:not([type="checkbox"]):not([type="radio"]):focus,
+.light select:focus,
+.light textarea:focus {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15) !important;
+}
+
+.light .btn-ghost {
+  color: #475569;
+}
+.light .btn-ghost:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 .glass-hover {
@@ -1004,3 +1030,71 @@
   main button { min-height: 2.5rem; }
   main input, main select, main textarea { font-size: 16px; }
 }
+
+/* ─── Premium Light Theme: StatCard & KPI overrides ─── */
+.light .stat-card,
+.light .dashboard-kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+.light .stat-card:hover,
+.light .dashboard-kpi-card:hover {
+  box-shadow: 0 8px 24px rgba(6,182,212,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: #a5f3fc;
+}
+.light .dashboard-kpi-label { color: #64748b; }
+.light .dashboard-kpi-value { color: #0f172a; }
+.light .dashboard-kpi-subtitle { color: #64748b; }
+.light .dashboard-kpi-trend { background: #f8fafc; border-color: #e2e8f0; }
+.light .dashboard-kpi-arrow { color: #94a3b8; }
+
+/* ─── Premium form inputs for all pages ─── */
+.light input:not([type="checkbox"]):not([type="radio"]),
+.light textarea,
+.light select {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+.light input:not([type="checkbox"]):not([type="radio"]):focus,
+.light textarea:focus,
+.light select:focus {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.12) !important;
+  outline: none !important;
+}
+
+/* ─── Section/page cards ─── */
+.light .glass-card,
+.light .glass-elevated {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* ─── Tables light theme ─── */
+.light table thead tr {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+.light table thead th {
+  color: #475569;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.light table tbody tr:hover {
+  background: #f8fafc;
+}
+.light table tbody td {
+  border-color: #f1f5f9;
+  color: #1e293b;
+}
+
+/* ─── Scrollbar light ─── */
+.light ::-webkit-scrollbar { width: 6px; height: 6px; }
+.light ::-webkit-scrollbar-track { background: #f8fafc; }
+.light ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.light ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

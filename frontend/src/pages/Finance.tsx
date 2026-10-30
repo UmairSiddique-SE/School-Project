@@ -341,12 +341,12 @@ export default function Finance() {
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
               <ShieldCheck size={12} /> Institutional Treasury
             </span>
-            <span className="text-xs text-muted-foreground">• Live Fiscal Ledger</span>
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">• Live Fiscal Ledger</span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
             Fees & Financial Center
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1">
             Track student tuition, manage automated fee structures, and disburse digital receipts.
           </p>
         </div>
@@ -355,7 +355,7 @@ export default function Finance() {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="p-2.5 rounded-xl border border-border bg-card/60 hover:bg-accent text-foreground transition-all duration-150 active:scale-95"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/60 hover:bg-accent text-foreground transition-all duration-150 active:scale-95"
             title="Refresh Ledger"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin text-primary' : ''} />
@@ -364,7 +364,7 @@ export default function Finance() {
           <button
             onClick={exportCsv}
             disabled={!filteredPayments.length}
-            className="px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-xs font-bold flex items-center gap-2 hover:bg-accent transition-all duration-150 active:scale-95 shadow-sm"
+            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-foreground text-xs font-bold flex items-center gap-2 hover:bg-accent transition-all duration-150 active:scale-95 shadow-sm"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -475,7 +475,7 @@ export default function Finance() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -494,7 +494,7 @@ export default function Finance() {
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'collections'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             <Receipt size={14} /> Transactions ({payments.length})
@@ -504,7 +504,7 @@ export default function Finance() {
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'structures'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             <FileText size={14} /> Fee Structures ({structures.length})
@@ -514,7 +514,7 @@ export default function Finance() {
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'defaulters'
                 ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
             }`}
           >
             <AlertTriangle size={14} /> Defaulters ({defaulters.length})
@@ -524,19 +524,19 @@ export default function Finance() {
         {activeTab === 'collections' && (
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search student, receipt..."
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-semibold text-foreground outline-none"
+              className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs font-semibold text-foreground outline-none"
             >
               <option value="ALL">All Status</option>
               <option value="PAID">Paid</option>
@@ -546,7 +546,7 @@ export default function Finance() {
             <select
               value={methodFilter}
               onChange={(e) => setMethodFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-semibold text-foreground outline-none"
+              className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs font-semibold text-foreground outline-none"
             >
               <option value="ALL">All Methods</option>
               {METHODS.map((m) => (
@@ -565,13 +565,13 @@ export default function Finance() {
           {loading ? (
             <div className="py-24 flex flex-col items-center justify-center gap-3">
               <Loader2 size={36} className="animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground font-semibold">Loading financial ledger...</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Loading financial ledger...</p>
             </div>
           ) : filteredPayments.length === 0 ? (
             <div className="py-20 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
-              <Receipt size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-              <h3 className="font-bold text-lg text-foreground">No Transactions Found</h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              <Receipt size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+              <h3 className="font-bold text-lg text-slate-900 dark:text-foreground">No Transactions Found</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 max-w-sm mx-auto">
                 No fee payment records match your filters. Record a new fee payment to populate this ledger.
               </p>
               {isAdmin && (
@@ -589,31 +589,31 @@ export default function Finance() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-accent/40 border-b border-border">
-                      <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Student Details
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Receipt No
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Fee Head
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Payable
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Paid
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Method
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-center">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-center">
                         Status
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Date
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Actions
                       </th>
                     </tr>
@@ -636,7 +636,7 @@ export default function Finance() {
                                 <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                                   {p.student?.name}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground font-mono">
+                                <p className="text-[11px] text-slate-500 dark:text-muted-foreground font-mono">
                                   {p.student?.admissionNo} • {p.student?.section?.class?.name || p.student?.class?.name || 'Class N/A'}
                                 </p>
                               </div>
@@ -645,7 +645,7 @@ export default function Finance() {
                           <td className="px-4 py-3.5 text-xs font-mono text-foreground font-semibold">
                             {p.receiptNo}
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-muted-foreground">
+                          <td className="px-4 py-3.5 text-xs text-slate-500 dark:text-muted-foreground">
                             {p.feeStructure?.name || 'Standard Tuition'}
                           </td>
                           <td className="px-4 py-3.5 text-xs font-bold text-foreground text-right">
@@ -654,7 +654,7 @@ export default function Finance() {
                           <td className="px-4 py-3.5 text-xs font-bold text-emerald-600 text-right">
                             {money(p.totalPaid)}
                           </td>
-                          <td className="px-4 py-3.5 text-[11px] font-medium text-muted-foreground">
+                          <td className="px-4 py-3.5 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
                             <span className="px-2 py-1 rounded-md bg-accent/60 text-foreground font-semibold">
                               {p.method}
                             </span>
@@ -666,13 +666,13 @@ export default function Finance() {
                               {cfg.label}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-muted-foreground">
+                          <td className="px-4 py-3.5 text-xs text-slate-500 dark:text-muted-foreground">
                             {p.paidDate ? new Date(p.paidDate).toLocaleDateString('en-PK') : '—'}
                           </td>
                           <td className="px-4 py-3.5 text-right">
                             <button
                               onClick={() => setDetails(p)}
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                               title="View Official Receipt"
                             >
                               <Eye size={16} />
@@ -694,8 +694,8 @@ export default function Finance() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-foreground">Configured Fee Schedules</h2>
-              <p className="text-xs text-muted-foreground">Institutional fee templates and periodic billing rules.</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-foreground">Configured Fee Schedules</h2>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Institutional fee templates and periodic billing rules.</p>
             </div>
             {isAdmin && (
               <button
@@ -709,9 +709,9 @@ export default function Finance() {
 
           {structures.length === 0 ? (
             <div className="py-16 text-center border border-dashed border-border rounded-2xl bg-card/40">
-              <FileText size={40} className="mx-auto text-muted-foreground/30 mb-2" />
-              <p className="text-sm font-bold text-foreground">No Fee Structures Configured</p>
-              <p className="text-xs text-muted-foreground mt-1">Create tuition, admission, or lab fee templates.</p>
+              <FileText size={40} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-2" />
+              <p className="text-sm font-bold text-slate-900 dark:text-foreground">No Fee Structures Configured</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Create tuition, admission, or lab fee templates.</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -725,7 +725,7 @@ export default function Finance() {
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
                         {s.frequency}
                       </span>
-                      <span className="text-xs text-muted-foreground font-mono">
+                      <span className="text-xs text-slate-500 dark:text-muted-foreground font-mono">
                         {s.class?.name ? `Class ${s.class.name}` : 'All Classes'}
                       </span>
                     </div>
@@ -733,14 +733,14 @@ export default function Finance() {
                       {s.name}
                     </h3>
                     {s.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{s.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 line-clamp-2">{s.description}</p>
                     )}
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-border flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Base Fee</span>
-                      <p className="text-lg font-black text-foreground">{money(s.amount)}</p>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-muted-foreground uppercase">Base Fee</span>
+                      <p className="text-lg font-black text-slate-900 dark:text-foreground">{money(s.amount)}</p>
                     </div>
                     {isAdmin && (
                       <button
@@ -767,8 +767,8 @@ export default function Finance() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-foreground">Defaulters & Pending Dues</h2>
-              <p className="text-xs text-muted-foreground">Students with unpaid or partially settled fee receipts.</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-foreground">Defaulters & Pending Dues</h2>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Students with unpaid or partially settled fee receipts.</p>
             </div>
           </div>
 
@@ -776,7 +776,7 @@ export default function Finance() {
             <div className="py-20 text-center border border-dashed border-emerald-500/30 rounded-2xl bg-emerald-500/5 p-8">
               <CheckCircle2 size={44} className="mx-auto text-emerald-500 mb-2" />
               <h3 className="font-bold text-lg text-emerald-600">All Accounts Reconciled</h3>
-              <p className="text-xs text-muted-foreground mt-1">There are no pending or overdue fee records in the system.</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">There are no pending or overdue fee records in the system.</p>
             </div>
           ) : (
             <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
@@ -784,25 +784,25 @@ export default function Finance() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-accent/40 border-b border-border">
-                      <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Student
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Receipt
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                         Fee Type
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Total Due
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Balance Unpaid
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-center">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-center">
                         Due Date
                       </th>
-                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                      <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                         Action
                       </th>
                     </tr>
@@ -814,11 +814,11 @@ export default function Finance() {
                       return (
                         <tr key={p.id} className="hover:bg-accent/30 transition-colors">
                           <td className="px-5 py-3.5">
-                            <p className="text-xs font-bold text-foreground">{p.student?.name}</p>
-                            <p className="text-[11px] text-muted-foreground font-mono">{p.student?.admissionNo}</p>
+                            <p className="text-xs font-bold text-slate-900 dark:text-foreground">{p.student?.name}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-muted-foreground font-mono">{p.student?.admissionNo}</p>
                           </td>
                           <td className="px-4 py-3.5 text-xs font-mono">{p.receiptNo}</td>
-                          <td className="px-4 py-3.5 text-xs text-muted-foreground">
+                          <td className="px-4 py-3.5 text-xs text-slate-500 dark:text-muted-foreground">
                             {p.feeStructure?.name || 'Custom Fee'}
                           </td>
                           <td className="px-4 py-3.5 text-xs font-bold text-foreground text-right">
@@ -827,7 +827,7 @@ export default function Finance() {
                           <td className="px-4 py-3.5 text-xs font-black text-rose-500 text-right">
                             {money(balance)}
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-center text-muted-foreground">
+                          <td className="px-4 py-3.5 text-xs text-center text-slate-500 dark:text-muted-foreground">
                             {p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-PK') : 'Overdue'}
                           </td>
                           <td className="px-4 py-3.5 text-right">
@@ -874,14 +874,14 @@ export default function Finance() {
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all ${
                 collectStep === s.step
                   ? 'bg-card text-foreground shadow-sm border border-border'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
               }`}
             >
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
                   collectStep === s.step
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-slate-500 dark:text-muted-foreground'
                 }`}
               >
                 {s.step}
@@ -902,7 +902,7 @@ export default function Finance() {
                   required
                   value={paymentForm.studentId}
                   onChange={(e) => setPaymentForm({ ...paymentForm, studentId: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                 >
                   <option value="">-- Choose student from roster --</option>
                   {students.map((s) => (
@@ -919,8 +919,8 @@ export default function Finance() {
                     {selectedStudent.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-bold text-foreground">{selectedStudent.name}</p>
-                    <p className="text-muted-foreground">
+                    <p className="font-bold text-slate-900 dark:text-foreground">{selectedStudent.name}</p>
+                    <p className="text-slate-500 dark:text-muted-foreground">
                       Roll / Adm: {selectedStudent.admissionNo} • Class:{' '}
                       {selectedStudent.section?.class?.name || selectedStudent.class?.name || 'N/A'}
                     </p>
@@ -935,7 +935,7 @@ export default function Finance() {
                 <select
                   value={paymentForm.feeStructureId}
                   onChange={(e) => handleStructureSelect(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                 >
                   <option value="">Custom / Manual Fee Head</option>
                   {structures.map((st) => (
@@ -980,7 +980,7 @@ export default function Finance() {
                       })
                     }
                     placeholder="e.g. 5000"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                   />
                 </div>
 
@@ -994,7 +994,7 @@ export default function Finance() {
                     step="1"
                     value={paymentForm.discount}
                     onChange={(e) => setPaymentForm({ ...paymentForm, discount: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -1010,7 +1010,7 @@ export default function Finance() {
                     step="1"
                     value={paymentForm.fine}
                     onChange={(e) => setPaymentForm({ ...paymentForm, fine: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                   />
                 </div>
 
@@ -1025,18 +1025,18 @@ export default function Finance() {
                     required
                     value={paymentForm.amountPaid}
                     onChange={(e) => setPaymentForm({ ...paymentForm, amountPaid: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground font-bold text-emerald-600 outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground font-bold text-emerald-600 outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
               <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Net Payable</span>
-                  <p className="text-xl font-black text-foreground">{money(calculatedPayable)}</p>
+                  <span className="font-bold text-slate-500 dark:text-muted-foreground uppercase text-[10px]">Net Payable</span>
+                  <p className="text-xl font-black text-slate-900 dark:text-foreground">{money(calculatedPayable)}</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Settlement Status</span>
+                  <span className="font-bold text-slate-500 dark:text-muted-foreground uppercase text-[10px]">Settlement Status</span>
                   <p className="text-sm font-bold text-emerald-600">
                     {Number(paymentForm.amountPaid) >= calculatedPayable
                       ? 'Full Payment'
@@ -1076,7 +1076,7 @@ export default function Finance() {
                   <select
                     value={paymentForm.method}
                     onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value as PaymentMethod })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                   >
                     {METHODS.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -1094,7 +1094,7 @@ export default function Finance() {
                     type="date"
                     value={paymentForm.dueDate}
                     onChange={(e) => setPaymentForm({ ...paymentForm, dueDate: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -1108,22 +1108,22 @@ export default function Finance() {
                   value={paymentForm.remarks}
                   onChange={(e) => setPaymentForm({ ...paymentForm, remarks: e.target.value })}
                   placeholder="e.g. Bank Challan #4489, Paid on time"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
                 />
               </div>
 
               <div className="p-4 rounded-xl bg-accent/40 border border-border space-y-1.5 text-xs">
-                <p className="font-bold text-foreground">Summary Confirmation</p>
-                <p className="text-muted-foreground">
+                <p className="font-bold text-slate-900 dark:text-foreground">Summary Confirmation</p>
+                <p className="text-slate-500 dark:text-muted-foreground">
                   Student:{' '}
-                  <span className="font-bold text-foreground">
+                  <span className="font-bold text-slate-900 dark:text-foreground">
                     {selectedStudent?.name || 'Selected Student'}
                   </span>
                 </p>
-                <p className="text-muted-foreground">
+                <p className="text-slate-500 dark:text-muted-foreground">
                   Amount Paid:{' '}
                   <span className="font-bold text-emerald-600">{money(Number(paymentForm.amountPaid))}</span>{' '}
-                  via <span className="font-bold text-foreground">{paymentForm.method}</span>
+                  via <span className="font-bold text-slate-900 dark:text-foreground">{paymentForm.method}</span>
                 </p>
               </div>
 
@@ -1168,7 +1168,7 @@ export default function Finance() {
               value={structureForm.name}
               onChange={(e) => setStructureForm({ ...structureForm, name: e.target.value })}
               placeholder="e.g. Monthly Tuition Fee (Class 10)"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -1185,7 +1185,7 @@ export default function Finance() {
                 value={structureForm.amount}
                 onChange={(e) => setStructureForm({ ...structureForm, amount: e.target.value })}
                 placeholder="e.g. 7500"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
               />
             </div>
 
@@ -1196,7 +1196,7 @@ export default function Finance() {
               <select
                 value={structureForm.frequency}
                 onChange={(e) => setStructureForm({ ...structureForm, frequency: e.target.value as Frequency })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
               >
                 {FREQUENCIES.map((f) => (
                   <option key={f.value} value={f.value}>
@@ -1214,7 +1214,7 @@ export default function Finance() {
             <select
               value={structureForm.classId}
               onChange={(e) => setStructureForm({ ...structureForm, classId: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
             >
               <option value="">All Classes (Institutional)</option>
               {classes.map((c) => (
@@ -1234,7 +1234,7 @@ export default function Finance() {
               value={structureForm.description}
               onChange={(e) => setStructureForm({ ...structureForm, description: e.target.value })}
               placeholder="Additional policy details..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-sm text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -1271,7 +1271,7 @@ export default function Finance() {
               </div>
               <button
                 onClick={() => setDetails(null)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-accent hover:text-slate-900 dark:text-foreground"
               >
                 <X size={18} />
               </button>
@@ -1279,31 +1279,31 @@ export default function Finance() {
 
             <div className="p-4 rounded-2xl bg-accent/30 border border-border grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-muted-foreground uppercase text-[10px] font-bold">Student Name</span>
+                <span className="text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-bold">Student Name</span>
                 <p className="font-bold text-foreground text-sm mt-0.5">{details.student?.name}</p>
               </div>
               <div>
-                <span className="text-muted-foreground uppercase text-[10px] font-bold">Admission Number</span>
+                <span className="text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-bold">Admission Number</span>
                 <p className="font-mono font-bold text-foreground text-sm mt-0.5">
                   {details.student?.admissionNo}
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground uppercase text-[10px] font-bold">Fee Category</span>
+                <span className="text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-bold">Fee Category</span>
                 <p className="font-semibold text-foreground mt-0.5">
                   {details.feeStructure?.name || 'Custom Tuition'}
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground uppercase text-[10px] font-bold">Payment Method</span>
+                <span className="text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-bold">Payment Method</span>
                 <p className="font-semibold text-foreground mt-0.5">{details.method}</p>
               </div>
             </div>
 
             <div className="space-y-2 text-xs border-y border-border py-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Original Due Amount:</span>
-                <span className="font-semibold text-foreground">{money(details.amount)}</span>
+                <span className="text-slate-500 dark:text-muted-foreground">Original Due Amount:</span>
+                <span className="font-semibold text-slate-900 dark:text-foreground">{money(details.amount)}</span>
               </div>
               {Number(details.discount) > 0 && (
                 <div className="flex justify-between text-emerald-600">
@@ -1319,7 +1319,7 @@ export default function Finance() {
               )}
               <div className="flex justify-between font-bold pt-1 border-t border-border/60">
                 <span>Net Payable:</span>
-                <span className="text-foreground">
+                <span className="text-slate-900 dark:text-foreground">
                   {money(Math.max(0, Number(details.amount) - Number(details.discount || 0) + Number(details.fine || 0)))}
                 </span>
               </div>
@@ -1331,13 +1331,13 @@ export default function Finance() {
 
             {details.remarks && (
               <div className="p-3 rounded-xl bg-accent/40 text-xs">
-                <span className="text-muted-foreground font-bold uppercase text-[10px]">Auditor Remarks</span>
+                <span className="text-slate-500 dark:text-muted-foreground font-bold uppercase text-[10px]">Auditor Remarks</span>
                 <p className="text-foreground mt-0.5">{details.remarks}</p>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[11px] text-slate-500 dark:text-muted-foreground">
                 Date: {details.paidDate ? new Date(details.paidDate).toLocaleString('en-PK') : 'Pending'}
               </span>
               <div className="flex gap-2">

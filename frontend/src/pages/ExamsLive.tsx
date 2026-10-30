@@ -65,7 +65,7 @@ function computeGradeClient(percentage: number): { grade: string; isPassed: bool
   return { grade: 'F', isPassed: false };
 }
 
-const inputStyle = 'w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium transition';
+const inputStyle = 'w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15 font-medium transition';
 
 export default function ExamsLive() {
   const { user } = useAuth();
@@ -303,8 +303,8 @@ export default function ExamsLive() {
               <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
               <span className="text-[11px] font-black uppercase tracking-widest text-indigo-400">Examination & Grading Engine</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Exams & Results Flow</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Exams & Results Flow</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Schedule tests, enter subject marks with live grading (A+, A, B, C, D, F), pass/fail ratios, and result card publishing.
             </p>
           </div>
@@ -322,7 +322,7 @@ export default function ExamsLive() {
             <button
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
@@ -335,11 +335,11 @@ export default function ExamsLive() {
         {/* Left Col: Exams List */}
         <div className="lg:col-span-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground">All Examinations ({exams.length})</h2>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">All Examinations ({exams.length})</h2>
           </div>
 
           <div className="relative">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground pointer-events-none" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -349,7 +349,7 @@ export default function ExamsLive() {
           </div>
 
           {filteredExams.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+            <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-slate-500 dark:text-muted-foreground">
               No exams found. Click "+ Schedule New Exam" to create one.
             </div>
           ) : (
@@ -368,7 +368,7 @@ export default function ExamsLive() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-cyan-500/10 text-cyan-600 px-2 py-0.5 rounded-md">
                           {exam.type || 'EXAM'}
                         </span>
                         <h3 className="font-black text-sm text-foreground mt-1">{exam.name}</h3>
@@ -382,7 +382,7 @@ export default function ExamsLive() {
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-muted-foreground flex items-center justify-between border-t border-border/50 pt-2 font-medium">
+                    <div className="text-[11px] text-slate-500 dark:text-muted-foreground flex items-center justify-between border-t border-border/50 pt-2 font-medium">
                       <span>Total: {exam.totalMarks} Marks (Pass: {exam.passingMarks})</span>
                       <span>{new Date(exam.startDate).toLocaleDateString()}</span>
                     </div>
@@ -430,14 +430,14 @@ export default function ExamsLive() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-foreground">{selectedExam.name}</h2>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-foreground">{selectedExam.name}</h2>
                     <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
                       selectedExam.isPublished ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
                     }`}>
                       {selectedExam.isPublished ? 'Published Live' : 'Draft / Unpublished'}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
                     Target: {selectedExam.section?.class?.name || 'All Classes'} {selectedExam.section?.name ? `(${selectedExam.section.name})` : ''} • Total Marks: {selectedExam.totalMarks} • Passing Marks: {selectedExam.passingMarks}
                   </p>
                 </div>
@@ -447,7 +447,7 @@ export default function ExamsLive() {
                     <>
                       <button
                         onClick={() => void viewAnalytics(selectedExam)}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-2 text-xs font-bold text-foreground hover:bg-muted transition"
                       >
                         <BarChart3 size={14} className="text-indigo-500" /> Analytics
                       </button>
@@ -468,11 +468,11 @@ export default function ExamsLive() {
               {canRecordMarks && (
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-2xl border border-border/60">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-muted-foreground">Select Subject:</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Select Subject:</span>
                     <select
                       value={selectedSubjectId}
                       onChange={e => setSelectedSubjectId(e.target.value)}
-                      className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20"
                     >
                       {subjects.map((sub) => (
                         <option key={sub.id} value={sub.id}>
@@ -503,17 +503,17 @@ export default function ExamsLive() {
               {/* Students Marks Entry Table - Admin/Teacher only */}
               {canRecordMarks ? (
                 loadingResults ? (
-                  <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground animate-pulse">
                     Loading subject marks records...
                   </div>
                 ) : examStudents.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-muted-foreground italic">
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground italic">
                     No enrolled students found for this exam's class / section.
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-border/80 overflow-hidden shadow-sm">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                      <thead className="bg-muted/50 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                         <tr>
                           <th className="p-3">Roll / Adm #</th>
                           <th className="p-3">Candidate Name</th>
@@ -534,11 +534,11 @@ export default function ExamsLive() {
                           const isPassed = !isAbsent && numericMarks >= selectedExam.passingMarks;
 
                           return (
-                            <tr key={st.id} className="hover:bg-muted/20 transition">
-                              <td className="p-3 font-mono font-bold text-foreground">
+                            <tr key={st.id} className="hover:bg-slate-50 dark:bg-muted/20 transition">
+                              <td className="p-3 font-mono font-bold text-slate-900 dark:text-foreground">
                                 {st.rollNo || st.admissionNo || '—'}
                               </td>
-                              <td className="p-3 font-bold text-foreground">
+                              <td className="p-3 font-bold text-slate-900 dark:text-foreground">
                                 {st.name}
                               </td>
                               <td className="p-3">
@@ -561,10 +561,10 @@ export default function ExamsLive() {
                                     }));
                                   }}
                                   placeholder="0"
-                                  className="w-24 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40"
+                                  className="w-24 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40"
                                 />
                               </td>
-                              <td className="p-3 text-center font-mono font-bold text-foreground">
+                              <td className="p-3 text-center font-mono font-bold text-slate-900 dark:text-foreground">
                                 {isAbsent ? '0.0%' : `${pct.toFixed(1)}%`}
                               </td>
                               <td className="p-3 text-center">
@@ -615,12 +615,12 @@ export default function ExamsLive() {
                 )
               ) : (
                 /* Student view — results will appear once published */
-                <div className="py-10 text-center rounded-2xl border border-dashed border-border bg-muted/20">
+                <div className="py-10 text-center rounded-2xl border border-dashed border-border bg-slate-50 dark:bg-muted/20">
                   <GraduationCap size={36} className="mx-auto text-indigo-400 mb-3" />
-                  <p className="text-sm font-bold text-foreground">
+                  <p className="text-sm font-bold text-slate-900 dark:text-foreground">
                     {selectedExam.isPublished ? 'Results are published' : 'Results not yet published'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
                     {selectedExam.isPublished
                       ? 'Check your student portal for your individual result card.'
                       : 'Your teacher will publish results after marking. Please check back later.'}
@@ -630,7 +630,7 @@ export default function ExamsLive() {
 
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-border p-16 text-center text-muted-foreground">
+            <div className="rounded-3xl border border-dashed border-border p-16 text-center text-slate-500 dark:text-muted-foreground">
               Select an examination from the left list to record marks and view results.
             </div>
           )}
@@ -646,19 +646,19 @@ export default function ExamsLive() {
           <div className="relative z-10 w-full max-w-lg rounded-3xl border border-border/80 bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-border/60 p-5">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
+                <div className="h-9 w-9 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center font-bold">
                   <Award size={18} />
                 </div>
-                <h2 className="font-black text-base text-foreground">Schedule Examination</h2>
+                <h2 className="font-black text-base text-slate-900 dark:text-foreground">Schedule Examination</h2>
               </div>
-              <button onClick={() => setShowCreate(false)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted">
+              <button onClick={() => setShowCreate(false)} className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-muted">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={createExam} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Exam Title *</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Exam Title *</label>
                 <input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -670,7 +670,7 @@ export default function ExamsLive() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Exam Type</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Exam Type</label>
                   <select
                     value={form.type}
                     onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
@@ -680,7 +680,7 @@ export default function ExamsLive() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Target Section</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Target Section</label>
                   <select
                     value={form.sectionId}
                     onChange={e => setForm(f => ({ ...f, sectionId: e.target.value }))}
@@ -698,7 +698,7 @@ export default function ExamsLive() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Start Date *</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Start Date *</label>
                   <input
                     type="date"
                     value={form.startDate}
@@ -708,7 +708,7 @@ export default function ExamsLive() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">End Date *</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">End Date *</label>
                   <input
                     type="date"
                     value={form.endDate}
@@ -721,7 +721,7 @@ export default function ExamsLive() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Total Marks Per Subject</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Total Marks Per Subject</label>
                   <input
                     type="number"
                     value={form.totalMarks}
@@ -731,7 +731,7 @@ export default function ExamsLive() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Passing Marks</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Passing Marks</label>
                   <input
                     type="number"
                     value={form.passingMarks}
@@ -743,7 +743,7 @@ export default function ExamsLive() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Instructions / Description</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Instructions / Description</label>
                 <input
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -773,34 +773,34 @@ export default function ExamsLive() {
           <div className="relative z-10 w-full max-w-3xl rounded-3xl border border-border/80 bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-border/60 p-5">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
+                <div className="h-9 w-9 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center font-bold">
                   <BarChart3 size={18} />
                 </div>
-                <h2 className="font-black text-base text-foreground">
+                <h2 className="font-black text-base text-slate-900 dark:text-foreground">
                   Exam Performance Analytics — {analyticsData?.exam?.name || 'Overview'}
                 </h2>
               </div>
-              <button onClick={() => setShowAnalytics(false)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted">
+              <button onClick={() => setShowAnalytics(false)} className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-muted">
                 <X size={18} />
               </button>
             </div>
 
             <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
               {loadingAnalytics ? (
-                <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground animate-pulse">
                   Aggregating class results and computing statistics...
                 </div>
               ) : !analyticsData ? (
-                <div className="py-12 text-center text-xs text-muted-foreground">
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-muted-foreground">
                   No data available for this examination.
                 </div>
               ) : (
                 <>
                   {/* Summary Tiles */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="rounded-2xl border border-border bg-muted/20 p-3.5 text-center">
-                      <p className="text-xl font-black text-foreground">{analyticsData.summary?.totalStudents || 0}</p>
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Appeared Candidates</p>
+                    <div className="rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 p-3.5 text-center">
+                      <p className="text-xl font-black text-slate-900 dark:text-foreground">{analyticsData.summary?.totalStudents || 0}</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Appeared Candidates</p>
                     </div>
                     <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-center">
                       <p className="text-xl font-black text-emerald-500">{analyticsData.summary?.passedStudents || 0}</p>
@@ -818,12 +818,12 @@ export default function ExamsLive() {
 
                   {/* Top Performers Leaderboard */}
                   <div className="space-y-2.5">
-                    <h3 className="text-xs font-black uppercase text-muted-foreground flex items-center gap-1.5">
+                    <h3 className="text-xs font-black uppercase text-slate-500 dark:text-muted-foreground flex items-center gap-1.5">
                       <Award size={14} className="text-amber-500" /> Top Ranked Students (Class Positions)
                     </h3>
                     <div className="rounded-2xl border border-border/80 overflow-hidden">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                        <thead className="bg-muted/50 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                           <tr>
                             <th className="p-2.5">Position</th>
                             <th className="p-2.5">Candidate</th>
@@ -835,7 +835,7 @@ export default function ExamsLive() {
                         </thead>
                         <tbody className="divide-y divide-border/60">
                           {(analyticsData.students || []).slice(0, 5).map((st: any) => (
-                            <tr key={st.studentId} className="hover:bg-muted/20">
+                            <tr key={st.studentId} className="hover:bg-slate-50 dark:bg-muted/20">
                               <td className="p-2.5 font-bold">
                                 <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-black ${
                                   st.position === 1 ? 'bg-amber-500 text-white' :
@@ -845,11 +845,11 @@ export default function ExamsLive() {
                                   {st.position}
                                 </span>
                               </td>
-                              <td className="p-2.5 font-bold text-foreground">
-                                {st.name} <span className="text-[10px] font-normal text-muted-foreground">({st.admissionNo})</span>
+                              <td className="p-2.5 font-bold text-slate-900 dark:text-foreground">
+                                {st.name} <span className="text-[10px] font-normal text-slate-500 dark:text-muted-foreground">({st.admissionNo})</span>
                               </td>
-                              <td className="p-2.5 font-mono font-semibold text-foreground">{st.totalObtained} / {st.maxPossible}</td>
-                              <td className="p-2.5 font-mono font-bold text-foreground">{st.percentage}%</td>
+                              <td className="p-2.5 font-mono font-semibold text-slate-900 dark:text-foreground">{st.totalObtained} / {st.maxPossible}</td>
+                              <td className="p-2.5 font-mono font-bold text-slate-900 dark:text-foreground">{st.percentage}%</td>
                               <td className="p-2.5 text-center font-black text-indigo-500">{st.grade}</td>
                               <td className="p-2.5 text-center">
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${st.isOverallPass ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
@@ -865,20 +865,20 @@ export default function ExamsLive() {
 
                   {/* Subject-Wise Pass Ratios */}
                   <div className="space-y-2.5">
-                    <h3 className="text-xs font-black uppercase text-muted-foreground flex items-center gap-1.5">
+                    <h3 className="text-xs font-black uppercase text-slate-500 dark:text-muted-foreground flex items-center gap-1.5">
                       <BookOpen size={14} className="text-indigo-500" /> Subject-wise Performance
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {(analyticsData.subjectAnalytics || []).map((sub: any) => (
-                        <div key={sub.subjectId} className="rounded-2xl border border-border/80 bg-muted/20 p-3.5 space-y-2">
+                        <div key={sub.subjectId} className="rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 p-3.5 space-y-2">
                           <div className="flex items-center justify-between font-bold text-xs">
-                            <span className="text-foreground">{sub.subjectName}</span>
+                            <span className="text-slate-900 dark:text-foreground">{sub.subjectName}</span>
                             <span className="text-indigo-500 font-mono">{sub.passPercentage}% Pass Rate</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                             <div className="bg-indigo-600 h-full rounded-full" style={{ width: `${sub.passPercentage}%` }} />
                           </div>
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-muted-foreground">
                             <span>Avg: {sub.averageMarks} Marks</span>
                             <span>Highest: {sub.highestMarks}</span>
                           </div>

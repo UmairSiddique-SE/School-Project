@@ -152,13 +152,13 @@ export default function Homework() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-violet-500/10 text-violet-500 border border-violet-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-cyan-500/10 text-cyan-600 border border-violet-500/20">
               <ShieldCheck size={12} /> Academic Coursework
             </span>
-            <span className="text-xs text-muted-foreground">• Assignments & Submissions</span>
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">• Assignments & Submissions</span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight">Homework & Tasks</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1">
             Curriculum assignments, syllabus deadlines, and digital study resources for all classes.
           </p>
         </div>
@@ -167,7 +167,7 @@ export default function Homework() {
           <button
             onClick={() => void load()}
             disabled={loading}
-            className="p-2.5 rounded-xl border border-border bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
             title="Refresh Homework"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin text-primary' : ''} />
@@ -194,7 +194,7 @@ export default function Homework() {
             gradient: 'from-violet-500/[0.08] via-card/70 to-card',
             border: 'border-violet-500/25 hover:border-violet-500/50',
             glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
-            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
             labelColor: 'text-violet-600 dark:text-violet-400',
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
@@ -260,7 +260,7 @@ export default function Homework() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -272,14 +272,14 @@ export default function Homework() {
       </div>
 
       {/* ─── Search & Subject Filter Bar ────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row items-stretch sm:items-center justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row items-stretch sm:items-center justify-between">
         <div className="relative flex-1 sm:max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search homework title, subject, class, teacher..."
-            className="w-full rounded-xl border border-border bg-background py-2 pl-10 pr-4 text-xs outline-none focus:border-primary"
+            className="w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background py-2 pl-10 pr-4 text-xs outline-none focus:border-primary"
           />
         </div>
 
@@ -287,7 +287,7 @@ export default function Homework() {
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-background text-xs font-semibold text-foreground outline-none"
+            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs font-semibold text-foreground outline-none"
           >
             <option value="ALL">All Subjects</option>
             {subjects.map((s) => (
@@ -303,13 +303,13 @@ export default function Homework() {
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Loader2 size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Loading assignments...</p>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Loading assignments...</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 p-12 text-center">
-          <BookOpen className="mx-auto mb-3 text-muted-foreground/40" size={44} />
-          <h3 className="font-bold text-foreground">No Homework Tasks Found</h3>
-          <p className="text-xs text-muted-foreground mt-1">
+          <BookOpen className="mx-auto mb-3 text-slate-500 dark:text-muted-foreground/40" size={44} />
+          <h3 className="font-bold text-slate-900 dark:text-foreground">No Homework Tasks Found</h3>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
             Assigned tasks will appear here for students and teachers.
           </p>
           {canManage && (
@@ -332,13 +332,13 @@ export default function Homework() {
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 border border-violet-500/20">
                       {h.subject?.name || 'General Core'}
                     </span>
                     {canManage && (
                       <button
                         onClick={() => void remove(h.id)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                         title="Delete homework"
                       >
                         <Trash2 size={15} />
@@ -347,12 +347,12 @@ export default function Homework() {
                   </div>
 
                   <h2 className="font-bold text-base text-foreground mt-2">{h.title}</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
                     {h.section?.class?.name || 'Class'} {h.section?.name ? `— ${h.section.name}` : ''}
                   </p>
 
                   {h.description && (
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed line-clamp-3">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mt-3 leading-relaxed line-clamp-3">
                       {h.description}
                     </p>
                   )}
@@ -362,7 +362,7 @@ export default function Homework() {
                   <div className="flex items-center justify-between text-xs">
                     <span
                       className={`inline-flex items-center gap-1 font-semibold ${
-                        isDueSoon ? 'text-amber-500' : 'text-muted-foreground'
+                        isDueSoon ? 'text-amber-500' : 'text-slate-500 dark:text-muted-foreground'
                       }`}
                     >
                       <Calendar size={13} />
@@ -370,7 +370,7 @@ export default function Homework() {
                     </span>
 
                     {h.teacher?.name && (
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[120px]">
+                      <span className="text-[11px] text-slate-500 dark:text-muted-foreground flex items-center gap-1 truncate max-w-[120px]">
                         <UserCheck size={12} /> {h.teacher.name}
                       </span>
                     )}
@@ -409,7 +409,7 @@ export default function Homework() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="e.g. Exercise 4.2 Quadratic Equations Q1 to Q10"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -420,7 +420,7 @@ export default function Homework() {
                 required
                 value={form.sectionId}
                 onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="">-- Choose Section --</option>
                 {sections.map((s) => (
@@ -437,7 +437,7 @@ export default function Homework() {
                 required
                 value={form.subjectId}
                 onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 <option value="">-- Choose Subject --</option>
                 {subjects.map((s) => (
@@ -457,7 +457,7 @@ export default function Homework() {
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -467,7 +467,7 @@ export default function Homework() {
                 value={form.attachmentUrl}
                 onChange={(e) => setForm({ ...form, attachmentUrl: e.target.value })}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -479,7 +479,7 @@ export default function Homework() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Write detailed homework instructions for students..."
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary resize-none"
             />
           </div>
 

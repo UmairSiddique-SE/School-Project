@@ -49,9 +49,9 @@ type TeacherMapping = {
 type ModalType = 'grade' | 'section' | 'subject' | 'edit_subject' | 'assign' | 'academic_year' | null;
 
 /* ─── Shared input style ────────────────────────────────────── */
-const inp = `w-full rounded-xl border border-border/80 bg-muted/40 px-3.5 py-2.5 text-sm
-  text-foreground outline-none placeholder:text-muted-foreground/60 transition
-  focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium`;
+const inp = `w-full rounded-xl border border-border/80 bg-slate-100/70 dark:bg-muted/40 px-3.5 py-2.5 text-sm
+  text-foreground outline-none placeholder:text-slate-500 dark:text-muted-foreground/60 transition
+  focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15 font-medium`;
 
 /* ─── Gradient palette per modal ─────────────────────────────── */
 const PALETTE = {
@@ -85,9 +85,9 @@ function ModalShell({ open, onClose, title, icon, children, palette }: {
             <div className={`h-9 w-9 rounded-xl ${palette.bg} ${palette.text} flex items-center justify-center`}>
               {icon}
             </div>
-            <h2 className="font-black text-base text-foreground">{title}</h2>
+            <h2 className="font-black text-base text-slate-900 dark:text-foreground">{title}</h2>
           </div>
-          <button onClick={onClose} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted transition">
+          <button onClick={onClose} className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-muted transition">
             <X size={18} />
           </button>
         </div>
@@ -445,8 +445,8 @@ export default function ClassesLive() {
                 </span>
               )}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Academic Management</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Academic Management</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Class structures, subject curriculum, teacher–section allocations, and academic sessions.
             </p>
           </div>
@@ -515,7 +515,7 @@ export default function ClassesLive() {
             <button
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin':''}/> Refresh
             </button>
@@ -529,11 +529,11 @@ export default function ClassesLive() {
             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
               activeTab === 'classes'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/25 scale-[1.02]'
-                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:bg-muted/70 hover:text-foreground'
             }`}
           >
             <GraduationCap size={16} /> Classes & Sections
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'classes' ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'classes' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {classes.length}
             </span>
           </button>
@@ -543,11 +543,11 @@ export default function ClassesLive() {
             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
               activeTab === 'subjects'
                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 scale-[1.02]'
-                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:bg-muted/70 hover:text-foreground'
             }`}
           >
             <BookMarked size={16} /> Subjects & Curriculum
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'subjects' ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'subjects' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {subjects.length}
             </span>
           </button>
@@ -557,11 +557,11 @@ export default function ClassesLive() {
             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
               activeTab === 'mapping'
                 ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 scale-[1.02]'
-                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:bg-muted/70 hover:text-foreground'
             }`}
           >
             <UserCheck size={16} /> Teacher ↔ Subject Allocation
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'mapping' ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'mapping' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {teacherMappings.length}
             </span>
           </button>
@@ -571,11 +571,11 @@ export default function ClassesLive() {
             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
               activeTab === 'sessions'
                 ? 'bg-rose-600 text-white shadow-md shadow-rose-600/25 scale-[1.02]'
-                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                : 'text-slate-500 dark:text-muted-foreground hover:bg-muted/70 hover:text-foreground'
             }`}
           >
             <Calendar size={16} /> Academic Sessions
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'sessions' ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'sessions' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {academicYears.length}
             </span>
           </button>
@@ -588,24 +588,24 @@ export default function ClassesLive() {
           <div className="h-10 w-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 mb-3">
             <GraduationCap size={20}/>
           </div>
-          <p className="text-2xl font-black text-foreground">{classes.length}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Total Classes ({totalSections} Sections)</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{classes.length}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Total Classes ({totalSections} Sections)</p>
         </div>
 
         <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-card p-5 shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-3">
             <BookOpen size={20}/>
           </div>
-          <p className="text-2xl font-black text-foreground">{subjects.length}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Curriculum Subjects</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{subjects.length}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Curriculum Subjects</p>
         </div>
 
         <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-card p-5 shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mb-3">
             <UserCheck size={20}/>
           </div>
-          <p className="text-2xl font-black text-foreground">{teachers.length}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Faculty Members</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{teachers.length}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Faculty Members</p>
         </div>
 
         <div className="relative overflow-hidden rounded-2xl border border-rose-500/20 bg-card p-5 shadow-sm">
@@ -613,13 +613,13 @@ export default function ClassesLive() {
             <Calendar size={20}/>
           </div>
           <p className="text-xl font-black text-foreground truncate">{currentSession?.name || '2026-2027'}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Current Active Session</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Current Active Session</p>
         </div>
       </div>
 
       {/* ── Search Bar ── */}
       <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground pointer-events-none"/>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -629,7 +629,7 @@ export default function ClassesLive() {
             activeTab === 'mapping' ? "Search faculty mapping by teacher, class, subject..." :
             "Search academic sessions..."
           }
-          className="w-full rounded-2xl border border-border/80 bg-card py-3 pl-11 pr-4 text-sm font-medium text-foreground shadow-sm placeholder:text-muted-foreground/60 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+          className="w-full rounded-2xl border border-border/80 bg-card py-3 pl-11 pr-4 text-sm font-medium text-foreground shadow-sm placeholder:text-slate-500 dark:text-muted-foreground/60 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/15"
         />
       </div>
 
@@ -642,8 +642,8 @@ export default function ClassesLive() {
           <div className="lg:col-span-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-black uppercase tracking-wider text-muted-foreground">Class Levels</h2>
-                <p className="text-xs text-muted-foreground">Select class to view {canManage ? 'and manage ' : ''}sections</p>
+                <h2 className="text-sm font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Class Levels</h2>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">Select class to view {canManage ? 'and manage ' : ''}sections</p>
               </div>
               {canManage && <button
                 onClick={() => setModal('grade')}
@@ -655,7 +655,7 @@ export default function ClassesLive() {
 
             {filteredClasses.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-border bg-card p-10 text-center space-y-3">
-                <GraduationCap size={32} className="mx-auto text-muted-foreground/40"/>
+                <GraduationCap size={32} className="mx-auto text-slate-500 dark:text-muted-foreground/40"/>
                 <p className="font-bold text-foreground text-sm">No classes found</p>
                 {canManage && <button onClick={() => setModal('grade')} className="inline-flex items-center gap-1.5 text-xs font-bold bg-violet-600 text-white px-3.5 py-2 rounded-xl">
                   <Plus size={13}/> Create First Class
@@ -675,7 +675,7 @@ export default function ClassesLive() {
                       className={`group relative cursor-pointer rounded-2xl border p-4 transition-all ${
                         isSelected
                           ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/10 scale-[1.01]'
-                          : 'border-border/80 bg-card hover:border-violet-500/40 hover:bg-muted/40'
+                          : 'border-border/80 bg-card hover:border-violet-500/40 hover:bg-slate-100/70 dark:bg-muted/40'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -689,10 +689,10 @@ export default function ClassesLive() {
                           </div>
                           <div className="min-w-0">
                             <h3 className="font-black text-base text-foreground truncate">{item.name}</h3>
-                            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                            <p className="text-xs text-slate-500 dark:text-muted-foreground flex items-center gap-2 mt-0.5">
                               <span>{secCount} {secCount === 1 ? 'Section' : 'Sections'}</span>
                               <span>•</span>
-                              <span className="font-semibold text-foreground">{stuCount} Students</span>
+                              <span className="font-semibold text-slate-900 dark:text-foreground">{stuCount} Students</span>
                             </p>
                           </div>
                         </div>
@@ -703,12 +703,12 @@ export default function ClassesLive() {
                               e.stopPropagation();
                               void archiveClass(item.id, item.name);
                             }}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
                             title="Delete Class"
                           >
                             <Trash2 size={15}/>
                           </button>}
-                          <ChevronRight size={18} className={`transition ${isSelected ? 'text-violet-500 translate-x-1' : 'text-muted-foreground/40'}`}/>
+                          <ChevronRight size={18} className={`transition ${isSelected ? 'text-violet-500 translate-x-1' : 'text-slate-500 dark:text-muted-foreground/40'}`}/>
                         </div>
                       </div>
                     </div>
@@ -728,8 +728,8 @@ export default function ClassesLive() {
                       {selectedClass.numeric ?? selectedClass.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black text-foreground">{selectedClass.name}</h2>
-                      <p className="text-xs text-muted-foreground">Class details, active sections, and curriculum allocation</p>
+                      <h2 className="text-2xl font-black text-slate-900 dark:text-foreground">{selectedClass.name}</h2>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground">Class details, active sections, and curriculum allocation</p>
                     </div>
                   </div>
 
@@ -749,14 +749,14 @@ export default function ClassesLive() {
 
                 {/* Sections Grid */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground flex items-center gap-2">
                     <Layers3 size={14} className="text-cyan-500" /> Active Sections ({selectedClass.sections?.length || 0})
                   </h3>
 
                   {(selectedClass.sections || []).length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-border p-8 text-center space-y-2">
-                      <Layers3 size={24} className="mx-auto text-muted-foreground/40" />
-                      <p className="text-xs font-bold text-foreground">No sections in this class yet</p>
+                      <Layers3 size={24} className="mx-auto text-slate-500 dark:text-muted-foreground/40" />
+                      <p className="text-xs font-bold text-slate-900 dark:text-foreground">No sections in this class yet</p>
                       {canManage && <button
                         onClick={() => {
                           setSectionClassId(selectedClass.id);
@@ -776,19 +776,19 @@ export default function ClassesLive() {
                         const count = sec._count?.students ?? sec.students?.length ?? 0;
                         const pctCap = sec.capacity ? Math.round((count / sec.capacity) * 100) : 0;
                         return (
-                          <div key={sec.id} className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3 hover:border-cyan-500/40 transition group">
+                          <div key={sec.id} className="rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 p-4 space-y-3 hover:border-cyan-500/40 transition group">
                             <div className="flex items-center justify-between">
-                              <span className="font-black text-sm text-foreground">Section {sec.name}</span>
+                              <span className="font-black text-sm text-slate-900 dark:text-foreground">Section {sec.name}</span>
                               {canManage && <button
                                 onClick={() => void archiveSection(sec.id, sec.name)}
-                                className="rounded-lg p-1.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition"
+                                className="rounded-lg p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition"
                                 title="Delete Section"
                               >
                                 <Trash2 size={14} />
                               </button>}
                             </div>
 
-                            <div className="space-y-1.5 text-xs text-muted-foreground">
+                            <div className="space-y-1.5 text-xs text-slate-500 dark:text-muted-foreground">
                               <p className="flex items-center gap-2 font-medium">
                                 <User size={13} className="text-cyan-500" />
                                 {sec.teacher ? (
@@ -799,7 +799,7 @@ export default function ClassesLive() {
                               </p>
                               <div className="flex items-center justify-between text-[11px] pt-1">
                                 <span>Enrollment</span>
-                                <span className="font-bold text-foreground">{count} / {sec.capacity}</span>
+                                <span className="font-bold text-slate-900 dark:text-foreground">{count} / {sec.capacity}</span>
                               </div>
                               <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                                 <div
@@ -818,7 +818,7 @@ export default function ClassesLive() {
                 {/* Class Subjects Table */}
                 <div className="space-y-3 border-t border-border/60 pt-5">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground flex items-center gap-2">
                       <BookMarked size={14} className="text-emerald-500" /> Curriculum Subjects ({selectedClass.subjects?.length || 0})
                     </h3>
                     {canManage && <button
@@ -833,11 +833,11 @@ export default function ClassesLive() {
                   </div>
 
                   {(selectedClass.subjects || []).length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No subjects allocated to this class yet.</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground italic">No subjects allocated to this class yet.</p>
                   ) : (
                     <div className="rounded-2xl border border-border/60 overflow-hidden">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-muted/40 text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                        <thead className="bg-slate-100/70 dark:bg-muted/40 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                           <tr>
                             <th className="p-3">Subject</th>
                             <th className="p-3">Code</th>
@@ -847,9 +847,9 @@ export default function ClassesLive() {
                         </thead>
                         <tbody className="divide-y divide-border/60">
                           {(selectedClass.subjects || []).map((as) => (
-                            <tr key={as.id} className="hover:bg-muted/20">
-                              <td className="p-3 font-bold text-foreground">{as.subject.name}</td>
-                              <td className="p-3 text-muted-foreground">{as.subject.code || '—'}</td>
+                            <tr key={as.id} className="hover:bg-slate-50 dark:bg-muted/20">
+                              <td className="p-3 font-bold text-slate-900 dark:text-foreground">{as.subject.name}</td>
+                              <td className="p-3 text-slate-500 dark:text-muted-foreground">{as.subject.code || '—'}</td>
                               <td className="p-3">
                                 {as.teacher ? (
                                   <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-500">
@@ -877,7 +877,7 @@ export default function ClassesLive() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-border p-12 text-center text-muted-foreground">
+              <div className="rounded-3xl border border-dashed border-border p-12 text-center text-slate-500 dark:text-muted-foreground">
                 Select a class from the left list to view sections and subject curriculum.
               </div>
             )}
@@ -892,8 +892,8 @@ export default function ClassesLive() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/80 rounded-2xl p-4">
             <div>
-              <h2 className="text-base font-black text-foreground">Curriculum & Subjects Catalog</h2>
-              <p className="text-xs text-muted-foreground">Configure compulsory and elective subjects, credit weights, and assigned grades</p>
+              <h2 className="text-base font-black text-slate-900 dark:text-foreground">Curriculum & Subjects Catalog</h2>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Configure compulsory and elective subjects, credit weights, and assigned grades</p>
             </div>
             {canManage && <button
               onClick={openNewSubjectModal}
@@ -905,7 +905,7 @@ export default function ClassesLive() {
 
           {filteredSubjects.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
-              <BookOpen size={36} className="mx-auto text-muted-foreground/40" />
+              <BookOpen size={36} className="mx-auto text-slate-500 dark:text-muted-foreground/40" />
               <p className="font-bold text-foreground text-sm">No subjects found</p>
               {canManage && <button onClick={openNewSubjectModal} className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-xl">
                 <Plus size={14} /> Register First Subject
@@ -927,7 +927,7 @@ export default function ClassesLive() {
                         <div>
                           <h3 className="font-black text-base text-foreground leading-snug">{sub.name}</h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">
+                            <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-slate-900 dark:text-foreground">
                               {sub.code || 'NO-CODE'}
                             </span>
                             <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
@@ -944,14 +944,14 @@ export default function ClassesLive() {
                       {canManage && <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => openEditSubjectModal(sub)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 transition"
+                          className="rounded-lg p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 transition"
                           title="Edit Subject"
                         >
                           <Edit3 size={15}/>
                         </button>
                         <button
                           onClick={() => void deleteSubject(sub)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
+                          className="rounded-lg p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
                           title="Delete Subject"
                         >
                           <Trash2 size={15}/>
@@ -960,13 +960,13 @@ export default function ClassesLive() {
                     </div>
 
                     {sub.cleanDescription && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">{sub.cleanDescription}</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground line-clamp-2">{sub.cleanDescription}</p>
                     )}
 
                     <div className="border-t border-border/60 pt-3 space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Assigned Classes</span>
-                        <span className="font-bold text-foreground">{sub.assignedClassesCount || 0} Levels</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Assigned Classes</span>
+                        <span className="font-bold text-slate-900 dark:text-foreground">{sub.assignedClassesCount || 0} Levels</span>
                       </div>
 
                       <div className="flex flex-wrap gap-1.5">
@@ -995,8 +995,8 @@ export default function ClassesLive() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/80 rounded-2xl p-4">
             <div>
-              <h2 className="text-base font-black text-foreground">Teacher–Section–Subject Allocation Matrix</h2>
-              <p className="text-xs text-muted-foreground">Overview of teacher subject workloads, section class teachers, and weekly period counts</p>
+              <h2 className="text-base font-black text-slate-900 dark:text-foreground">Teacher–Section–Subject Allocation Matrix</h2>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Overview of teacher subject workloads, section class teachers, and weekly period counts</p>
             </div>
             {canManage && <button
               onClick={() => setModal('assign')}
@@ -1008,7 +1008,7 @@ export default function ClassesLive() {
 
           {filteredTeacherMappings.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
-              <UserCheck size={36} className="mx-auto text-muted-foreground/40" />
+              <UserCheck size={36} className="mx-auto text-slate-500 dark:text-muted-foreground/40" />
               <p className="font-bold text-foreground text-sm">No teacher allocations found</p>
             </div>
           ) : (
@@ -1021,18 +1021,18 @@ export default function ClassesLive() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-black text-base text-foreground truncate">{tm.name}</h3>
-                      <p className="text-xs text-muted-foreground font-mono">{tm.employeeNo || tm.email || 'Faculty'}</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground font-mono">{tm.employeeNo || tm.email || 'Faculty'}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="rounded-xl bg-muted/40 p-2 border border-border/50">
-                      <p className="text-lg font-black text-foreground">{tm.assignedSubjects.length}</p>
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Subjects Assigned</p>
+                    <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                      <p className="text-lg font-black text-slate-900 dark:text-foreground">{tm.assignedSubjects.length}</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Subjects Assigned</p>
                     </div>
-                    <div className="rounded-xl bg-muted/40 p-2 border border-border/50">
+                    <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
                       <p className="text-lg font-black text-amber-500">{tm.totalWeeklyPeriods}</p>
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Weekly Periods</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Weekly Periods</p>
                     </div>
                   </div>
 
@@ -1044,16 +1044,16 @@ export default function ClassesLive() {
                   )}
 
                   <div className="space-y-2 border-t border-border/60 pt-3">
-                    <h4 className="text-[11px] font-black uppercase text-muted-foreground">Teaching Subjects:</h4>
+                    <h4 className="text-[11px] font-black uppercase text-slate-500 dark:text-muted-foreground">Teaching Subjects:</h4>
                     {tm.assignedSubjects.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">No subjects currently assigned.</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground italic">No subjects currently assigned.</p>
                     ) : (
                       <div className="space-y-1.5">
                         {tm.assignedSubjects.map((as) => (
                           <div key={as.id} className="flex items-center justify-between text-xs bg-muted/30 p-2 rounded-xl border border-border/60">
                             <div>
-                              <span className="font-bold text-foreground">{as.subjectName}</span>
-                              <span className="text-muted-foreground ml-1.5">({as.className})</span>
+                              <span className="font-bold text-slate-900 dark:text-foreground">{as.subjectName}</span>
+                              <span className="text-slate-500 dark:text-muted-foreground ml-1.5">({as.className})</span>
                             </div>
                             {canManage && <button
                               onClick={() => void removeSubjectAssignment(as.id)}
@@ -1081,8 +1081,8 @@ export default function ClassesLive() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/80 rounded-2xl p-4">
             <div>
-              <h2 className="text-base font-black text-foreground">Academic Years & Sessions</h2>
-              <p className="text-xs text-muted-foreground">Manage active school sessions, previous year archives, and activate new academic terms</p>
+              <h2 className="text-base font-black text-slate-900 dark:text-foreground">Academic Years & Sessions</h2>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Manage active school sessions, previous year archives, and activate new academic terms</p>
             </div>
             {canManage && <button
               onClick={openAcademicYearModal}
@@ -1105,14 +1105,14 @@ export default function ClassesLive() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-black text-xl text-foreground">{year.name}</h3>
+                      <h3 className="font-black text-xl text-slate-900 dark:text-foreground">{year.name}</h3>
                       {year.isCurrent && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-rose-500 text-white text-[10px] font-black px-2.5 py-0.5">
                           <CheckCircle2 size={11} /> CURRENT
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 flex items-center gap-1.5">
                       <Clock size={12} />
                       {new Date(year.startDate).toLocaleDateString()} — {new Date(year.endDate).toLocaleDateString()}
                     </p>
@@ -1121,7 +1121,7 @@ export default function ClassesLive() {
                   {canManage && !year.isCurrent && (
                     <button
                       onClick={() => void deleteSession(year)}
-                      className="text-muted-foreground hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-500/10 transition"
+                      className="text-slate-500 dark:text-muted-foreground hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-500/10 transition"
                       title="Delete Session"
                     >
                       <Trash2 size={15} />
@@ -1130,17 +1130,17 @@ export default function ClassesLive() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="rounded-xl bg-muted/40 p-2 border border-border/50">
-                    <p className="font-black text-foreground">{year._count?.classes || 0}</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold">Classes</p>
+                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                    <p className="font-black text-slate-900 dark:text-foreground">{year._count?.classes || 0}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Classes</p>
                   </div>
-                  <div className="rounded-xl bg-muted/40 p-2 border border-border/50">
-                    <p className="font-black text-foreground">{year._count?.exams || 0}</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold">Exams</p>
+                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                    <p className="font-black text-slate-900 dark:text-foreground">{year._count?.exams || 0}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Exams</p>
                   </div>
-                  <div className="rounded-xl bg-muted/40 p-2 border border-border/50">
-                    <p className="font-black text-foreground">{year._count?.attendances || 0}</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold">Records</p>
+                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                    <p className="font-black text-slate-900 dark:text-foreground">{year._count?.attendances || 0}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Records</p>
                   </div>
                 </div>
 
@@ -1172,7 +1172,7 @@ export default function ClassesLive() {
       >
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Class / Grade Name *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Class / Grade Name *</label>
             <input
               value={className}
               onChange={e => setClassName(e.target.value)}
@@ -1181,7 +1181,7 @@ export default function ClassesLive() {
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Numeric Order (Optional)</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Numeric Order (Optional)</label>
             <input
               type="number"
               value={classNumeric}
@@ -1210,7 +1210,7 @@ export default function ClassesLive() {
       >
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Parent Class *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Parent Class *</label>
             <select
               value={sectionClassId}
               onChange={e => setSectionClassId(e.target.value)}
@@ -1220,7 +1220,7 @@ export default function ClassesLive() {
             </select>
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Section Name *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Section Name *</label>
             <input
               value={sectionName}
               onChange={e => setSectionName(e.target.value)}
@@ -1230,7 +1230,7 @@ export default function ClassesLive() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Classroom Capacity</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Classroom Capacity</label>
               <input
                 type="number"
                 value={capacity}
@@ -1240,7 +1240,7 @@ export default function ClassesLive() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Class Teacher (In-Charge)</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Class Teacher (In-Charge)</label>
               <select
                 value={sectionTeacherId}
                 onChange={e => setSectionTeacherId(e.target.value)}
@@ -1272,7 +1272,7 @@ export default function ClassesLive() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Subject Name *</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Subject Name *</label>
               <input
                 value={subjectName}
                 onChange={e => setSubjectName(e.target.value)}
@@ -1281,7 +1281,7 @@ export default function ClassesLive() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Subject Code</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Subject Code</label>
               <input
                 value={subjectCode}
                 onChange={e => setSubjectCode(e.target.value)}
@@ -1293,7 +1293,7 @@ export default function ClassesLive() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Subject Category</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Subject Category</label>
               <select
                 value={subjectType}
                 onChange={e => setSubjectType(e.target.value as any)}
@@ -1304,7 +1304,7 @@ export default function ClassesLive() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Credit Hours / Weight</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Credit Hours / Weight</label>
               <input
                 type="number"
                 value={creditHours}
@@ -1316,7 +1316,7 @@ export default function ClassesLive() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Description / Notes</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Description / Notes</label>
             <input
               value={subjectDesc}
               onChange={e => setSubjectDesc(e.target.value)}
@@ -1326,8 +1326,8 @@ export default function ClassesLive() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Assign To Classes</label>
-            <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 border border-border/80 rounded-xl bg-muted/20">
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Assign To Classes</label>
+            <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 border border-border/80 rounded-xl bg-slate-50 dark:bg-muted/20">
               {classes.map(c => {
                 const checked = selectedClassIds.includes(c.id);
                 return (
@@ -1368,7 +1368,7 @@ export default function ClassesLive() {
       >
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Target Class *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Target Class *</label>
             <select
               value={assignClassId}
               onChange={e => setAssignClassId(e.target.value)}
@@ -1379,7 +1379,7 @@ export default function ClassesLive() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Subject *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Subject *</label>
             <select
               value={assignSubjectId}
               onChange={e => setAssignSubjectId(e.target.value)}
@@ -1390,7 +1390,7 @@ export default function ClassesLive() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Faculty Teacher</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Faculty Teacher</label>
             <select
               value={assignTeacherId}
               onChange={e => setAssignTeacherId(e.target.value)}
@@ -1421,7 +1421,7 @@ export default function ClassesLive() {
       >
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Session Title *</label>
+            <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Session Title *</label>
             <input
               value={sessionName}
               onChange={e => setSessionName(e.target.value)}
@@ -1432,7 +1432,7 @@ export default function ClassesLive() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">Start Date *</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">Start Date *</label>
               <input
                 type="date"
                 value={sessionStart}
@@ -1441,7 +1441,7 @@ export default function ClassesLive() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase mb-1.5 block">End Date *</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1.5 block">End Date *</label>
               <input
                 type="date"
                 value={sessionEnd}

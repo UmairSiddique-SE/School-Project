@@ -223,8 +223,8 @@ const cnicFormat = (raw: string) => {
 
 const money = (value?: number | null) => (value == null ? '—' : `PKR ${Number(value).toLocaleString('en-PK')}`);
 
-const inputStyle = 'w-full rounded-2xl border border-slate-200 dark:border-border/80 bg-white dark:bg-background/90 px-4 py-3 text-sm text-foreground outline-none shadow-sm transition placeholder:text-muted-foreground/60 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 font-medium';
-const buttonStyle = 'inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2 text-sm font-semibold transition hover:bg-accent';
+const inputStyle = 'w-full rounded-2xl border border-slate-200 dark:border-border/80 bg-white dark:bg-background/90 px-4 py-3 text-sm text-foreground outline-none shadow-sm transition placeholder:text-slate-500 dark:text-muted-foreground/60 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 font-medium';
+const buttonStyle = 'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2 text-sm font-semibold transition hover:bg-accent';
 const primaryBtnStyle = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-600/20 hover:brightness-110 transition disabled:opacity-60';
 
 export default function Teachers() {
@@ -756,24 +756,24 @@ export default function Teachers() {
       <div className="w-full min-h-screen pb-20 space-y-6 max-w-7xl mx-auto animate-fade-in">
         
         {/* Full Screen Top Header */}
-        <div className="overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-card p-6 shadow-xl backdrop-blur-md">
+        <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 via-purple-500/5 to-card p-6 shadow-xl backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center border border-indigo-500/25 shadow-inner">
+              <div className="h-14 w-14 rounded-2xl bg-cyan-500/15 text-cyan-600 flex items-center justify-center border border-cyan-500/25 shadow-inner">
                 <Briefcase size={28} />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-600 dark:text-indigo-400 border border-cyan-500/30 flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
                     {editing ? 'UPDATE TEACHER PROFILE' : 'NEW TEACHER RECRUITMENT'}
                   </span>
-                  <span className="text-xs text-muted-foreground font-semibold">Faculty ID: {form.employeeNo || 'EMP-2026-001'}</span>
+                  <span className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Faculty ID: {form.employeeNo || 'EMP-2026-001'}</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">
                   {editing ? `Edit Faculty Record: ${editing.name}` : 'Teacher Registration & Portal Access'}
                 </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
                   Complete all teacher profile, academic credentials, and official school login in one step.
                 </p>
               </div>
@@ -782,7 +782,7 @@ export default function Teachers() {
             <button
               type="button"
               onClick={() => setView('list')}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-4 py-2 text-sm font-bold text-foreground hover:bg-muted transition-all shadow-sm"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-4 py-2 text-sm font-bold text-foreground hover:bg-muted transition-all shadow-sm"
             >
               <ArrowLeft size={16} /> Back to Teachers List
             </button>
@@ -793,18 +793,18 @@ export default function Teachers() {
         <form onSubmit={handleSave} className="space-y-6">
           
           {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-indigo-500 mb-4 flex items-center gap-2">
+          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
               1. PERSONAL & CONTACT INFORMATION
             </h3>
 
-            <div className="rounded-2xl border border-border bg-muted/15 p-6">
+            <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 
                 {/* Photo Upload */}
                 <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
-                  <label className="relative flex h-36 w-36 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-indigo-500/40 bg-card shadow-inner hover:border-indigo-400 transition-all group">
+                  <label className="relative flex h-36 w-36 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cyan-500/40 bg-card shadow-inner hover:border-cyan-400 transition-all group">
                     <input
                       type="file"
                       accept="image/*"
@@ -819,9 +819,9 @@ export default function Teachers() {
                         </div>
                       </>
                     ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground text-center p-2">
-                        <Camera size={26} className="text-indigo-500" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Teacher Photo</span>
+                      <div className="flex flex-col items-center gap-2 text-slate-500 dark:text-muted-foreground text-center p-2">
+                        <Camera size={26} className="text-cyan-600" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-indigo-400">Teacher Photo</span>
                       </div>
                     )}
                   </label>
@@ -834,7 +834,7 @@ export default function Teachers() {
                       Remove Photo
                     </button>
                   ) : (
-                    <span className="text-[10px] text-muted-foreground">JPG/PNG (Max 2MB)</span>
+                    <span className="text-[10px] text-slate-500 dark:text-muted-foreground">JPG/PNG (Max 2MB)</span>
                   )}
                 </div>
 
@@ -850,11 +850,11 @@ export default function Teachers() {
                         const nameVal = e.target.value;
                         const firstName = nameVal.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
                         setForm((prev) => {
-                          const isCustomGmail = Boolean(prev.email && prev.email.includes('@') && !prev.email.endsWith('@school.edu'));
+                          const isCustomGmail = Boolean(prev.email && prev.email.includes('@') && !prev.email.endsWith('@school.edu.pk'));
                           let newEmail = prev.email;
                           if (!isCustomGmail && !editing) {
                             const regNum = prev.employeeNo.match(/(\d+)$/)?.[1] || prev.employeeNo.replace(/\D/g, '').slice(-3) || '001';
-                            newEmail = firstName ? `${firstName}${regNum}@school.edu` : '';
+                            newEmail = firstName ? `${firstName}${regNum}@school.edu.pk` : '';
                           }
                           return {
                             ...prev,
@@ -938,13 +938,13 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 2: ACADEMIC QUALIFICATIONS & SALARY */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-indigo-500 mb-4 flex items-center gap-2">
+          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
               2. ACADEMIC QUALIFICATIONS & SALARY
             </h3>
 
-            <div className="rounded-2xl border border-border bg-muted/15 p-6">
+            <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <Field label="Educational Qualification" required>
@@ -1024,13 +1024,13 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 3: OFFICIAL SCHOOL LOGIN ID & 8-CHARACTER PASSWORD */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-indigo-500 mb-4 flex items-center gap-2">
+          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
               3. PROFESSIONAL SCHOOL LOGIN ID & PORTAL PASSWORD
             </h3>
 
-            <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 via-purple-950/10 to-card p-6 space-y-4">
+            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-indigo-950/20 via-purple-950/10 to-card p-6 space-y-4">
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                 
@@ -1038,12 +1038,12 @@ export default function Teachers() {
                   <div className="relative">
                     <input
                       required
-                      className={`${inputStyle} font-mono font-bold text-indigo-600 dark:text-indigo-400`}
+                      className={`${inputStyle} font-mono font-bold text-cyan-600 dark:text-indigo-400`}
                       placeholder="e.g. EMP-2026-001"
                       value={form.employeeNo}
                       onChange={(e) => setForm((prev) => ({ ...prev, employeeNo: e.target.value }))}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-full border border-indigo-500/20 pointer-events-none">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase bg-cyan-500/10 text-cyan-600 px-2 py-0.5 rounded-full border border-cyan-500/20 pointer-events-none">
                       Official ID
                     </span>
                   </div>
@@ -1064,7 +1064,7 @@ export default function Teachers() {
                         onClick={() => {
                           const fName = form.name.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
                           const regNum = form.employeeNo.match(/(\d+)$/)?.[1] || form.employeeNo.replace(/\D/g, '').slice(-3) || '001';
-                          const generated = `${fName}${regNum}@school.edu`;
+                          const generated = `${fName}${regNum}@school.edu.pk`;
                           setForm((prev) => ({ ...prev, email: generated }));
                           toast.info(`Auto Generated: ${fName}${regNum}`);
                         }}
@@ -1074,14 +1074,14 @@ export default function Teachers() {
                         Auto Name+No
                       </button>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-slate-500 dark:text-muted-foreground">
                       💡 Teacher ka apna <strong>Gmail</strong> ho to wahi login ID ban jayega, nahi to first name + registration digits (jaise <code>ali001</code>) se auto-generate ho jayega.
                     </p>
                   </div>
                 </Field>
 
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground mb-1">
                     Portal Login Password (8 Characters) *
                   </label>
                   <div className="flex items-center gap-2">
@@ -1096,7 +1096,7 @@ export default function Teachers() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -1109,7 +1109,7 @@ export default function Teachers() {
                         setForm((prev) => ({ ...prev, password: generated }));
                         toast.success(`Generated 8-char password: ${generated}`);
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-3 text-xs font-bold text-indigo-500 hover:bg-indigo-500/20 transition shrink-0"
+                      className="inline-flex items-center gap-1.5 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-3 text-xs font-bold text-cyan-600 hover:bg-cyan-500/20 transition shrink-0"
                       title="Re-Generate 8-char password"
                     >
                       <RefreshCw size={14} /> Re-Generate
@@ -1121,7 +1121,7 @@ export default function Teachers() {
 
               <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
                 <ShieldCheck size={20} className="text-emerald-500 shrink-0" />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Teacher is <strong>Login ID</strong> ya <strong>Employee No</strong> aur <strong>Password</strong> se apne faculty portal mein login kar sakte hain.
                 </p>
               </div>
@@ -1162,11 +1162,11 @@ export default function Teachers() {
       
       {/* Registration Success Banner */}
       {lastRegistered && (
-        <div className="relative overflow-hidden rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-r from-indigo-950/70 via-slate-900/80 to-purple-950/60 p-6 shadow-2xl animate-fade-in">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-cyan-500/40 bg-gradient-to-r from-indigo-950/70 via-slate-900/80 to-purple-950/60 p-6 shadow-2xl animate-fade-in">
           <div className="relative flex flex-col lg:flex-row gap-6 items-start lg:items-center">
             
             <div className="flex items-center gap-4 flex-1">
-              <div className="h-16 w-16 rounded-2xl overflow-hidden bg-slate-800 border-2 border-indigo-500/50 shrink-0 flex items-center justify-center font-black text-2xl text-indigo-400">
+              <div className="h-16 w-16 rounded-2xl overflow-hidden bg-slate-800 border-2 border-cyan-500/50 shrink-0 flex items-center justify-center font-black text-2xl text-indigo-400">
                 {lastRegistered.teacher.avatarUrl ? (
                   <img src={lastRegistered.teacher.avatarUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
@@ -1197,7 +1197,7 @@ export default function Teachers() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setIdCardTeacher(lastRegistered.teacher)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-600/20 px-3.5 py-2.5 text-xs font-bold text-indigo-300 hover:bg-indigo-600/30 transition"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/50 bg-cyan-600/20 px-3.5 py-2.5 text-xs font-bold text-indigo-300 hover:bg-cyan-600/30 transition"
               >
                 <Printer size={14} /> View ID Card
               </button>
@@ -1214,15 +1214,15 @@ export default function Teachers() {
       )}
 
       {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-600/10 via-card to-purple-600/5 p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-indigo-600/10 via-card to-purple-600/5 p-6 shadow-sm">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-indigo-500">Faculty Database</span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-cyan-600">Faculty Database</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Teacher Management</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Teacher Management</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Total {teachers.length} active faculty members • Salary tracking & class allocations.
             </p>
           </div>
@@ -1238,7 +1238,7 @@ export default function Teachers() {
             <button
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
@@ -1248,48 +1248,48 @@ export default function Teachers() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-indigo-500/20 bg-card p-5 shadow-sm">
-          <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold mb-3">
+        <div className="rounded-2xl border border-cyan-500/20 bg-card p-5 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center font-bold mb-3">
             <Users size={20} />
           </div>
-          <p className="text-2xl font-black text-foreground">{teachers.length}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Total Teachers</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{teachers.length}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Total Teachers</p>
         </div>
 
         <div className="rounded-2xl border border-emerald-500/20 bg-card p-5 shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold mb-3">
             <UserCheck size={20} />
           </div>
-          <p className="text-2xl font-black text-foreground">{inchargeCount}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Class Incharges</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{inchargeCount}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Class Incharges</p>
         </div>
 
         <div className="rounded-2xl border border-amber-500/20 bg-card p-5 shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold mb-3">
             <Wallet size={20} />
           </div>
-          <p className="text-2xl font-black text-foreground">{paidCount} / {teachers.length}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Salary Paid ({MONTH_NAMES[currentMonth - 1]})</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{paidCount} / {teachers.length}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Salary Paid ({MONTH_NAMES[currentMonth - 1]})</p>
         </div>
 
         <div className="rounded-2xl border border-purple-500/20 bg-card p-5 shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold mb-3">
             <DollarSign size={20} />
           </div>
-          <p className="text-2xl font-black text-foreground">{money(totalPayroll)}</p>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">Monthly Payroll Budget</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-foreground">{money(totalPayroll)}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground mt-0.5">Monthly Payroll Budget</p>
         </div>
       </div>
 
       {/* Search & Filters */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col md:flex-row items-center gap-3">
+      <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground pointer-events-none" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by teacher name, employee no, subject, qualification..."
-            className="w-full rounded-xl border border-border/80 bg-background/80 py-2.5 pl-11 pr-4 text-xs font-medium text-foreground shadow-sm placeholder:text-muted-foreground/60 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full rounded-xl border border-border/80 bg-background/80 py-2.5 pl-11 pr-4 text-xs font-medium text-foreground shadow-sm placeholder:text-slate-500 dark:text-muted-foreground/60 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
           />
         </div>
 
@@ -1297,7 +1297,7 @@ export default function Teachers() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none"
+            className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none"
           >
             <option value="">All Faculty ({teachers.length})</option>
             <option value="ACTIVE">Active Teachers</option>
@@ -1308,7 +1308,7 @@ export default function Teachers() {
           <select
             value={filterSalary}
             onChange={(e) => setFilterSalary(e.target.value)}
-            className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none"
+            className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none"
           >
             <option value="">All Salary Status</option>
             <option value="PAID">Salary Paid</option>
@@ -1334,7 +1334,7 @@ export default function Teachers() {
       <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-border bg-muted/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <thead className="border-b border-border bg-muted/30 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
               <tr>
                 <th className="px-5 py-4">Faculty Member</th>
                 <th className="px-5 py-4">Employee No</th>
@@ -1347,14 +1347,14 @@ export default function Teachers() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    <Loader2 size={24} className="mx-auto animate-spin text-indigo-500 mb-2" />
+                  <td colSpan={6} className="py-12 text-center text-slate-500 dark:text-muted-foreground">
+                    <Loader2 size={24} className="mx-auto animate-spin text-cyan-600 mb-2" />
                     Loading teacher directory...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="py-12 text-center text-slate-500 dark:text-muted-foreground">
                     No teacher records match your criteria.
                   </td>
                 </tr>
@@ -1369,11 +1369,11 @@ export default function Teachers() {
                         setSelectedTeacher(t);
                         setProfileTab('overview');
                       }}
-                      className="cursor-pointer hover:bg-muted/40 transition group"
+                      className="cursor-pointer hover:bg-slate-100/70 dark:bg-muted/40 transition group"
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-xl overflow-hidden bg-indigo-600/10 text-indigo-600 flex items-center justify-center font-bold text-sm border border-indigo-500/20 shrink-0">
+                          <div className="h-10 w-10 rounded-xl overflow-hidden bg-cyan-600/10 text-cyan-600 flex items-center justify-center font-bold text-sm border border-cyan-500/20 shrink-0">
                             {t.avatarUrl ? (
                               <img src={t.avatarUrl} alt="" className="h-full w-full object-cover" />
                             ) : (
@@ -1381,17 +1381,17 @@ export default function Teachers() {
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-foreground text-sm group-hover:text-indigo-500 transition-colors">
+                            <p className="font-bold text-foreground text-sm group-hover:text-cyan-600 transition-colors">
                               {t.name}
                             </p>
-                            <p className="text-[11px] text-muted-foreground font-mono">{t.phone || t.email}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-muted-foreground font-mono">{t.phone || t.email}</p>
                           </div>
                         </div>
                       </td>
 
                       <td className="px-5 py-3.5 font-mono">
-                        <span className="font-bold text-indigo-500 block">{t.employeeNo}</span>
-                        <span className="text-[10px] text-muted-foreground">{t.gender || 'Male'}</span>
+                        <span className="font-bold text-cyan-600 block">{t.employeeNo}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-muted-foreground">{t.gender || 'Male'}</span>
                       </td>
 
                       <td className="px-5 py-3.5">
@@ -1400,16 +1400,16 @@ export default function Teachers() {
                             Incharge: {incharge.class?.name} ({incharge.name})
                           </span>
                         ) : (
-                          <span className="text-muted-foreground text-[11px] block">No Section Assigned</span>
+                          <span className="text-slate-500 dark:text-muted-foreground text-[11px] block">No Section Assigned</span>
                         )}
-                        <p className="text-[11px] text-muted-foreground font-medium truncate max-w-[200px]">
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground font-medium truncate max-w-[200px]">
                           {(t.classSubjects || []).map((cs) => cs.subject?.name).filter(Boolean).join(', ') || 'Subjects not allocated'}
                         </p>
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <p className="font-bold text-foreground">{t.qualification || 'Master Degree'}</p>
-                        <p className="text-[11px] text-muted-foreground">{t.experience || 3} Yrs Experience</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground">{t.qualification || 'Master Degree'}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground">{t.experience || 3} Yrs Experience</p>
                       </td>
 
                       <td className="px-5 py-3.5">
@@ -1422,7 +1422,7 @@ export default function Teachers() {
                             <span className={`h-1.5 w-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
                             {isPaid ? 'Paid' : 'Unpaid'}
                           </span>
-                          <p className="font-mono text-[11px] font-bold text-foreground">{money(t.salary)}</p>
+                          <p className="font-mono text-[11px] font-bold text-slate-900 dark:text-foreground">{money(t.salary)}</p>
                         </div>
                       </td>
 
@@ -1430,7 +1430,7 @@ export default function Teachers() {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setIdCardTeacher(t)}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-indigo-500/10 hover:text-indigo-500 transition"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-cyan-500/10 hover:text-cyan-600 transition"
                             title="View & Print ID Card"
                           >
                             <Printer size={15} />
@@ -1440,7 +1440,7 @@ export default function Teachers() {
                               setPasswordModalTeacher(t);
                               setNewPassword(generate8CharPassword());
                             }}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500 transition"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500 transition"
                             title="Update Password"
                           >
                             <Key size={15} />
@@ -1457,21 +1457,21 @@ export default function Teachers() {
                                 remarks: '',
                               });
                             }}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 transition"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 transition"
                             title="Pay Salary"
                           >
                             <DollarSign size={15} />
                           </button>
                           <button
                             onClick={() => openEdit(t)}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-sky-500/10 hover:text-sky-500 transition"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-sky-500/10 hover:text-sky-500 transition"
                             title="Edit Record"
                           >
                             <Pencil size={15} />
                           </button>
                           <button
                             onClick={() => void handleArchive(t.id)}
-                            className="rounded-lg p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
+                            className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
                             title="Archive"
                           >
                             <Trash2 size={15} />
@@ -1565,62 +1565,62 @@ export default function Teachers() {
               {profileTab === 'overview' && (
                 <div className="space-y-6 animate-fade-in">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm">
-                      <p className="text-xs font-bold text-muted-foreground">Monthly Salary</p>
-                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{money(selectedTeacher.salary)}</p>
+                    <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Monthly Salary</p>
+                      <p className="text-2xl font-black text-cyan-600 dark:text-indigo-400 mt-1">{money(selectedTeacher.salary)}</p>
                     </div>
 
                     <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 shadow-sm">
-                      <p className="text-xs font-bold text-muted-foreground">Class Incharge</p>
+                      <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Class Incharge</p>
                       <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">
                         {selectedTeacher.sectionTeacher?.[0]?.class?.name ? `${selectedTeacher.sectionTeacher[0].class.name} (${selectedTeacher.sectionTeacher[0].name})` : 'Not Assigned'}
                       </p>
                     </div>
 
                     <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 shadow-sm">
-                      <p className="text-xs font-bold text-muted-foreground">Assigned Subjects</p>
+                      <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Assigned Subjects</p>
                       <p className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">{selectedTeacher.classSubjects?.length || 0}</p>
                     </div>
 
                     <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
-                      <p className="text-xs font-bold text-muted-foreground">Experience</p>
+                      <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Experience</p>
                       <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{selectedTeacher.experience || 3} Years</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3 text-xs">
+                    <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm space-y-3 text-xs">
                       <p className="font-black text-sm text-foreground mb-2">Personal Information</p>
                       <div className="flex justify-between border-b border-border/60 pb-2">
-                        <span className="text-muted-foreground">Phone:</span>
-                        <span className="font-mono font-bold text-foreground">{selectedTeacher.phone || '—'}</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Phone:</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-foreground">{selectedTeacher.phone || '—'}</span>
                       </div>
                       <div className="flex justify-between border-b border-border/60 pb-2">
-                        <span className="text-muted-foreground">Official Email:</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Official Email:</span>
                         <span className="font-mono text-cyan-600 dark:text-cyan-400">{selectedTeacher.email}</span>
                       </div>
                       <div className="flex justify-between border-b border-border/60 pb-2">
-                        <span className="text-muted-foreground">Gender / Blood:</span>
-                        <span className="font-bold text-foreground">{selectedTeacher.gender || 'Male'} / {selectedTeacher.bloodGroup || 'A+'}</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Gender / Blood:</span>
+                        <span className="font-bold text-slate-900 dark:text-foreground">{selectedTeacher.gender || 'Male'} / {selectedTeacher.bloodGroup || 'A+'}</span>
                       </div>
                       <div className="flex justify-between pt-1">
-                        <span className="text-muted-foreground">Address:</span>
-                        <span className="font-bold text-foreground">{selectedTeacher.address || '—'}</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Address:</span>
+                        <span className="font-bold text-slate-900 dark:text-foreground">{selectedTeacher.address || '—'}</span>
                       </div>
                     </div>
 
-                    <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3 text-xs">
+                    <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm space-y-3 text-xs">
                       <p className="font-black text-sm text-foreground mb-2">Qualifications & Department</p>
                       <div className="flex justify-between border-b border-border/60 pb-2">
-                        <span className="text-muted-foreground">Qualification:</span>
-                        <span className="font-bold text-foreground">{selectedTeacher.qualification || 'Master Degree'}</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Qualification:</span>
+                        <span className="font-bold text-slate-900 dark:text-foreground">{selectedTeacher.qualification || 'Master Degree'}</span>
                       </div>
                       <div className="flex justify-between border-b border-border/60 pb-2">
-                        <span className="text-muted-foreground">Specialization:</span>
-                        <span className="font-bold text-indigo-500">{selectedTeacher.specialization || 'General'}</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Specialization:</span>
+                        <span className="font-bold text-cyan-600">{selectedTeacher.specialization || 'General'}</span>
                       </div>
                       <div className="flex justify-between pt-1">
-                        <span className="text-muted-foreground">Status:</span>
+                        <span className="text-slate-500 dark:text-muted-foreground">Status:</span>
                         <span className="font-bold text-emerald-500">Active Faculty</span>
                       </div>
                     </div>
@@ -1633,12 +1633,12 @@ export default function Teachers() {
                   <div className="rounded-2xl border border-border p-5 bg-card space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-black text-sm text-foreground">Section Incharge Role</h4>
-                        <p className="text-xs text-muted-foreground">Classroom administration and primary supervision</p>
+                        <h4 className="font-black text-sm text-slate-900 dark:text-foreground">Section Incharge Role</h4>
+                        <p className="text-xs text-slate-500 dark:text-muted-foreground">Classroom administration and primary supervision</p>
                       </div>
                       <button
                         onClick={() => setAssignSectionModal({ teacher: selectedTeacher, sectionId: '' })}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-500"
                       >
                         <Plus size={14} /> Assign Section
                       </button>
@@ -1649,8 +1649,8 @@ export default function Teachers() {
                         {selectedTeacher.sectionTeacher.map((sec) => (
                           <div key={sec.id} className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5">
                             <div>
-                              <p className="font-bold text-foreground">{sec.class?.name} — Section {sec.name}</p>
-                              <p className="text-[11px] text-muted-foreground">{sec._count?.students || 0} Students enrolled</p>
+                              <p className="font-bold text-slate-900 dark:text-foreground">{sec.class?.name} — Section {sec.name}</p>
+                              <p className="text-[11px] text-slate-500 dark:text-muted-foreground">{sec._count?.students || 0} Students enrolled</p>
                             </div>
                             <button
                               onClick={() => void handleUnassignSection(sec.id)}
@@ -1662,15 +1662,15 @@ export default function Teachers() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">Not currently assigned as incharge of any section.</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground">Not currently assigned as incharge of any section.</p>
                     )}
                   </div>
 
                   <div className="rounded-2xl border border-border p-5 bg-card space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-black text-sm text-foreground">Allocated Teaching Subjects</h4>
-                        <p className="text-xs text-muted-foreground">Class subjects taught by this teacher</p>
+                        <h4 className="font-black text-sm text-slate-900 dark:text-foreground">Allocated Teaching Subjects</h4>
+                        <p className="text-xs text-slate-500 dark:text-muted-foreground">Class subjects taught by this teacher</p>
                       </div>
                       <button
                         onClick={() => setAssignSubjectModal({ teacher: selectedTeacher, classId: '', subjectId: '' })}
@@ -1683,14 +1683,14 @@ export default function Teachers() {
                     {selectedTeacher.classSubjects && selectedTeacher.classSubjects.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {selectedTeacher.classSubjects.map((cs) => (
-                          <div key={cs.id} className="rounded-xl border border-border bg-muted/20 p-3">
+                          <div key={cs.id} className="rounded-xl border border-border bg-slate-50 dark:bg-muted/20 p-3">
                             <p className="font-bold text-foreground text-xs">{cs.subject?.name}</p>
-                            <p className="text-[11px] text-muted-foreground">{cs.class?.name}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-muted-foreground">{cs.class?.name}</p>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">No subjects allocated yet.</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground">No subjects allocated yet.</p>
                     )}
                   </div>
                 </div>
@@ -1700,8 +1700,8 @@ export default function Teachers() {
                 <div className="space-y-4 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-black text-sm text-foreground">Salary & Payroll History</h4>
-                      <p className="text-xs text-muted-foreground">Monthly basic salary: {money(selectedTeacher.salary)}</p>
+                      <h4 className="font-black text-sm text-slate-900 dark:text-foreground">Salary & Payroll History</h4>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground">Monthly basic salary: {money(selectedTeacher.salary)}</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1724,7 +1724,7 @@ export default function Teachers() {
                   {selectedTeacher.payrolls && selectedTeacher.payrolls.length > 0 ? (
                     <div className="rounded-2xl border border-border overflow-hidden">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-muted/30 border-b border-border text-[10px] font-black uppercase text-muted-foreground">
+                        <thead className="bg-muted/30 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                           <tr>
                             <th className="px-4 py-3">Month / Year</th>
                             <th className="px-4 py-3">Basic</th>
@@ -1741,7 +1741,7 @@ export default function Teachers() {
                               <td className="px-4 py-3 font-mono">{money(p.basicSalary)}</td>
                               <td className="px-4 py-3 font-mono text-emerald-500">+{money(p.allowances)}</td>
                               <td className="px-4 py-3 font-mono text-rose-500">-{money(p.deductions)}</td>
-                              <td className="px-4 py-3 font-mono font-bold text-foreground">{money(p.netSalary)}</td>
+                              <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-foreground">{money(p.netSalary)}</td>
                               <td className="px-4 py-3">
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                   ✓ PAID
@@ -1753,7 +1753,7 @@ export default function Teachers() {
                       </table>
                     </div>
                   ) : (
-                    <div className="rounded-2xl border border-border p-6 text-center text-muted-foreground text-xs">
+                    <div className="rounded-2xl border border-border p-6 text-center text-slate-500 dark:text-muted-foreground text-xs">
                       No previous salary payments recorded yet. Click "Pay Monthly Salary" above to record.
                     </div>
                   )}
@@ -1762,9 +1762,9 @@ export default function Teachers() {
 
               {profileTab === 'credentials' && (
                 <div className="space-y-4 animate-fade-in max-w-xl mx-auto">
-                  <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-5 space-y-4">
+                  <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="text-xs font-black uppercase tracking-wider text-indigo-500 flex items-center gap-1.5">
+                      <div className="text-xs font-black uppercase tracking-wider text-cyan-600 flex items-center gap-1.5">
                         <Key size={14} /> Teacher Portal Access Pass
                       </div>
                       <button
@@ -1772,7 +1772,7 @@ export default function Teachers() {
                           setPasswordModalTeacher(selectedTeacher);
                           setNewPassword(generate8CharPassword());
                         }}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-500 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-cyan-600 hover:underline"
                       >
                         <Pencil size={12} /> Edit Password
                       </button>
@@ -1780,13 +1780,13 @@ export default function Teachers() {
 
                     <div className="space-y-3">
                       <div className="rounded-xl bg-card border border-border p-3">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">Official Login ID / Email</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground mb-1">Official Login ID / Email</p>
                         <p className="font-mono font-bold text-sm text-cyan-500 break-all">{selectedTeacher.email}</p>
                       </div>
                       <div className="rounded-xl bg-card border border-border p-3">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">Password</p>
-                        <p className="font-mono font-bold text-sm text-foreground">•••••••••••• (Encrypted)</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">Admin can update or reset this password anytime.</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground mb-1">Password</p>
+                        <p className="font-mono font-bold text-sm text-slate-900 dark:text-foreground">•••••••••••• (Encrypted)</p>
+                        <p className="text-[10px] text-slate-500 dark:text-muted-foreground mt-1">Admin can update or reset this password anytime.</p>
                       </div>
                     </div>
                   </div>
@@ -1796,7 +1796,7 @@ export default function Teachers() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/20 px-6 py-4 shrink-0">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-slate-50 dark:bg-muted/20 px-6 py-4 shrink-0">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
@@ -1804,7 +1804,7 @@ export default function Teachers() {
                     setSelectedTeacher(null);
                     setIdCardTeacher(t);
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-bold text-indigo-500 hover:bg-indigo-500/20 transition"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-bold text-cyan-600 hover:bg-cyan-500/20 transition"
                 >
                   <Printer size={14} /> View ID Card
                 </button>
@@ -1848,35 +1848,35 @@ export default function Teachers() {
       {/* ══════════════════════════════════════════════════════════ */}
       {idCardTeacher && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
-          <div className="max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card shadow-2xl p-6 flex flex-col items-center">
+          <div className="max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 flex flex-col items-center">
             
             <div className="w-full flex items-center justify-between border-b border-border pb-4 mb-5">
               <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                <div className="h-9 w-9 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center">
                   <Printer size={18} />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-foreground">Teacher Identity Card</h3>
-                  <p className="text-xs text-muted-foreground">{idCardTeacher.name} — Employee No: {idCardTeacher.employeeNo}</p>
+                  <h3 className="font-black text-lg text-slate-900 dark:text-foreground">Teacher Identity Card</h3>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">{idCardTeacher.name} — Employee No: {idCardTeacher.employeeNo}</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIdCardTeacher(null)}
-                className="rounded-xl p-2 text-muted-foreground hover:bg-muted transition"
+                className="rounded-xl p-2 text-slate-500 dark:text-muted-foreground hover:bg-muted transition"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Layout Switcher */}
-            <div className="flex items-center gap-2 mb-6 bg-muted/40 p-1.5 rounded-2xl border border-border">
+            <div className="flex items-center gap-2 mb-6 bg-slate-100/70 dark:bg-muted/40 p-1.5 rounded-2xl border border-border">
               <button
                 onClick={() => setIdCardOrientation('portrait')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   idCardOrientation === 'portrait'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-600 text-white shadow-md'
+                    : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Layout size={14} className="rotate-90" /> Portrait (Vertical)
@@ -1885,8 +1885,8 @@ export default function Teachers() {
                 onClick={() => setIdCardOrientation('landscape')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   idCardOrientation === 'landscape'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-600 text-white shadow-md'
+                    : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Layout size={14} /> Landscape (Horizontal)
@@ -1956,7 +1956,7 @@ export default function Teachers() {
 
                   <div className="p-5 flex gap-5 items-center flex-1">
                     <div className="flex flex-col items-center shrink-0">
-                      <div className="h-24 w-24 rounded-2xl overflow-hidden border-2 border-indigo-500 bg-slate-800 flex items-center justify-center font-black text-3xl shadow-md">
+                      <div className="h-24 w-24 rounded-2xl overflow-hidden border-2 border-cyan-500 bg-slate-800 flex items-center justify-center font-black text-3xl shadow-md">
                         {idCardTeacher.avatarUrl ? (
                           <img src={idCardTeacher.avatarUrl} alt="" className="h-full w-full object-cover" />
                         ) : (
@@ -1998,7 +1998,7 @@ export default function Teachers() {
             <div className="w-full flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => printTeacherIdCard(idCardTeacher, 'portrait')}
-                className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-xs font-bold text-foreground hover:bg-muted transition"
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card px-5 py-3 text-xs font-bold text-foreground hover:bg-muted transition"
               >
                 <Printer size={15} /> Print as Portrait
               </button>
@@ -2019,26 +2019,26 @@ export default function Teachers() {
       {/* ══════════════════════════════════════════════════════════ */}
       {passwordModalTeacher && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-500 font-black text-sm">
                 <Key size={18} /> Update Teacher Password
               </div>
               <button
                 onClick={() => setPasswordModalTeacher(null)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">
               Set or generate an 8-character login password for <strong>{passwordModalTeacher.name}</strong>.
             </p>
 
             <form onSubmit={handleUpdatePassword} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">New Password</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">New Password</label>
                 <div className="flex items-center gap-2">
                   <input
                     required
@@ -2051,7 +2051,7 @@ export default function Teachers() {
                   <button
                     type="button"
                     onClick={() => setNewPassword(generate8CharPassword())}
-                    className="p-3 rounded-2xl border border-border hover:bg-muted text-indigo-500 shrink-0"
+                    className="p-3 rounded-2xl border border-border hover:bg-muted text-cyan-600 shrink-0"
                     title="Generate 8-char password"
                   >
                     <RefreshCw size={16} />
@@ -2084,20 +2084,20 @@ export default function Teachers() {
       {/* ── Pay Salary Modal ── */}
       {salaryModal && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-emerald-500 font-black text-base">
                 <DollarSign size={20} /> Record Salary Payout
               </div>
               <button
                 onClick={() => setSalaryModal(null)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">
               Paying monthly salary to <strong>{salaryModal.teacher.name}</strong> ({salaryModal.teacher.employeeNo}).
             </p>
 
@@ -2187,20 +2187,20 @@ export default function Teachers() {
       {/* ── Assign Section Modal ── */}
       {assignSectionModal && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-indigo-500 font-black text-base">
+              <div className="flex items-center gap-2 text-cyan-600 font-black text-base">
                 <Users size={18} /> Assign Section Incharge
               </div>
               <button
                 onClick={() => setAssignSectionModal(null)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">
               Assign <strong>{assignSectionModal.teacher.name}</strong> as class incharge.
             </p>
 
@@ -2248,14 +2248,14 @@ export default function Teachers() {
       {/* ── Assign Subject Modal ── */}
       {assignSubjectModal && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-purple-500 font-black text-base">
                 <BookOpen size={18} /> Allocate Subject to Teacher
               </div>
               <button
                 onClick={() => setAssignSubjectModal(null)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
@@ -2315,26 +2315,26 @@ export default function Teachers() {
       {/* ── Teacher Password Update Modal ── */}
       {passwordModalTeacher && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-500 font-black text-sm">
                 <Key size={18} /> Update Teacher Portal Password
               </div>
               <button
                 onClick={() => setPasswordModalTeacher(null)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">
               Set or generate an 8-digit login password for <strong>{passwordModalTeacher.name}</strong> ({passwordModalTeacher.employeeNo}).
             </p>
 
             <form onSubmit={handleUpdatePassword} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">New 8-Digit Password</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">New 8-Digit Password</label>
                 <div className="flex items-center gap-2">
                   <input
                     required
@@ -2351,7 +2351,7 @@ export default function Teachers() {
                       setNewPassword(generated);
                       toast.success(`Generated: ${generated}`);
                     }}
-                    className="p-3 rounded-2xl border border-border hover:bg-muted text-indigo-500 shrink-0"
+                    className="p-3 rounded-2xl border border-border hover:bg-muted text-cyan-600 shrink-0"
                     title="Re-Generate 8-digit password"
                   >
                     <RefreshCw size={16} />
@@ -2388,7 +2388,7 @@ export default function Teachers() {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+      <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
         {label}
         {required ? ' *' : ''}
       </span>

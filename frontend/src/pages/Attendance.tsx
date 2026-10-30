@@ -285,12 +285,12 @@ export default function Attendance() {
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
               <ShieldCheck size={12} /> Live Roll Call
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">
               {selectedClassData ? `• ${selectedClassData.className} — ${selectedClassData.name}` : ''}
             </span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tight">Attendance Center</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1">
             Mark daily student presence, log leave reasons, and generate compliance sheets.
           </p>
         </div>
@@ -312,7 +312,7 @@ export default function Attendance() {
               </button>
               <button
                 onClick={exportCsv}
-                className="px-3.5 py-2 rounded-xl border border-border bg-card text-foreground text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all active:scale-95"
+                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-foreground text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all active:scale-95"
               >
                 <Download size={14} /> Export CSV
               </button>
@@ -337,10 +337,10 @@ export default function Attendance() {
             label: 'Enrolled Students',
             value: stats.total,
             icon: Users,
-            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            gradient: 'from-cyan-500/[0.05] via-white to-card',
             border: 'border-violet-500/25 hover:border-violet-500/50',
             glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
-            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
             labelColor: 'text-violet-600 dark:text-violet-400',
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
@@ -418,7 +418,7 @@ export default function Attendance() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -437,7 +437,7 @@ export default function Attendance() {
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-xs font-bold outline-none focus:border-primary"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-foreground text-xs font-bold outline-none focus:border-primary"
             >
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -458,7 +458,7 @@ export default function Attendance() {
           <div className="flex items-center gap-1 bg-background border border-border rounded-xl p-1">
             <button
               onClick={() => shiftDate(-1)}
-              className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground"
+              className="p-1.5 rounded-lg hover:bg-accent text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               title="Previous Day"
             >
               <ChevronLeft size={16} />
@@ -471,7 +471,7 @@ export default function Attendance() {
             />
             <button
               onClick={() => shiftDate(1)}
-              className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground"
+              className="p-1.5 rounded-lg hover:bg-accent text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               title="Next Day"
             >
               <ChevronRight size={16} />
@@ -483,7 +483,7 @@ export default function Attendance() {
               const now = new Date();
               setSelectedDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
             }}
-            className="px-3 py-1.5 rounded-xl border border-border bg-accent/40 hover:bg-accent text-xs font-semibold text-foreground"
+            className="px-3 py-1.5 rounded-xl border border-border bg-accent/40 hover:bg-accent text-xs font-semibold text-slate-900 dark:text-foreground"
           >
             Today
           </button>
@@ -491,13 +491,13 @@ export default function Attendance() {
 
         {/* Search */}
         <div className="relative md:w-72">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search student or roll no..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
           />
         </div>
       </div>
@@ -506,13 +506,13 @@ export default function Attendance() {
       {classesLoading || loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Clock size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Loading class roster from database...</p>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Loading class roster from database...</p>
         </div>
       ) : classes.length === 0 ? (
         <div className="py-20 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
-          <BookOpen size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-          <h3 className="font-bold text-lg text-foreground">No Academic Classes Found</h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+          <BookOpen size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+          <h3 className="font-bold text-lg text-slate-900 dark:text-foreground">No Academic Classes Found</h3>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 max-w-md mx-auto">
             Your school database does not have any classes or sections registered yet. Create your first academic class to start recording attendance.
           </p>
           <button
@@ -524,9 +524,9 @@ export default function Attendance() {
         </div>
       ) : students.length === 0 ? (
         <div className="py-20 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
-          <Users size={46} className="mx-auto text-muted-foreground/30 mb-3" />
-          <h3 className="font-bold text-lg text-foreground">No Students in this Section</h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+          <Users size={46} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-3" />
+          <h3 className="font-bold text-lg text-slate-900 dark:text-foreground">No Students in this Section</h3>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 max-w-md mx-auto">
             There are currently no students enrolled in {selectedClassData?.className} — {selectedClassData?.name}. Enroll students to record daily roll call.
           </p>
           <button
@@ -538,17 +538,17 @@ export default function Attendance() {
         </div>
       ) : filteredStudents.length === 0 ? (
         <div className="py-16 rounded-2xl border border-dashed border-border bg-card/50 text-center p-8">
-          <Search size={40} className="mx-auto text-muted-foreground/30 mb-2" />
-          <h3 className="font-bold text-foreground">No matching students</h3>
-          <p className="text-xs text-muted-foreground mt-1">Try adjusting your search query.</p>
+          <Search size={40} className="mx-auto text-slate-500 dark:text-muted-foreground/30 mb-2" />
+          <h3 className="font-bold text-slate-900 dark:text-foreground">No matching students</h3>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Try adjusting your search query.</p>
         </div>
       ) : (
         <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
           <div className="px-5 py-3.5 border-b border-border flex items-center justify-between bg-accent/20">
-            <span className="text-xs font-bold text-foreground">
+            <span className="text-xs font-bold text-slate-900 dark:text-foreground">
               Class Roster ({filteredStudents.length} students)
             </span>
-            <span className="text-[11px] text-muted-foreground font-semibold">
+            <span className="text-[11px] text-slate-500 dark:text-muted-foreground font-semibold">
               Click status button to toggle attendance
             </span>
           </div>
@@ -557,19 +557,19 @@ export default function Attendance() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-accent/40 border-b border-border">
-                  <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                  <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                     Roll
                   </th>
-                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                     Student Name
                   </th>
-                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                     Admission No
                   </th>
-                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-center">
+                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-center">
                     Attendance Status
                   </th>
-                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground text-right">
+                  <th className="px-4 py-3.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground text-right">
                     Remarks
                   </th>
                 </tr>
@@ -579,7 +579,7 @@ export default function Attendance() {
                   const record = attendance[s.id] || { studentId: s.id, status: 'PRESENT' as const, remarks: '' };
                   return (
                     <tr key={s.id} className="hover:bg-accent/30 transition-colors duration-150">
-                      <td className="px-5 py-3.5 text-xs font-mono font-bold text-foreground">
+                      <td className="px-5 py-3.5 text-xs font-mono font-bold text-slate-900 dark:text-foreground">
                         {s.rollNo || '—'}
                       </td>
                       <td className="px-4 py-3.5">
@@ -587,10 +587,10 @@ export default function Attendance() {
                           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">
                             {s.name ? s.name.charAt(0).toUpperCase() : 'S'}
                           </div>
-                          <p className="text-xs font-bold text-foreground">{s.name}</p>
+                          <p className="text-xs font-bold text-slate-900 dark:text-foreground">{s.name}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 text-xs font-mono text-muted-foreground">
+                      <td className="px-4 py-3.5 text-xs font-mono text-slate-500 dark:text-muted-foreground">
                         {s.admissionNo || '—'}
                       </td>
                       <td className="px-4 py-3.5">
@@ -623,7 +623,7 @@ export default function Attendance() {
                           className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 ml-auto transition-all ${
                             record.remarks
                               ? 'border-primary/40 bg-primary/10 text-primary'
-                              : 'border-border text-muted-foreground hover:bg-accent'
+                              : 'border-border text-slate-500 dark:text-muted-foreground hover:bg-accent'
                           }`}
                         >
                           <FileText size={13} />
@@ -643,8 +643,8 @@ export default function Attendance() {
       <Modal isOpen={Boolean(showRemarks)} onClose={() => setShowRemarks(null)} maxWidth="max-w-md">
         <div className="p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-3">
-            <h3 className="text-base font-bold text-foreground">Student Daily Remark</h3>
-            <button onClick={() => setShowRemarks(null)} className="p-1 rounded-lg hover:bg-accent text-muted-foreground">
+            <h3 className="text-base font-bold text-slate-900 dark:text-foreground">Student Daily Remark</h3>
+            <button onClick={() => setShowRemarks(null)} className="p-1 rounded-lg hover:bg-accent text-slate-500 dark:text-muted-foreground">
               <X size={18} />
             </button>
           </div>
@@ -653,7 +653,7 @@ export default function Attendance() {
             value={remarksText}
             onChange={(e) => setRemarksText(e.target.value)}
             placeholder="e.g. Medical excuse provided, late due to transport..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary resize-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary resize-none"
           />
           <div className="flex justify-end gap-2 pt-2">
             <button

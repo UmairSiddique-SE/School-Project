@@ -142,7 +142,7 @@ export default function Parents() {
             gradient: 'from-violet-500/[0.08] via-card/70 to-card',
             border: 'border-violet-500/25 hover:border-violet-500/50',
             glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
-            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
             labelColor: 'text-violet-600 dark:text-violet-400',
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
@@ -208,7 +208,7 @@ export default function Parents() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -222,12 +222,12 @@ export default function Parents() {
       {/* Search Bar */}
       <div className="bg-card/60 p-4 rounded-[24px] border border-border/80 shadow-sm backdrop-blur-xl">
         <div className="relative">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, email, phone or relation..."
-            className="w-full pl-14 pr-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground placeholder:text-muted-foreground text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium outline-none"
+            className="w-full pl-14 pr-6 py-3.5 rounded-2xl bg-background/80 border border-border text-foreground placeholder:text-slate-500 dark:text-muted-foreground text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-medium outline-none"
           />
         </div>
       </div>

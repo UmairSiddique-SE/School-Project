@@ -31,7 +31,7 @@ const TARGETS = [
 ];
 
 const PRIORITIES = [
-  { value: 'LOW', label: 'General / Low', badge: 'bg-muted text-muted-foreground' },
+  { value: 'LOW', label: 'General / Low', badge: 'bg-muted text-slate-500 dark:text-muted-foreground' },
   { value: 'MEDIUM', label: 'Standard / Medium', badge: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
   { value: 'HIGH', label: 'Important / High', badge: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   { value: 'URGENT', label: 'Urgent Alert', badge: 'bg-rose-500/10 text-rose-500 border-rose-500/20 animate-pulse' },
@@ -139,13 +139,13 @@ export default function NoticeBoard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-violet-500/10 text-violet-500 border border-violet-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-cyan-500/10 text-cyan-600 border border-violet-500/20">
               <ShieldCheck size={12} /> Institutional Circulars
             </span>
-            <span className="text-xs text-muted-foreground">• Official Broadcasts</span>
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">• Official Broadcasts</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">Notice & Circular Board</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Notice & Circular Board</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
             Official school announcements, academic schedules, exam dates, and urgent administrative alerts.
           </p>
         </div>
@@ -154,7 +154,7 @@ export default function NoticeBoard() {
           <button
             onClick={() => void loadNotices(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl border border-border bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/60 hover:bg-accent text-foreground transition-all active:scale-95"
             title="Refresh Circulars"
           >
             <RefreshCw size={16} className={refreshing ? 'animate-spin text-primary' : ''} />
@@ -181,7 +181,7 @@ export default function NoticeBoard() {
             gradient: 'from-violet-500/[0.08] via-card/70 to-card',
             border: 'border-violet-500/25 hover:border-violet-500/50',
             glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
-            iconBox: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
             labelColor: 'text-violet-600 dark:text-violet-400',
             dotColor: 'bg-violet-500',
             dotPing: 'bg-violet-400',
@@ -247,7 +247,7 @@ export default function NoticeBoard() {
                 <Icon size={20} strokeWidth={2.2} />
               </div>
             </div>
-            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
@@ -259,14 +259,14 @@ export default function NoticeBoard() {
       </div>
 
       {/* ─── Search & Audience Filter Bar ───────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row items-stretch sm:items-center justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row items-stretch sm:items-center justify-between">
         <div className="relative flex-1 sm:max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search circulars by subject, keywords..."
-            className="w-full rounded-xl border border-border bg-background py-2 pl-10 pr-4 text-xs outline-none focus:border-primary"
+            className="w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background py-2 pl-10 pr-4 text-xs outline-none focus:border-primary"
           />
         </div>
 
@@ -274,7 +274,7 @@ export default function NoticeBoard() {
           <select
             value={targetFilter}
             onChange={(e) => setTargetFilter(e.target.value)}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground outline-none focus:border-primary"
+            className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-3 py-2 text-xs font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="ALL">All Audiences</option>
             {TARGETS.filter((item) => item.value !== 'ALL').map((item) => (
@@ -287,7 +287,7 @@ export default function NoticeBoard() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground outline-none focus:border-primary"
+            className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background px-3 py-2 text-xs font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="ALL">All Priorities</option>
             <option value="URGENT">Urgent</option>
@@ -302,13 +302,13 @@ export default function NoticeBoard() {
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Loader2 size={36} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground font-semibold">Fetching circulars...</p>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground font-semibold">Fetching circulars...</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 p-12 text-center">
-          <BellRing size={40} className="mx-auto mb-3 text-muted-foreground/30" />
-          <h2 className="text-base font-bold text-foreground">No circulars match filters</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <BellRing size={40} className="mx-auto mb-3 text-slate-500 dark:text-muted-foreground/30" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-foreground">No circulars match filters</h2>
+          <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
             Official announcements published will appear on this board.
           </p>
           {canManage && (
@@ -347,11 +347,11 @@ export default function NoticeBoard() {
                     </div>
 
                     <h2 className="font-black text-lg text-foreground tracking-tight">{notice.title}</h2>
-                    <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                    <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-slate-500 dark:text-muted-foreground">
                       {message}
                     </p>
 
-                    <div className="mt-4 flex items-center gap-3 text-[11px] text-muted-foreground">
+                    <div className="mt-4 flex items-center gap-3 text-[11px] text-slate-500 dark:text-muted-foreground">
                       <span className="flex items-center gap-1 font-mono">
                         <Calendar size={13} />
                         {new Date(notice.createdAt ?? notice.publishedAt ?? Date.now()).toLocaleDateString(
@@ -365,7 +365,7 @@ export default function NoticeBoard() {
                   {canManage && (
                     <button
                       onClick={() => void deleteNotice(notice.id)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
                       title="Delete notice"
                     >
                       <Trash2 size={16} />
@@ -394,7 +394,7 @@ export default function NoticeBoard() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="e.g. Annual Sports Gala 2026 Schedule & Guidelines"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
             />
           </div>
 
@@ -404,7 +404,7 @@ export default function NoticeBoard() {
               <select
                 value={form.target}
                 onChange={(e) => setForm({ ...form, target: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 {TARGETS.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -419,7 +419,7 @@ export default function NoticeBoard() {
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p.value} value={p.value}>
@@ -438,7 +438,7 @@ export default function NoticeBoard() {
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               placeholder="Type the full announcement message here..."
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground outline-none focus:border-primary resize-none leading-relaxed"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background text-xs text-foreground outline-none focus:border-primary resize-none leading-relaxed"
             />
           </div>
 

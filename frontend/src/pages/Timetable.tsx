@@ -35,7 +35,7 @@ const days = [
   { id: 6, name: 'Saturday' },
 ];
 
-const input = 'w-full rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 font-medium transition';
+const input = 'w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15 font-medium transition';
 const primaryBtn = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-600/20 hover:brightness-110 transition disabled:opacity-60';
 
 export default function Timetable() {
@@ -261,8 +261,8 @@ export default function Timetable() {
               <span className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
               <span className="text-[11px] font-black uppercase tracking-widest text-violet-400">Master Schedule Engine</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Timetable & Schedule</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-foreground">Timetable & Schedule</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Conflict-free class periods, teacher allocation, room assignments, and printable routines.
             </p>
           </div>
@@ -289,7 +289,7 @@ export default function Timetable() {
 
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition"
             >
               <Printer size={14} /> Print Schedule
             </button>
@@ -297,7 +297,7 @@ export default function Timetable() {
             <button
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
@@ -312,7 +312,7 @@ export default function Timetable() {
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
                 filterMode === 'section'
                   ? 'bg-violet-600 text-white shadow-md shadow-violet-600/25'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
               }`}
             >
               <GraduationCap size={15} /> Class Timetable
@@ -323,7 +323,7 @@ export default function Timetable() {
                 className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition ${
                   filterMode === 'teacher'
                     ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <UserCheck size={15} /> Teacher Timetable
@@ -334,11 +334,11 @@ export default function Timetable() {
           <div className="flex items-center gap-3">
             {filterMode === 'section' ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Select Section:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Select Section:</span>
                 <select
                   value={selectedSection}
                   onChange={e => setSelectedSection(e.target.value)}
-                  className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-violet-500/20"
+                  className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-cyan-500/15"
                 >
                   {sections.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -349,11 +349,11 @@ export default function Timetable() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Select Faculty:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">Select Faculty:</span>
                 <select
                   value={selectedTeacher}
                   onChange={e => setSelectedTeacher(e.target.value)}
-                  className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-amber-500/20"
+                  className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
                   {teachers.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -364,17 +364,17 @@ export default function Timetable() {
               </div>
             )}
 
-            <div className="flex items-center gap-1 border border-border bg-card p-1 rounded-xl">
+            <div className="flex items-center gap-1 border border-slate-200 dark:border-border bg-white dark:bg-card p-1 rounded-xl">
               <button
                 onClick={() => setViewLayout('matrix')}
-                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'matrix' ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'matrix' ? 'bg-muted text-foreground' : 'text-slate-500 dark:text-muted-foreground'}`}
                 title="Weekly Matrix"
               >
                 <LayoutGrid size={15} />
               </button>
               <button
                 onClick={() => setViewLayout('timeline')}
-                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'timeline' ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                className={`p-1.5 rounded-lg text-xs font-bold transition ${viewLayout === 'timeline' ? 'bg-muted text-foreground' : 'text-slate-500 dark:text-muted-foreground'}`}
                 title="Daily Timeline"
               >
                 <ListFilter size={15} />
@@ -387,16 +387,16 @@ export default function Timetable() {
       {/* ── Active View Summary Banner ── */}
       <div className="rounded-2xl border border-border/80 bg-card p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20 flex items-center justify-center font-black">
+          <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 border border-violet-500/20 flex items-center justify-center font-black">
             {filterMode === 'section' ? <GraduationCap size={20} /> : <User size={20} />}
           </div>
           <div>
-            <h2 className="font-black text-base text-foreground">
+            <h2 className="font-black text-base text-slate-900 dark:text-foreground">
               {filterMode === 'section'
                 ? `Class Routine: ${currentSectionObj?.class?.name || 'Class'} (Section ${currentSectionObj?.name || 'A'})`
                 : `Faculty Routine: ${currentTeacherObj?.name || 'Teacher'} (${currentTeacherObj?.employeeNo || 'Staff'})`}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">
               Total {visibleSlots.length} weekly periods scheduled • Automatic teacher double-booking check active
             </p>
           </div>
@@ -412,7 +412,7 @@ export default function Timetable() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
                   selectedDay === d.id
                     ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20'
-                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'bg-muted/50 text-slate-500 dark:text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {d.name}
@@ -436,18 +436,18 @@ export default function Timetable() {
               <div key={day.id} className="rounded-3xl border border-border/80 bg-card p-5 space-y-3.5 shadow-sm">
                 <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-violet-500/10 text-violet-500 font-black text-xs flex items-center justify-center">
+                    <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-600 font-black text-xs flex items-center justify-center">
                       {day.id}
                     </div>
-                    <h3 className="font-black text-base text-foreground">{day.name}</h3>
+                    <h3 className="font-black text-base text-slate-900 dark:text-foreground">{day.name}</h3>
                   </div>
-                  <span className="text-xs font-bold text-muted-foreground px-2 py-0.5 rounded-full bg-muted">
+                  <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground px-2 py-0.5 rounded-full bg-muted">
                     {dayPeriods.length} {dayPeriods.length === 1 ? 'Period' : 'Periods'}
                   </span>
                 </div>
 
                 {dayPeriods.length === 0 ? (
-                  <div className="py-10 text-center text-xs text-muted-foreground/60 italic">
+                  <div className="py-10 text-center text-xs text-slate-500 dark:text-muted-foreground/60 italic">
                     No periods scheduled
                   </div>
                 ) : (
@@ -455,7 +455,7 @@ export default function Timetable() {
                     {dayPeriods.map((slot) => (
                       <div
                         key={slot.id}
-                        className="group relative rounded-2xl border border-border/70 bg-muted/20 p-3.5 hover:border-violet-500/40 hover:bg-muted/40 transition space-y-2"
+                        className="group relative rounded-2xl border border-border/70 bg-slate-50 dark:bg-muted/20 p-3.5 hover:border-violet-500/40 hover:bg-slate-100/70 dark:bg-muted/40 transition space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -477,14 +477,14 @@ export default function Timetable() {
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                               <button
                                 onClick={() => openEditModal(slot)}
-                                className="p-1.5 rounded-lg text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
+                                className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
                                 title="Edit Slot"
                               >
                                 <Edit2 size={13} />
                               </button>
                               <button
                                 onClick={() => void handleDelete(slot.id)}
-                                className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
+                                className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
                                 title="Delete Slot"
                               >
                                 <Trash2 size={13} />
@@ -493,13 +493,13 @@ export default function Timetable() {
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground border-t border-border/50 pt-2">
-                          <span className="inline-flex items-center gap-1 font-mono text-foreground">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-muted-foreground border-t border-border/50 pt-2">
+                          <span className="inline-flex items-center gap-1 font-mono text-slate-900 dark:text-foreground">
                             <Clock size={11} className="text-violet-500" />
                             {slot.startTime} — {slot.endTime}
                           </span>
                           {slot.room && (
-                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-muted-foreground">
                               <DoorOpen size={11} /> {slot.room}
                             </span>
                           )}
@@ -520,16 +520,16 @@ export default function Timetable() {
       {viewLayout === 'timeline' && (
         <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-border/60 pb-4">
-            <h3 className="font-black text-lg text-foreground">
+            <h3 className="font-black text-lg text-slate-900 dark:text-foreground">
               {days.find(d => d.id === selectedDay)?.name} Schedule Timeline
             </h3>
-            <span className="text-xs font-bold text-muted-foreground">
+            <span className="text-xs font-bold text-slate-500 dark:text-muted-foreground">
               {daySlots.length} Periods Scheduled
             </span>
           </div>
 
           {daySlots.length === 0 ? (
-            <div className="py-16 text-center text-muted-foreground space-y-2">
+            <div className="py-16 text-center text-slate-500 dark:text-muted-foreground space-y-2">
               <CalendarDays size={36} className="mx-auto opacity-40" />
               <p className="font-bold text-sm">No periods scheduled for this day</p>
             </div>
@@ -538,7 +538,7 @@ export default function Timetable() {
               {daySlots.map((slot, index) => (
                 <div
                   key={slot.id}
-                  className="flex items-center gap-4 rounded-2xl border border-border/80 bg-muted/20 p-4 hover:border-violet-500/40 transition group"
+                  className="flex items-center gap-4 rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 p-4 hover:border-violet-500/40 transition group"
                 >
                   <div className="h-10 w-10 rounded-xl bg-violet-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-violet-600/20">
                     P{index + 1}
@@ -547,14 +547,14 @@ export default function Timetable() {
                   <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
                     <div>
                       <h4 className="font-black text-base text-foreground truncate">{slot.subject?.name}</h4>
-                      <p className="text-xs text-muted-foreground font-mono">{slot.subject?.code || 'Core'}</p>
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground font-mono">{slot.subject?.code || 'Core'}</p>
                     </div>
 
                     <div>
                       <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <UserCheck size={14} className="text-emerald-500" /> {slot.teacher?.name || 'Unassigned'}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <GraduationCap size={14} className="text-cyan-500" /> {slot.section?.class?.name} ({slot.section?.name})
                       </p>
                     </div>
@@ -564,7 +564,7 @@ export default function Timetable() {
                         <Clock size={12} className="text-violet-500" /> {slot.startTime} — {slot.endTime}
                       </span>
                       {slot.room && (
-                        <span className="text-[11px] text-muted-foreground block mt-1">Room: {slot.room}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-muted-foreground block mt-1">Room: {slot.room}</span>
                       )}
                     </div>
                   </div>
@@ -573,13 +573,13 @@ export default function Timetable() {
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                       <button
                         onClick={() => openEditModal(slot)}
-                        className="p-2 rounded-xl text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
+                        className="p-2 rounded-xl text-slate-500 dark:text-muted-foreground hover:bg-violet-500/10 hover:text-violet-500"
                       >
                         <Edit2 size={15} />
                       </button>
                       <button
                         onClick={() => void handleDelete(slot.id)}
-                        className="p-2 rounded-xl text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
+                        className="p-2 rounded-xl text-slate-500 dark:text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -601,14 +601,14 @@ export default function Timetable() {
           <div className="relative z-10 w-full max-w-lg rounded-3xl border border-border/80 bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-border/60 p-5">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center font-bold">
+                <div className="h-9 w-9 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center font-bold">
                   <CalendarDays size={18} />
                 </div>
-                <h2 className="font-black text-base text-foreground">
+                <h2 className="font-black text-base text-slate-900 dark:text-foreground">
                   {showEdit ? 'Edit Timetable Period' : 'Add Class Period'}
                 </h2>
               </div>
-              <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted">
+              <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:bg-muted">
                 <X size={18} />
               </button>
             </div>
@@ -627,7 +627,7 @@ export default function Timetable() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Day of Week *</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Day of Week *</label>
                   <select
                     value={form.dayOfWeek}
                     onChange={e => setForm(f => ({ ...f, dayOfWeek: e.target.value }))}
@@ -638,7 +638,7 @@ export default function Timetable() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Classroom / Hall</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Classroom / Hall</label>
                   <input
                     value={form.room}
                     onChange={e => setForm(f => ({ ...f, room: e.target.value }))}
@@ -650,7 +650,7 @@ export default function Timetable() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Start Time *</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Start Time *</label>
                   <input
                     type="time"
                     value={form.startTime}
@@ -660,7 +660,7 @@ export default function Timetable() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">End Time *</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">End Time *</label>
                   <input
                     type="time"
                     value={form.endTime}
@@ -672,7 +672,7 @@ export default function Timetable() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Class & Section *</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Class & Section *</label>
                 <select
                   value={form.sectionId}
                   onChange={e => setForm(f => ({ ...f, sectionId: e.target.value }))}
@@ -688,7 +688,7 @@ export default function Timetable() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Curriculum Subject *</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Curriculum Subject *</label>
                 <select
                   value={form.subjectId}
                   onChange={e => setForm(f => ({ ...f, subjectId: e.target.value }))}
@@ -704,7 +704,7 @@ export default function Timetable() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Assigned Faculty Teacher *</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase mb-1 block">Assigned Faculty Teacher *</label>
                 <select
                   value={form.teacherId}
                   onChange={e => setForm(f => ({ ...f, teacherId: e.target.value }))}

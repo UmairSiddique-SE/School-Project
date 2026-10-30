@@ -306,7 +306,7 @@ export default function DailyOperations() {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight">
               Daily Operations Control
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-muted-foreground flex items-center gap-2">
               <Calendar size={14} className="text-cyan-400" />
               <span>{todayFormatted}</span>
               <span>•</span>
@@ -342,7 +342,7 @@ export default function DailyOperations() {
             <button
               onClick={() => loadDailyData(true)}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card/80 px-3.5 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition"
               title="Refresh Live Operations Data"
             >
               <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
@@ -360,7 +360,7 @@ export default function DailyOperations() {
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-emerald-500/20 bg-card p-5 shadow-sm transition hover:border-emerald-500/50 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
               Today's Attendance
             </span>
             <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-500">
@@ -368,14 +368,14 @@ export default function DailyOperations() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-foreground">
+            <span className="text-2xl font-black text-slate-900 dark:text-foreground">
               {attendanceSummary.total ? `${attendancePercent}%` : 'Active'}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-slate-500 dark:text-muted-foreground font-medium">
               ({attendanceSummary.present} Present)
             </span>
           </div>
-          <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500 dark:text-muted-foreground">
             <span className="text-rose-500 font-bold">{attendanceSummary.absent} Absent</span>
             <span>•</span>
             <span className="text-amber-500 font-bold">{attendanceSummary.late} Late</span>
@@ -390,7 +390,7 @@ export default function DailyOperations() {
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-cyan-500/20 bg-card p-5 shadow-sm transition hover:border-cyan-500/50 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
               Today's Fee Receipts
             </span>
             <div className="rounded-xl bg-cyan-500/10 p-2.5 text-cyan-500">
@@ -402,7 +402,7 @@ export default function DailyOperations() {
               {money(financeSummary.todayCollected)}
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-[11px] text-slate-500 dark:text-muted-foreground truncate">
             Pending Dues: <strong className="text-amber-500">{money(financeSummary.pending)}</strong>
           </p>
         </div>
@@ -413,7 +413,7 @@ export default function DailyOperations() {
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-purple-500/20 bg-card p-5 shadow-sm transition hover:border-purple-500/50 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
               Transport Fleet
             </span>
             <div className="rounded-xl bg-purple-500/10 p-2.5 text-purple-500">
@@ -421,11 +421,11 @@ export default function DailyOperations() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-foreground">
+            <span className="text-2xl font-black text-slate-900 dark:text-foreground">
               {routes.length} Active Routes
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-[11px] text-slate-500 dark:text-muted-foreground truncate">
             {routes.reduce((acc, r) => acc + (r.vehicles?.length || 0), 0)} Registered Vans & Buses
           </p>
         </div>
@@ -437,7 +437,7 @@ export default function DailyOperations() {
           className="group relative cursor-pointer overflow-hidden rounded-3xl border border-amber-500/20 bg-card p-5 shadow-sm transition hover:border-amber-500/50 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
               Student Gate Passes
             </span>
             <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-500">
@@ -445,11 +445,11 @@ export default function DailyOperations() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-foreground">
+            <span className="text-2xl font-black text-slate-900 dark:text-foreground">
               {gatePasses.filter((g) => g.status === 'APPROVED').length} Awaiting Exit
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-[11px] text-slate-500 dark:text-muted-foreground truncate">
             Total {gatePasses.length} student passes recorded
           </p>
         </div>
@@ -475,7 +475,7 @@ export default function DailyOperations() {
               className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
                 active
                   ? 'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30 shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-slate-100/70 dark:bg-muted/40'
               }`}
             >
               <Icon size={15} />
@@ -492,11 +492,11 @@ export default function DailyOperations() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Left 2 Cols: Active Class Sections & Attendance Status */}
-            <div className="lg:col-span-2 space-y-4 rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div className="lg:col-span-2 space-y-4 rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-foreground">Today's Class Sections</h3>
-                  <p className="text-xs text-muted-foreground">
+                  <h3 className="text-base font-black text-slate-900 dark:text-foreground">Today's Class Sections</h3>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">
                     Class-wise strength and attendance readiness for {sections.length} active sections.
                   </p>
                 </div>
@@ -512,13 +512,13 @@ export default function DailyOperations() {
                 {sections.slice(0, 8).map((sec) => (
                   <div
                     key={sec.id}
-                    className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-muted/20 hover:bg-muted/40 transition"
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 hover:bg-slate-100/70 dark:bg-muted/40 transition"
                   >
                     <div>
-                      <h4 className="font-bold text-xs text-foreground">
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-foreground">
                         {sec.className} — Section {sec.name}
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-[11px] text-slate-500 dark:text-muted-foreground">
                         {sec.totalStudents} Enrolled Students
                       </p>
                     </div>
@@ -535,7 +535,7 @@ export default function DailyOperations() {
             </div>
 
             {/* Right Col: Today's Notices & Circulars */}
-            <div className="space-y-4 rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col">
+            <div className="space-y-4 rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm flex flex-col">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-black text-foreground flex items-center gap-2">
                   <Bell size={16} className="text-amber-500" /> Today's Notices
@@ -550,14 +550,14 @@ export default function DailyOperations() {
 
               <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[360px] pr-1">
                 {notices.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-muted-foreground">
+                  <div className="text-center py-8 text-xs text-slate-500 dark:text-muted-foreground">
                     No notices published today. Click Notice Board to create announcements.
                   </div>
                 ) : (
                   notices.map((n) => (
                     <div
                       key={n.id}
-                      className="p-3 rounded-2xl border border-border/60 bg-muted/15 space-y-1"
+                      className="p-3 rounded-2xl border border-border/60 bg-slate-50/70 dark:bg-muted/15 space-y-1"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-xs text-foreground truncate">{n.title}</span>
@@ -565,7 +565,7 @@ export default function DailyOperations() {
                           {n.priority || 'General'}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
+                      <p className="text-[11px] text-slate-500 dark:text-muted-foreground line-clamp-2">
                         {n.message || 'School notification'}
                       </p>
                     </div>
@@ -577,11 +577,11 @@ export default function DailyOperations() {
           </div>
 
           {/* Quick Receipts Table */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-4">
+          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black text-foreground">Recent Fee Transactions Today</h3>
-                <p className="text-xs text-muted-foreground">Live student tuition and admission collections</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-foreground">Recent Fee Transactions Today</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">Live student tuition and admission collections</p>
               </div>
               <button
                 onClick={() => navigate(`/${schoolSlug}/finance`)}
@@ -593,7 +593,7 @@ export default function DailyOperations() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 border-b border-border text-[10px] font-black uppercase text-muted-foreground">
+                <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">Receipt #</th>
                     <th className="px-4 py-3">Student Name</th>
@@ -606,18 +606,18 @@ export default function DailyOperations() {
                 <tbody className="divide-y divide-border/60">
                   {recentPayments.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-6 text-muted-foreground">
+                      <td colSpan={6} className="text-center py-6 text-slate-500 dark:text-muted-foreground">
                         No transactions recorded yet today.
                       </td>
                     </tr>
                   ) : (
                     recentPayments.slice(0, 5).map((p) => (
-                      <tr key={p.id} className="hover:bg-muted/20 transition">
+                      <tr key={p.id} className="hover:bg-slate-50 dark:bg-muted/20 transition">
                         <td className="px-4 py-3 font-mono font-bold text-cyan-500">{p.receiptNo}</td>
-                        <td className="px-4 py-3 font-bold text-foreground">{p.student?.name || 'Student'}</td>
-                        <td className="px-4 py-3 font-mono text-muted-foreground">{p.student?.admissionNo || '—'}</td>
+                        <td className="px-4 py-3 font-bold text-slate-900 dark:text-foreground">{p.student?.name || 'Student'}</td>
+                        <td className="px-4 py-3 font-mono text-slate-500 dark:text-muted-foreground">{p.student?.admissionNo || '—'}</td>
                         <td className="px-4 py-3 font-mono font-bold text-emerald-500">{money(p.totalPaid || p.amount)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{p.method || 'CASH'}</td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-muted-foreground">{p.method || 'CASH'}</td>
                         <td className="px-4 py-3">
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                             ✓ {p.status || 'PAID'}
@@ -636,11 +636,11 @@ export default function DailyOperations() {
 
       {/* ── TAB 2: ATTENDANCE ROSTER ── */}
       {activeTab === 'attendance' && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-foreground">Class Attendance Rosters</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-lg font-black text-slate-900 dark:text-foreground">Class Attendance Rosters</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">
                 Select any class section to record or view student daily attendance marks.
               </p>
             </div>
@@ -656,16 +656,16 @@ export default function DailyOperations() {
             {sections.map((sec) => (
               <div
                 key={sec.id}
-                className="p-5 rounded-2xl border border-border bg-muted/20 hover:border-emerald-500/40 transition flex flex-col justify-between gap-4"
+                className="p-5 rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 hover:border-emerald-500/40 transition flex flex-col justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-sm text-foreground">{sec.className}</span>
+                    <span className="font-bold text-sm text-slate-900 dark:text-foreground">{sec.className}</span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
                       Section {sec.name}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">
                     Class Strength: <strong>{sec.totalStudents}</strong> students
                   </p>
                 </div>
@@ -686,11 +686,11 @@ export default function DailyOperations() {
 
       {/* ── TAB 3: FEE CASH DESK ── */}
       {activeTab === 'finance' && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-foreground">Fee Cash Desk & Receipts</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-lg font-black text-slate-900 dark:text-foreground">Fee Cash Desk & Receipts</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">
                 Live payments recorded at the finance counter today.
               </p>
             </div>
@@ -704,7 +704,7 @@ export default function DailyOperations() {
 
           <div className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted/40 border-b border-border text-[10px] font-black uppercase text-muted-foreground">
+              <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Receipt No</th>
                   <th className="px-4 py-3">Student Name</th>
@@ -718,17 +718,17 @@ export default function DailyOperations() {
               <tbody className="divide-y divide-border/60">
                 {recentPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <td colSpan={7} className="text-center py-8 text-slate-500 dark:text-muted-foreground">
                       No fee payments recorded.
                     </td>
                   </tr>
                 ) : (
                   recentPayments.map((p) => (
-                    <tr key={p.id} className="hover:bg-muted/20 transition">
+                    <tr key={p.id} className="hover:bg-slate-50 dark:bg-muted/20 transition">
                       <td className="px-4 py-3 font-mono font-bold text-cyan-400">{p.receiptNo}</td>
-                      <td className="px-4 py-3 font-bold text-foreground">{p.student?.name || '—'}</td>
-                      <td className="px-4 py-3 font-mono text-muted-foreground">{p.student?.admissionNo || '—'}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 font-bold text-slate-900 dark:text-foreground">{p.student?.name || '—'}</td>
+                      <td className="px-4 py-3 font-mono text-slate-500 dark:text-muted-foreground">{p.student?.admissionNo || '—'}</td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-muted-foreground">
                         {p.paidDate ? new Date(p.paidDate).toLocaleDateString() : 'Today'}
                       </td>
                       <td className="px-4 py-3 font-mono font-bold text-emerald-400">{money(p.totalPaid || p.amount)}</td>
@@ -749,11 +749,11 @@ export default function DailyOperations() {
 
       {/* ── TAB 4: TRANSPORT DISPATCH ── */}
       {activeTab === 'transport' && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-foreground">Transport Fleet & Active Routes</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-lg font-black text-slate-900 dark:text-foreground">Transport Fleet & Active Routes</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">
                 Driver contacts, vehicles, and student pick/drop details.
               </p>
             </div>
@@ -767,19 +767,19 @@ export default function DailyOperations() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {routes.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-xs text-muted-foreground">
+              <div className="col-span-3 text-center py-12 text-xs text-slate-500 dark:text-muted-foreground">
                 No transport routes registered yet. Open the Transport module to add routes and vehicles.
               </div>
             ) : (
               routes.map((r) => (
-                <div key={r.id} className="p-5 rounded-2xl border border-border bg-muted/20 space-y-3">
+                <div key={r.id} className="p-5 rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-black text-sm text-foreground">{r.name}</h4>
+                    <h4 className="font-black text-sm text-slate-900 dark:text-foreground">{r.name}</h4>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400">
                       {r._count?.assignments || 0} Students
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="text-xs text-slate-500 dark:text-muted-foreground space-y-1">
                     <p className="flex items-center gap-1.5">
                       <MapPin size={12} className="text-purple-400" />
                       <span>{r.startPoint || 'School'} ➔ {r.endPoint || 'Destination'}</span>
@@ -789,7 +789,7 @@ export default function DailyOperations() {
                         <p className="font-bold text-foreground text-[11px]">
                           Vehicle: {r.vehicles[0].vehicleNo}
                         </p>
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground flex items-center gap-1">
                           <Phone size={11} /> Driver: {r.vehicles[0].driverName || 'Assigned Driver'} ({r.vehicles[0].driverPhone || '—'})
                         </p>
                       </div>
@@ -804,11 +804,11 @@ export default function DailyOperations() {
 
       {/* ── TAB 5: STUDENT GATE PASS REGISTER ── */}
       {activeTab === 'gatepass' && user?.role === 'SCHOOL_ADMIN' && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-foreground">Student Gate Pass Register</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-lg font-black text-slate-900 dark:text-foreground">Student Gate Pass Register</h3>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">
                 School-admin-approved early departures, half-day leaves, and student exit records.
               </p>
             </div>
@@ -822,7 +822,7 @@ export default function DailyOperations() {
 
           <div className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted/40 border-b border-border text-[10px] font-black uppercase text-muted-foreground">
+              <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Pass No</th>
                   <th className="px-4 py-3">Student</th>
@@ -836,27 +836,27 @@ export default function DailyOperations() {
               <tbody className="divide-y divide-border/60">
                 {gatePasses.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <td colSpan={7} className="text-center py-8 text-slate-500 dark:text-muted-foreground">
                       No student gate passes yet. Issue a pass to record an approved early departure.
                     </td>
                   </tr>
                 ) : (
                   gatePasses.map((p) => (
-                    <tr key={p.id} className="hover:bg-muted/20 transition">
+                    <tr key={p.id} className="hover:bg-slate-50 dark:bg-muted/20 transition">
                       <td className="px-4 py-3 font-mono font-bold text-amber-500">{p.passNo}</td>
                       <td className="px-4 py-3">
-                        <p className="font-bold text-foreground">{p.student?.name || 'Student'}</p>
-                        <p className="text-[10px] text-muted-foreground">{p.student?.admissionNo || '—'}</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground">{p.student?.name || 'Student'}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-muted-foreground">{p.student?.admissionNo || '—'}</p>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 text-slate-500 dark:text-muted-foreground">
                         {p.student?.section?.class?.name || '—'}{p.student?.section?.name ? ` / ${p.student.section.name}` : ''}
                         <span className="block text-[10px]">Roll: {p.student?.rollNo || '—'}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-foreground">{p.reasonType.replace(/_/g, ' ')}</p>
-                        <p className="text-[10px] text-muted-foreground max-w-[240px] whitespace-normal">{p.reason}</p>
+                        <p className="font-semibold text-slate-900 dark:text-foreground">{p.reasonType.replace(/_/g, ' ')}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-muted-foreground max-w-[240px] whitespace-normal">{p.reason}</p>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 text-slate-500 dark:text-muted-foreground">
                         <span>Issued: {new Date(p.issuedAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>
                         {p.exitAt && <span className="block text-emerald-500">Exit: {new Date(p.exitAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>}
                       </td>
@@ -896,14 +896,14 @@ export default function DailyOperations() {
       {/* ── ISSUE STUDENT GATE PASS MODAL ── */}
       {showGatePassModal && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-500 font-black text-base">
                 <Ticket size={18} /> Issue Student Gate Pass
               </div>
               <button
                 onClick={() => setShowGatePassModal(false)}
-                className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground"
+                className="rounded-xl p-1.5 text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
               >
                 <X size={16} />
               </button>
@@ -911,10 +911,10 @@ export default function DailyOperations() {
 
             <form onSubmit={handleCreateGatePass} className="space-y-4 pt-1">
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Select Student *</label>
+                <label className="text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground block mb-1">Select Student *</label>
                 <select
                   required
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-semibold text-foreground"
+                  className="w-full rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-foreground"
                   value={gatePassForm.studentId}
                   onChange={(e) => setGatePassForm({ ...gatePassForm, studentId: e.target.value })}
                 >
@@ -931,10 +931,10 @@ export default function DailyOperations() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Reason Type *</label>
+                <label className="text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground block mb-1">Reason Type *</label>
                 <select
                   required
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs font-semibold text-foreground"
+                  className="w-full rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-foreground"
                   value={gatePassForm.reasonType}
                   onChange={(e) => setGatePassForm({ ...gatePassForm, reasonType: e.target.value as GatePassReasonType })}
                 >
@@ -946,19 +946,19 @@ export default function DailyOperations() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-muted-foreground block mb-1">Reason / Permission Note *</label>
+                <label className="text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground block mb-1">Reason / Permission Note *</label>
                 <textarea
                   required
                   rows={3}
                   maxLength={500}
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-2.5 text-xs text-foreground"
+                  className="w-full rounded-2xl border border-border bg-slate-50 dark:bg-muted/20 px-4 py-2.5 text-xs text-slate-900 dark:text-foreground"
                   placeholder="e.g. Parent requested half-day leave for a family appointment"
                   value={gatePassForm.reason}
                   onChange={(e) => setGatePassForm({ ...gatePassForm, reason: e.target.value })}
                 />
               </div>
 
-              <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-muted-foreground">
+              <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-slate-500 dark:text-muted-foreground">
                 Issuing this pass records the School Admin's approval. Print the slip for the student; security marks the actual exit time at the gate.
               </p>
 
@@ -985,9 +985,9 @@ export default function DailyOperations() {
               .gate-pass-print-actions { display: none !important; }
             }
           `}</style>
-          <div className="gate-pass-print-card w-full max-w-sm rounded-3xl border border-border bg-card shadow-2xl p-6 space-y-4 text-center">
+          <div className="gate-pass-print-card w-full max-w-sm rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-2xl p-6 space-y-4 text-center">
             <div className="gate-pass-print-actions flex justify-end">
-              <button onClick={() => setSelectedPassForPrint(null)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground"><X size={16} /></button>
+              <button onClick={() => setSelectedPassForPrint(null)} className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"><X size={16} /></button>
             </div>
 
             <div className="border-2 border-dashed border-amber-500/50 p-5 rounded-2xl space-y-3 bg-amber-500/5">
@@ -998,21 +998,21 @@ export default function DailyOperations() {
               </div>
 
               <div className="text-left text-xs space-y-1.5 py-1">
-                <p><span className="text-muted-foreground">Student:</span> <strong>{selectedPassForPrint.student?.name || '—'}</strong></p>
-                <p><span className="text-muted-foreground">Admission No:</span> <span className="font-mono">{selectedPassForPrint.student?.admissionNo || '—'}</span></p>
-                <p><span className="text-muted-foreground">Class / Section:</span> {selectedPassForPrint.student?.section?.class?.name || '—'} / {selectedPassForPrint.student?.section?.name || '—'}</p>
-                <p><span className="text-muted-foreground">Roll No:</span> {selectedPassForPrint.student?.rollNo || '—'}</p>
-                <p><span className="text-muted-foreground">Reason Type:</span> {selectedPassForPrint.reasonType.replace(/_/g, ' ')}</p>
-                <p><span className="text-muted-foreground">Reason:</span> {selectedPassForPrint.reason}</p>
-                <p><span className="text-muted-foreground">Issued:</span> <strong>{new Date(selectedPassForPrint.issuedAt).toLocaleString('en-PK')}</strong></p>
-                <p><span className="text-muted-foreground">Approval:</span> School Admin</p>
-                {selectedPassForPrint.exitAt && <p><span className="text-muted-foreground">Actual Exit:</span> <strong>{new Date(selectedPassForPrint.exitAt).toLocaleString('en-PK')}</strong></p>}
+                <p><span className="text-slate-500 dark:text-muted-foreground">Student:</span> <strong>{selectedPassForPrint.student?.name || '—'}</strong></p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Admission No:</span> <span className="font-mono">{selectedPassForPrint.student?.admissionNo || '—'}</span></p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Class / Section:</span> {selectedPassForPrint.student?.section?.class?.name || '—'} / {selectedPassForPrint.student?.section?.name || '—'}</p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Roll No:</span> {selectedPassForPrint.student?.rollNo || '—'}</p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Reason Type:</span> {selectedPassForPrint.reasonType.replace(/_/g, ' ')}</p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Reason:</span> {selectedPassForPrint.reason}</p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Issued:</span> <strong>{new Date(selectedPassForPrint.issuedAt).toLocaleString('en-PK')}</strong></p>
+                <p><span className="text-slate-500 dark:text-muted-foreground">Approval:</span> School Admin</p>
+                {selectedPassForPrint.exitAt && <p><span className="text-slate-500 dark:text-muted-foreground">Actual Exit:</span> <strong>{new Date(selectedPassForPrint.exitAt).toLocaleString('en-PK')}</strong></p>}
               </div>
 
-              <div className="pt-3 border-t border-border/80 text-[10px] text-muted-foreground">
+              <div className="pt-3 border-t border-border/80 text-[10px] text-slate-500 dark:text-muted-foreground">
                 Valid only for the student named above. Security must verify this pass and record the exit time.
               </div>
-              <div className="pt-2 text-left text-[10px] text-muted-foreground">Authorized signature: ____________________</div>
+              <div className="pt-2 text-left text-[10px] text-slate-500 dark:text-muted-foreground">Authorized signature: ____________________</div>
             </div>
 
             <div className="gate-pass-print-actions flex items-center justify-center gap-2 pt-2">

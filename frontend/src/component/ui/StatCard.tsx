@@ -37,7 +37,7 @@ const StatCard: React.FC<StatCardProps> = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, type: 'spring', damping: 22, stiffness: 200 }}
       onClick={onClick}
-      className={`dashboard-kpi-card stat-card relative min-h-[150px] overflow-hidden rounded-2xl p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-1.5 ${onClick ? 'hover:shadow-2xl' : ''}`}
+      className={`relative min-h-[150px] overflow-hidden rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border/40 p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-1.5 shadow-sm ${onClick ? 'hover:shadow-xl' : ''}`}
       style={glowColor ? ({ '--glow': glowColor } as React.CSSProperties) : undefined}
     >
       <div className={`dashboard-kpi-glow absolute -top-14 -right-12 h-36 w-36 rounded-full blur-3xl opacity-15 group-hover:opacity-35 group-hover:scale-125 transition-all duration-500 ${gradient}`} />
