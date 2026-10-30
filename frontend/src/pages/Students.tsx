@@ -496,7 +496,7 @@ export default function Students() {
   };
 
   const copyWhatsAppCredentials = (student: any, creds: any) => {
-    const text = `*🎒 ${user?.school?.name || 'EduSphere Academy'} — Student Admission & Portal Credentials*
+    const text = `*🎒 ${user?.schoolName || 'EduSphere Academy'} — Student Admission & Portal Credentials*
 ----------------------------------------
 *Student Name:* ${student.name}
 *Admission No:* ${student.admissionNo || 'N/A'}
@@ -507,7 +507,7 @@ export default function Students() {
 • *Login ID:* ${creds.loginId}
 • *Portal Email:* ${creds.fullEmail || student.email || 'N/A'}
 • *Password:* ${creds.password}
-• *Portal URL:* ${window.location.origin}/${user?.school?.slug || ''}/login
+• *Portal URL:* ${window.location.origin}/${user?.schoolSlug || ''}/login
 ----------------------------------------
 _Please keep these credentials safe for viewing attendance, exam report cards, homework, and fee receipts._`;
 
@@ -545,7 +545,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 </head>
 <body>
   <div class="header">
-    <h1 class="school-name">${user?.school?.name || 'EduSphere International Academy'}</h1>
+    <h1 class="school-name">${user?.schoolName || 'EduSphere International Academy'}</h1>
     <p class="slip-title">Official Student Admission Slip & Record</p>
     <p style="font-size: 11px; color: #64748b; margin: 2px 0 0;">Session: ${student.session || currentSession} | Date: ${new Date().toLocaleDateString()}</p>
   </div>
@@ -3313,7 +3313,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
               </div>
 
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Student or parent can log in at <span className="font-mono text-cyan-400">{window.location.origin}/{user?.school?.slug || ''}/login</span> using either their Friendly Login ID, Admission Number, or Email with this password.
+                Student or parent can log in at <span className="font-mono text-cyan-400">{window.location.origin}/{user?.schoolSlug || ''}/login</span> using either their Friendly Login ID, Admission Number, or Email with this password.
               </p>
             </div>
 
