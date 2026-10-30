@@ -27,12 +27,9 @@ export class MailService {
         this.configService.get<string>('SMTP_SECURE') || 'false'
       ).toLowerCase() === 'true';
 
-    this.logger.log(`SMTP_HOST=${smtpHost}`);
-    this.logger.log(`SMTP_PORT=${smtpPort}`);
-    this.logger.log(`SMTP_SECURE=${smtpSecure}`);
-    this.logger.log(`SMTP_USER=${smtpUser}`);
+    // Never log credentials — only log non-sensitive config indicators
     this.logger.log(
-      `SMTP_PASS loaded=${!!smtpPass}, length=${smtpPass?.length ?? 0}`,
+      `SMTP configured: host=${smtpHost}, port=${smtpPort}, secure=${smtpSecure}, user_set=${!!smtpUser}, pass_set=${!!smtpPass}`,
     );
 
     this.transporter = nodemailer.createTransport({
@@ -150,9 +147,7 @@ export class MailService {
           </p>
         </div>
       `,
-      `Your school ${schoolName} has been approved.
-
-${loginUrl}`,
+      `Your school ${schoolName} has been approved.\n\n${loginUrl}`,
     );
   }
 

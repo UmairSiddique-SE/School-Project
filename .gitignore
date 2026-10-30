@@ -48,3 +48,9 @@ lerna-debug.log*
 # Prisma / DB files
 /backend/prisma/dev.db
 /backend/prisma/dev.db-journal
+
+# Security: never commit debug/one-off scripts with credentials or sensitive data
+check_passwords.js
+debug_*.js
+test_db.js
+seed_*.js
