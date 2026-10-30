@@ -42,70 +42,68 @@
 
 @layer base {
   :root {
-    /* Deep-space dark theme — always dark */
-    --background: 222 47% 4.5%;
-    --foreground: 210 40% 96%;
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
 
-    --card: 221 45% 6%;
-    --card-foreground: 210 40% 96%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
 
-    --popover: 221 45% 6%;
-    --popover-foreground: 210 40% 96%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
 
-    --primary: 258 90% 66%;
-    --primary-foreground: 210 20% 98%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 30% 11%;
-    --secondary-foreground: 210 40% 80%;
+  --secondary: 214 32% 91%;
+  --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 30% 10%;
-    --muted-foreground: 215 20% 50%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
 
-    --accent: 220 30% 13%;
-    --accent-foreground: 210 40% 90%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-    --border: 220 25% 12%;
-    --input: 220 25% 12%;
-    --ring: 258 90% 66%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 199 89% 48%;
 
-    --radius: 1rem;
+  --radius: 1rem;
 
-    /* Custom design tokens */
-    --surface-1: 221 45% 6%;
-    --surface-2: 220 40% 8.5%;
-    --surface-3: 220 35% 11%;
-    --glow-primary: 258 90% 66%;
-    --glow-blue: 217 91% 60%;
-    --glow-emerald: 160 84% 39%;
-    --glow-rose: 347 77% 50%;
-    --glow-amber: 37 91% 55%;
-  }
+  --surface-1: 0 0% 100%;
+  --surface-2: 210 40% 96%;
+  --surface-3: 214 32% 91%;
+  --glow-primary: 199 89% 48%;
+  --glow-blue: 217 91% 60%;
+  --glow-emerald: 160 84% 39%;
+  --glow-rose: 347 77% 50%;
+  --glow-amber: 37 91% 55%;
+}
 
   /* Dark theme variables */
   .dark {
-    --background: 222 47% 4.5%;
-    --foreground: 210 40% 96%;
-    --card: 221 45% 6%;
-    --card-foreground: 210 40% 96%;
-    --popover: 221 45% 6%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 258 90% 66%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 30% 11%;
-    --secondary-foreground: 210 40% 80%;
-    --muted: 220 30% 10%;
-    --muted-foreground: 215 20% 50%;
-    --accent: 220 30% 13%;
-    --accent-foreground: 210 40% 90%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 25% 12%;
-    --input: 220 25% 12%;
-    --ring: 258 90% 66%;
-  }
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 214 32% 91%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 199 89% 48%;
+}
 
   /* Light theme variables - Ultra First Class Clean */
   .light {
@@ -167,10 +165,10 @@
    ======================================== */
 
 .glass {
-  background: rgba(13, 17, 26, 0.7);
+  background: #ffffff;
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  border: 1px solid #e2e8f0;
 }
 
 .light .glass {
@@ -180,7 +178,7 @@
 }
 
 .glass-elevated {
-  background: rgba(19, 25, 38, 0.85);
+  background: #ffffff;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -193,10 +191,10 @@
 }
 
 .glass-card {
-  background: rgba(13, 17, 26, 0.6);
+  background: #ffffff;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  border: 1px solid #e2e8f0;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
@@ -482,8 +480,8 @@
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  background: rgba(13, 17, 26, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   backdrop-filter: blur(12px);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
