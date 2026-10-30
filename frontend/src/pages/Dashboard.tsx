@@ -114,23 +114,29 @@ const SectionTitle = ({
   title,
   subtitle,
   action,
+  gradient = "from-cyan-500 via-sky-500 to-blue-600",
 }: {
-  icon: ComponentType<{ size?: number }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   title: string;
   subtitle: string;
   action?: string;
+  gradient?: string;
 }) => (
-  <div className="mb-4 flex items-start justify-between gap-3">
-    <div className="flex items-center gap-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-        <Icon size={16} />
+  <div className={`-mx-6 -mt-6 mb-5 flex items-center justify-between bg-gradient-to-r ${gradient} px-6 py-3.5 text-white shadow-sm`}>
+    <div className="flex items-center gap-3 min-w-0">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white shadow-inner shrink-0">
+        <Icon size={17} />
       </span>
-      <div>
-        <h2 className="text-base font-bold text-slate-800 dark:text-foreground">{title}</h2>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-muted-foreground">{subtitle}</p>
+      <div className="min-w-0">
+        <h2 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">{title}</h2>
+        <p className="text-[11px] text-white/85 truncate">{subtitle}</p>
       </div>
     </div>
-    {action ? <span className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">{action}</span> : null}
+    {action ? (
+      <span className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-inner shrink-0">
+        {action}
+      </span>
+    ) : null}
   </div>
 );
 
@@ -250,7 +256,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 xl:col-span-2">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden xl:col-span-2">
           <SectionTitle icon={LayoutDashboard} title="Live School Overview" subtitle="Only current records returned by the database" action={`${totalPeople} people`} />
           {totalPeople === 0 && stats.classesCount === 0 ? <EmptyState label="Your school has no live academic/people records yet." /> : (
             <div className="h-[285px] w-full">
@@ -267,8 +273,8 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
-          <SectionTitle icon={ClipboardCheck} title="Attendance Details" subtitle="Today from live attendance records" />
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden">
+          <SectionTitle icon={ClipboardCheck} title="Attendance Details" subtitle="Today from live attendance records" gradient="from-teal-500 via-emerald-500 to-cyan-600" />
           {attendanceTotal === 0 ? <EmptyState label="No attendance has been recorded today." /> : (
             <div className="space-y-5">
               <div className="mx-auto h-[190px] w-full">
@@ -291,8 +297,8 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
-          <SectionTitle icon={BookOpen} title="Classes & Sections" subtitle="Live academic structure" action={`${classes.length} classes`} />
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden">
+          <SectionTitle icon={BookOpen} title="Classes & Sections" subtitle="Live academic structure" gradient="from-sky-500 via-blue-500 to-indigo-600" action={`${classes.length} classes`} />
           {classes.length === 0 ? <EmptyState label="No classes found for this school." /> : (
             <div className="space-y-2.5">
               {classes.slice(0, 8).map((item) => (
@@ -305,7 +311,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden">
           <SectionTitle icon={UserPlus} title="Recent Admissions" subtitle="Latest students stored in the database" />
           {stats.recentAdmissions.length === 0 ? <EmptyState label="No student admissions found." /> : (
             <div className="space-y-2.5">
@@ -321,8 +327,8 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section className="glass-card p-6 lg:col-span-2">
-          <SectionTitle icon={CalendarDays} title="Upcoming Exams" subtitle="Future exams currently stored in the database" />
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden lg:col-span-2">
+          <SectionTitle icon={CalendarDays} title="Upcoming Exams" subtitle="Future exams currently stored in the database" gradient="from-indigo-500 via-purple-500 to-violet-600" />
           {stats.upcomingExams.length === 0 ? <EmptyState label="No upcoming exams found." /> : (
             <div className="space-y-2.5">
               {stats.upcomingExams.map((exam) => (
@@ -335,8 +341,8 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6">
-          <SectionTitle icon={Bell} title="Notice Board" subtitle="Latest school announcements" />
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden">
+          <SectionTitle icon={Bell} title="Notice Board" subtitle="Latest school announcements" gradient="from-amber-500 via-orange-500 to-rose-500" />
           {stats.announcements.length === 0 ? <EmptyState label="No announcements found." /> : (
             <div className="space-y-2.5">
               {stats.announcements.slice(0, 5).map((item) => (

@@ -117,7 +117,7 @@ export default function Parents() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">Parent Registry</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase tracking-widest">Parent Registry</h1>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
             {parents.length} Total Parent Accounts
           </p>
@@ -233,6 +233,15 @@ export default function Parents() {
       </div>
 
       {/* Cards Grid */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm mb-4">
+        <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <UsersRound size={18} />
+            <span className="font-bold text-sm sm:text-base">Parent & Guardian Accounts Directory</span>
+          </div>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Accounts</span>
+        </div>
+      </div>
       {loading ? (
         <div className="flex items-center justify-center h-64"><Loader2 size={48} className="animate-spin text-primary" /></div>
       ) : filtered.length === 0 ? (

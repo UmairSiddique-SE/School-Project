@@ -272,7 +272,14 @@ export default function Staff() {
       {loading ? (
         <div className="flex items-center justify-center h-64"><Loader2 size={48} className="animate-spin text-primary" /></div>
       ) : (
-        <div className="glass-elevated border border-white/[0.06] rounded-[40px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]">
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Briefcase size={18} />
+              <span className="font-bold text-sm sm:text-base">Staff & Administrative Personnel Directory</span>
+            </div>
+            <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Staff</span>
+          </div>
           {filtered.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="h-24 w-24 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary mx-auto border border-primary/20">

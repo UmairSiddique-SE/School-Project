@@ -793,11 +793,14 @@ export default function Teachers() {
         <form onSubmit={handleSave} className="space-y-6">
           
           {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
-          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-indigo-400" />
-              1. PERSONAL & CONTACT INFORMATION
-            </h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <User size={18} />
+                <span className="font-bold text-sm sm:text-base">1. Personal & Contact Information</span>
+              </div>
+              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Required</span>
+            </div>
 
             <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -938,11 +941,14 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 2: ACADEMIC QUALIFICATIONS & SALARY */}
-          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-indigo-400" />
-              2. ACADEMIC QUALIFICATIONS & SALARY
-            </h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-600 px-6 py-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <GraduationCap size={18} />
+                <span className="font-bold text-sm sm:text-base">2. Academic Qualifications & Compensation</span>
+              </div>
+              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Academic Record</span>
+            </div>
 
             <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1024,11 +1030,14 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 3: OFFICIAL SCHOOL LOGIN ID & 8-CHARACTER PASSWORD */}
-          <div className="rounded-3xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 mb-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-indigo-400" />
-              3. PROFESSIONAL SCHOOL LOGIN ID & PORTAL PASSWORD
-            </h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 px-6 py-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Key size={18} />
+                <span className="font-bold text-sm sm:text-base">3. Official Faculty Portal Login Credentials</span>
+              </div>
+              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Security</span>
+            </div>
 
             <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-indigo-950/20 via-purple-950/10 to-card p-6 space-y-4">
               
@@ -1331,7 +1340,14 @@ export default function Teachers() {
       </div>
 
       {/* Teachers Directory Table */}
-      <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Users size={18} />
+            <span className="font-bold text-sm sm:text-base">Faculty Directory & Academic Records</span>
+          </div>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Teachers</span>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-border bg-muted/30 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-muted-foreground">

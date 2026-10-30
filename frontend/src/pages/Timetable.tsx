@@ -385,7 +385,27 @@ export default function Timetable() {
       </div>
 
       {/* ── Active View Summary Banner ── */}
-      <div className="rounded-2xl border border-border/80 bg-card p-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-white/20 text-white flex items-center justify-center font-black">
+              {filterMode === 'section' ? <GraduationCap size={18} /> : <User size={18} />}
+            </div>
+            <div>
+              <h2 className="font-bold text-sm sm:text-base text-white">
+                {filterMode === 'section'
+                  ? `Class Routine: ${currentSectionObj?.class?.name || 'Class'} (Section ${currentSectionObj?.name || 'A'})`
+                  : `Faculty Routine: ${currentTeacherObj?.name || 'Teacher'} (${currentTeacherObj?.employeeNo || 'Staff'})`}
+              </h2>
+              <p className="text-[11px] text-white/85">
+                Total {visibleSlots.length} weekly periods scheduled • Automatic teacher double-booking check active
+              </p>
+            </div>
+          </div>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{visibleSlots.length} Periods</span>
+        </div>
+      </div>
+      <div className="hidden">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 border border-violet-500/20 flex items-center justify-center font-black">
             {filterMode === 'section' ? <GraduationCap size={20} /> : <User size={20} />}

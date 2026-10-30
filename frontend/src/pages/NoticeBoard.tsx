@@ -299,6 +299,15 @@ export default function NoticeBoard() {
       </div>
 
       {/* ─── Notice Cards List ─────────────────────────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm mb-4">
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-6 py-4 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <BellRing size={18} />
+            <span className="font-bold text-sm sm:text-base">Official Campus Circulars & Notice Bulletin</span>
+          </div>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Notices</span>
+        </div>
+      </div>
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
           <Loader2 size={36} className="animate-spin text-primary" />
