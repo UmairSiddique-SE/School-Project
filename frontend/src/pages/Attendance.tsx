@@ -276,6 +276,148 @@ export default function Attendance() {
     toast.success('Attendance sheet exported');
   };
 
+  const printAttendanceSheet = () => {
+    if (students.length === 0) {
+      toast.info('No students in this section to print');
+      return;
+    }
+    const popup = window.open('', '_blank', 'width=950,height=850');
+    if (!popup) {
+      toast.error('Please allow pop-ups to print the attendance sheet.');
+      return;
+    }
+
+    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const className = selectedClassData ? `${selectedClassData.className} — Section ${selectedClassData.name}` : 'General Class';
+    const formattedDate = new Date(selectedDate).toLocaleDateString('en-PK', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const statusBadge = (st: string) => {
+      switch (st) {
+        case 'PRESENT':
+          return '<span style="background:#dcfce7;color:#166534;font-weight:800;padding:3px 8px;border-radius:4px;font-size:10px;">PRESENT</span>';
+        case 'ABSENT':
+          return '<span style="background:#fee2e2;color:#991b1b;font-weight:800;padding:3px 8px;border-radius:4px;font-size:10px;">ABSENT</span>';
+        case 'LATE':
+          return '<span style="background:#fef3c7;color:#92400e;font-weight:800;padding:3px 8px;border-radius:4px;font-size:10px;">LATE</span>';
+        case 'LEAVE':
+          return '<span style="background:#e0e7ff;color:#3730a3;font-weight:800;padding:3px 8px;border-radius:4px;font-size:10px;">LEAVE</span>';
+        default:
+          return st;
+      }
+    };
+
+    const rowsHtml = filteredStudents.map((s, idx) => {
+      const rec = attendance[s.id] || { status: 'PRESENT', remarks: '' };
+      return `
+        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+          <td style="padding: 6px 8px; text-align: center; color: #64748b;">${idx + 1}</td>
+          <td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">${s.name}</td>
+          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${s.admissionNo || '—'}</td>
+          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px; text-align: center;">${s.rollNo || (idx + 1)}</td>
+          <td style="padding: 6px 8px; text-align: center;">${statusBadge(rec.status)}</td>
+          <td style="padding: 6px 8px; color: #64748b; font-size: 10px;">${rec.remarks || '—'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Daily Attendance — ${className} — ${selectedDate}</title>
+        <style>
+          @page { size: portrait; margin: 10mm; }
+          * { box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #0f172a; background: #fff; }
+          .header { text-align: center; border-bottom: 2px solid #0c4a6e; padding-bottom: 12px; margin-bottom: 14px; }
+          .school-title { font-size: 22px; font-weight: 900; color: #0c4a6e; text-transform: uppercase; }
+          .report-subtitle { font-size: 13px; font-weight: 800; color: #0891b2; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+          .meta { font-size: 11px; color: #64748b; margin-top: 4px; }
+          .stats-grid { display: flex; gap: 10px; margin-top: 14px; margin-bottom: 14px; }
+          .stat-card { flex: 1; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; text-align: center; background: #f8fafc; }
+          .stat-val { font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 2px; }
+          .stat-lbl { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th { background: #0c4a6e; color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 8px 6px; letter-spacing: 0.5px; }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px; border-radius: 8px;">
+          <span style="font-size: 12px; color: #64748b; font-weight: 600;">Official Attendance Roster Preview</span>
+          <button onclick="window.print()" style="padding: 8px 18px; background: #0c4a6e; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            🖨️ Print Attendance Sheet
+          </button>
+        </div>
+
+        <div class="header">
+          <div class="school-title">${schoolName}</div>
+          <div class="report-subtitle">Official Daily Class Attendance Register</div>
+          <div class="meta">Class: <strong>${className}</strong> &nbsp;|&nbsp; Date: <strong>${formattedDate}</strong></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-lbl">Enrolled</div>
+            <div class="stat-val">${stats.total}</div>
+          </div>
+          <div class="stat-card" style="border-color: #86efac; background: #f0fdf4;">
+            <div class="stat-lbl" style="color: #166534;">Present</div>
+            <div class="stat-val" style="color: #166534;">${stats.present}</div>
+          </div>
+          <div class="stat-card" style="border-color: #fca5a5; background: #fef2f2;">
+            <div class="stat-lbl" style="color: #991b1b;">Absent</div>
+            <div class="stat-val" style="color: #991b1b;">${stats.absent}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Late / Leave</div>
+            <div class="stat-val">${stats.late + stats.leave}</div>
+          </div>
+          <div class="stat-card" style="border-color: #7dd3fc; background: #f0f9ff;">
+            <div class="stat-lbl" style="color: #0369a1;">Attendance Rate</div>
+            <div class="stat-val" style="color: #0369a1;">${attendancePercentage}%</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%;">#</th>
+              <th style="text-align: left; width: 35%;">Student Name</th>
+              <th style="text-align: left; width: 18%;">Admission No</th>
+              <th style="text-align: center; width: 12%;">Roll No</th>
+              <th style="text-align: center; width: 15%;">Status</th>
+              <th style="text-align: left; width: 15%;">Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 60px; font-size: 11px; font-weight: 700; color: #475569;">
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">Class Incharge / Teacher</div>
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">Discipline / Attendance Officer</div>
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">Principal / Headmaster</div>
+        </div>
+
+        <script>
+          window.onload = function() { setTimeout(function() { window.print(); }, 500); };
+        </script>
+      </body>
+      </html>
+    `);
+    popup.document.close();
+  };
+
   return (
     <div className="space-y-6 max-w-screen-2xl mx-auto pb-16">
       {/* ─── Top Banner ────────────────────────────────────────────────────────── */}
@@ -315,6 +457,12 @@ export default function Attendance() {
                 className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-foreground text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all active:scale-95"
               >
                 <Download size={14} /> Export CSV
+              </button>
+              <button
+                onClick={printAttendanceSheet}
+                className="px-3.5 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-xs font-bold flex items-center gap-1.5 hover:bg-cyan-500/20 transition-all active:scale-95"
+              >
+                <Printer size={14} /> Print Sheet
               </button>
             </>
           )}

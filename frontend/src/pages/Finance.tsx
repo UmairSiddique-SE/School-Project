@@ -359,11 +359,26 @@ export default function Finance() {
 
     const slipHtml = (type: string) => `
       <div style="flex: 1; border: 1.5px dashed #64748b; padding: 14px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; background: #fff; min-width: 0;">
-        <div style="text-align: center; border-bottom: 2px solid #0891b2; padding-bottom: 8px; margin-bottom: 8px;">
-          <div style="font-size: 9px; font-weight: 800; color: #0891b2; letter-spacing: 1px; text-transform: uppercase;">Habib Bank Limited / Meezan Bank</div>
-          <div style="font-size: 13px; font-weight: 900; color: #0f172a; margin-top: 2px;">${schoolName}</div>
-          <div style="font-size: 9px; color: #64748b;">A/C Title: ${schoolName} Collection | A/C: 0142-7901-2345-03</div>
-          <div style="display: inline-block; background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 4px; margin-top: 4px; text-transform: uppercase;">
+        <div style="text-align: center; border-bottom: 2px solid #0891b2; padding-bottom: 10px; margin-bottom: 10px;">
+          <!-- School Logo -->
+          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;">
+            <div style="width:36px;height:36px;border-radius:8px;border:1.5px solid #0891b2;padding:4px;background:linear-gradient(135deg,#e0f2fe,#fff);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px;">
+                <path d="M24 4L44 14V20H4V14L24 4Z" fill="#0891b2"/>
+                <rect x="8" y="20" width="4" height="16" fill="#0c4a6e"/>
+                <rect x="22" y="20" width="4" height="16" fill="#0c4a6e"/>
+                <rect x="36" y="20" width="4" height="16" fill="#0c4a6e"/>
+                <rect x="4" y="36" width="40" height="4" fill="#0891b2"/>
+                <path d="M18 8L24 4L30 8L24 11L18 8Z" fill="#fff" opacity="0.4"/>
+              </svg>
+            </div>
+            <div style="text-align:left;">
+              <div style="font-size:14px;font-weight:900;color:#0c4a6e;line-height:1.1;">${schoolName}</div>
+              <div style="font-size:8px;color:#64748b;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Fee Collection Challan</div>
+            </div>
+          </div>
+          <div style="font-size: 8px; font-weight: 700; color: #64748b; margin-top:2px;">Bank / A/C: ${schoolName} Fee Collection Account</div>
+          <div style="display: inline-block; background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 4px; margin-top: 5px; text-transform: uppercase;">
             ${type}
           </div>
         </div>
@@ -471,6 +486,125 @@ export default function Finance() {
           window.onload = function() {
             setTimeout(function() { window.print(); }, 500);
           };
+        </script>
+      </body>
+      </html>
+    `);
+    popup.document.close();
+  };
+
+  const printDefaultersReport = () => {
+    if (defaulters.length === 0) {
+      toast.info('No defaulters to print');
+      return;
+    }
+    const popup = window.open('', '_blank', 'width=1000,height=800');
+    if (!popup) {
+      toast.error('Please allow pop-ups to print the report.');
+      return;
+    }
+
+    const schoolName = user?.schoolName || 'EduSphere Model School';
+    const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
+    let totalOutstanding = 0;
+
+    const rowsHtml = defaulters.map((p, idx) => {
+      const payable = Math.max(0, Number(p.amount) - Number(p.discount || 0) + Number(p.fine || 0));
+      const balance = Math.max(0, payable - Number(p.totalPaid || 0));
+      totalOutstanding += balance;
+      const className = p.student?.class?.name || p.student?.section?.class?.name || 'Class';
+      const sectionName = p.student?.section?.name || 'A';
+      return `
+        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+          <td style="padding: 6px 8px; text-align: center; color: #64748b;">${idx + 1}</td>
+          <td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">${p.student?.name || '—'}</td>
+          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${p.student?.admissionNo || '—'}</td>
+          <td style="padding: 6px 8px;">${className} - ${sectionName}</td>
+          <td style="padding: 6px 8px; color: #64748b;">${p.feeStructure?.name || 'Fee'}</td>
+          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${p.receiptNo}</td>
+          <td style="padding: 6px 8px; text-align: center; color: #e11d48; font-weight: 600;">
+            ${p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-PK') : 'Overdue'}
+          </td>
+          <td style="padding: 6px 8px; text-align: right; font-weight: 600;">${payable.toLocaleString()}</td>
+          <td style="padding: 6px 8px; text-align: right; color: #059669;">${Number(p.totalPaid || 0).toLocaleString()}</td>
+          <td style="padding: 6px 8px; text-align: right; font-weight: 800; color: #dc2626;">PKR ${balance.toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
+
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Fee Defaulters Report — ${schoolName}</title>
+        <style>
+          @page { size: portrait; margin: 12mm; }
+          * { box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #0f172a; background: #fff; }
+          .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 14px; }
+          .school-title { font-size: 22px; font-weight: 900; color: #0c4a6e; text-transform: uppercase; }
+          .report-subtitle { font-size: 13px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+          .meta { font-size: 11px; color: #64748b; margin-top: 4px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+          th { background: #0c4a6e; color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 8px 6px; letter-spacing: 0.5px; }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px; border-radius: 8px;">
+          <span style="font-size: 12px; color: #64748b; font-weight: 600;">Official Accounts Audit Document</span>
+          <button onclick="window.print()" style="padding: 8px 18px; background: #dc2626; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            🖨️ Print / Save PDF
+          </button>
+        </div>
+
+        <div class="header">
+          <div class="school-title">${schoolName}</div>
+          <div class="report-subtitle">Official Student Fee Defaulters & Outstanding Dues Report</div>
+          <div class="meta">Generated: <strong>${issueDate}</strong> &nbsp;|&nbsp; Total Defaulters: <strong>${defaulters.length}</strong></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 4%;">#</th>
+              <th style="text-align: left; width: 18%;">Student Name</th>
+              <th style="text-align: left; width: 10%;">Adm No</th>
+              <th style="text-align: left; width: 12%;">Class / Sec</th>
+              <th style="text-align: left; width: 14%;">Fee Head</th>
+              <th style="text-align: left; width: 10%;">Receipt #</th>
+              <th style="text-align: center; width: 10%;">Due Date</th>
+              <th style="text-align: right; width: 8%;">Total</th>
+              <th style="text-align: right; width: 6%;">Paid</th>
+              <th style="text-align: right; width: 8%;">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+          <tfoot>
+            <tr style="background: #fef2f2; font-weight: 900; font-size: 12px; border-top: 2px solid #dc2626;">
+              <td colspan="9" style="padding: 8px; text-align: right; text-transform: uppercase; color: #0f172a;">
+                Grand Total Outstanding:
+              </td>
+              <td style="padding: 8px; text-align: right; color: #dc2626;">
+                PKR ${totalOutstanding.toLocaleString()}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 50px; font-size: 11px; font-weight: 700; color: #475569;">
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">Accounts Officer</div>
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">School Bursar / Admin</div>
+          <div style="width: 28%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 6px;">Principal Approval</div>
+        </div>
+
+        <script>
+          window.onload = function() { setTimeout(function() { window.print(); }, 500); };
         </script>
       </body>
       </html>
@@ -916,6 +1050,14 @@ export default function Finance() {
               <h2 className="text-base font-bold text-slate-900 dark:text-foreground">Defaulters & Pending Dues</h2>
               <p className="text-xs text-slate-500 dark:text-muted-foreground">Students with unpaid or partially settled fee receipts.</p>
             </div>
+            {defaulters.length > 0 && (
+              <button
+                onClick={printDefaultersReport}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/20 transition-all duration-150 active:scale-95"
+              >
+                <Printer size={14} /> Print Defaulters Report
+              </button>
+            )}
           </div>
 
           {defaulters.length === 0 ? (
