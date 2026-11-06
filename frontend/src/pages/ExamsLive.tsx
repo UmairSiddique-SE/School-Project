@@ -302,7 +302,7 @@ export default function ExamsLive() {
     isAbsent: boolean
   ) => {
     if (!selectedExam) return;
-    const popup = window.open('', '_blank', 'width=800,height=950');
+    const popup = window.open('', '_blank', 'width=820,height=1050');
     if (!popup) {
       toast.error('Please allow pop-ups to print the report card.');
       return;
@@ -310,7 +310,8 @@ export default function ExamsLive() {
 
     const schoolName = user?.schoolName || 'EduSphere Model High School';
     const examName = selectedExam.name;
-    const session = '2025-2026';
+    const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
+    const session = new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
     const studentName = st.name;
     const admNo = st.admissionNo || 'ADM-2026';
     const rollNo = st.rollNo || '01';
@@ -319,6 +320,244 @@ export default function ExamsLive() {
     const totalMarks = selectedExam.totalMarks;
     const passingMarks = selectedExam.passingMarks;
     const subjectName = subjects.find(s => s.id === selectedSubjectId)?.name || 'General Subject';
+    const subjectCode = subjects.find(s => s.id === selectedSubjectId)?.code || '—';
+    const examType = selectedExam.type?.replace(/_/g, ' ') || 'EXAMINATION';
+    const resultStatus = isAbsent ? 'ABSENT' : isPassed ? 'PASS' : 'FAIL';
+    const statusColor = isAbsent ? '#dc2626' : isPassed ? '#16a34a' : '#dc2626';
+
+    // Grade color
+    const gradeColor = grade === 'A+' || grade === 'A' ? '#16a34a'
+      : grade === 'B' ? '#0891b2'
+      : grade === 'C' ? '#d97706'
+      : '#dc2626';
+
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>DMC — ${studentName} (${admNo})</title>
+        <style>
+          @page { size: portrait; margin: 10mm 12mm; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; color: #0f172a; padding: 24px; font-size: 12px; }
+
+          /* Header */
+          .dmc-header { text-align: center; padding-bottom: 14px; border-bottom: 3px double #0891b2; margin-bottom: 14px; position: relative; }
+          .dmc-logo { width: 72px; height: 72px; border-radius: 12px; border: 2px solid #0891b2; padding: 6px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e0f2fe, #fff); }
+          .dmc-logo svg { width: 40px; height: 40px; }
+          .school-name { font-size: 22px; font-weight: 900; color: #0c4a6e; letter-spacing: 0.5px; text-transform: uppercase; }
+          .dmc-title { font-size: 15px; font-weight: 800; color: #0891b2; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 4px 20px; border-radius: 20px; display: inline-block; }
+          .exam-label { font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600; letter-spacing: 0.5px; }
+
+          /* Watermark */
+          .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 90px; font-weight: 900; color: rgba(8,145,178,0.04); pointer-events: none; z-index: 0; white-space: nowrap; letter-spacing: 4px; }
+
+          /* Student Info */
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1.5px solid #cbd5e1; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+          .info-row { display: flex; border-bottom: 1px solid #e2e8f0; }
+          .info-row:last-child { border-bottom: none; }
+          .info-label { background: #f8fafc; color: #64748b; font-weight: 700; font-size: 10px; text-transform: uppercase; padding: 7px 10px; width: 38%; border-right: 1px solid #e2e8f0; letter-spacing: 0.5px; display: flex; align-items: center; }
+          .info-value { padding: 7px 10px; font-weight: 800; font-size: 12px; display: flex; align-items: center; color: #0f172a; }
+
+          /* Marks table */
+          .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1.5px solid #cbd5e1; }
+          .marks-table thead tr { background: linear-gradient(135deg, #0c4a6e, #0891b2); color: #fff; }
+          .marks-table th { padding: 10px 12px; text-align: center; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
+          .marks-table th:first-child { text-align: left; }
+          .marks-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 12px; }
+          .marks-table td:first-child { text-align: left; font-weight: 700; }
+          .marks-table tfoot { background: #f8fafc; border-top: 2px solid #0891b2; }
+          .marks-table tfoot td { font-weight: 900; font-size: 13px; }
+
+          /* Summary */
+          .summary-row { display: flex; gap: 10px; margin-bottom: 14px; }
+          .summary-box { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; background: #f8fafc; }
+          .summary-box .val { font-size: 24px; font-weight: 900; margin-top: 4px; }
+          .summary-box .lbl { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; }
+
+          /* Grade Scale */
+          .grade-scale { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+          .grade-scale-title { font-size: 10px; font-weight: 800; color: #0891b2; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+          .grade-scale-items { display: flex; flex-wrap: wrap; gap: 6px; }
+          .grade-pill { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; border: 1px solid; }
+
+          /* Signatures */
+          .signatures { display: flex; justify-content: space-between; margin-top: 36px; padding-top: 12px; }
+          .sig-block { text-align: center; width: 30%; }
+          .sig-line { border-top: 1.5px solid #94a3b8; padding-top: 6px; font-size: 10px; font-weight: 700; color: #475569; margin-top: 36px; }
+
+          /* Result stamp */
+          .result-stamp { display: inline-block; padding: 8px 20px; border-radius: 8px; font-size: 18px; font-weight: 900; letter-spacing: 2px; border: 3px solid; }
+
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+            .watermark { display: block; }
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Print Button -->
+        <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px;">
+          <span style="font-size: 12px; color: #64748b; font-weight: 600;">📄 Official Detailed Marks Certificate (DMC)</span>
+          <button onclick="window.print()" style="padding: 8px 20px; background: linear-gradient(135deg, #0c4a6e, #0891b2); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">
+            🖨️ Print / Save PDF
+          </button>
+        </div>
+
+        <!-- Watermark -->
+        <div class="watermark">EDUSPHERE ERP</div>
+
+        <!-- Header -->
+        <div class="dmc-header">
+          <div class="dmc-logo">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 4L44 14V20H4V14L24 4Z" fill="#0891b2"/>
+              <rect x="8" y="20" width="4" height="16" fill="#0c4a6e"/>
+              <rect x="22" y="20" width="4" height="16" fill="#0c4a6e"/>
+              <rect x="36" y="20" width="4" height="16" fill="#0c4a6e"/>
+              <rect x="4" y="36" width="40" height="4" fill="#0891b2"/>
+              <path d="M18 8L24 4L30 8L24 11L18 8Z" fill="#fff" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="school-name">${schoolName}</div>
+          <div class="dmc-title">Detailed Marks Certificate</div>
+          <div class="exam-label">${examType} — Academic Session ${session} &nbsp;|&nbsp; Issued: ${issueDate}</div>
+        </div>
+
+        <!-- Student Info Grid -->
+        <div class="info-grid">
+          <div class="info-row">
+            <div class="info-label">Student Name</div>
+            <div class="info-value" style="font-size: 14px; color: #0c4a6e;">${studentName}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Examination</div>
+            <div class="info-value">${examName}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Admission No</div>
+            <div class="info-value" style="font-family: monospace;">${admNo}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Roll Number</div>
+            <div class="info-value" style="font-family: monospace;">${rollNo}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Class</div>
+            <div class="info-value">${className}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Section</div>
+            <div class="info-value">${sectionName}</div>
+          </div>
+        </div>
+
+        <!-- Marks Table -->
+        <table class="marks-table">
+          <thead>
+            <tr>
+              <th style="text-align:left; width: 32%;">Subject / Paper</th>
+              <th>Code</th>
+              <th>Max Marks</th>
+              <th>Min Pass</th>
+              <th>Marks Scored</th>
+              <th>Percentage</th>
+              <th>Grade</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: ${isPassed && !isAbsent ? '#f0fdf4' : isAbsent ? '#fff7f7' : '#fff7f7'};">
+              <td>${subjectName}</td>
+              <td style="font-family: monospace; font-size: 11px;">${subjectCode}</td>
+              <td>${totalMarks}</td>
+              <td>${passingMarks}</td>
+              <td style="font-weight: 900; font-size: 14px; color: #0f172a;">${isAbsent ? 'ABS' : marks}</td>
+              <td style="font-weight: 800; color: #0891b2;">${isAbsent ? '—' : percentage.toFixed(1) + '%'}</td>
+              <td style="font-weight: 900; color: ${gradeColor}; font-size: 15px;">${isAbsent ? 'F' : grade}</td>
+              <td>
+                <span style="padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: ${statusColor}20; color: ${statusColor}; border: 1px solid ${statusColor}50;">
+                  ${resultStatus}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="padding: 10px 12px; font-size: 11px; color: #64748b; font-weight: 600;">Total / Aggregate</td>
+              <td style="color: #0f172a;">${isAbsent ? 'ABS' : marks} / ${totalMarks}</td>
+              <td style="color: #0891b2;">${isAbsent ? '—' : percentage.toFixed(1) + '%'}</td>
+              <td style="color: ${gradeColor}; font-size: 16px;">${isAbsent ? 'F' : grade}</td>
+              <td>
+                <span class="result-stamp" style="color: ${statusColor}; border-color: ${statusColor}; font-size: 13px;">
+                  ${resultStatus}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Summary Cards -->
+        <div class="summary-row">
+          <div class="summary-box">
+            <div class="lbl">Marks Obtained</div>
+            <div class="val" style="color: #0c4a6e;">${isAbsent ? 'ABS' : marks + ' / ' + totalMarks}</div>
+          </div>
+          <div class="summary-box">
+            <div class="lbl">Overall Percentage</div>
+            <div class="val" style="color: #0891b2;">${isAbsent ? '0.0%' : percentage.toFixed(1) + '%'}</div>
+          </div>
+          <div class="summary-box">
+            <div class="lbl">Letter Grade</div>
+            <div class="val" style="color: ${gradeColor};">${isAbsent ? 'F' : grade}</div>
+          </div>
+          <div class="summary-box" style="border-color: ${statusColor}50; background: ${statusColor}08;">
+            <div class="lbl">Final Result</div>
+            <div class="val" style="color: ${statusColor};">${resultStatus}</div>
+          </div>
+        </div>
+
+        <!-- Grading Scale -->
+        <div class="grade-scale">
+          <div class="grade-scale-title">📊 Grading Scale &amp; Criteria</div>
+          <div class="grade-scale-items">
+            <span class="grade-pill" style="background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">A+ (85–100%)</span>
+            <span class="grade-pill" style="background:#f0fdf4; color:#15803d; border-color:#bbf7d0;">A (75–84%)</span>
+            <span class="grade-pill" style="background:#ecfeff; color:#0891b2; border-color:#a5f3fc;">B (65–74%)</span>
+            <span class="grade-pill" style="background:#fffbeb; color:#d97706; border-color:#fde68a;">C (50–64%)</span>
+            <span class="grade-pill" style="background:#fff7ed; color:#ea580c; border-color:#fed7aa;">D (33–49%)</span>
+            <span class="grade-pill" style="background:#fff1f2; color:#e11d48; border-color:#fecdd3;">F (Below 33%)</span>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signatures">
+          <div class="sig-block">
+            <div class="sig-line">Class Teacher</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-line">Exam Controller</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-line">Principal / Head</div>
+          </div>
+        </div>
+
+        <!-- Footer note -->
+        <div style="margin-top: 20px; padding-top: 10px; border-top: 1px dashed #cbd5e1; font-size: 9px; color: #94a3b8; text-align: center; line-height: 1.6;">
+          This is a computer-generated Detailed Marks Certificate (DMC) issued by EduSphere ERP. &nbsp;|&nbsp;
+          ${schoolName} &nbsp;|&nbsp; Session ${session} &nbsp;|&nbsp; Generated on ${issueDate}
+        </div>
+
+        <script>
+          window.onload = function() { setTimeout(function() { window.print(); }, 600); };
+        </script>
+      </body>
+      </html>
+    `);
+    popup.document.close();
+  };
 
     popup.document.write(`
       <!DOCTYPE html>
@@ -790,7 +1029,7 @@ export default function ExamsLive() {
                           <th className="p-3 text-center">Grade</th>
                           <th className="p-3 text-center">Status</th>
                           <th className="p-3 text-center">Absent?</th>
-                          <th className="p-3 text-center">Report Card</th>
+                          <th className="p-3 text-center">Print</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/60">
@@ -874,6 +1113,15 @@ export default function ExamsLive() {
                                   }}
                                   className="rounded border-border text-rose-600 focus:ring-rose-500"
                                 />
+                              </td>
+                              <td className="p-3 text-center">
+                                <button
+                                  onClick={() => printStudentReportCard(st, numericMarks, pct, grading.grade, isPassed, isAbsent)}
+                                  title="Print Report Card (DMC)"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 transition text-[10px] font-bold"
+                                >
+                                  <Printer size={12} /> DMC
+                                </button>
                               </td>
                             </tr>
                           );
