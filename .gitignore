@@ -54,3 +54,5 @@ check_passwords.js
 debug_*.js
 test_db.js
 seed_*.js
+
+.vercel
