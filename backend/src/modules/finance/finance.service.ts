@@ -69,7 +69,10 @@ export class FinanceService {
 
   async getPayments(schoolId: string) {
     return this.prisma.feePayment.findMany({
-      where: { schoolId },
+      where: {
+        schoolId,
+        student: { deletedAt: null },
+      },
       include: {
         student: { select: { id: true, name: true, admissionNo: true, section: { select: { name: true, class: { select: { name: true } } } } } },
         feeStructure: { select: { id: true, name: true } },
@@ -170,7 +173,10 @@ export class FinanceService {
 
   async getFinanceSummary(schoolId: string, query: any = {}) {
     const entries = await this.getAccountEntries(schoolId, query);
-    const paymentWhere: any = { schoolId };
+    const paymentWhere: any = {
+      schoolId,
+      student: { deletedAt: null },
+    };
     if (query.from || query.to) {
       paymentWhere.createdAt = {};
       if (query.from) paymentWhere.createdAt.gte = new Date(query.from);

@@ -552,73 +552,73 @@ export default function Finance() {
             label: 'Total Collected',
             value: money(totalCollected),
             icon: DollarSign,
-            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
-            border: 'border-emerald-500/25 hover:border-emerald-500/50',
-            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
-            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
-            labelColor: 'text-emerald-600 dark:text-emerald-400',
-            dotColor: 'bg-emerald-500',
-            dotPing: 'bg-emerald-400',
-            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            gradient: 'from-slate-50 via-white to-slate-50/50 dark:from-slate-900/40 dark:via-card dark:to-card',
+            border: 'border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/30',
+            glow: 'bg-emerald-500/10 group-hover:bg-emerald-500/15',
+            iconBox: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/50',
+            labelColor: 'text-slate-600 dark:text-slate-400',
+            dotColor: 'bg-emerald-600',
+            dotPing: 'bg-emerald-500',
+            shadow: 'shadow-sm hover:shadow-md',
             subtitle: 'Verified bank & cash receipts',
           },
           {
             label: 'Outstanding Dues',
             value: money(totalOutstanding),
             icon: Clock,
-            gradient: 'from-amber-500/[0.08] via-card/70 to-card',
-            border: 'border-amber-500/25 hover:border-amber-500/50',
-            glow: 'bg-amber-500/15 group-hover:bg-amber-500/25',
-            iconBox: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
-            labelColor: 'text-amber-600 dark:text-amber-400',
-            dotColor: 'bg-amber-500',
-            dotPing: 'bg-amber-400',
-            shadow: 'shadow-amber-500/[0.04] hover:shadow-amber-500/15',
+            gradient: 'from-slate-50 via-white to-slate-50/50 dark:from-slate-900/40 dark:via-card dark:to-card',
+            border: 'border-slate-200/80 dark:border-slate-800 hover:border-amber-500/30',
+            glow: 'bg-amber-500/10 group-hover:bg-amber-500/15',
+            iconBox: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/60 dark:border-amber-900/50',
+            labelColor: 'text-slate-600 dark:text-slate-400',
+            dotColor: 'bg-amber-600',
+            dotPing: 'bg-amber-500',
+            shadow: 'shadow-sm hover:shadow-md',
             subtitle: `${defaulters.length} pending vouchers`,
           },
           {
             label: 'Collection Rate',
             value: `${collectionRate}%`,
             icon: Percent,
-            gradient: 'from-sky-500/[0.08] via-card/70 to-card',
-            border: 'border-sky-500/25 hover:border-sky-500/50',
-            glow: 'bg-sky-500/15 group-hover:bg-sky-500/25',
-            iconBox: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25',
-            labelColor: 'text-sky-600 dark:text-sky-400',
-            dotColor: 'bg-sky-500',
-            dotPing: 'bg-sky-400',
-            shadow: 'shadow-sky-500/[0.04] hover:shadow-sky-500/15',
+            gradient: 'from-slate-50 via-white to-slate-50/50 dark:from-slate-900/40 dark:via-card dark:to-card',
+            border: 'border-slate-200/80 dark:border-slate-800 hover:border-sky-500/30',
+            glow: 'bg-sky-500/10 group-hover:bg-sky-500/15',
+            iconBox: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400 border-sky-200/60 dark:border-sky-900/50',
+            labelColor: 'text-slate-600 dark:text-slate-400',
+            dotColor: 'bg-sky-600',
+            dotPing: 'bg-sky-500',
+            shadow: 'shadow-sm hover:shadow-md',
             subtitle: `${paidCount} of ${payments.length} fully settled`,
           },
           {
             label: 'Fee Structures',
             value: structures.length,
             icon: Layers,
-            gradient: 'from-purple-500/[0.08] via-card/70 to-card',
-            border: 'border-purple-500/25 hover:border-purple-500/50',
-            glow: 'bg-purple-500/15 group-hover:bg-purple-500/25',
-            iconBox: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25',
-            labelColor: 'text-purple-600 dark:text-purple-400',
-            dotColor: 'bg-purple-500',
-            dotPing: 'bg-purple-400',
-            shadow: 'shadow-purple-500/[0.04] hover:shadow-purple-500/15',
+            gradient: 'from-slate-50 via-white to-slate-50/50 dark:from-slate-900/40 dark:via-card dark:to-card',
+            border: 'border-slate-200/80 dark:border-slate-800 hover:border-indigo-500/30',
+            glow: 'bg-indigo-500/10 group-hover:bg-indigo-500/15',
+            iconBox: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 border-indigo-200/60 dark:border-indigo-900/50',
+            labelColor: 'text-slate-600 dark:text-slate-400',
+            dotColor: 'bg-indigo-600',
+            dotPing: 'bg-indigo-500',
+            shadow: 'shadow-sm hover:shadow-md',
             subtitle: 'Configured billing plans',
           },
         ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
           <div
             key={label}
-            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+            className={`group relative overflow-hidden rounded-2xl border ${border} bg-gradient-to-br ${gradient} p-5 ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5`}
           >
-            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-125`} />
             <div className="relative flex items-start justify-between">
               <div>
-                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
-                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                <p className={`text-[11px] font-bold uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 dark:text-foreground tracking-tight">
                   {value}
                 </h4>
               </div>
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                <Icon size={20} strokeWidth={2.2} />
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBox} border shadow-xs transition-transform duration-300 group-hover:scale-105`}>
+                <Icon size={19} strokeWidth={2.2} />
               </div>
             </div>
             <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
