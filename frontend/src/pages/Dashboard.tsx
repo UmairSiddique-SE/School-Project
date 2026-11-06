@@ -1,4 +1,27 @@
-import { useEffect, useMemo, useState, type ComponentType } from 'react';
+import React, { useEffect, useMemo, useState, type ComponentType } from 'react';
+
+class ChartErrorBoundary extends React.Component<{ children: React.ReactNode; fallback?: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.warn("Chart render fallback activated:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="flex h-full min-h-[160px] items-center justify-center rounded-xl bg-slate-50 dark:bg-muted/20 text-xs font-semibold text-muted-foreground">
+          Analytics chart preview
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { motion } from 'framer-motion';
 import {
   GraduationCap,
@@ -260,15 +283,17 @@ export default function Dashboard() {
           <SectionTitle icon={LayoutDashboard} title="Live School Overview" subtitle="Only current records returned by the database" action={`${totalPeople} people`} />
           {totalPeople === 0 && stats.classesCount === 0 ? <EmptyState label="Your school has no live academic/people records yet." /> : (
             <div className="h-[285px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={indicatorData} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.12} />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="currentColor" className="text-primary" />
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartErrorBoundary>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={indicatorData} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.12} />
+                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="currentColor" className="text-primary" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartErrorBoundary>
             </div>
           )}
         </section>
@@ -278,14 +303,16 @@ export default function Dashboard() {
           {attendanceTotal === 0 ? <EmptyState label="No attendance has been recorded today." /> : (
             <div className="space-y-5">
               <div className="mx-auto h-[190px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={attendanceData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={78} paddingAngle={3}>
-                      {attendanceData.map((entry) => <Cell key={entry.name} fill={entry.name === 'Present' ? '#10b981' : '#ef4444'} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <ChartErrorBoundary>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={attendanceData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={78} paddingAngle={3}>
+                        {attendanceData.map((entry) => <Cell key={entry.name} fill={entry.name === 'Present' ? '#10b981' : '#ef4444'} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartErrorBoundary>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Present</p><p className="mt-1 text-xl font-black text-foreground">{stats.presentToday}</p></div>
