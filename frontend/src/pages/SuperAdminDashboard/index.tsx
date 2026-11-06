@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState, Component, ErrorInfo, ReactNode } from "react";
+import React, { useEffect, useMemo, useState, Component } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 
 // Error Boundary to prevent white screen crashes
 class SectionErrorBoundary extends Component<{ children: ReactNode; name: string }, { hasError: boolean; error: string }> {
