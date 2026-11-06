@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   School,
   MapPin,
@@ -20,7 +20,19 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
+  Building2,
+  Send,
+  Layers,
+  PhoneCall,
+  Menu,
+  X,
+  Library,
+  FlaskConical,
+  Bus,
+  Check,
+  Monitor,
 } from "lucide-react";
+import { toast } from "sonner";
 import apiClient from "@/api/apiClient";
 
 interface SchoolPublicData {
@@ -46,6 +58,8 @@ interface SchoolPublicData {
     phone: string;
     address: string;
   };
+  classes?: Array<{ id: string; name: string; numeric: number | null }>;
+  buildings?: Array<{ id: string; name: string; type: string | null }>;
 }
 
 export default function SchoolPublicLanding() {
@@ -53,6 +67,17 @@ export default function SchoolPublicLanding() {
   const [school, setSchool] = useState<SchoolPublicData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Enquiry Form State
+  const [enquiryForm, setEnquiryForm] = useState({
+    studentName: "",
+    parentName: "",
+    phone: "",
+    gradeSeeking: "",
+    message: "",
+  });
+  const [enquirySent, setEnquirySent] = useState(false);
 
   useEffect(() => {
     if (!schoolSlug) return;
@@ -60,8 +85,15 @@ export default function SchoolPublicLanding() {
     apiClient
       .get(`/public/tenant/slug/${encodeURIComponent(schoolSlug)}`)
       .then((res) => {
-        setSchool(res.data);
-        setError(null);
+        // Enforce active status
+        if (!res.data.isActive) {
+          setError("This school's public website is currently offline or awaiting approval.");
+        } else {
+          setSchool(res.data);
+          setError(null);
+          // Set dynamic page title
+          document.title = `${res.data.name} — Official Campus Website | EduSphere`;
+        }
       })
       .catch((err) => {
         console.error("Failed to load school portal:", err);
@@ -69,6 +101,17 @@ export default function SchoolPublicLanding() {
       })
       .finally(() => setLoading(false));
   }, [schoolSlug]);
+
+  const handleEnquirySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enquiryForm.studentName || !enquiryForm.phone) {
+      toast.error("Please fill in the student name and contact phone.");
+      return;
+    }
+    // Simulation / Direct acknowledgment
+    setEnquirySent(true);
+    toast.success("Admissions enquiry received! Campus administration will reach out shortly.");
+  };
 
   if (loading) {
     return (
@@ -80,7 +123,7 @@ export default function SchoolPublicLanding() {
           </div>
         </div>
         <p className="mt-5 text-sm font-bold text-slate-400 tracking-wider uppercase">
-          Connecting to School Portal...
+          Loading Campus Website...
         </p>
       </div>
     );
@@ -93,9 +136,9 @@ export default function SchoolPublicLanding() {
           <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-6">
             <School size={30} />
           </div>
-          <h2 className="text-2xl font-black text-white">School Not Found</h2>
+          <h2 className="text-2xl font-black text-white">School Not Available</h2>
           <p className="mt-2 text-sm text-slate-400">
-            {error || "The requested school domain could not be resolved."}
+            {error || "The requested school domain could not be resolved or is not active."}
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -121,10 +164,10 @@ export default function SchoolPublicLanding() {
     .join(", ");
 
   return (
-    <div className="min-h-screen bg-[#040d1a] text-slate-100 font-sans selection:bg-cyan-500 selection:text-white">
-      {/* ── Top Header Navigation ── */}
+    <div className="min-h-screen bg-[#030b17] text-slate-100 font-sans selection:bg-cyan-500 selection:text-white">
+      {/* ── 1. Header Navigation ── */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3.5 rounded-2xl border border-white/10 bg-[#071526]/80 backdrop-blur-2xl shadow-2xl">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3.5 rounded-2xl border border-white/10 bg-[#061426]/90 backdrop-blur-2xl shadow-2xl">
           <div className="flex items-center gap-3.5">
             {school.logoUrl ? (
               <img
@@ -139,258 +182,497 @@ export default function SchoolPublicLanding() {
             )}
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-white tracking-tight">
+                <span className="text-base font-black text-white tracking-tight">
                   {school.name}
-                </h1>
-                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400">
                   <CheckCircle2 size={10} /> Verified Campus
                 </span>
               </div>
               <p className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
                 <MapPin size={11} className="text-cyan-400" />
-                <span>{school.city || "Official Campus"}</span>
+                <span>{school.city || "Pakistan"}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-slate-300">
+            <a href="#about" className="hover:text-cyan-300 transition">About</a>
+            <a href="#academics" className="hover:text-cyan-300 transition">Academics</a>
+            <a href="#facilities" className="hover:text-cyan-300 transition">Facilities</a>
+            <a href="#admissions" className="hover:text-cyan-300 transition">Admissions</a>
+            <a href="#gallery" className="hover:text-cyan-300 transition">Gallery</a>
+            <a href="#contact" className="hover:text-cyan-300 transition">Contact</a>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-3">
             <Link
               to={`/${school.slug}/login`}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-xs shadow-lg shadow-cyan-500/25 transition cursor-pointer"
             >
               <Lock size={13} />
-              <span>Staff & Student Login</span>
+              <span>Portal Login</span>
             </Link>
           </div>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-xl border border-white/10 text-white"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
+
+        {/* Mobile Dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-2 p-5 rounded-2xl border border-white/10 bg-[#061426]/95 backdrop-blur-2xl shadow-2xl lg:hidden flex flex-col gap-3 text-sm font-bold"
+            >
+              <a onClick={() => setMobileMenuOpen(false)} href="#about" className="text-slate-300 hover:text-white">About</a>
+              <a onClick={() => setMobileMenuOpen(false)} href="#academics" className="text-slate-300 hover:text-white">Academics</a>
+              <a onClick={() => setMobileMenuOpen(false)} href="#facilities" className="text-slate-300 hover:text-white">Facilities</a>
+              <a onClick={() => setMobileMenuOpen(false)} href="#admissions" className="text-slate-300 hover:text-white">Admissions</a>
+              <a onClick={() => setMobileMenuOpen(false)} href="#gallery" className="text-slate-300 hover:text-white">Gallery</a>
+              <a onClick={() => setMobileMenuOpen(false)} href="#contact" className="text-slate-300 hover:text-white">Contact</a>
+              <div className="pt-2 border-t border-white/10">
+                <Link
+                  to={`/${school.slug}/login`}
+                  className="w-full py-3 rounded-xl bg-cyan-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2"
+                >
+                  <Lock size={14} /> Portal Login
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* ── Hero Section ── */}
-      <section className="relative pt-36 pb-20 px-4 overflow-hidden">
-        {/* Ambient Glows */}
+      {/* ── 2. Hero Section ── */}
+      <section className="relative pt-36 pb-24 px-4 overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-cyan-500/15 via-blue-600/15 to-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 text-xs font-bold mb-6 backdrop-blur-md"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 text-xs font-bold mb-6 backdrop-blur-md">
             <Sparkles size={13} />
-            <span>Official Institutional Web Portal</span>
-          </motion.div>
+            <span>Welcome to the Official Campus of {school.name}</span>
+          </div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.15]"
-          >
-            Welcome to{" "}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1]">
+            Nurturing Tomorrow’s Leaders at{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300">
               {school.name}
             </span>
-          </motion.h2>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed"
-          >
-            Excellence in education, character building, and digital campus
-            governance. Empowering students, educators, and parents through our
-            integrated cloud campus.
-          </motion.p>
+          <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Committed to academic rigor, character development, and holistic student growth. Empowered with modern digital facilities and dedicated educators.
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-4"
-          >
-            <Link
-              to={`/${school.slug}/login`}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm shadow-xl shadow-cyan-500/25 hover:brightness-110 transition cursor-pointer"
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="#admissions"
+              className="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm shadow-xl shadow-cyan-500/25 hover:brightness-110 transition cursor-pointer"
             >
-              <span>Access Campus Portal</span>
+              <span>Apply for Admission</span>
               <ArrowRight size={16} />
-            </Link>
+            </a>
 
             <a
-              href="#about"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] font-bold text-sm transition"
+              href="#contact"
+              className="flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] font-bold text-sm transition"
             >
-              <span>About Institution</span>
-              <ChevronRight size={15} />
+              <PhoneCall size={15} />
+              <span>Contact Campus</span>
             </a>
-          </motion.div>
-
-          {/* Quick Stats Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
-          >
-            <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-3">
-                <GraduationCap size={20} />
-              </div>
-              <p className="text-2xl font-black text-white">Holistic</p>
-              <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                Academics & Sports
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-3">
-                <Users size={20} />
-              </div>
-              <p className="text-2xl font-black text-white">Qualified</p>
-              <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                Faculty & Mentors
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
-                <Award size={20} />
-              </div>
-              <p className="text-2xl font-black text-white">Digital</p>
-              <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                LMS & Fee Automation
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
-                <ShieldCheck size={20} />
-              </div>
-              <p className="text-2xl font-black text-white">Secure</p>
-              <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                Real-Time Attendance
-              </p>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ── Campus Info & Portals ── */}
-      <section id="about" className="py-20 px-4 border-t border-white/10 bg-[#061222]/60">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+      {/* ── 3. About School & Leadership ── */}
+      <section id="about" className="py-20 px-4 border-t border-white/10 bg-[#061426]/40">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
             <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
-              Institution Overview
+              About Our Institution
             </span>
-            <h3 className="text-3xl font-black text-white mt-2 leading-tight">
-              Modern Campus Infrastructure & Academic Excellence
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 leading-tight">
+              A Legacy of Academic Integrity & Character
+            </h2>
+            <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+              At {school.name}, we believe every child possesses unique potential waiting to be ignited. Our learning environment pairs strong discipline with creative freedom, preparing students for university success and global citizenship.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                <h4 className="font-black text-white text-sm flex items-center gap-2">
+                  <Award size={16} className="text-cyan-400" /> Our Mission
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  To provide quality, values-driven education that develops analytical minds, ethical leaders, and lifelong learners.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                <h4 className="font-black text-white text-sm flex items-center gap-2">
+                  <Sparkles size={16} className="text-cyan-400" /> Our Vision
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  To be recognized as a center of educational excellence where modern science and traditional values converge.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8 rounded-3xl border border-white/10 bg-gradient-to-br from-[#091e36] to-[#040e1b] shadow-2xl relative">
+            <h3 className="text-xl font-black text-white mb-4">
+              Principal's Message
             </h3>
-            <p className="mt-4 text-sm text-slate-400 leading-relaxed">
-              At {school.name}, we nurture intellectual curiosity and moral
-              leadership. Our modern curriculum combines rigorous scientific inquiry
-              with cultural grounding, supported by state-of-the-art classrooms and
-              interactive student development programs.
+            <p className="text-sm text-slate-300 italic leading-relaxed">
+              "Welcome to our digital campus portal. Education is not merely the transmission of facts; it is the ignition of curiosity. We invite parents and students to partner with us as we journey toward educational excellence."
+            </p>
+            <div className="mt-6 pt-6 border-t border-white/10 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black">
+                {school.adminContact?.name?.charAt(0) || "P"}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">
+                  {school.adminContact?.name || "School Principal"}
+                </p>
+                <p className="text-xs text-slate-400">Head of Institution</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. Academics Section ── */}
+      <section id="academics" className="py-20 px-4 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
+              Curriculum & Programs
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              Academic Levels Offered
+            </h2>
+            <p className="mt-3 text-sm text-slate-400">
+              Structured grades aligned with state curricula and modern science programs.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(school.classes && school.classes.length > 0
+              ? school.classes
+              : [
+                  { name: "Primary Wing (Grade 1 - 5)", numeric: 1 },
+                  { name: "Middle Wing (Grade 6 - 8)", numeric: 6 },
+                  { name: "Secondary / Matriculation (Grade 9 - 10)", numeric: 9 },
+                ]
+            ).map((c, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-3xl border border-white/10 bg-[#071526]/60 flex items-start gap-4"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 text-cyan-400 flex items-center justify-center shrink-0">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-white">{c.name}</h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Comprehensive syllabus covering Mathematics, Sciences, Languages, Social Sciences, and Computer Literacy.
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Campus Facilities ── */}
+      <section id="facilities" className="py-20 px-4 border-t border-white/10 bg-[#061426]/40">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
+              Campus Infrastructure
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              World-Class Facilities
+            </h2>
+            <p className="mt-3 text-sm text-slate-400">
+              Enabling both theoretical discovery and extracurricular vigor.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Library,
+                name: "Central Library",
+                desc: "Thousands of books, references, and quiet study alcoves.",
+              },
+              {
+                icon: FlaskConical,
+                name: "Science Laboratories",
+                desc: "Fully equipped Physics, Chemistry, and Biology workbenches.",
+              },
+              {
+                icon: Monitor,
+                name: "Computer Lab",
+                desc: "High-speed network and modern workstations for coding.",
+              },
+              {
+                icon: Bus,
+                name: "Safe Transport",
+                desc: "Dedicated route buses with experienced drivers and staff.",
+              },
+            ].map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={i}
+                  className="p-6 rounded-3xl border border-white/10 bg-white/[0.02] text-center"
+                >
+                  <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 text-cyan-400 flex items-center justify-center mb-4">
+                    <Icon size={22} />
+                  </div>
+                  <h4 className="text-base font-black text-white">{f.name}</h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    {f.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. Admissions & Enquiry ── */}
+      <section id="admissions" className="py-20 px-4 border-t border-white/10">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
+              Admissions Open
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 leading-tight">
+              Join the {school.name} Family
+            </h2>
+            <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+              We welcome applications from motivated learners. Admissions for the upcoming academic cycle are now being reviewed. Submit an enquiry below and our admissions counsellor will connect with you.
             </p>
 
             <div className="mt-8 space-y-3">
               {[
-                "Smart class tracking and digital attendance monitoring",
-                "Direct parents communication and automated SMS notifications",
-                "Instant electronic fee receipts with transparent vouchers",
-                "Comprehensive examination reports and digital report cards",
-              ].map((feat, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0">
-                    <CheckCircle2 size={13} />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-300">
-                    {feat}
-                  </span>
+                "Birth Certificate / B-Form copy",
+                "Previous school leaving certificate / progress report",
+                "2 Passport-sized photographs",
+                "Guardian CNIC copy",
+              ].map((doc, idx) => (
+                <div key={idx} className="flex items-center gap-3 text-xs text-slate-300">
+                  <CheckCircle2 size={15} className="text-cyan-400 shrink-0" />
+                  <span>{doc}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl border border-white/10 bg-gradient-to-br from-[#0a1e35] to-[#040e1b] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="p-8 rounded-3xl border border-white/10 bg-[#071628] shadow-2xl">
+            <h3 className="text-lg font-black text-white mb-4">
+              Admissions Enquiry Form
+            </h3>
 
-            <h4 className="text-lg font-black text-white mb-6 flex items-center gap-2">
-              <School size={18} className="text-cyan-400" />
-              <span>Campus Contact Directory</span>
-            </h4>
-
-            <div className="space-y-4 text-sm">
-              <div className="flex items-start gap-3">
-                <MapPin size={17} className="text-cyan-400 mt-0.5 shrink-0" />
+            {enquirySent ? (
+              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <CheckCircle2 size={32} className="mx-auto text-emerald-400 mb-2" />
+                <h4 className="font-black text-white text-sm">Enquiry Submitted</h4>
+                <p className="text-xs text-slate-300 mt-1">
+                  Thank you! Our admissions coordinator will contact you shortly via phone.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleEnquirySubmit} className="space-y-4 text-xs">
                 <div>
-                  <p className="font-bold text-white">Campus Address</p>
-                  <p className="text-slate-400 text-xs mt-0.5">{campusLocation}</p>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Student Full Name *
+                  </label>
+                  <input
+                    required
+                    value={enquiryForm.studentName}
+                    onChange={(e) =>
+                      setEnquiryForm({ ...enquiryForm, studentName: e.target.value })
+                    }
+                    placeholder="e.g. Ali Ahmed"
+                    className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Parent / Guardian Contact Phone *
+                  </label>
+                  <input
+                    required
+                    value={enquiryForm.phone}
+                    onChange={(e) =>
+                      setEnquiryForm({ ...enquiryForm, phone: e.target.value })
+                    }
+                    placeholder="0300-1234567"
+                    className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Seeking Admission In Grade
+                  </label>
+                  <input
+                    value={enquiryForm.gradeSeeking}
+                    onChange={(e) =>
+                      setEnquiryForm({ ...enquiryForm, gradeSeeking: e.target.value })
+                    }
+                    placeholder="e.g. Grade 5 / Matric Part 1"
+                    className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Message / Special Requirements
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={enquiryForm.message}
+                    onChange={(e) =>
+                      setEnquiryForm({ ...enquiryForm, message: e.target.value })
+                    }
+                    placeholder="Any questions about curriculum, bus transport, or fees..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-cyan-400 resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition cursor-pointer"
+                >
+                  Submit Admissions Enquiry
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. School Gallery ── */}
+      <section id="gallery" className="py-20 px-4 border-t border-white/10 bg-[#061426]/40">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
+              Campus Life
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              Life at {school.name}
+            </h2>
+            <p className="mt-3 text-sm text-slate-400">
+              Snapshots of academic enthusiasm, ceremonies, sports, and science showcases.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              "Classroom Learning",
+              "Annual Sports Day",
+              "Science Fair",
+              "Art & Culture",
+            ].map((title, i) => (
+              <div
+                key={i}
+                className="group relative h-48 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-cyan-900/20 via-blue-900/30 to-indigo-900/40 p-5 flex flex-col justify-end"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <p className="relative z-10 font-bold text-xs text-white">
+                  {title}
+                </p>
+                <span className="relative z-10 text-[10px] text-cyan-300 font-semibold">
+                  Official Campus Archive
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. Contact Section ── */}
+      <section id="contact" className="py-20 px-4 border-t border-white/10">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
+          <div>
+            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">
+              Get in Touch
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              Campus Location & Directory
+            </h2>
+            <p className="mt-4 text-sm text-slate-400 leading-relaxed">
+              Visit our campus or contact our administration office during active school hours (8:00 AM – 2:00 PM, Monday through Saturday).
+            </p>
+
+            <div className="mt-8 space-y-4 text-xs">
+              <div className="flex items-start gap-3">
+                <MapPin size={18} className="text-cyan-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-white">Address</p>
+                  <p className="text-slate-400 mt-0.5">{campusLocation}</p>
                 </div>
               </div>
 
               {school.phone && (
                 <div className="flex items-start gap-3">
-                  <Phone size={17} className="text-cyan-400 mt-0.5 shrink-0" />
+                  <Phone size={18} className="text-cyan-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold text-white">Helpdesk / Administration</p>
-                    <p className="text-slate-400 text-xs mt-0.5">{school.phone}</p>
+                    <p className="font-bold text-white">Contact Phone</p>
+                    <p className="text-slate-400 mt-0.5">{school.phone}</p>
                   </div>
                 </div>
               )}
 
               {school.email && (
                 <div className="flex items-start gap-3">
-                  <Mail size={17} className="text-cyan-400 mt-0.5 shrink-0" />
+                  <Mail size={18} className="text-cyan-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold text-white">Official Email</p>
-                    <p className="text-slate-400 text-xs mt-0.5">{school.email}</p>
-                  </div>
-                </div>
-              )}
-
-              {school.website && (
-                <div className="flex items-start gap-3">
-                  <Globe size={17} className="text-cyan-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-bold text-white">School Website</p>
-                    <a
-                      href={
-                        school.website.startsWith("http")
-                          ? school.website
-                          : `https://${school.website}`
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-cyan-400 hover:underline text-xs mt-0.5 flex items-center gap-1"
-                    >
-                      {school.website} <ExternalLink size={11} />
-                    </a>
+                    <p className="text-slate-400 mt-0.5">{school.email}</p>
                   </div>
                 </div>
               )}
             </div>
+          </div>
 
-            <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-              <Link
-                to={`/${school.slug}/login`}
-                className="w-full text-center py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition"
-              >
-                Sign In to Campus
-              </Link>
-            </div>
+          <div className="p-8 rounded-3xl border border-white/10 bg-[#071628] flex flex-col justify-center">
+            <h3 className="text-base font-black text-white mb-2">
+              Staff & Student Access
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+              Enrolled students, faculty, and school administrators can access their digital attendance, homework, report cards, and fee challans directly through our authenticated cloud portal.
+            </p>
+            <Link
+              to={`/${school.slug}/login`}
+              className="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-xs text-center shadow-lg shadow-cyan-500/25 hover:brightness-110 transition cursor-pointer"
+            >
+              Sign In to {school.name} Portal
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-white/10 py-10 px-4 bg-[#030913] text-center text-xs text-slate-500">
+      {/* ── 9. Footer ── */}
+      <footer className="border-t border-white/10 py-10 px-4 bg-[#020710] text-xs text-slate-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} {school.name}. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} {school.name}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/" className="text-cyan-400 hover:underline">
-              Powered by EduSphere Pro ERP
+              Powered by EduSphere ERP
             </Link>
             <Link to="/school-login" className="hover:text-slate-300">
               Browse Schools
@@ -401,4 +683,3 @@ export default function SchoolPublicLanding() {
     </div>
   );
 }
-

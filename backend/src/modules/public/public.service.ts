@@ -85,6 +85,16 @@ export class PublicService {
           select: { name: true, email: true, phone: true },
           take: 1,
         },
+        classes: {
+          where: { deletedAt: null },
+          select: { id: true, name: true, numeric: true },
+          orderBy: { numeric: 'asc' },
+          take: 12,
+        },
+        buildings: {
+          select: { id: true, name: true, buildingType: true, hasComputerLab: true, hasScienceLab: true, hasLibrary: true, hasPlayground: true },
+          take: 8,
+        },
       },
     });
     if (!school) throw new NotFoundException(`School with slug "${slug}" not found`);
@@ -138,6 +148,16 @@ export class PublicService {
           where: { role: 'SCHOOL_ADMIN', deletedAt: null },
           select: { name: true, email: true, phone: true },
           take: 1,
+        },
+        classes: {
+          where: { deletedAt: null },
+          select: { id: true, name: true, numeric: true },
+          orderBy: { numeric: 'asc' },
+          take: 12,
+        },
+        buildings: {
+          select: { id: true, name: true, buildingType: true, hasComputerLab: true, hasScienceLab: true, hasLibrary: true, hasPlayground: true },
+          take: 8,
         },
       },
     });

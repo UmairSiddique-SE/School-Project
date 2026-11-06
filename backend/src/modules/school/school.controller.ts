@@ -24,6 +24,18 @@ export class SchoolController {
     return this.schoolService.findAll(query);
   }
 
+  @Get('my-school/profile')
+  @Roles('SCHOOL_ADMIN')
+  getMySchoolProfile(@CurrentUser() user: any) {
+    return this.schoolService.findOne(user.schoolId);
+  }
+
+  @Put('my-school/profile')
+  @Roles('SCHOOL_ADMIN')
+  updateMySchoolProfile(@CurrentUser() user: any, @Body() dto: any) {
+    return this.schoolService.update(user.schoolId, dto, user);
+  }
+
   @Get(':id')
   @Roles('SUPER_ADMIN')
   findOne(@Param('id') id: string) {

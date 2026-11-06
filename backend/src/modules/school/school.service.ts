@@ -163,6 +163,7 @@ export class SchoolService {
         name: data.name ?? undefined, slug: data.slug ?? undefined, email: data.email ?? undefined,
         phone: data.phone ?? undefined, address: data.address ?? undefined, city: data.city ?? undefined,
         state: data.state ?? undefined, country: data.country ?? undefined, website: data.website ?? undefined,
+        logoUrl: data.logoUrl ?? undefined,
       } });
       await this.log(this.prisma, actor, 'SCHOOL_UPDATED', id, id, `Updated school profile for ${updated.name}`);
       return updated;
