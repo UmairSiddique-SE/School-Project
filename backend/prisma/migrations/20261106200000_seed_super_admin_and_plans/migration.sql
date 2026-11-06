@@ -55,3 +55,4 @@ ON CONFLICT ("email") DO UPDATE SET
   "isActive"      = true,
   "emailVerified" = true,
   "updatedAt"     = NOW();
+
