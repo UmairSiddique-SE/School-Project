@@ -51,11 +51,39 @@ export class SchoolService {
       const skip = (page - 1) * limit;
       const [total, data] = await Promise.all([
         this.prisma.school.count({ where }),
-        this.prisma.school.findMany({ where, include: { subscription: true, _count: { select: { users: true, students: true, teachers: true } } }, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+        this.prisma.school.findMany({
+          where,
+          include: {
+            subscription: true,
+            _count: {
+              select: {
+                users: { where: { deletedAt: null } },
+                students: { where: { deletedAt: null } },
+                teachers: { where: { deletedAt: null } },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
       ]);
       return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } } as any;
     }
-    return this.prisma.school.findMany({ where, include: { subscription: true, _count: { select: { users: true, students: true, teachers: true } } }, orderBy: { createdAt: 'desc' } });
+    return this.prisma.school.findMany({
+      where,
+      include: {
+        subscription: true,
+        _count: {
+          select: {
+            users: { where: { deletedAt: null } },
+            students: { where: { deletedAt: null } },
+            teachers: { where: { deletedAt: null } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
@@ -64,11 +92,19 @@ export class SchoolService {
       where: { id },
       include: {
         subscription: true,
-        users: { where: { role: 'SCHOOL_ADMIN' }, select: { id: true, name: true, email: true, phone: true, isActive: true }, take: 1 },
+        users: { where: { role: 'SCHOOL_ADMIN', deletedAt: null }, select: { id: true, name: true, email: true, phone: true, isActive: true }, take: 1 },
         onboardingPayments: { orderBy: { createdAt: 'desc' }, take: 20 },
         alerts: { orderBy: { createdAt: 'desc' }, take: 20 },
         auditLogs: { orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, action: true, after: true, createdAt: true } },
-        _count: { select: { users: true, students: true, teachers: true, staff: true, classes: true } },
+        _count: {
+          select: {
+            users: { where: { deletedAt: null } },
+            students: { where: { deletedAt: null } },
+            teachers: { where: { deletedAt: null } },
+            staff: { where: { deletedAt: null } },
+            classes: { where: { deletedAt: null } },
+          },
+        },
       },
     });
     if (!school) throw new NotFoundException('School not found');
