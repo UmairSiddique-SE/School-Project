@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsIn,
+  IsNumber,
 } from 'class-validator';
 
 export class LoginDto {
@@ -13,12 +14,19 @@ export class LoginDto {
   email: string;
 
   @IsString()
-  @MinLength(8)
+  @IsNotEmpty()
   password: string;
+
+  @IsOptional()
+  @IsString()
+  schoolSlug?: string;
+
+  @IsOptional()
+  @IsString()
+  portalRole?: string;
 }
 
 export class RegisterSchoolDto {
-  // School Info
   @IsString()
   @IsNotEmpty()
   schoolName: string;
@@ -49,7 +57,6 @@ export class RegisterSchoolDto {
   @IsNotEmpty()
   city: string;
 
-  // Admin User Info
   @IsString()
   @IsNotEmpty()
   adminName: string;
@@ -95,6 +102,12 @@ export class VerifyEmailDto {
   otp: string;
 }
 
+export class ResendOtpDto {
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+}
+
 export class OnboardingPaymentDto {
   @IsString()
   @IsNotEmpty()
@@ -109,6 +122,7 @@ export class OnboardingPaymentDto {
   method: string;
 
   @IsOptional()
+  @IsNumber()
   amount?: number;
 
   @IsOptional()
@@ -118,6 +132,10 @@ export class OnboardingPaymentDto {
   @IsOptional()
   @IsString()
   reference?: string;
+
+  @IsOptional()
+  @IsString()
+  transactionId?: string;
 }
 
 export class RefreshTokenDto {

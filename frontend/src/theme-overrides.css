@@ -1,23 +1,23 @@
 /* EduSphere Professional visual system */
 :root {
-  --background: 220 32% 6%;
-  --foreground: 210 40% 96%;
-  --card: 220 28% 9%;
-  --card-foreground: 210 40% 96%;
-  --popover: 220 28% 9%;
-  --popover-foreground: 210 40% 96%;
-  --primary: 187 85% 45%;
-  --primary-foreground: 220 40% 6%;
-  --secondary: 218 30% 13%;
-  --secondary-foreground: 210 40% 88%;
-  --muted: 218 28% 12%;
-  --muted-foreground: 215 18% 62%;
-  --accent: 190 45% 14%;
-  --accent-foreground: 190 80% 88%;
-  --border: 216 25% 17%;
-  --input: 216 25% 17%;
-  --ring: 187 85% 45%;
-  --glow-primary: 187 85% 45%;
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 214 32% 91%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 199 89% 48%;
+  --glow-primary: 199 89% 48%;
   --glow-blue: 199 89% 48%;
 }
 

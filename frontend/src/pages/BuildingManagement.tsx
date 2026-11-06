@@ -302,7 +302,7 @@ export default function BuildingManagement() {
               <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
                 School Buildings & Infrastructure
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
                 Manage school buildings, classrooms, staff rooms, grounds, and facilities
               </p>
             </div>
@@ -312,7 +312,7 @@ export default function BuildingManagement() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => window.print()}
-            className="px-3.5 py-2 rounded-xl border border-border bg-card hover:bg-accent text-xs font-semibold text-foreground flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card hover:bg-accent text-xs font-semibold text-foreground flex items-center gap-1.5 transition-colors"
           >
             <Printer size={14} />
             <span>Print Report</span>
@@ -328,71 +328,102 @@ export default function BuildingManagement() {
       </div>
 
       {/* Top Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Total Buildings</span>
-            <Building2 size={16} className="text-violet-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Campus Buildings',
+            value: totalBuildings,
+            icon: Building2,
+            gradient: 'from-violet-500/[0.08] via-card/70 to-card',
+            border: 'border-violet-500/25 hover:border-violet-500/50',
+            glow: 'bg-violet-500/15 group-hover:bg-violet-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-violet-400 border-violet-500/25',
+            labelColor: 'text-violet-600 dark:text-violet-400',
+            dotColor: 'bg-violet-500',
+            dotPing: 'bg-violet-400',
+            shadow: 'shadow-violet-500/[0.04] hover:shadow-violet-500/15',
+            subtitle: `${ownedBuildings} Owned • ${rentedBuildings} Rented`,
+          },
+          {
+            label: 'Total Classrooms',
+            value: totalClassrooms,
+            icon: DoorOpen,
+            gradient: 'from-blue-500/[0.08] via-card/70 to-card',
+            border: 'border-blue-500/25 hover:border-blue-500/50',
+            glow: 'bg-blue-500/15 group-hover:bg-blue-500/25',
+            iconBox: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25',
+            labelColor: 'text-blue-600 dark:text-blue-400',
+            dotColor: 'bg-blue-500',
+            dotPing: 'bg-blue-400',
+            shadow: 'shadow-blue-500/[0.04] hover:shadow-blue-500/15',
+            subtitle: `Across ${totalRooms} total campus rooms`,
+          },
+          {
+            label: 'Student Capacity',
+            value: totalCapacity.toLocaleString(),
+            icon: Users,
+            gradient: 'from-emerald-500/[0.08] via-card/70 to-card',
+            border: 'border-emerald-500/25 hover:border-emerald-500/50',
+            glow: 'bg-emerald-500/15 group-hover:bg-emerald-500/25',
+            iconBox: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+            labelColor: 'text-emerald-600 dark:text-emerald-400',
+            dotColor: 'bg-emerald-500',
+            dotPing: 'bg-emerald-400',
+            shadow: 'shadow-emerald-500/[0.04] hover:shadow-emerald-500/15',
+            subtitle: 'Total campus seating capacity',
+          },
+          {
+            label: 'Safety Standard',
+            value: `${buildings.length > 0 ? Math.round((buildings.reduce((acc, b) => acc + (b.hasCctv ? 1 : 0) + (b.hasSecurityGuard ? 1 : 0) + (b.hasFireSafety ? 1 : 0) + (b.hasFirstAid ? 1 : 0), 0) / (buildings.length * 4)) * 100) : 100}%`,
+            icon: ShieldCheck,
+            gradient: 'from-cyan-500/[0.08] via-card/70 to-card',
+            border: 'border-cyan-500/25 hover:border-cyan-500/50',
+            glow: 'bg-cyan-500/15 group-hover:bg-cyan-500/25',
+            iconBox: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
+            labelColor: 'text-cyan-600 dark:text-cyan-400',
+            dotColor: 'bg-cyan-500',
+            dotPing: 'bg-cyan-400',
+            shadow: 'shadow-cyan-500/[0.04] hover:shadow-cyan-500/15',
+            subtitle: 'Safety & surveillance compliant',
+          },
+        ].map(({ label, value, icon: Icon, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow, subtitle }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+                <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                  {value}
+                </h4>
+              </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon size={20} strokeWidth={2.2} />
+              </div>
+            </div>
+            <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+              </span>
+              <span>{subtitle}</span>
+            </div>
           </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalBuildings}</p>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1 font-medium">
-            <span className="text-emerald-500">{ownedBuildings} Owned</span>
-            <span>•</span>
-            <span className="text-amber-500">{rentedBuildings} Rented</span>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Classrooms</span>
-            <DoorOpen size={16} className="text-blue-400" />
-          </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalClassrooms}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Across all floors ({totalRooms} total rooms)
-          </p>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Student Capacity</span>
-            <Users size={16} className="text-emerald-400" />
-          </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalCapacity.toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">Total seat capacity</p>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Safety Standard</span>
-            <ShieldCheck size={16} className="text-cyan-400" />
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <p className="text-2xl font-black text-emerald-500">
-              {buildings.length > 0
-                ? Math.round(
-                    (buildings.reduce((acc, b) => acc + (b.hasCctv ? 1 : 0) + (b.hasSecurityGuard ? 1 : 0) + (b.hasFireSafety ? 1 : 0) + (b.hasFirstAid ? 1 : 0), 0) /
-                      (buildings.length * 4)) * 100
-                  )
-                : 100}
-              %
-            </p>
-            <span className="text-[10px] text-muted-foreground font-semibold">Compliant</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1">CCTV, Guard, Fire, Medical</p>
-        </div>
+        ))}
       </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card border border-border p-3 rounded-2xl">
         <div className="relative flex-1 w-full sm:w-auto">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground" />
           <input
             type="text"
             placeholder="Search building by name, city, location..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs bg-background/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500 transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-background/50 border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500 transition-colors"
           />
         </div>
 
@@ -405,7 +436,7 @@ export default function BuildingManagement() {
                 className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   typeFilter === t
                     ? 'bg-violet-600 text-white font-bold shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-slate-500 dark:text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {t === 'ALL' ? 'All Types' : t === 'OWNED' ? 'Owned' : 'Rented'}
@@ -416,7 +447,7 @@ export default function BuildingManagement() {
           <button
             onClick={fetchBuildings}
             title="Refresh"
-            className="p-2 border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="p-2 border border-border rounded-xl text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
@@ -425,7 +456,7 @@ export default function BuildingManagement() {
 
       {/* Buildings Grid */}
       {loading ? (
-        <div className="h-48 flex items-center justify-center text-muted-foreground gap-2">
+        <div className="h-48 flex items-center justify-center text-slate-500 dark:text-muted-foreground gap-2">
           <RefreshCw size={18} className="animate-spin text-violet-500" />
           <span className="text-xs">Loading school buildings...</span>
         </div>
@@ -434,8 +465,8 @@ export default function BuildingManagement() {
           <div className="h-16 w-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto text-violet-400 mb-3">
             <Building2 size={28} />
           </div>
-          <h3 className="text-base font-bold text-foreground">No Buildings Registered Yet</h3>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
+          <h3 className="text-base font-bold text-slate-900 dark:text-foreground">No Buildings Registered Yet</h3>
+          <p className="text-xs text-slate-500 dark:text-muted-foreground max-w-md mx-auto mt-1 mb-5">
             Add your school buildings including classrooms, staff rooms, playgrounds, and other facilities with complete infrastructure details.
           </p>
           <button
@@ -468,7 +499,7 @@ export default function BuildingManagement() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base font-bold text-foreground">{b.name}</h3>
+                          <h3 className="text-base font-bold text-slate-900 dark:text-foreground">{b.name}</h3>
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                               b.buildingType === 'RENTED'
@@ -480,7 +511,7 @@ export default function BuildingManagement() {
                           </span>
                         </div>
                         {(b.address || b.city || b.locationArea) && (
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
+                          <p className="text-[11px] text-slate-500 dark:text-muted-foreground flex items-center gap-1 mt-1">
                             <MapPin size={12} className="text-violet-400 shrink-0" />
                             {[b.locationArea, b.city, b.address].filter(Boolean).join(', ')}
                           </p>
@@ -492,14 +523,14 @@ export default function BuildingManagement() {
                       <button
                         onClick={() => openEditModal(b)}
                         title="Edit building details"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                       >
                         <Edit2 size={14} />
                       </button>
                       <button
                         onClick={() => handleDeleteBuilding(b.id, b.name)}
                         title="Delete building"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -509,26 +540,26 @@ export default function BuildingManagement() {
                   {/* Building Metrics Chips */}
                   <div className="grid grid-cols-4 gap-2 my-4 bg-background/50 border border-border/80 p-2.5 rounded-xl text-center">
                     <div>
-                      <p className="text-[10px] uppercase font-semibold text-muted-foreground">Floors</p>
+                      <p className="text-[10px] uppercase font-semibold text-slate-500 dark:text-muted-foreground">Floors</p>
                       <p className="text-sm font-bold text-foreground mt-0.5">{b.floors || 1}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase font-semibold text-muted-foreground">Classrooms</p>
+                      <p className="text-[10px] uppercase font-semibold text-slate-500 dark:text-muted-foreground">Classrooms</p>
                       <p className="text-sm font-bold text-violet-400 mt-0.5">{b.totalClassrooms || 0}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase font-semibold text-muted-foreground">Total Rooms</p>
+                      <p className="text-[10px] uppercase font-semibold text-slate-500 dark:text-muted-foreground">Total Rooms</p>
                       <p className="text-sm font-bold text-foreground mt-0.5">{b.totalRooms || (b._count?.rooms ?? 0)}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase font-semibold text-muted-foreground">Capacity</p>
+                      <p className="text-[10px] uppercase font-semibold text-slate-500 dark:text-muted-foreground">Capacity</p>
                       <p className="text-sm font-bold text-emerald-400 mt-0.5">{(b.studentCapacity || 0).toLocaleString()}</p>
                     </div>
                   </div>
 
                   {/* Facilities Grid */}
                   <div className="space-y-1.5 mb-3">
-                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                       <span>Building Facilities ({activeFacilities.length}/12)</span>
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -541,7 +572,7 @@ export default function BuildingManagement() {
                             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10.5px] font-medium border transition-colors ${
                               hasIt
                                 ? f.color
-                                : 'bg-muted/40 text-muted-foreground/50 border-transparent opacity-60'
+                                : 'bg-slate-100/70 dark:bg-muted/40 text-slate-500 dark:text-muted-foreground/50 border-transparent opacity-60'
                             }`}
                           >
                             <Icon size={12} />
@@ -549,7 +580,7 @@ export default function BuildingManagement() {
                             {hasIt ? (
                               <CheckCircle2 size={11} className="text-emerald-400 ml-0.5" />
                             ) : (
-                              <XCircle size={11} className="text-muted-foreground/40 ml-0.5" />
+                              <XCircle size={11} className="text-slate-500 dark:text-muted-foreground/40 ml-0.5" />
                             )}
                           </div>
                         );
@@ -559,7 +590,7 @@ export default function BuildingManagement() {
 
                   {/* Safety & Security */}
                   <div className="space-y-1.5 mb-4">
-                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                       <span>Safety & Security ({activeSafety.length}/4)</span>
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -572,7 +603,7 @@ export default function BuildingManagement() {
                             className={`flex items-center justify-between p-2 rounded-xl text-xs border ${
                               hasIt
                                 ? s.color
-                                : 'bg-background/40 border-border text-muted-foreground/60'
+                                : 'bg-background/40 border-border text-slate-500 dark:text-muted-foreground/60'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -595,8 +626,8 @@ export default function BuildingManagement() {
 
                 {/* Footer Drawer Action */}
                 <div className="pt-3 border-t border-border/80 flex items-center justify-between">
-                  <div className="text-[11px] text-muted-foreground">
-                    <span className="font-semibold text-foreground">{b.rooms?.length || b._count?.rooms || 0}</span> rooms cataloged
+                  <div className="text-[11px] text-slate-500 dark:text-muted-foreground">
+                    <span className="font-semibold text-slate-900 dark:text-foreground">{b.rooms?.length || b._count?.rooms || 0}</span> rooms cataloged
                   </div>
                   <button
                     onClick={() => setSelectedBuilding(b)}
@@ -627,9 +658,9 @@ export default function BuildingManagement() {
                   <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-violet-500/20 text-violet-400 uppercase">
                     Active Building
                   </span>
-                  <h3 className="text-xl font-bold text-foreground">{selectedBuilding.name} — Room Directory</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-foreground">{selectedBuilding.name} — Room Directory</h3>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">
                   Catalog classrooms, staff rooms, playgrounds, laboratories, and other facilities.
                 </p>
               </div>
@@ -643,7 +674,7 @@ export default function BuildingManagement() {
                 </button>
                 <button
                   onClick={() => setSelectedBuilding(null)}
-                  className="px-3 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  className="px-3 py-2 rounded-xl border border-border text-xs font-medium text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   Close
                 </button>
@@ -652,8 +683,8 @@ export default function BuildingManagement() {
 
             {/* Room List Table */}
             {(!selectedBuilding.rooms || selectedBuilding.rooms.length === 0) ? (
-              <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-2xl">
-                <DoorOpen size={24} className="mx-auto text-muted-foreground mb-2" />
+              <div className="text-center py-8 text-slate-500 dark:text-muted-foreground border border-dashed border-border rounded-2xl">
+                <DoorOpen size={24} className="mx-auto text-slate-500 dark:text-muted-foreground mb-2" />
                 <p className="text-xs font-medium">No rooms added yet for this building.</p>
                 <button
                   onClick={() => setIsRoomModalOpen(true)}
@@ -666,7 +697,7 @@ export default function BuildingManagement() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-border text-muted-foreground uppercase text-[10px] font-bold">
+                    <tr className="border-b border-border text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-bold">
                       <th className="py-2.5 px-3">Room No</th>
                       <th className="py-2.5 px-3">Room Name / Label</th>
                       <th className="py-2.5 px-3">Floor</th>
@@ -678,19 +709,19 @@ export default function BuildingManagement() {
                   <tbody className="divide-y divide-border/60">
                     {selectedBuilding.rooms.map(r => (
                       <tr key={r.id} className="hover:bg-accent/40 transition-colors">
-                        <td className="py-2.5 px-3 font-bold text-foreground">{r.roomNo}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">{r.name || '—'}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">Floor {r.floor}</td>
+                        <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-foreground">{r.roomNo}</td>
+                        <td className="py-2.5 px-3 text-slate-500 dark:text-muted-foreground">{r.name || '—'}</td>
+                        <td className="py-2.5 px-3 text-slate-500 dark:text-muted-foreground">Floor {r.floor}</td>
                         <td className="py-2.5 px-3">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-violet-500/10 text-violet-400 border border-violet-500/20">
                             {r.type}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 font-medium text-foreground">{r.capacity} Seats</td>
+                        <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-foreground">{r.capacity} Seats</td>
                         <td className="py-2.5 px-3 text-right">
                           <button
                             onClick={() => handleDeleteRoom(r.id)}
-                            className="p-1 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                            className="p-1 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                           >
                             <Trash2 size={13} />
                           </button>
@@ -724,20 +755,20 @@ export default function BuildingManagement() {
                     <Building2 className="text-violet-400" size={20} />
                     {modalMode === 'create' ? 'Add School Building' : 'Edit Building Details'}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
                     Configure building details including classrooms, staff rooms, facilities, and safety equipment
                   </p>
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  className="p-2 rounded-xl text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   <XCircle size={18} />
                 </button>
               </div>
 
               {/* Navigation Tabs inside Modal */}
-              <div className="flex border-b border-border bg-background/50 px-5 pt-2 gap-2 text-xs overflow-x-auto">
+              <div className="flex border-b border-slate-200 dark:border-border bg-white dark:bg-background/50 px-5 pt-2 gap-2 text-xs overflow-x-auto">
                 {[
                   { id: 'basic', label: '1. Basic Info', icon: Building2 },
                   { id: 'capacity', label: '2. Capacity & Metrics', icon: Layers },
@@ -754,7 +785,7 @@ export default function BuildingManagement() {
                       className={`flex items-center gap-1.5 pb-2.5 px-3 border-b-2 font-bold transition-all whitespace-nowrap ${
                         isActive
                           ? 'border-violet-500 text-violet-400'
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
+                          : 'border-transparent text-slate-500 dark:text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <Icon size={14} />
@@ -780,7 +811,7 @@ export default function BuildingManagement() {
                           placeholder="e.g. Main Academic Block, Senior Wing"
                           value={formData.name}
                           onChange={e => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
 
@@ -791,7 +822,7 @@ export default function BuildingManagement() {
                         <select
                           value={formData.buildingType}
                           onChange={e => setFormData({ ...formData, buildingType: e.target.value })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                         >
                           <option value="OWNED">Owned School Property</option>
                           <option value="RENTED">Rented / Leased Property</option>
@@ -809,7 +840,7 @@ export default function BuildingManagement() {
                           placeholder="e.g. Lahore, Karachi, Islamabad"
                           value={formData.city}
                           onChange={e => setFormData({ ...formData, city: e.target.value })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
 
@@ -822,7 +853,7 @@ export default function BuildingManagement() {
                           placeholder="e.g. Gulberg III, Sector F-7, DHA"
                           value={formData.locationArea}
                           onChange={e => setFormData({ ...formData, locationArea: e.target.value })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
                     </div>
@@ -836,7 +867,7 @@ export default function BuildingManagement() {
                         placeholder="Street Address, Plot No, Block..."
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
-                        className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500"
+                        className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500"
                       />
                     </div>
 
@@ -849,7 +880,7 @@ export default function BuildingManagement() {
                         placeholder="Additional remarks or notes..."
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-3.5 py-2 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500"
+                        className="w-full px-3.5 py-2 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-slate-500 dark:text-muted-foreground focus:outline-none focus:border-cyan-500"
                       />
                     </div>
                   </div>
@@ -863,14 +894,14 @@ export default function BuildingManagement() {
                         <label className="block text-xs font-bold text-foreground mb-1">
                           Total Floors
                         </label>
-                        <p className="text-[11px] text-muted-foreground mb-2">Ground + upper storeys</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground mb-2">Ground + upper storeys</p>
                         <input
                           type="number"
                           min={1}
                           max={50}
                           value={formData.floors}
                           onChange={e => setFormData({ ...formData, floors: Number(e.target.value) || 1 })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
 
@@ -878,13 +909,13 @@ export default function BuildingManagement() {
                         <label className="block text-xs font-bold text-foreground mb-1">
                           Total Classrooms
                         </label>
-                        <p className="text-[11px] text-muted-foreground mb-2">Dedicated student lecture rooms</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground mb-2">Dedicated student lecture rooms</p>
                         <input
                           type="number"
                           min={0}
                           value={formData.totalClassrooms}
                           onChange={e => setFormData({ ...formData, totalClassrooms: Number(e.target.value) || 0 })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
                     </div>
@@ -894,13 +925,13 @@ export default function BuildingManagement() {
                         <label className="block text-xs font-bold text-foreground mb-1">
                           Total Rooms
                         </label>
-                        <p className="text-[11px] text-muted-foreground mb-2">Classrooms + Labs + Offices + Halls</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground mb-2">Classrooms + Labs + Offices + Halls</p>
                         <input
                           type="number"
                           min={0}
                           value={formData.totalRooms}
                           onChange={e => setFormData({ ...formData, totalRooms: Number(e.target.value) || 0 })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
 
@@ -908,13 +939,13 @@ export default function BuildingManagement() {
                         <label className="block text-xs font-bold text-foreground mb-1">
                           Student Capacity
                         </label>
-                        <p className="text-[11px] text-muted-foreground mb-2">Maximum seating capacity</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground mb-2">Maximum seating capacity</p>
                         <input
                           type="number"
                           min={0}
                           value={formData.studentCapacity}
                           onChange={e => setFormData({ ...formData, studentCapacity: Number(e.target.value) || 0 })}
-                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                          className="w-full px-3.5 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                         />
                       </div>
                     </div>
@@ -924,7 +955,7 @@ export default function BuildingManagement() {
                 {/* ─── TAB 3: FACILITIES (YES / NO) ─── */}
                 {activeTab === 'facilities' && (
                   <div className="space-y-3 animate-fade-in">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">
                       Select which amenities are present in this school building. Click to toggle Yes / No.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -938,11 +969,11 @@ export default function BuildingManagement() {
                             className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer select-none transition-all ${
                               val
                                 ? 'bg-violet-600/10 border-violet-500/40 text-foreground shadow-sm'
-                                : 'bg-background/50 border-border text-muted-foreground hover:border-border/80'
+                                : 'bg-background/50 border-border text-slate-500 dark:text-muted-foreground hover:border-border/80'
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`p-2 rounded-xl ${val ? 'bg-violet-600/20 text-violet-400' : 'bg-muted text-muted-foreground'}`}>
+                              <div className={`p-2 rounded-xl ${val ? 'bg-violet-600/20 text-violet-400' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
                                 <Icon size={16} />
                               </div>
                               <span className="text-xs font-bold">{f.label}</span>
@@ -953,7 +984,7 @@ export default function BuildingManagement() {
                               className={`px-3 py-1 rounded-xl text-[11px] font-black transition-colors ${
                                 val
                                   ? 'bg-emerald-500 text-white'
-                                  : 'bg-muted text-muted-foreground'
+                                  : 'bg-muted text-slate-500 dark:text-muted-foreground'
                               }`}
                             >
                               {val ? 'YES' : 'NO'}
@@ -968,7 +999,7 @@ export default function BuildingManagement() {
                 {/* ─── TAB 4: SAFETY (YES / NO) ─── */}
                 {activeTab === 'safety' && (
                   <div className="space-y-3 animate-fade-in">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground">
                       Mark the safety & security certifications and equipment installed in this building.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -982,11 +1013,11 @@ export default function BuildingManagement() {
                             className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer select-none transition-all ${
                               val
                                 ? 'bg-emerald-500/10 border-emerald-500/40 text-foreground shadow-sm'
-                                : 'bg-background/50 border-border text-muted-foreground hover:border-border/80'
+                                : 'bg-background/50 border-border text-slate-500 dark:text-muted-foreground hover:border-border/80'
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`p-2 rounded-xl ${val ? 'bg-emerald-500/20 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                              <div className={`p-2 rounded-xl ${val ? 'bg-emerald-500/20 text-emerald-400' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
                                 <Icon size={16} />
                               </div>
                               <span className="text-xs font-bold">{s.label}</span>
@@ -997,7 +1028,7 @@ export default function BuildingManagement() {
                               className={`px-3 py-1 rounded-xl text-[11px] font-black transition-colors ${
                                 val
                                   ? 'bg-emerald-500 text-white'
-                                  : 'bg-muted text-muted-foreground'
+                                  : 'bg-muted text-slate-500 dark:text-muted-foreground'
                               }`}
                             >
                               {val ? 'YES' : 'NO'}
@@ -1020,7 +1051,7 @@ export default function BuildingManagement() {
                           else if (activeTab === 'facilities') setActiveTab('capacity');
                           else if (activeTab === 'capacity') setActiveTab('basic');
                         }}
-                        className="px-3 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground"
+                        className="px-3 py-2 rounded-xl border border-border text-xs font-semibold text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
                       >
                         Back
                       </button>
@@ -1033,7 +1064,7 @@ export default function BuildingManagement() {
                           else if (activeTab === 'capacity') setActiveTab('facilities');
                           else if (activeTab === 'facilities') setActiveTab('safety');
                         }}
-                        className="px-3 py-2 rounded-xl bg-accent hover:bg-accent/80 text-xs font-bold text-foreground"
+                        className="px-3 py-2 rounded-xl bg-accent hover:bg-accent/80 text-xs font-bold text-slate-900 dark:text-foreground"
                       >
                         Next
                       </button>
@@ -1044,7 +1075,7 @@ export default function BuildingManagement() {
                     <button
                       type="button"
                       onClick={() => setIsModalOpen(false)}
-                      className="px-4 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground"
+                      className="px-4 py-2 rounded-xl border border-border text-xs font-medium text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
                     >
                       Cancel
                     </button>
@@ -1091,13 +1122,13 @@ export default function BuildingManagement() {
                     <DoorOpen className="text-violet-400" size={18} />
                     Add Room / Classroom
                   </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Building: <span className="font-semibold text-foreground">{selectedBuilding?.name}</span>
+                  <p className="text-[11px] text-slate-500 dark:text-muted-foreground mt-0.5">
+                    Building: <span className="font-semibold text-slate-900 dark:text-foreground">{selectedBuilding?.name}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setIsRoomModalOpen(false)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground"
+                  className="p-1.5 rounded-lg text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:text-foreground"
                 >
                   <XCircle size={16} />
                 </button>
@@ -1115,7 +1146,7 @@ export default function BuildingManagement() {
                       placeholder="e.g. 101, G-01, P-01"
                       value={roomFormData.roomNo}
                       onChange={e => setRoomFormData({ ...roomFormData, roomNo: e.target.value })}
-                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                     />
                   </div>
 
@@ -1128,7 +1159,7 @@ export default function BuildingManagement() {
                       min={0}
                       value={roomFormData.floor}
                       onChange={e => setRoomFormData({ ...roomFormData, floor: Number(e.target.value) || 1 })}
-                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                     />
                   </div>
                 </div>
@@ -1142,7 +1173,7 @@ export default function BuildingManagement() {
                     placeholder="e.g. Grade 10-A, Senior Staff Room, Main Playground"
                     value={roomFormData.name}
                     onChange={e => setRoomFormData({ ...roomFormData, name: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                   />
                 </div>
 
@@ -1154,7 +1185,7 @@ export default function BuildingManagement() {
                     <select
                       value={roomFormData.type}
                       onChange={e => setRoomFormData({ ...roomFormData, type: e.target.value })}
-                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                     >
                       <option value="CLASSROOM">Classroom</option>
                       <option value="STAFF_ROOM">Staff Room</option>
@@ -1185,7 +1216,7 @@ export default function BuildingManagement() {
                       min={1}
                       value={roomFormData.capacity}
                       onChange={e => setRoomFormData({ ...roomFormData, capacity: Number(e.target.value) || 30 })}
-                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-violet-500"
+                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-cyan-500"
                     />
                   </div>
                 </div>
@@ -1194,7 +1225,7 @@ export default function BuildingManagement() {
                   <button
                     type="button"
                     onClick={() => setIsRoomModalOpen(false)}
-                    className="px-3.5 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground"
+                    className="px-3.5 py-2 rounded-xl border border-border text-xs font-medium text-slate-500 dark:text-muted-foreground"
                   >
                     Cancel
                   </button>

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Building2, MapPin, Search, School, X } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Globe2, MapPin, Search, School, ShieldCheck, Users, GraduationCap } from "lucide-react";
 import apiClient from "@/api/apiClient";
 
 interface SchoolItem {
@@ -17,173 +16,236 @@ interface SchoolItem {
   subscription?: { plan?: string; status?: string; endDate?: string } | null;
 }
 
+type PortalRole = "SCHOOL_ADMIN" | "TEACHER" | "STUDENT";
+
+const getLoginPath = (slug: string, role?: string) =>
+  `/school-login/${encodeURIComponent(String(slug || "").trim().replace(/^\/+|\/+$/g, "").split("/")[0])}${role ? `?role=${encodeURIComponent(role)}` : ""}`;
+
 export default function SchoolLogin() {
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawRole = searchParams.get("role")?.toUpperCase();
+  const [portalRole, setPortalRole] = useState<PortalRole>(() => {
+    if (rawRole === "TEACHER") return "TEACHER";
+    if (rawRole === "STUDENT") return "STUDENT";
+    return "SCHOOL_ADMIN";
+  });
+
   const [schools, setSchools] = useState<SchoolItem[]>([]);
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const roleParam = searchParams.get("role")?.toUpperCase();
+    if (roleParam === "TEACHER") setPortalRole("TEACHER");
+    else if (roleParam === "STUDENT") setPortalRole("STUDENT");
+    else if (roleParam === "SCHOOL_ADMIN" || roleParam === "ADMIN") setPortalRole("SCHOOL_ADMIN");
+  }, [searchParams]);
+
+  const selectRole = (role: PortalRole) => {
+    setPortalRole(role);
+    setSearchParams({ role: role.toLowerCase() }, { replace: true });
+  };
+
+  useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError("");
-
     apiClient
-      .get("/public/schools")
-      .then((res) => {
+      .get(`/public/schools?_=${Date.now()}`)
+      .then((response) => {
         if (!mounted) return;
-        const list = Array.isArray(res.data) ? res.data : res.data?.data || res.data?.schools || [];
-        setSchools(Array.isArray(list) ? list : []);
+        const data = response?.data;
+        setSchools(Array.isArray(data) ? data : Array.isArray(data?.schools) ? data.schools : []);
       })
-      .catch((err) => {
-        if (!mounted) return;
-        setSchools([]);
-        setError(err.response?.data?.message || "Unable to load registered schools. Please try again.");
-      })
+      .catch(() => mounted && setError("Unable to load schools right now."))
       .finally(() => mounted && setLoading(false));
-
     return () => {
       mounted = false;
     };
   }, []);
 
   const filteredSchools = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return schools;
-    return schools.filter(
-      (school) =>
-        school.name.toLowerCase().includes(q) ||
-        school.slug.toLowerCase().includes(q) ||
-        (school.city || "").toLowerCase().includes(q),
+    const value = query.trim().toLowerCase();
+    if (!value) return schools;
+    return schools.filter((school) =>
+      [school.name, school.slug, school.city, school.country].some((field) =>
+        String(field || "").toLowerCase().includes(value)
+      )
     );
-  }, [schools, search]);
+  }, [schools, query]);
 
-  const getLoginPath = (slug: string) => {
-    const cleanSlug = String(slug || "")
-      .trim()
-      .replace(/^\/+|\/+$/g, "")
-      .split("/")[0];
-    return `/${encodeURIComponent(cleanSlug)}/login`;
-  };
+  const roleMeta = {
+    SCHOOL_ADMIN: {
+      badge: "School Admin Gateway",
+      title: "School Admin Login",
+      subtitle: "Select your school campus to sign in as School Administrator.",
+      accent: "from-cyan-400 to-blue-600",
+      cta: "Open School Admin Login",
+      cardBorder: "hover:border-cyan-400/40",
+      btnText: "text-cyan-300",
+      btnBg: "bg-cyan-500/10",
+      icon: School,
+    },
+    TEACHER: {
+      badge: "Teacher Faculty Gateway",
+      title: "Teacher Faculty Portal",
+      subtitle: "Select your school campus to access classes, marks & attendance.",
+      accent: "from-emerald-400 to-teal-600",
+      cta: "Open Teacher Portal",
+      cardBorder: "hover:border-emerald-400/40",
+      btnText: "text-emerald-300",
+      btnBg: "bg-emerald-500/10",
+      icon: Users,
+    },
+    STUDENT: {
+      badge: "Student LMS Gateway",
+      title: "Student LMS Portal",
+      subtitle: "Select your school campus to view grades, homework, timetable & fees.",
+      accent: "from-indigo-400 via-purple-500 to-violet-600",
+      cta: "Open Student LMS",
+      cardBorder: "hover:border-indigo-400/40",
+      btnText: "text-indigo-300",
+      btnBg: "bg-indigo-500/10",
+      icon: GraduationCap,
+    },
+  }[portalRole];
+
+  const RoleIcon = roleMeta.icon;
 
   return (
-    <div className="min-h-screen bg-[#030817] text-white relative overflow-hidden">
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-violet-600/15 blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 h-[450px] w-[450px] rounded-full bg-cyan-500/10 blur-[130px] pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-[130px]" />
+        <div className="absolute -right-40 top-1/3 h-[520px] w-[520px] rounded-full bg-blue-600/10 blur-[130px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.025)_1px,transparent_1px)] bg-[size:36px_36px]" />
+      </div>
 
-      <header className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 py-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-black shadow-lg">E</div>
-          <div>
-            <p className="font-black text-lg">EduSphere <span className="text-cyan-300">ERP</span></p>
-            <p className="text-[9px] tracking-[0.2em] text-slate-500 font-bold">SCHOOL PORTAL</p>
-          </div>
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <Link to="/" className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-3 py-2 backdrop-blur-xl transition hover:border-cyan-400/30 hover:bg-white/[.07]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-black shadow-lg shadow-cyan-500/20">E</span>
+          <span className="hidden text-sm font-black sm:block">EduSphere <span className="text-cyan-300">ERP</span></span>
         </Link>
-        <Link to="/" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">
-          <ArrowLeft size={16} /> Back to Home
+        <Link to="/" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3.5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-white/20 hover:text-white">
+          <ArrowLeft size={15} /> Back to Home
         </Link>
       </header>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-5 sm:px-6 py-10 sm:py-16">
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
-            <Building2 size={13} /> Secure school access
+      <main className="relative z-10 mx-auto max-w-7xl px-5 pb-16 pt-6 sm:px-8 sm:pt-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${roleMeta.accent} shadow-2xl`}>
+            <RoleIcon size={30} className="text-white" />
           </div>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight">Find your school</h1>
-          <p className="mt-3 max-w-2xl mx-auto text-sm sm:text-base leading-7 text-slate-400">
-            Your school appears here automatically after registration. Login becomes available after Super Admin approval and activation.
+
+          {/* Interactive Role Switcher Pills */}
+          <div className="mx-auto mb-6 inline-flex max-w-md items-center gap-1.5 rounded-2xl border border-white/10 bg-slate-900/90 p-1.5 shadow-xl backdrop-blur-xl">
+            <button
+              type="button"
+              onClick={() => selectRole("SCHOOL_ADMIN")}
+              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                portalRole === "SCHOOL_ADMIN"
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <School size={14} /> School Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => selectRole("TEACHER")}
+              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                portalRole === "TEACHER"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Users size={14} /> Teacher Portal
+            </button>
+            <button
+              type="button"
+              onClick={() => selectRole("STUDENT")}
+              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                portalRole === "STUDENT"
+                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <GraduationCap size={14} /> Student LMS
+            </button>
+          </div>
+
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{roleMeta.title}</h1>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+            {roleMeta.subtitle}
           </p>
-        </motion.div>
-
-        <div className="rounded-3xl border border-white/10 bg-[#09111f]/90 p-5 sm:p-7 shadow-2xl backdrop-blur-xl">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-300" size={19} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search your registered school by name, city, or school code..."
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-4 pl-12 pr-12 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/10"
-              autoFocus
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                <X size={17} />
-              </button>
-            )}
-          </div>
-
-          <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
-              {loading ? "Checking registered schools..." : `${filteredSchools.length} registered school${filteredSchools.length === 1 ? "" : "s"}`}
-            </p>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Live database</span>
-          </div>
-
-          {error && !loading && (
-            <div className="mt-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
-              {error}
-            </div>
-          )}
-
-          {!loading && filteredSchools.length > 0 && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {filteredSchools.map((school) => {
-                const loginPath = getLoginPath(school.slug);
-                return (
-                  <Link
-                    key={school.id || school.slug}
-                    to={school.loginAvailable ? loginPath : "#"}
-                    onClick={(e) => {
-                      if (!school.loginAvailable) e.preventDefault();
-                    }}
-                    className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                      school.loginAvailable
-                        ? "border-white/10 bg-white/[0.025] hover:-translate-y-0.5 hover:border-cyan-400/30 hover:bg-white/[0.06]"
-                        : "border-amber-400/10 bg-amber-500/[0.03] opacity-80 cursor-not-allowed"
-                    }`}
-                  >
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-                      {school.logoUrl ? (
-                        <img src={school.logoUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <School size={21} className="text-cyan-300" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-white truncate">{school.name}</p>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                        <span className="font-mono text-cyan-400/80 truncate">{school.slug}</span>
-                        {school.city && <span className="flex items-center gap-1 shrink-0"><MapPin size={11} />{school.city}</span>}
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      {school.loginAvailable ? (
-                        <>
-                          <span className="block text-[10px] font-black uppercase tracking-wider text-emerald-400">Login</span>
-                          <ArrowRight size={17} className="ml-auto mt-1 text-slate-600 group-hover:translate-x-1 group-hover:text-cyan-300" />
-                        </>
-                      ) : (
-                        <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400">Pending approval</span>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
-          {!loading && filteredSchools.length === 0 && (
-            <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
-              <School size={35} className="mx-auto text-slate-600" />
-              <p className="mt-3 font-semibold text-slate-300">No registered school found.</p>
-              <p className="mt-1 text-xs text-slate-500">Register your school first. It will appear here automatically from the database.</p>
-            </div>
-          )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
-          School Admin and Teachers use their registered email. Students use their school-issued Login ID. The role is detected automatically.
-        </p>
+        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-white/10 bg-white/[.05] p-2 shadow-2xl backdrop-blur-xl">
+          <div className="flex items-center gap-3 rounded-xl bg-white/[.03] px-4 py-3">
+            <Search size={19} className="shrink-0 text-cyan-300" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search your school name, campus, or city..."
+              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-8">
+          {loading && <div className="py-16 text-center text-sm text-slate-400">Loading schools...</div>}
+          {!loading && error && <div className="mx-auto max-w-xl rounded-2xl border border-red-400/15 bg-red-400/5 p-8 text-center text-sm text-red-300">{error}</div>}
+          {!loading && !error && filteredSchools.length === 0 && (
+            <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[.04] p-12 text-center">
+              <School size={34} className="mx-auto text-slate-500" />
+              <p className="mt-4 font-bold text-slate-300">No schools found</p>
+              <p className="mt-1 text-sm text-slate-500">Try searching with a different campus or city name.</p>
+            </div>
+          )}
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredSchools.map((school) => (
+              <Link
+                key={school.id || school.slug}
+                to={school.slug ? getLoginPath(school.slug, portalRole.toLowerCase()) : "#"}
+                onClick={(event) => {
+                  if (!school.slug) event.preventDefault();
+                }}
+                className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[.045] p-5 shadow-xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 ${roleMeta.cardBorder} hover:bg-white/[.065]`}
+              >
+                <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-cyan-400/5 blur-2xl transition group-hover:bg-cyan-400/10" />
+                <div className="relative flex items-center gap-4">
+                  {school.logoUrl ? (
+                    <img src={school.logoUrl} alt={school.name} className="h-14 w-14 rounded-2xl object-cover ring-1 ring-white/10" />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-400/10 bg-cyan-400/10 text-cyan-300">
+                      <School size={26} />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="truncate font-black text-white">{school.name}</h2>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                      <MapPin size={13} /> {school.city || "Location unavailable"}
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                      <Globe2 size={13} /> {school.country || "Pakistan"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+                  <span className={`text-xs font-black ${roleMeta.btnText}`}>{roleMeta.cta}</span>
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${roleMeta.btnBg} ${roleMeta.btnText} transition group-hover:translate-x-1`}>
+                    <ArrowRight size={16} />
+                  </span>
+                </div>
+                {(!school.isActive || school.status === "PENDING_APPROVAL") && (
+                  <p className="mt-2 text-[11px] leading-4 text-amber-300">
+                    Login may remain available, but portal modules unlock after approval.
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );

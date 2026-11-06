@@ -1,0 +1,2 @@
+ALTER TABLE "Parent" ADD COLUMN IF NOT EXISTS "motherCnic" TEXT;
+ALTER TABLE "Parent" ADD COLUMN IF NOT EXISTS "motherOccupation" TEXT;

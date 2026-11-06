@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface SchoolSearchModalProps {
   isOpen: boolean;
@@ -7,18 +6,10 @@ interface SchoolSearchModalProps {
 }
 
 /**
- * The landing-page School Login action now opens the real school-login gateway.
- * School discovery itself is handled by /school-login, which reads active
- * registered schools from the public backend endpoint.
+ * Landing-page School Login action redirects directly to the real school-login
+ * gateway. School discovery is handled by /school-login.
  */
-export default function SchoolSearchModal({ isOpen, onClose }: SchoolSearchModalProps) {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isOpen) return;
-    onClose();
-    navigate("/school-login");
-  }, [isOpen, navigate, onClose]);
-
-  return null;
+export default function SchoolSearchModal({ isOpen }: SchoolSearchModalProps) {
+  if (!isOpen) return null;
+  return <Navigate to="/school-login" replace />;
 }

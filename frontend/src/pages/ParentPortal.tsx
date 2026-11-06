@@ -75,11 +75,11 @@ export default function ParentPortal() {
           </div>
 
           {selected && <div className="space-y-5">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Stat icon={<CalendarCheck size={18} />} label="Attendance" value={`${attendanceRate}%`} detail={`${present} present • ${absent} absent`} />
-              <Stat icon={<Award size={18} />} label="Results" value={String(results.length)} detail="Published records" />
-              <Stat icon={<BookOpen size={18} />} label="Homework" value={String(homework.length)} detail="Submission records" />
-              <Stat icon={<ReceiptText size={18} />} label="Payments" value={String(fees.length)} detail="Fee records" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Stat icon={<CalendarCheck size={22} strokeWidth={2.2} />} label="Attendance" value={`${attendanceRate}%`} detail={`${present} present • ${absent} absent`} gradient="from-emerald-500/[0.08] via-card/70 to-card" border="border-emerald-500/25 hover:border-emerald-500/50" glow="bg-emerald-500/15 group-hover:bg-emerald-500/25" iconBox="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25" labelColor="text-emerald-600 dark:text-emerald-400" dotColor="bg-emerald-500" dotPing="bg-emerald-400" shadow="shadow-emerald-500/[0.04] hover:shadow-emerald-500/15" />
+              <Stat icon={<Award size={22} strokeWidth={2.2} />} label="Results" value={String(results.length)} detail="Published records" gradient="from-violet-500/[0.08] via-card/70 to-card" border="border-violet-500/25 hover:border-violet-500/50" glow="bg-violet-500/15 group-hover:bg-violet-500/25" iconBox="bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25" labelColor="text-violet-600 dark:text-violet-400" dotColor="bg-violet-500" dotPing="bg-violet-400" shadow="shadow-violet-500/[0.04] hover:shadow-violet-500/15" />
+              <Stat icon={<BookOpen size={22} strokeWidth={2.2} />} label="Homework" value={String(homework.length)} detail="Submission records" gradient="from-cyan-500/[0.08] via-card/70 to-card" border="border-cyan-500/25 hover:border-cyan-500/50" glow="bg-cyan-500/15 group-hover:bg-cyan-500/25" iconBox="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25" labelColor="text-cyan-600 dark:text-cyan-400" dotColor="bg-cyan-500" dotPing="bg-cyan-400" shadow="shadow-cyan-500/[0.04] hover:shadow-cyan-500/15" />
+              <Stat icon={<ReceiptText size={22} strokeWidth={2.2} />} label="Payments" value={String(fees.length)} detail="Fee records" gradient="from-amber-500/[0.08] via-card/70 to-card" border="border-amber-500/25 hover:border-amber-500/50" glow="bg-amber-500/15 group-hover:bg-amber-500/25" iconBox="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25" labelColor="text-amber-600 dark:text-amber-400" dotColor="bg-amber-500" dotPing="bg-amber-400" shadow="shadow-amber-500/[0.04] hover:shadow-amber-500/15" />
             </div>
 
             <div className="grid xl:grid-cols-2 gap-5">
@@ -95,6 +95,28 @@ export default function ParentPortal() {
   );
 }
 
-function Stat({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) { return <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center gap-2 text-violet-500">{icon}<span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{label}</span></div><p className="mt-2 text-2xl font-black">{value}</p><p className="text-[10px] text-muted-foreground mt-0.5">{detail}</p></div>; }
+function Stat({ icon, label, value, detail, gradient, border, glow, iconBox, labelColor, dotColor, dotPing, shadow }: { icon: React.ReactNode; label: string; value: string; detail: string; gradient: string; border: string; glow: string; iconBox: string; labelColor: string; dotColor: string; dotPing: string; shadow: string }) {
+  return (
+    <div className={`group relative overflow-hidden rounded-3xl border ${border} bg-gradient-to-br ${gradient} p-5 shadow-lg ${shadow} backdrop-blur-xl transition-all duration-300 hover:-translate-y-1`}>
+      <div className={`pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full ${glow} blur-2xl transition-all duration-500 group-hover:scale-150`} />
+      <div className="relative flex items-start justify-between">
+        <div>
+          <p className={`text-[10px] font-black uppercase tracking-wider ${labelColor}`}>{label}</p>
+          <h4 className="mt-2 text-2xl sm:text-3xl font-black text-foreground tracking-tight">{value}</h4>
+        </div>
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBox} border shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          {icon}
+        </div>
+      </div>
+      <div className="relative mt-4 flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+        <span className="relative flex h-2 w-2">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotPing} opacity-75`} />
+          <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`} />
+        </span>
+        <span>{detail}</span>
+      </div>
+    </div>
+  );
+}
 function Header({ icon, title }: { icon: React.ReactNode; title: string }) { return <div className="px-5 py-4 border-b border-border flex items-center gap-2"><span className="text-violet-500">{icon}</span><h2 className="font-black text-sm">{title}</h2></div>; }
 function Empty({ text }: { text: string }) { return <div className="py-8 text-center text-xs text-muted-foreground"><CheckCircle2 className="mx-auto mb-2 opacity-40" size={20} />{text}</div>; }

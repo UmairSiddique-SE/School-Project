@@ -18,6 +18,12 @@ export class AttendanceController {
     return this.attendanceService.getStudentAttendance(user.schoolId, user.email);
   }
 
+  @Get('summary')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  getSummary(@CurrentUser() user: any) {
+    return this.attendanceService.getSchoolAttendanceSummary(user.schoolId);
+  }
+
   @Get()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getAttendance(
@@ -25,7 +31,12 @@ export class AttendanceController {
     @Query('sectionId') sectionId: string,
     @Query('date') date: string,
   ) {
-    return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date);
+    return this.attendanceService.getAttendanceForSection(
+      user.schoolId,
+      sectionId,
+      date || new Date().toISOString().split('T')[0],
+      user,
+    );
   }
 
   @Get('section/:sectionId')
@@ -35,18 +46,23 @@ export class AttendanceController {
     @Param('sectionId') sectionId: string,
     @Query('date') date: string,
   ) {
-    return this.attendanceService.getAttendanceForSection(user.schoolId, sectionId, date || new Date().toISOString().split('T')[0]);
+    return this.attendanceService.getAttendanceForSection(
+      user.schoolId,
+      sectionId,
+      date || new Date().toISOString().split('T')[0],
+      user,
+    );
   }
 
   @Post()
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendance(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user);
   }
 
   @Post('mark')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   markAttendanceAlias(@CurrentUser() user: any, @Body() dto: any) {
-    return this.attendanceService.markAttendance(user.schoolId, dto);
+    return this.attendanceService.markAttendance(user.schoolId, dto, user);
   }
 }

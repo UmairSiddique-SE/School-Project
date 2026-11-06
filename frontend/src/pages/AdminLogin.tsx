@@ -26,18 +26,13 @@ export default function AdminLogin() {
         password,
       });
       const { user, accessToken, refreshToken } = res.data;
-      if (user.role !== "SUPER_ADMIN" && user.role !== "SCHOOL_ADMIN") {
-        toast.error("Access denied. Administrator account required.");
+      if (user.role !== "SUPER_ADMIN") {
+        toast.error("Access denied. Super Admin account required.");
         return;
       }
       login(accessToken, user, refreshToken);
       toast.success(`Welcome, ${user.name}!`);
-      navigate(
-        user.role === "SUPER_ADMIN"
-          ? "/super-admin"
-          : `/${user.schoolSlug || "edusphere"}/dashboard`,
-        { replace: true },
-      );
+      navigate("/super-admin", { replace: true });
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message ||

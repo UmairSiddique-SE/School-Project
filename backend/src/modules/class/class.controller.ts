@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Delete, Body, Param, UseGuards,
+  Controller, Get, Post, Put, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,8 +13,15 @@ export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
   @Get()
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   findAll(@CurrentUser() user: any) {
     return this.classService.findAll(user.schoolId, user.role, user.email);
+  }
+
+  @Get('sections')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  findAllSections(@CurrentUser() user: any) {
+    return this.classService.findSections(user.schoolId, user.role, user.email);
   }
 
   @Post()
@@ -41,7 +48,9 @@ export class ClassController {
     return this.classService.deleteSection(id, user.schoolId);
   }
 
+  // ─── Subjects ───
   @Get('subjects')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getSubjects(@CurrentUser() user: any) {
     return this.classService.getSubjects(user.schoolId);
   }
@@ -50,6 +59,19 @@ export class ClassController {
   @Roles('SCHOOL_ADMIN')
   createSubject(@CurrentUser() user: any, @Body() dto: any) {
     return this.classService.createSubject(user.schoolId, dto);
+  }
+
+  @Put('subjects/:id')
+  @Patch('subjects/:id')
+  @Roles('SCHOOL_ADMIN')
+  updateSubject(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    return this.classService.updateSubject(id, user.schoolId, dto);
+  }
+
+  @Delete('subjects/:id')
+  @Roles('SCHOOL_ADMIN')
+  deleteSubject(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.classService.deleteSubject(id, user.schoolId);
   }
 
   @Post('subjects/assign')
@@ -62,5 +84,42 @@ export class ClassController {
   @Roles('SCHOOL_ADMIN')
   removeSubjectTeacher(@CurrentUser() user: any, @Param('id') id: string) {
     return this.classService.removeSubjectTeacher(id, user.schoolId);
+  }
+
+  @Get('teacher-mapping')
+  @Roles('SCHOOL_ADMIN', 'TEACHER')
+  getTeacherSubjectMapping(@CurrentUser() user: any) {
+    return this.classService.getTeacherSubjectMapping(user.schoolId);
+  }
+
+  // ─── Academic Years / Sessions ───
+  @Get('academic-years')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
+  getAcademicYears(@CurrentUser() user: any) {
+    return this.classService.getAcademicYears(user.schoolId);
+  }
+
+  @Post('academic-years')
+  @Roles('SCHOOL_ADMIN')
+  createAcademicYear(@CurrentUser() user: any, @Body() dto: any) {
+    return this.classService.createAcademicYear(user.schoolId, dto);
+  }
+
+  @Patch('academic-years/:id')
+  @Roles('SCHOOL_ADMIN')
+  updateAcademicYear(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) {
+    return this.classService.updateAcademicYear(id, user.schoolId, dto);
+  }
+
+  @Patch('academic-years/:id/set-current')
+  @Roles('SCHOOL_ADMIN')
+  setCurrentAcademicYear(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.classService.setCurrentAcademicYear(id, user.schoolId);
+  }
+
+  @Delete('academic-years/:id')
+  @Roles('SCHOOL_ADMIN')
+  deleteAcademicYear(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.classService.deleteAcademicYear(id, user.schoolId);
   }
 }

@@ -1,28 +1,132 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class PeopleService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getTeachers(schoolId: string) {
-    return this.prisma.teacher.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } });
+    return this.prisma.teacher.findMany({
+      where: { schoolId, deletedAt: null },
+      include: {
+        sectionTeacher: {
+          where: { deletedAt: null },
+          include: {
+            class: true,
+            _count: { select: { students: { where: { deletedAt: null } } } },
+          },
+        },
+        classSubjects: {
+          where: { class: { schoolId, deletedAt: null } },
+          include: {
+            class: true,
+            subject: true,
+          },
+        },
+        payrolls: {
+          orderBy: [{ year: 'desc' }, { month: 'desc' }],
+          take: 6,
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 
   async createTeacher(schoolId: string, data: any) {
-    if (!data.employeeNo || !data.name || !data.email) throw new ConflictException('Employee No, Name, and Email are required');
-    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    if (existingTeacher || existingStaff) throw new ConflictException('Teacher with this Employee No or Email already exists');
-    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
-    const passwordHash = await bcrypt.hash(data.password, 12);
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email: data.email, passwordHash, role: 'TEACHER', schoolId } });
-        return tx.teacher.create({ data: { employeeNo: data.employeeNo, name: data.name, email: data.email, phone: data.phone || null, gender: data.gender || 'MALE', qualification: data.qualification || null, experience: data.experience ? parseInt(data.experience, 10) : null, salary: data.salary ? parseFloat(data.salary) : null, schoolId } });
+    let employeeNo = data.employeeNo;
+    if (!employeeNo || !String(employeeNo).trim()) {
+      const currentYear = new Date().getFullYear();
+      const lastTeacher = await this.prisma.teacher.findFirst({
+        where: { schoolId, employeeNo: { startsWith: `EMP-${currentYear}` } },
+        orderBy: { employeeNo: 'desc' },
       });
+      let nextNum = 1;
+      if (lastTeacher?.employeeNo) {
+        const lastNum = parseInt(lastTeacher.employeeNo.split('-').pop() || '', 10);
+        if (!isNaN(lastNum)) nextNum = lastNum + 1;
+      }
+      employeeNo = `EMP-${currentYear}-${String(nextNum).padStart(3, '0')}`;
+    }
+
+    if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
+
+    const rawEmail = data.email ? String(data.email).trim().toLowerCase() : '';
+    const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+    const regDigits = String(employeeNo).match(/(\d+)$/)?.[1] || String(employeeNo).replace(/\D/g, '').slice(-3) || '001';
+
+    let email = '';
+    let isCustomEmail = false;
+    let customShortId = '';
+
+    if (rawEmail) {
+      if (rawEmail.includes('@')) {
+        email = rawEmail;
+        isCustomEmail = !rawEmail.endsWith('@school.edu.pk');
+      } else {
+        customShortId = rawEmail.replace(/[^a-z0-9_-]/g, '');
+        email = `${customShortId}@school.edu.pk`;
+      }
+    } else {
+      email = `${firstName}${regDigits}@school.edu.pk`;
+      let userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+      let counter = 1;
+      while (userExists) {
+        email = `${firstName}${regDigits}_${counter}@school.edu.pk`;
+        userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+        counter++;
+      }
+    }
+
+    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, deletedAt: null, OR: [{ employeeNo }, { email }] } });
+    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, deletedAt: null, OR: [{ employeeNo }, { email }] } });
+    const existingUser = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+    if (existingTeacher || existingStaff || existingUser) {
+      throw new ConflictException(`A teacher or user account with Employee No "${employeeNo}" or Email/Login "${email}" already exists. Please choose a different Login ID.`);
+    }
+    
+    let qualification = data.qualification ? String(data.qualification).trim() : 'M.Sc / M.Phil';
+    if (data.specialization && String(data.specialization).trim() && !qualification.toLowerCase().includes(String(data.specialization).trim().toLowerCase())) {
+      qualification = `${qualification} (${String(data.specialization).trim()})`;
+    }
+
+    const plainPassword = data.password && String(data.password).trim().length >= 6
+      ? String(data.password).trim()
+      : this.generate8CharPassword();
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        // If there is an old deleted user with this email, delete it permanently first
+        await tx.user.deleteMany({ where: { email, deletedAt: { not: null } } });
+
+        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true } });
+        const teacher = await tx.teacher.create({
+          data: {
+            employeeNo,
+            name: data.name,
+            email,
+            phone: data.phone || null,
+            gender: data.gender || 'MALE',
+            qualification,
+            experience: data.experience ? parseInt(data.experience, 10) : 3,
+            salary: data.salary ? parseFloat(data.salary) : 45000,
+            bloodGroup: data.bloodGroup || null,
+            avatarUrl: data.avatarUrl || null,
+            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+            schoolId,
+          },
+        });
+        return teacher;
+      });
+      return {
+        teacher: result,
+        credentials: {
+          loginId: isCustomEmail ? email : customShortId ? customShortId : `${firstName}${regDigits}`,
+          fullEmail: email,
+          password: plainPassword,
+        },
+      };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists.`);
       if (error?.status) throw error;
@@ -34,7 +138,51 @@ export class PeopleService {
   async updateTeacher(id: string, schoolId: string, data: any) {
     const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!teacher) throw new NotFoundException('Teacher not found');
-    return this.prisma.teacher.update({ where: { id }, data: { name: data.name ?? undefined, phone: data.phone ?? undefined, gender: data.gender ?? undefined, qualification: data.qualification ?? undefined, experience: data.experience !== undefined ? parseInt(data.experience, 10) : undefined, salary: data.salary !== undefined ? parseFloat(data.salary) : undefined, isActive: data.isActive ?? undefined } });
+
+    if (data.password && String(data.password).trim().length >= 6) {
+      const passwordHash = await bcrypt.hash(String(data.password).trim(), 10);
+      if (teacher.email) {
+        await this.prisma.user.updateMany({
+          where: { email: teacher.email, schoolId },
+          data: { passwordHash },
+        });
+      }
+    }
+
+    return this.prisma.teacher.update({
+      where: { id },
+      data: {
+        name: data.name ?? undefined,
+        phone: data.phone ?? undefined,
+        gender: data.gender ?? undefined,
+        qualification: data.qualification ?? undefined,
+        experience: data.experience !== undefined ? parseInt(data.experience, 10) : undefined,
+        salary: data.salary !== undefined ? parseFloat(data.salary) : undefined,
+        bloodGroup: data.bloodGroup ?? undefined,
+        avatarUrl: data.avatarUrl ?? undefined,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+        isActive: data.isActive ?? undefined,
+      },
+    });
+  }
+
+  async updateTeacherPassword(id: string, schoolId: string, password: string) {
+    if (!password || password.trim().length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const passwordHash = await bcrypt.hash(password.trim(), 10);
+    const email = teacher.email;
+    const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
+    if (user) {
+      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
+    } else {
+      await this.prisma.user.create({
+        data: { name: teacher.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
+      });
+    }
+    return { success: true, message: 'Teacher password updated successfully', loginId: email, password: password.trim() };
   }
 
   async deleteTeacher(id: string, schoolId: string) {
@@ -46,8 +194,172 @@ export class PeopleService {
     });
   }
 
+  async payTeacherSalary(id: string, schoolId: string, data: any) {
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id, schoolId, deletedAt: null },
+    });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+
+    const month = data.month === undefined || data.month === null || data.month === ''
+      ? new Date().getMonth() + 1
+      : Number(data.month);
+    const year = data.year === undefined || data.year === null || data.year === ''
+      ? new Date().getFullYear()
+      : Number(data.year);
+    const basicSalary = Number(data.basicSalary ?? teacher.salary ?? 0);
+    const allowances = Number(data.allowances ?? 0);
+    const deductions = Number(data.deductions ?? 0);
+
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      throw new BadRequestException('Month must be between 1 and 12');
+    }
+    if (!Number.isInteger(year) || year < 2000 || year > 2200) {
+      throw new BadRequestException('Enter a valid payroll year');
+    }
+    if (![basicSalary, allowances, deductions].every(Number.isFinite)) {
+      throw new BadRequestException('Salary amounts must be valid numbers');
+    }
+    if (basicSalary < 0 || allowances < 0 || deductions < 0) {
+      throw new BadRequestException('Salary amounts cannot be negative');
+    }
+    if (deductions > basicSalary + allowances) {
+      throw new BadRequestException('Deductions cannot exceed salary plus allowances');
+    }
+
+    const netSalary = basicSalary + allowances - deductions;
+    const paidDate = new Date();
+
+    // Keep the payroll record and ledger entry atomic so a failed ledger write
+    // cannot leave a salary marked as paid without its accounting entry.
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.payroll.findFirst({
+        where: { teacherId: id, schoolId, month, year },
+      });
+
+      if (existing?.isPaid) {
+        throw new ConflictException('Salary has already been paid for this teacher and month');
+      }
+
+      const payroll = existing
+        ? await tx.payroll.update({
+            where: { id: existing.id },
+            data: { basicSalary, allowances, deductions, netSalary, isPaid: true, paidDate },
+          })
+        : await tx.payroll.create({
+            data: {
+              month,
+              year,
+              basicSalary,
+              allowances,
+              deductions,
+              netSalary,
+              isPaid: true,
+              paidDate,
+              schoolId,
+              teacherId: id,
+            },
+          });
+
+      await tx.accountEntry.create({
+        data: {
+          type: 'EXPENSE',
+          category: 'SALARY',
+          description: `Salary paid to ${teacher.name} (${teacher.employeeNo}) for ${month}/${year}`,
+          amount: netSalary,
+          date: paidDate,
+          reference: `PAY-${year}-${month}-${teacher.employeeNo}`,
+          schoolId,
+        },
+      });
+
+      return payroll;
+    });
+  }
+
+  async assignTeacherSection(id: string, schoolId: string, sectionId: string) {
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, class: { schoolId }, deletedAt: null },
+    });
+    if (!section) throw new NotFoundException('Section not found in this school');
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: { teacherId: id },
+    });
+  }
+
+  async unassignTeacherSection(sectionId: string, schoolId: string) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, class: { schoolId }, deletedAt: null },
+    });
+    if (!section) throw new NotFoundException('Section not found in this school');
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: { teacherId: null },
+    });
+  }
+
+  async assignTeacherSubject(id: string, schoolId: string, data: { classId: string; subjectId: string }) {
+    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    const schoolClass = await this.prisma.class.findFirst({ where: { id: data.classId, schoolId, deletedAt: null } });
+    if (!schoolClass) throw new NotFoundException('Class not found');
+    const subject = await this.prisma.subject.findFirst({ where: { id: data.subjectId, schoolId, deletedAt: null } });
+    if (!subject) throw new NotFoundException('Subject not found');
+
+    const existing = await this.prisma.classSubject.findFirst({
+      where: { classId: data.classId, subjectId: data.subjectId },
+    });
+    if (existing) {
+      return this.prisma.classSubject.update({
+        where: { id: existing.id },
+        data: { teacherId: id },
+      });
+    }
+    return this.prisma.classSubject.create({
+      data: { classId: data.classId, subjectId: data.subjectId, teacherId: id },
+    });
+  }
+
+  async unassignTeacherSubject(classSubjectId: string, schoolId: string) {
+    const assignment = await this.prisma.classSubject.findFirst({
+      where: { id: classSubjectId, class: { schoolId, deletedAt: null } },
+    });
+    if (!assignment) throw new NotFoundException('Subject assignment not found');
+    return this.prisma.classSubject.update({
+      where: { id: classSubjectId },
+      data: { teacherId: null },
+    });
+  }
+
   async getStudents(schoolId: string) {
-    return this.prisma.student.findMany({ where: { schoolId, deletedAt: null }, include: { section: { include: { class: true } } }, orderBy: { name: 'asc' } });
+    return this.prisma.student.findMany({
+      where: { schoolId, deletedAt: null },
+      include: {
+        section: {
+          include: {
+            class: true,
+            teacher: { select: { id: true, name: true, email: true } },
+          },
+        },
+        parents: {
+          include: {
+            parent: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  private generate8CharPassword(): string {
+    const chars = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   }
 
   async createStudent(schoolId: string, data: any) {
@@ -75,39 +387,45 @@ export class PeopleService {
     const existing = await this.prisma.student.findUnique({ where: { admissionNo } });
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
-    const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { slug: true } });
-    if (!school?.slug) throw new BadRequestException('School slug is not configured');
-    const firstName = String(data.name).trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!firstName) throw new BadRequestException('Student name must contain letters or numbers');
-    const admissionSuffix = String(admissionNo).match(/(\d+)$/)?.[1];
-    if (!admissionSuffix) throw new BadRequestException('Admission No must end with a numeric value for Student Login ID generation');
-    const loginId = `${firstName}${admissionSuffix}@student.${school.slug}.pk`;
+    const firstName = data.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const regDigits = admissionNo.replace(/\D/g, '');
+    const lastNumSeq = parseInt(admissionNo.split('-').pop() || '', 10);
+    const shortSeq = isNaN(lastNumSeq) ? regDigits.slice(-3) : String(lastNumSeq);
+    const friendlyLoginId = `${firstName}${shortSeq}`; // e.g. "umair1", "ali20", "ammar100"
 
-    // Generate the password once during admission. Only the bcrypt hash is persisted.
-    // The plaintext password is returned in this creation response so the School Admin can record it.
-    const generatedPassword = randomBytes(9).toString('base64url').slice(0, 12) + '!';
-    const passwordHash = await bcrypt.hash(generatedPassword, 12);
-    const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
+    const generatedPassword = (data.password && String(data.password).trim().length >= 6)
+      ? String(data.password).trim()
+      : '12345678';
+    const passwordHash = await bcrypt.hash(generatedPassword, 10);
+    const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
-    if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email or admission number.`);
+    if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email.`);
     try {
       const student = await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId } });
-        const createdStudent = await tx.student.create({ data: { admissionNo, name: data.name, rollNo, email, phone: data.phone || data.studentMobile || null, address: data.address || null, gender: data.gender || 'MALE', dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null, bloodGroup: data.bloodGroup || null, religion: data.religion || null, sectionId: data.sectionId || null, status: data.status || 'ACTIVE', session: data.session || null, bFormNumber: data.bFormNumber || null, currentAddress: data.currentAddress || null, permanentAddress: data.permanentAddress || null, emergencyContact: data.emergencyContact || null, previousSchool: data.previousSchool || null, previousClass: data.previousClass || null, leavingCertificateUrl: data.leavingCertificateUrl || null, admissionType: data.admissionType || 'NEW', previousAcademicRecord: data.previousAcademicRecord || null, medicalNotes: data.medicalNotes || null, specialRequirements: data.specialRequirements || null, transportRequired: data.transportRequired === true || data.transportRequired === 'true', hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true', remarks: data.remarks || null, schoolId } });
+        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true } });
+        const createdStudent = await tx.student.create({ data: { admissionNo, name: data.name, avatarUrl: data.avatarUrl || null, rollNo, email, phone: data.phone || data.studentMobile || null, address: data.address || data.currentAddress || null, gender: data.gender || 'MALE', dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null, bloodGroup: data.bloodGroup || null, religion: data.religion || null, sectionId: data.sectionId || null, status: data.status || 'ACTIVE', session: data.session || null, bFormNumber: data.bFormNumber || null, currentAddress: data.currentAddress || null, permanentAddress: data.permanentAddress || null, emergencyContact: data.emergencyContact || null, previousSchool: data.previousSchool || null, previousClass: data.previousClass || null, leavingCertificateUrl: data.leavingCertificateUrl || null, admissionType: data.admissionType || 'NEW', previousAcademicRecord: data.previousAcademicRecord || null, medicalNotes: data.medicalNotes || null, specialRequirements: data.specialRequirements || null, transportRequired: data.transportRequired === true || data.transportRequired === 'true', hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true', remarks: data.remarks || null, schoolId } });
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
-          const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu`;
-          if (!data.parentPassword || data.parentPassword.length < 12) throw new BadRequestException('A parent password of at least 12 characters is required');
-          const parentPasswordHash = await bcrypt.hash(data.parentPassword, 12);
+          const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu.pk`;
+          const rawParentPass = data.parentPassword && data.parentPassword.length >= 6 ? data.parentPassword : '12345678';
+          const parentPasswordHash = await bcrypt.hash(rawParentPass, 10);
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
           if (!parentUser) parentUser = await tx.user.create({ data: { name: parentName, email: parentEmail, passwordHash: parentPasswordHash, role: 'PARENT', schoolId } });
           else if (parentUser.schoolId !== schoolId) throw new ConflictException('Parent account belongs to another school');
-          const parent = await tx.parent.create({ data: { name: parentName, email: parentEmail, phone: data.fatherMobile1 || data.guardianMobile || data.motherMobile || '0000000000', relation: data.fatherName ? 'FATHER' : data.guardianName ? 'GUARDIAN' : 'MOTHER', fatherName: data.fatherName || null, fatherMobile1: data.fatherMobile1 || null, fatherMobile2: data.fatherMobile2 || null, fatherWhatsapp: data.fatherWhatsapp || null, fatherCnic: data.fatherCnic || null, fatherOccupation: data.fatherOccupation || null, motherName: data.motherName || null, motherMobile: data.motherMobile || null, motherCnic: data.motherCnic || null, motherOccupation: data.motherOccupation || null, guardianName: data.guardianName || null, guardianRelation: data.guardianRelation || null, guardianMobile: data.guardianMobile || null, addressCountry: data.addressCountry || data.country || null, addressProvince: data.addressProvince || data.province || null, addressCity: data.addressCity || data.city || data.district || null, addressLine: data.addressLine || data.address || null, schoolId, userId: parentUser.id } });
+          const parent = await tx.parent.create({ data: { name: parentName, email: parentEmail, phone: data.fatherMobile1 || data.guardianMobile || data.motherMobile || '0000000000', relation: data.fatherName ? 'FATHER' : data.guardianName ? 'GUARDIAN' : 'MOTHER', fatherName: data.fatherName || null, fatherMobile1: data.fatherMobile1 || null, fatherMobile2: data.fatherMobile2 || null, fatherWhatsapp: data.fatherWhatsapp || null, fatherCnic: data.fatherCnic || null, fatherOccupation: data.fatherOccupation || null, fatherStatus: data.fatherStatus || 'ALIVE', motherName: data.motherName || null, motherMobile: data.motherMobile || null, motherCnic: data.motherCnic || null, motherOccupation: data.motherOccupation || null, guardianName: data.guardianName || null, guardianRelation: data.guardianRelation || null, guardianMobile: data.guardianMobile || null, addressCountry: data.addressCountry || data.country || null, addressProvince: data.addressProvince || data.province || null, addressCity: data.addressCity || data.district || null, addressLine: data.addressLine || data.currentAddress || data.address || null, schoolId, userId: parentUser.id } });
           await tx.studentParent.create({ data: { studentId: createdStudent.id, parentId: parent.id, isPrimary: true } });
         }
         return createdStudent;
       });
-      return { student, credentials: { loginId, password: generatedPassword } };
+      return {
+        student,
+        credentials: {
+          loginId: friendlyLoginId,
+          admissionNo,
+          fullEmail: email,
+          password: generatedPassword,
+        },
+      };
     } catch (error: any) {
       if (error?.code === 'P2002') throw new ConflictException(`A record with this ${error.meta?.target?.join(', ') || 'field'} already exists. Please check for duplicates.`);
       if (error?.status) throw error;
@@ -123,12 +441,43 @@ export class PeopleService {
       const section = await this.prisma.section.findFirst({ where: { id: data.sectionId, class: { schoolId } } });
       if (!section) throw new BadRequestException('Selected section does not belong to this school');
     }
-    const updatedStudent = await this.prisma.student.update({ where: { id }, data: { name: data.name ?? undefined, rollNo: data.rollNo ?? undefined, phone: data.phone ?? undefined, address: data.address ?? undefined, gender: data.gender ?? undefined, dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined, bloodGroup: data.bloodGroup ?? undefined, religion: data.religion ?? undefined, sectionId: data.sectionId ?? undefined, isActive: data.isActive ?? undefined, status: data.status ?? undefined, session: data.session ?? undefined, bFormNumber: data.bFormNumber ?? undefined, currentAddress: data.currentAddress ?? undefined, permanentAddress: data.permanentAddress ?? undefined, emergencyContact: data.emergencyContact ?? undefined, previousSchool: data.previousSchool ?? undefined, previousClass: data.previousClass ?? undefined, admissionType: data.admissionType ?? undefined, transportRequired: data.transportRequired !== undefined ? (data.transportRequired === true || data.transportRequired === 'true') : undefined, hostelRequired: data.hostelRequired !== undefined ? (data.hostelRequired === true || data.hostelRequired === 'true') : undefined, remarks: data.remarks ?? undefined } });
-    if (data.fatherName || data.motherName || data.guardianName || data.fatherMobile1 || data.motherMobile || data.fatherWhatsapp) {
+    const updatedStudent = await this.prisma.student.update({ where: { id }, data: { name: data.name ?? undefined, avatarUrl: data.avatarUrl ?? undefined, rollNo: data.rollNo ?? undefined, phone: data.phone ?? undefined, address: data.address ?? data.currentAddress ?? undefined, gender: data.gender ?? undefined, dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined, bloodGroup: data.bloodGroup ?? undefined, religion: data.religion ?? undefined, sectionId: data.sectionId ?? undefined, isActive: data.isActive ?? undefined, status: data.status ?? undefined, session: data.session ?? undefined, bFormNumber: data.bFormNumber ?? undefined, currentAddress: data.currentAddress ?? undefined, permanentAddress: data.permanentAddress ?? undefined, emergencyContact: data.emergencyContact ?? undefined, previousSchool: data.previousSchool ?? undefined, previousClass: data.previousClass ?? undefined, admissionType: data.admissionType ?? undefined, transportRequired: data.transportRequired !== undefined ? (data.transportRequired === true || data.transportRequired === 'true') : undefined, hostelRequired: data.hostelRequired !== undefined ? (data.hostelRequired === true || data.hostelRequired === 'true') : undefined, remarks: data.remarks ?? undefined } });
+    
+    // If admin updated student password
+    if (data.password && String(data.password).trim().length >= 6) {
+      const passwordHash = await bcrypt.hash(String(data.password).trim(), 10);
+      if (student.email) {
+        await this.prisma.user.updateMany({
+          where: { email: student.email, schoolId },
+          data: { passwordHash },
+        });
+      }
+    }
+
+    if (data.fatherName || data.motherName || data.guardianName || data.fatherMobile1 || data.motherMobile || data.fatherWhatsapp || data.fatherStatus) {
       const studentParent = await this.prisma.studentParent.findFirst({ where: { studentId: id, isPrimary: true, parent: { schoolId } } });
-      if (studentParent) await this.prisma.parent.update({ where: { id: studentParent.parentId }, data: { fatherName: data.fatherName ?? undefined, fatherMobile1: data.fatherMobile1 ?? undefined, fatherMobile2: data.fatherMobile2 ?? undefined, fatherWhatsapp: data.fatherWhatsapp ?? undefined, fatherCnic: data.fatherCnic ?? undefined, fatherOccupation: data.fatherOccupation ?? undefined, motherName: data.motherName ?? undefined, motherMobile: data.motherMobile ?? undefined, motherCnic: data.motherCnic ?? undefined, motherOccupation: data.motherOccupation ?? undefined, guardianName: data.guardianName ?? undefined, guardianMobile: data.guardianMobile ?? undefined, addressLine: data.address ?? undefined } });
+      if (studentParent) await this.prisma.parent.update({ where: { id: studentParent.parentId }, data: { fatherName: data.fatherName ?? undefined, fatherMobile1: data.fatherMobile1 ?? undefined, fatherMobile2: data.fatherMobile2 ?? undefined, fatherWhatsapp: data.fatherWhatsapp ?? undefined, fatherCnic: data.fatherCnic ?? undefined, fatherOccupation: data.fatherOccupation ?? undefined, fatherStatus: data.fatherStatus ?? undefined, motherName: data.motherName ?? undefined, motherMobile: data.motherMobile ?? undefined, motherCnic: data.motherCnic ?? undefined, motherOccupation: data.motherOccupation ?? undefined, guardianName: data.guardianName ?? undefined, guardianRelation: data.guardianRelation ?? undefined, guardianMobile: data.guardianMobile ?? undefined, addressLine: data.currentAddress ?? data.address ?? undefined } });
     }
     return updatedStudent;
+  }
+
+  async updateStudentPassword(id: string, schoolId: string, password: string) {
+    if (!password || password.trim().length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    const student = await this.prisma.student.findFirst({ where: { id, schoolId, deletedAt: null } });
+    if (!student) throw new NotFoundException('Student not found');
+    const passwordHash = await bcrypt.hash(password.trim(), 10);
+    const email = student.email || `${student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
+    const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
+    if (user) {
+      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
+    } else {
+      await this.prisma.user.create({
+        data: { name: student.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true },
+      });
+    }
+    return { success: true, message: 'Student password updated successfully', loginId: email, password: password.trim() };
   }
 
   async deleteStudent(id: string, schoolId: string) {
@@ -162,37 +511,7 @@ export class PeopleService {
       this.prisma.staff.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } }),
       this.prisma.teacher.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } }),
     ]);
-    const teacherRows = teachers.map((t) => ({ id: t.id, employeeNo: t.employeeNo, name: t.name, email: t.email, phone: t.phone, designation: 'Teacher', department: 'Academics', salary: t.salary, qualification: t.qualification, gender: t.gender, experience: t.experience, personType: 'teacher' as const, joiningDate: t.joiningDate, isActive: t.isActive }));
-    const staffRows = staffMembers.map((s) => ({ ...s, personType: 'staff' as const }));
-    return [...teacherRows, ...staffRows].sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  async createStaff(schoolId: string, data: any) {
-    if (data.designation === 'Teacher') return this.createTeacher(schoolId, { ...data, password: data.password });
-    const existingStaff = await this.prisma.staff.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, OR: [{ employeeNo: data.employeeNo }, { email: data.email }] } });
-    if (existingStaff || existingTeacher) throw new ConflictException('Staff with this Employee No or Email already exists');
-    if (!data.password || data.password.length < 12) throw new BadRequestException('A password of at least 12 characters is required');
-    const passwordHash = await bcrypt.hash(data.password, 12);
-    return this.prisma.$transaction(async (tx) => {
-      await tx.user.create({ data: { name: data.name, email: data.email, passwordHash, role: 'STAFF', schoolId } });
-      return tx.staff.create({ data: { employeeNo: data.employeeNo, name: data.name, email: data.email, phone: data.phone || null, designation: data.designation, department: data.department || null, salary: data.salary ? parseFloat(data.salary) : null, schoolId } });
-    });
-  }
-
-  async updateStaff(id: string, schoolId: string, data: any) {
-    const staff = await this.prisma.staff.findFirst({ where: { id, schoolId, deletedAt: null } });
-    if (staff) return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.staff.update({ where: { id }, data: { name: data.name ?? undefined, phone: data.phone ?? undefined, designation: data.designation ?? undefined, department: data.department ?? undefined, salary: data.salary !== undefined && data.salary !== '' ? parseFloat(data.salary) : undefined, isActive: data.isActive ?? undefined } });
-      if (data.name || data.isActive !== undefined) await tx.user.updateMany({ where: { email: staff.email, schoolId }, data: { ...(data.name ? { name: data.name } : {}), ...(data.isActive !== undefined ? { isActive: data.isActive } : {}) } });
-      return updated;
-    });
-    const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
-    if (teacher) {
-      const updated = await this.updateTeacher(id, schoolId, data);
-      if (data.name || data.isActive !== undefined) await this.prisma.user.updateMany({ where: { email: teacher.email, schoolId }, data: { ...(data.name ? { name: data.name } : {}), ...(data.isActive !== undefined ? { isActive: data.isActive } : {}) } });
-      return updated;
-    }
-    throw new NotFoundException('Staff member not found');
+    const teacherRows = teachers.map((t) => ({ id: t.id, employeeNo: t.employeeNo, name: t.name, email: t.email, phone: t.phone, gender: t.gender, designation: 'Teacher', qualification: t.qualification, experience: t.experience, salary: t.salary, isActive: t.isActive, deletedAt: t.deletedAt }));
+    return [...staffMembers, ...teacherRows];
   }
 }

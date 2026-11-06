@@ -107,7 +107,7 @@ export class PaymentAccountingService {
       return { ...payment, paymentType };
     });
     if (requestedType) data = data.filter((payment) => payment.paymentType === requestedType).slice((page - 1) * limit, page * limit);
-    const total = requestedType ? data.length + Math.max(0, rows.filter((p) => false).length) : totalBeforeType;
+    const total = requestedType ? data.length + Math.max(0, rows.filter((_p) => false).length) : totalBeforeType;
     // Recompute the filtered total when a type filter is active so pagination is accurate.
     const filteredRows = requestedType
       ? (await this.prisma.onboardingPayment.findMany({ where, orderBy: { createdAt: 'desc' }, include: { school: { select: { name: true, slug: true } } } }))

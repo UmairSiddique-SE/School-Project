@@ -1,0 +1,123 @@
+/* EduSphere premium school-registration experience. Scoped to the registration form so dashboard/login styles remain untouched. */
+body:has(input[type="file"]):has(select) {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(124,58,237,.22), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(14,165,233,.16), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(16,185,129,.10), transparent 32%),
+    #050816 !important;
+}
+
+body:has(input[type="file"]):has(select)::before,
+body:has(input[type="file"]):has(select)::after {
+  content: "";
+  position: fixed;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: .35;
+}
+body:has(input[type="file"]):has(select)::before { left: -180px; top: 28%; background: #7c3aed; }
+body:has(input[type="file"]):has(select)::after { right: -180px; top: 8%; background: #0ea5e9; }
+
+body:has(input[type="file"]):has(select) #root { position: relative; z-index: 1; }
+body:has(input[type="file"]):has(select) main,
+body:has(input[type="file"]):has(select) form { color: #f8fafc; }
+
+/* Give the existing registration layout a luxury glass surface without changing its functionality. */
+body:has(input[type="file"]):has(select) form > div,
+body:has(input[type="file"]):has(select) [class*="rounded-3xl"],
+body:has(input[type="file"]):has(select) [class*="rounded-2xl"] {
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+body:has(input[type="file"]):has(select) input,
+body:has(input[type="file"]):has(select) select,
+body:has(input[type="file"]):has(select) textarea {
+  min-height: 48px;
+  border-radius: 15px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.045) !important;
+  color: #f8fafc !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 8px 30px rgba(0,0,0,.10);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
+}
+body:has(input[type="file"]):has(select) input:hover,
+body:has(input[type="file"]):has(select) select:hover,
+body:has(input[type="file"]):has(select) textarea:hover {
+  border-color: rgba(167,139,250,.35) !important;
+  background: rgba(255,255,255,.06) !important;
+}
+body:has(input[type="file"]):has(select) input:focus,
+body:has(input[type="file"]):has(select) select:focus,
+body:has(input[type="file"]):has(select) textarea:focus {
+  outline: none !important;
+  border-color: rgba(129,140,248,.85) !important;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.13), 0 12px 40px rgba(79,70,229,.12) !important;
+  transform: translateY(-1px);
+}
+body:has(input[type="file"]):has(select) input::placeholder,
+body:has(input[type="file"]):has(select) textarea::placeholder { color: #64748b !important; }
+body:has(input[type="file"]):has(select) select option { background: #0b1020; color: #f8fafc; }
+
+/* Premium action buttons. */
+body:has(input[type="file"]):has(select) button {
+  border-radius: 15px;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+body:has(input[type="file"]):has(select) button:not(:disabled):hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+body:has(input[type="file"]):has(select) button[type="submit"] {
+  background: linear-gradient(135deg,#8b5cf6 0%,#6366f1 46%,#06b6d4 100%) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  box-shadow: 0 14px 35px rgba(99,102,241,.30), inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+
+/* Logo uploader becomes a polished drop-zone. */
+body:has(input[type="file"]):has(select) input[type="file"] {
+  min-height: 76px;
+  padding: 18px;
+  cursor: pointer;
+  border-style: dashed !important;
+  border-color: rgba(129,140,248,.34) !important;
+  background: linear-gradient(135deg,rgba(124,58,237,.09),rgba(14,165,233,.05)) !important;
+}
+body:has(input[type="file"]):has(select) input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+  background: linear-gradient(135deg,#7c3aed,#4f46e5);
+  cursor: pointer;
+}
+
+/* Labels read like a premium onboarding flow. */
+body:has(input[type="file"]):has(select) label {
+  color: #cbd5e1;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+body:has(input[type="file"]):has(select) h1 {
+  letter-spacing: -.035em;
+  text-shadow: 0 8px 40px rgba(99,102,241,.18);
+}
+body:has(input[type="file"]):has(select) h2,
+body:has(input[type="file"]):has(select) h3 { letter-spacing: -.02em; }
+
+/* Selected plan/payment cards get a visible VIP treatment. */
+body:has(input[type="file"]):has(select) [class*="ring-violet"],
+body:has(input[type="file"]):has(select) [class*="border-violet"] {
+  box-shadow: 0 0 0 1px rgba(167,139,250,.22), 0 16px 50px rgba(99,102,241,.15), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+@media (max-width: 768px) {
+  body:has(input[type="file"]):has(select) input,
+  body:has(input[type="file"]):has(select) select,
+  body:has(input[type="file"]):has(select) textarea { min-height: 50px; }
+}

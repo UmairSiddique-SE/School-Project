@@ -27,8 +27,6 @@ async function bootstrap() {
     throw new Error('CORS_ORIGINS is required in production.');
   }
 
-  // Allow both common Vite development ports. If CORS_ORIGINS is set,
-  // those explicitly configured origins take precedence.
   const corsOrigins = configuredOrigins.length
     ? configuredOrigins
     : ['http://localhost:5173', 'http://localhost:5174'];
@@ -40,8 +38,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix(process.env.API_PREFIX || 'api');
 
-  app.use(json({ limit: '10mb' }));
-  app.use(urlencoded({ limit: '10mb', extended: true }));
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ limit: '5mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({

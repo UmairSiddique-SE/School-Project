@@ -13,7 +13,30 @@ const FOREVER_DATE = new Date('9999-12-31T23:59:59.999Z');
 export class SchoolService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async syncExpiredSubscriptions() {
+    const now = new Date();
+    const expired = await this.prisma.subscription.findMany({
+      where: { status: 'ACTIVE', endDate: { lte: now } },
+      select: { schoolId: true },
+    });
+    if (!expired.length) return { count: 0 };
+
+    const schoolIds = expired.map((s) => s.schoolId);
+    await this.prisma.$transaction([
+      this.prisma.subscription.updateMany({
+        where: { schoolId: { in: schoolIds }, status: 'ACTIVE', endDate: { lte: now } },
+        data: { status: 'EXPIRED' },
+      }),
+      this.prisma.school.updateMany({
+        where: { id: { in: schoolIds }, deletedAt: null },
+        data: { isActive: false },
+      }),
+    ]);
+    return { count: schoolIds.length };
+  }
+
   async findAll(query?: { search?: string; plan?: string; isActive?: string; page?: string; limit?: string }) {
+    await this.syncExpiredSubscriptions();
     const page = query?.page ? parseInt(query.page, 10) : undefined;
     const limit = query?.limit ? parseInt(query.limit, 10) : undefined;
     const search = query?.search?.trim();
@@ -36,12 +59,14 @@ export class SchoolService {
   }
 
   async findOne(id: string) {
+    await this.syncExpiredSubscriptions();
     const school = await this.prisma.school.findUnique({
       where: { id },
       include: {
         subscription: true,
         users: { where: { role: 'SCHOOL_ADMIN' }, select: { id: true, name: true, email: true, phone: true, isActive: true }, take: 1 },
         onboardingPayments: { orderBy: { createdAt: 'desc' }, take: 20 },
+        alerts: { orderBy: { createdAt: 'desc' }, take: 20 },
         auditLogs: { orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, action: true, after: true, createdAt: true } },
         _count: { select: { users: true, students: true, teachers: true, staff: true, classes: true } },
       },
@@ -113,11 +138,41 @@ export class SchoolService {
     }
   }
 
-  async suspend(id: string, actor?: any, reason?: string) {
-    if (!reason?.trim()) throw new ConflictException('A suspension reason is required');
+  async suspend(id: string, actor?: any, payload?: any) {
+    const data = typeof payload === 'string' ? { reason: payload } : (payload || {});
+    const reason = (data.reason || data.message || 'School portal placed offline by Super Admin').trim();
+    const title = (data.title || '⚠️ School Portal Offline').trim();
+    const type = (data.type || 'SUSPENSION').toUpperCase();
+    const actionType = data.actionType || (type === 'PAYMENT' ? 'RENEW_PAYMENT' : 'ACKNOWLEDGE');
+    const actionUrl = data.actionUrl || (type === 'PAYMENT' ? '/subscription' : '');
+    const expiresAt = data.estimatedReturn ? new Date(data.estimatedReturn) : null;
+
     const school = await this.findOne(id);
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: false } });
-    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name}. Reason: ${reason.trim()}`);
+
+    // Mark previous active suspension/offline alerts for this school as inactive
+    await (this.prisma as any).schoolAlert.updateMany({
+      where: { schoolId: id, isActive: true },
+      data: { isActive: false, isDismissed: true },
+    }).catch(() => {});
+
+    // Create a new active critical alert representing the offline reason & theme
+    await (this.prisma as any).schoolAlert.create({
+      data: {
+        schoolId: id,
+        type,
+        title,
+        message: reason,
+        priority: 'CRITICAL',
+        actionType,
+        actionUrl,
+        expiresAt,
+        isActive: true,
+        createdBy: actor?.name || actor?.email || 'Super Admin',
+      },
+    }).catch((err: any) => console.error('Error creating school offline alert:', err));
+
+    await this.log(this.prisma, actor, 'SCHOOL_SUSPENDED', id, id, `Suspended ${school.name} [${type}]. Reason: ${reason}`);
     return updated;
   }
 
@@ -129,6 +184,13 @@ export class SchoolService {
       throw new ConflictException('Cannot activate this school until its subscription is active and unexpired');
     }
     const updated = await this.prisma.school.update({ where: { id }, data: { isActive: true } });
+
+    // Clear active offline/suspension alerts
+    await (this.prisma as any).schoolAlert.updateMany({
+      where: { schoolId: id, isActive: true },
+      data: { isActive: false, isDismissed: true },
+    }).catch(() => {});
+
     await this.log(this.prisma, actor, 'SCHOOL_ACTIVATED', id, id, `Activated ${school.name}${reason?.trim() ? `. Reason: ${reason.trim()}` : ''}`);
     return updated;
   }
@@ -142,7 +204,9 @@ export class SchoolService {
   }
 
   async extendExpiry(id: string, days: number, actor?: any) {
-    await this.findOne(id);
+    await this.syncExpiredSubscriptions();
+    const school = await this.prisma.school.findUnique({ where: { id }, select: { id: true, name: true } });
+    if (!school) throw new NotFoundException('School not found');
     const sub = await this.prisma.subscription.findUnique({ where: { schoolId: id } });
     if (!sub) throw new NotFoundException('Subscription not found');
     if (!Number.isInteger(days) || days < 1 || days > 3660) throw new ConflictException('Extension must be between 1 and 3660 days');
@@ -150,9 +214,12 @@ export class SchoolService {
     const now = new Date();
     const base = sub.endDate > now ? sub.endDate : now;
     const newEnd = new Date(base.getTime() + days * DAY_MS);
-    const nextStatus = sub.status === 'PENDING' ? 'PENDING' : 'ACTIVE';
-    const updated = await this.prisma.subscription.update({ where: { schoolId: id }, data: { endDate: newEnd, status: nextStatus } });
-    await this.log(this.prisma, actor, 'SUBSCRIPTION_EXTENDED', id, id, `Extended subscription by ${days} days`);
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.subscription.update({ where: { schoolId: id }, data: { endDate: newEnd, status: 'ACTIVE' } });
+      await tx.school.update({ where: { id }, data: { isActive: true } });
+      return next;
+    });
+    await this.log(this.prisma, actor, 'SUBSCRIPTION_EXTENDED', id, id, `Extended subscription by ${days} days until ${newEnd.toISOString()}`);
     return updated;
   }
 
@@ -188,9 +255,11 @@ export class SchoolService {
     if (normalized === 'forever') return new Date(FOREVER_DATE);
     const monthMatch = normalized.match(/(\d+)\s*month/);
     if (monthMatch) { const end = new Date(start); end.setMonth(end.getMonth() + Number(monthMatch[1])); return end; }
+    if (normalized === 'per month' || normalized === 'monthly' || normalized === 'month') { const end = new Date(start); end.setMonth(end.getMonth() + 1); return end; }
     const dayMatch = normalized.match(/(\d+)\s*day/);
     if (dayMatch) return new Date(start.getTime() + Number(dayMatch[1]) * DAY_MS);
     if (normalized.includes('year')) { const end = new Date(start); end.setFullYear(end.getFullYear() + Number(normalized.match(/\d+/)?.[0] || 1)); return end; }
+    if (normalized === 'free trial' || normalized === 'trial') return new Date(start.getTime() + 3 * DAY_MS);
     throw new ConflictException('Unsupported subscription period');
   }
 
@@ -200,6 +269,7 @@ export class SchoolService {
   }
 
   async getSuperAdminAnalytics() {
+    await this.syncExpiredSubscriptions();
     const now = new Date();
     const thirtyDaysLater = new Date(now.getTime() + 30 * DAY_MS);
     const [totalSchools, activeSchools, totalStudents, totalTeachers, allSubs, approvedPayments, pendingPayments] = await Promise.all([

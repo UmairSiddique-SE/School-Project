@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import StudentLMS from './StudentLMS';
+import StudentPortalPremium from './StudentPortalPremium';
 import { useAuth } from '@/context/AuthContext';
 
 export default function StudentPortal() {
@@ -12,5 +12,5 @@ export default function StudentPortal() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== 'STUDENT') return <Navigate to="/dashboard" replace />;
 
-  return <StudentLMS />;
+  return <StudentPortalPremium />;
 }

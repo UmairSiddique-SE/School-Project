@@ -44,8 +44,8 @@ export class SchoolController {
 
   @Patch(':id/suspend')
   @Roles('SUPER_ADMIN')
-  suspend(@Param('id') id: string, @Body() dto: { reason?: string }, @CurrentUser() user: any) {
-    return this.schoolService.suspend(id, user, dto.reason);
+  suspend(@Param('id') id: string, @Body() dto: any, @CurrentUser() user: any) {
+    return this.schoolService.suspend(id, user, dto);
   }
 
   @Patch(':id/activate')
