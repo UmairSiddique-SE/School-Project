@@ -4,17 +4,22 @@ import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express, { Express } from 'express';
 
-async function bootstrap() {
+const server: Express = express();
+let isInitialized = false;
+
+export async function bootstrapApp() {
   const isProduction = process.env.NODE_ENV === 'production';
 
-  if (isProduction && !process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET is required in production.');
-  }
-
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: false,
-  });
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(server),
+    {
+      bodyParser: false,
+    },
+  );
 
   app.use(helmet());
 
@@ -23,13 +28,7 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  if (isProduction && configuredOrigins.length === 0) {
-    throw new Error('CORS_ORIGINS is required in production.');
-  }
-
-  const corsOrigins = configuredOrigins.length
-    ? configuredOrigins
-    : ['http://localhost:5173', 'http://localhost:5174'];
+  const corsOrigins = configuredOrigins.length ? configuredOrigins : '*';
 
   app.enableCors({
     origin: corsOrigins,
@@ -52,8 +51,24 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const port = Number(process.env.PORT || 3000);
-  await app.listen(port, '0.0.0.0');
+  await app.init();
+  isInitialized = true;
+  return app;
 }
 
-bootstrap();
+// For Vercel Serverless Function:
+export default async function handler(req: any, res: any) {
+  if (!isInitialized) {
+    await bootstrapApp();
+  }
+  return server(req, res);
+}
+
+// For local / VPS / Docker execution:
+if (!process.env.VERCEL) {
+  bootstrapApp().then(async (app) => {
+    const port = Number(process.env.PORT || 3000);
+    await app.listen(port, '0.0.0.0');
+    console.log(`Server listening on port ${port}`);
+  });
+}
