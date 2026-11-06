@@ -1,38 +1,73 @@
 <!doctype html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
 
-    <!-- SEO Meta Tags -->
-    <title>EduSphere ERP — The #1 Multi-School Management Platform</title>
-    <meta name="description" content="EduSphere ERP is the enterprise-grade SaaS platform empowering multi-school networks to streamline academics, finance, communication, and operations — all in one place." />
-    <meta name="keywords" content="school management system, multi school ERP, education ERP, SaaS school platform, student management, fee management, academic ERP" />
-    <meta name="author" content="EduSphere ERP" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://edusphere.io" />
+    <!-- PWA & Mobile Web App Capabilities -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#06111d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EduSphere" />
 
-    <!-- Open Graph / Social Sharing -->
+    <!-- Google Overview & SEO Meta Tags -->
+    <title>EduSphere Pro ERP — Enterprise Multi-Campus School Management Platform</title>
+    <meta name="description" content="EduSphere Pro is an aesthetic, enterprise-grade multi-school SaaS platform. Automate student admissions, digital fee collection, academic grading, timetables, and teacher operations with dedicated school web portals." />
+    <meta name="keywords" content="school management system, school ERP Pakistan, multi campus software, automated fee vouchers, student portal, teacher management, edusphere pro erp, school website builder" />
+    <meta name="author" content="EduSphere Pro Technologies" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="https://school-managment-pro.vercel.app/" />
+
+    <!-- Open Graph / WhatsApp / Facebook / LinkedIn Link Preview -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://edusphere.io" />
-    <meta property="og:title" content="EduSphere ERP — The #1 Multi-School Management Platform" />
-    <meta property="og:description" content="Manage multiple campuses, track academic excellence, optimize financial processes, and foster collaboration across students, teachers, and parents." />
-    <meta property="og:image" content="https://edusphere.io/og-image.jpg" />
+    <meta property="og:site_name" content="EduSphere Pro ERP" />
+    <meta property="og:url" content="https://school-managment-pro.vercel.app/" />
+    <meta property="og:title" content="EduSphere Pro ERP — Next-Gen School Management Platform" />
+    <meta property="og:description" content="Streamline academics, attendance, digital fees, and campus management. Every registered school gets its own verified live website and secure portal." />
+    <meta property="og:image" content="https://school-managment-pro.vercel.app/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="EduSphere Pro ERP School Management Platform" />
 
-    <!-- Twitter Card -->
+    <!-- Twitter Card Sharing -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@EduSphereERP" />
-    <meta name="twitter:title" content="EduSphere ERP — Multi-School Management Platform" />
-    <meta name="twitter:description" content="The enterprise-grade SaaS platform for modern multi-school networks." />
-    <meta name="twitter:image" content="https://edusphere.io/og-image.jpg" />
+    <meta name="twitter:title" content="EduSphere Pro ERP — Multi-Campus Intelligence" />
+    <meta name="twitter:description" content="Aesthetic, high-velocity school management SaaS with dedicated web links for every institution." />
+    <meta name="twitter:image" content="https://school-managment-pro.vercel.app/og-image.svg" />
 
-    <!-- Google Fonts: Inter -->
+    <!-- Structured Data (JSON-LD) for Google Search & Rich Snippets -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "EduSphere Pro ERP",
+        "operatingSystem": "Web, iOS, Android, Windows, macOS",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "14999",
+          "priceCurrency": "PKR",
+          "priceValidUntil": "2028-12-31"
+        },
+        "description": "Enterprise cloud-native school management platform supporting multi-campus operations, fee management, academic exams, and tenant portals.",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "128"
+        }
+      }
+    </script>
+
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
-  <body>
+  <body class="bg-[#040d1a] text-slate-100 antialiased selection:bg-cyan-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

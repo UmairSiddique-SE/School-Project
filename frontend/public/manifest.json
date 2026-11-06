@@ -1,0 +1,24 @@
+{
+  "name": "EduSphere Pro ERP — School Management SaaS",
+  "short_name": "EduSphere",
+  "description": "Enterprise-grade multi-campus school management platform for academics, finance, student and staff tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06111d",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+
