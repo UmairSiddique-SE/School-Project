@@ -332,6 +332,152 @@ export default function Finance() {
     toast.success('Finance statement exported successfully');
   };
 
+  const printBankChallan = (payment: FeePayment) => {
+    const popup = window.open('', '_blank', 'width=1100,height=750');
+    if (!popup) {
+      toast.error('Please allow pop-ups to print the bank fee challan.');
+      return;
+    }
+
+    const schoolName = user?.schoolName || 'EduSphere Model School';
+    const admNo = payment.student?.admissionNo || 'ADM-2026';
+    const studentName = payment.student?.name || 'Student Name';
+    const className = payment.student?.class?.name || payment.student?.section?.class?.name || 'Class 10';
+    const sectionName = payment.student?.section?.name || 'A';
+    const challanNo = payment.receiptNo || 'CH-2026-001';
+    const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' });
+    const dueDate = payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : '10th of Month';
+    const feeName = payment.feeStructure?.name || 'Tuition & Academic Fee';
+    const amount = Number(payment.amount || 0);
+    const discount = Number(payment.discount || 0);
+    const fine = Number(payment.fine || 0);
+    const totalPaid = Number(payment.totalPaid || 0);
+    const netPayable = Math.max(0, amount - discount + fine);
+    const status = payment.status;
+
+    const copyTypes = ['BANK COPY', 'SCHOOL ACCOUNTS COPY', 'STUDENT / PARENT COPY'];
+
+    const slipHtml = (type: string) => `
+      <div style="flex: 1; border: 1.5px dashed #64748b; padding: 14px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; background: #fff; min-width: 0;">
+        <div style="text-align: center; border-bottom: 2px solid #0891b2; padding-bottom: 8px; margin-bottom: 8px;">
+          <div style="font-size: 9px; font-weight: 800; color: #0891b2; letter-spacing: 1px; text-transform: uppercase;">Habib Bank Limited / Meezan Bank</div>
+          <div style="font-size: 13px; font-weight: 900; color: #0f172a; margin-top: 2px;">${schoolName}</div>
+          <div style="font-size: 9px; color: #64748b;">A/C Title: ${schoolName} Collection | A/C: 0142-7901-2345-03</div>
+          <div style="display: inline-block; background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 4px; margin-top: 4px; text-transform: uppercase;">
+            ${type}
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 10px;">
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Challan No:</td>
+            <td style="font-weight: 800; font-family: monospace; text-align: right; color: #0f172a;">${challanNo}</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Issue Date:</td>
+            <td style="font-weight: 700; text-align: right;">${issueDate}</td>
+          </tr>
+          <tr>
+            <td style="color: #e11d48; font-weight: 700;">Due Date:</td>
+            <td style="font-weight: 800; color: #e11d48; text-align: right;">${dueDate}</td>
+          </tr>
+        </table>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 10px; font-size: 10px;">
+          <div><span style="color: #64748b;">Student:</span> <strong>${studentName}</strong></div>
+          <div style="margin-top: 2px;"><span style="color: #64748b;">Adm No:</span> <strong style="font-family: monospace;">${admNo}</strong></div>
+          <div style="margin-top: 2px;"><span style="color: #64748b;">Class & Sec:</span> <strong>${className} - ${sectionName}</strong></div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10px;">
+          <thead>
+            <tr style="border-bottom: 1.5px solid #cbd5e1; background: #f1f5f9;">
+              <th style="text-align: left; padding: 4px;">Particulars</th>
+              <th style="text-align: right; padding: 4px;">Amount (PKR)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 4px 0; border-bottom: 1px solid #f1f5f9;">${feeName}</td>
+              <td style="text-align: right; padding: 4px 0; font-weight: 600;">${amount.toLocaleString()}</td>
+            </tr>
+            ${discount > 0 ? `
+            <tr style="color: #059669;">
+              <td style="padding: 3px 0; border-bottom: 1px solid #f1f5f9;">Scholarship / Concession</td>
+              <td style="text-align: right; padding: 3px 0; font-weight: 600;">- ${discount.toLocaleString()}</td>
+            </tr>` : ''}
+            ${fine > 0 ? `
+            <tr style="color: #dc2626;">
+              <td style="padding: 3px 0; border-bottom: 1px solid #f1f5f9;">Late Payment Surcharge</td>
+              <td style="text-align: right; padding: 3px 0; font-weight: 600;">+ ${fine.toLocaleString()}</td>
+            </tr>` : ''}
+            <tr style="border-top: 1.5px solid #0f172a; font-weight: 800; font-size: 11px;">
+              <td style="padding: 6px 0;">Total Payable</td>
+              <td style="text-align: right; padding: 6px 0; color: #0f172a;">PKR ${netPayable.toLocaleString()}</td>
+            </tr>
+            <tr style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 10px;">
+              <td style="padding: 4px;">Amount Paid (${status})</td>
+              <td style="text-align: right; padding: 4px;">PKR ${totalPaid.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="font-size: 8px; color: #64748b; line-height: 1.3; margin-bottom: 16px;">
+          • Payment accepted at any online banking app or bank counter.<br/>
+          • Late surcharge applied strictly after due date.<br/>
+          • Fee once paid is non-refundable and non-transferable.
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; padding-top: 12px; border-top: 1px solid #cbd5e1; font-size: 9px; color: #475569;">
+          <div style="text-align: center; width: 45%;">
+            <div style="border-top: 1px solid #94a3b8; padding-top: 4px;">Depositor Signature</div>
+          </div>
+          <div style="text-align: center; width: 45%;">
+            <div style="border-top: 1px solid #94a3b8; padding-top: 4px;">Bank Officer / Cashier</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Fee Challan - ${challanNo} - ${studentName}</title>
+        <style>
+          @page { size: landscape; margin: 8mm; }
+          * { box-sizing: border-box; }
+          body { margin: 0; padding: 12px; background: #fff; }
+          .challan-container { display: flex; gap: 12px; max-width: 100%; height: auto; }
+          @media print {
+            body { padding: 0; }
+            button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;" class="no-print">
+          <span style="font-family: sans-serif; font-size: 12px; color: #475569;">
+            Standard 3-Part Bank Challan for <strong>${studentName}</strong> (${admNo})
+          </span>
+          <button onclick="window.print()" style="padding: 6px 16px; background: #0891b2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">
+            🖨️ Print / Save as PDF
+          </button>
+        </div>
+        <div class="challan-container">
+          ${copyTypes.map(slipHtml).join('')}
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    popup.document.close();
+  };
+
   return (
     <div className="space-y-6 max-w-screen-2xl mx-auto pb-16">
       {/* ─── Top Banner ────────────────────────────────────────────────────────── */}
@@ -1342,10 +1488,10 @@ export default function Finance() {
               </span>
               <div className="flex gap-2">
                 <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl border border-border text-xs font-bold flex items-center gap-1.5 hover:bg-accent transition-all"
+                  onClick={() => printBankChallan(details)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-all shadow-sm"
                 >
-                  <Printer size={14} /> Print Receipt
+                  <Printer size={14} /> Print 3-Part Bank Challan
                 </button>
                 <button
                   onClick={() => setDetails(null)}
