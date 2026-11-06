@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "es2023",
+    "target": "ES2022",
     "lib": [
-      "ES2023",
-      "DOM"
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
     ],
-    "module": "esnext",
+    "module": "ESNext",
     "types": [
       "vite/client"
     ],
@@ -22,10 +23,7 @@
     /* Linting */
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".", 
     "paths": {
       "@/*": [
         "./src/*"
