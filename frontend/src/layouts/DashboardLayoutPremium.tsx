@@ -80,8 +80,8 @@ export const DashboardLayoutPremium: React.FC = () => {
     <motion.aside animate={{ width: collapsed ? 78 : 272 }} transition={{ duration: .2 }} className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-slate-200 bg-white shadow-md md:static md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-3">
         <button onClick={() => go(home)} className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white shadow-md"><School size={18} strokeWidth={2.5} /></span>
-          {!collapsed && <span className="text-left"><span className="block text-[15px] font-black tracking-tight">EduSphere</span><span className="block text-[10px] text-muted-foreground">School ERP</span></span>}
+          <img src="/logo.svg" alt="EduSphere" className="h-9 w-9 rounded-xl shadow-md shrink-0" />
+          {!collapsed && <span className="text-left"><span className="block text-[15px] font-black tracking-tight text-slate-900">EduSphere</span><span className="block text-[10px] text-muted-foreground font-semibold">ERP System</span></span>}
         </button>
         <button onClick={() => setCollapsed((value) => !value)} className="hidden h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-accent md:flex">{collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}</button>
         <button onClick={() => setMobileOpen(false)} className="rounded-lg p-2 hover:bg-accent md:hidden"><X size={18} /></button>
