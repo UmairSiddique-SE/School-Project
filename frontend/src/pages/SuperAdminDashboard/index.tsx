@@ -1,4 +1,31 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Component, ErrorInfo, ReactNode } from "react";
+
+// Error Boundary to prevent white screen crashes
+class SectionErrorBoundary extends Component<{ children: ReactNode; name: string }, { hasError: boolean; error: string }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: "" };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message };
+  }
+  componentDidCatch(error: Error, _info: ErrorInfo) {
+    console.error(`Section "${this.props.name}" crashed:`, error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center">
+          <div className="text-4xl">⚠️</div>
+          <h3 className="text-base font-black text-rose-700">Section Error</h3>
+          <p className="max-w-md text-sm text-rose-600">{this.state.error || "An unexpected error occurred in this section."}</p>
+          <button onClick={() => this.setState({ hasError: false, error: "" })} className="mt-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700">Retry</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutDashboard, School, FileText, CreditCard, BarChart2, Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight, LogOut, Clock, Zap, LifeBuoy, Megaphone, Sun, Moon, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +137,7 @@ export default function SuperAdminDashboard() {
         <div className="flex min-w-0 flex-1 items-center gap-2"><Shield size={14} className="shrink-0 text-primary" /><span className="hidden text-xs font-semibold text-muted-foreground sm:inline">Super Admin Console</span><ChevronRight size={12} className="hidden text-muted-foreground/50 sm:inline" />{activeItem && <><activeItem.icon size={15} className="shrink-0 text-primary" /><h1 className="truncate text-sm font-black text-foreground">{activeItem.label}</h1></>}</div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">{activeSection === "payments" && <button onClick={() => setManualPaymentOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-black text-primary-foreground shadow-sm"><Plus size={14} /> <span className="hidden sm:inline">Add Payment</span></button>}<div className="hidden items-center gap-1.5 rounded-lg bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground md:flex"><Clock size={12} className="text-primary" /><LiveClock /></div><button onClick={toggleTheme} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-xs font-bold text-foreground shadow-sm transition-all hover:bg-accent" title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}<span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span></button><button onClick={() => handleNav("notifications")} className="relative rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Notifications"><Bell size={16} />{(badgeCounts.pendingSchoolRequests + badgeCounts.pendingPayments) > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />}</button><button onClick={() => handleNav("profile")} className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-black text-white shadow-md shadow-violet-500/20" title="My Profile" aria-label="My Profile">{initials}</button></div>
       </header>
-      <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"><div className="mx-auto max-w-[1800px] p-4 sm:p-6"><AnimatePresence mode="wait"><motion.div key={activeSection} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}><ActiveComponent /></motion.div></AnimatePresence></div></main>
+      <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"><div className="mx-auto max-w-[1800px] p-4 sm:p-6"><AnimatePresence mode="wait"><motion.div key={activeSection} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}><SectionErrorBoundary name={activeSection}><ActiveComponent /></SectionErrorBoundary></motion.div></AnimatePresence></div></main>
     </div>
     <ManualPaymentDialog open={manualPaymentOpen} onClose={() => setManualPaymentOpen(false)} onSaved={() => window.location.reload()} />
   </div>;
