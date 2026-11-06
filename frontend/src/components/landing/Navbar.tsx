@@ -146,3 +146,4 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     </nav>
   );
 };
+

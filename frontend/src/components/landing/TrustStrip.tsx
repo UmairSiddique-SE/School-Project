@@ -55,3 +55,4 @@ export const TrustStrip: React.FC = () => {
     </section>
   );
 };
+

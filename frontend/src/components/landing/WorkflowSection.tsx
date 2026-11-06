@@ -69,3 +69,4 @@ export const WorkflowSection: React.FC = () => {
     </section>
   );
 };
+
