@@ -1,66 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowRight,
-  School,
-  Search,
-  Sparkles,
-  ShieldCheck,
-  GraduationCap,
-  Users,
-  WalletCards,
-  CheckCircle2,
-  Calendar,
-  Layers,
-  Activity,
-  MapPin,
-  ExternalLink,
-  Phone,
-  Mail,
-  Award,
-  BookOpen,
-  Check,
-  ChevronDown,
-  Globe,
-  Star,
-  Zap,
-  Menu,
-  X,
-  Building2,
-  Lock,
-  BarChart3,
-  CheckSquare,
-  Clock,
-  ChevronRight,
-  HelpCircle,
-  FileSpreadsheet,
-  Compass,
-  ArrowUpRight,
-  Smartphone,
-  Eye,
-  CreditCard,
-  UserCheck,
-  Laptop,
+  ArrowRight, ArrowUpRight, Sparkles, ShieldCheck, GraduationCap, Users,
+  WalletCards, CheckCircle2, CalendarDays, BookOpen, Menu, X, Search,
+  ChevronDown, BarChart3, ClipboardCheck, Bus, Library, Globe2, LockKeyhole,
+  LayoutDashboard, CreditCard, BellRing, ChartNoAxesCombined, School,
+  UserRoundCheck, Clock3, Layers3, MonitorSmartphone, Star, Check
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
 import SchoolSearchModal from "@/component/SchoolSearchModal";
-
-interface RegisteredSchool {
-  id: string;
-  name: string;
-  slug: string;
-  city?: string | null;
-  address?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  logoUrl?: string | null;
-  website?: string | null;
-  isActive: boolean;
-  studentCount?: number;
-  teacherCount?: number;
-  classCount?: number;
-}
 
 interface PublicPlan {
   id: string;
@@ -75,1332 +24,305 @@ interface PublicPlan {
   features: string[];
 }
 
+const modules = [
+  { icon: GraduationCap, title: "Student management", desc: "Admissions, student profiles, guardians, class placement and complete academic history.", tone: "blue", tag: "Admissions to alumni" },
+  { icon: ClipboardCheck, title: "Attendance", desc: "Daily class-wise attendance, leave tracking, summaries and printable registers.", tone: "violet", tag: "Daily operations" },
+  { icon: WalletCards, title: "Fee & finance", desc: "Fee structures, monthly vouchers, payment records, dues and financial reports.", tone: "emerald", tag: "Accounts & collection" },
+  { icon: BookOpen, title: "Exams & results", desc: "Exam schedules, subject marks, grading, report cards and DMC generation.", tone: "amber", tag: "Academic performance" },
+  { icon: CalendarDays, title: "Timetable & classes", desc: "Organise classes, sections, subjects, teacher assignments and daily schedules.", tone: "cyan", tag: "Academic planning" },
+  { icon: Users, title: "Staff & HR", desc: "Teacher and staff records, roles, departments and staff-related operations.", tone: "rose", tag: "People management" },
+  { icon: Bus, title: "Transport", desc: "Manage routes, vehicles and transport-related student information.", tone: "blue", tag: "Campus movement" },
+  { icon: Library, title: "Library & resources", desc: "Keep learning resources and library operations organised in one place.", tone: "violet", tag: "Learning resources" },
+  { icon: BarChart3, title: "Reports & insights", desc: "Review academic, attendance and financial information with structured reports.", tone: "emerald", tag: "School intelligence" },
+];
+
+const previewTabs = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard, heading: "A clearer picture of your school day", detail: "Bring essential school activity into one organised workspace.", stats: [["Students", "1,248", "Sample records"], ["Attendance", "94.8%", "Sample daily view"], ["Fee collection", "PKR 8.4M", "Sample ledger"], ["Classes", "36", "Sample setup"]] },
+  { id: "students", label: "Students", icon: GraduationCap, heading: "Every student record, organised", detail: "Explore how admissions, guardian information and class placement fit together.", stats: [["Admissions", "128", "Illustrative"], ["Active classes", "36", "Illustrative"], ["Guardians", "1,096", "Illustrative"], ["Profiles", "1,248", "Illustrative"]] },
+  { id: "attendance", label: "Attendance", icon: ClipboardCheck, heading: "Attendance without paper registers", detail: "A sample view of daily attendance, class summaries and absence tracking.", stats: [["Present", "1,182", "Sample day"], ["Absent", "42", "Sample day"], ["On leave", "24", "Sample day"], ["Attendance", "94.8%", "Sample day"]] },
+  { id: "fees", label: "Fees", icon: WalletCards, heading: "Fee records that stay in order", detail: "Review sample fee collection, outstanding dues and voucher workflows.", stats: [["Collected", "PKR 8.4M", "Sample month"], ["Outstanding", "PKR 1.2M", "Sample month"], ["Vouchers", "1,248", "Sample batch"], ["Paid", "87%", "Sample month"]] },
+  { id: "exams", label: "Exams", icon: BookOpen, heading: "From marks entry to report cards", detail: "A sample examination workspace for schedules, subject marks and results.", stats: [["Exams", "03", "Sample session"], ["Subjects", "12", "Sample setup"], ["Results", "Ready", "Preview state"], ["DMC", "PDF", "Preview output"]] },
+];
+
+const faqs = [
+  { q: "What is SchoolOS?", a: "SchoolOS is a multi-school management platform that brings student records, attendance, fees, examinations, staff and daily school operations into one workspace." },
+  { q: "Can any school register itself?", a: "A school can submit its registration application. The SchoolOS Super Admin reviews the application before the school workspace is activated." },
+  { q: "When can we start using the system?", a: "After your school application is reviewed and approved, your administrator can access the school workspace and begin setup." },
+  { q: "Can teachers, parents and students have separate access?", a: "SchoolOS is designed with role-based access and separate workflows for school administrators, teachers, students and parents, where enabled for the school." },
+  { q: "Are the dashboard numbers on this page real customer records?", a: "No. Numbers shown inside product mockups are illustrative sample data used to demonstrate the interface. They are not live customer or database totals." },
+];
+
+const toneClasses: Record<string, string> = {
+  blue: "bg-blue-50 text-blue-600 ring-blue-100",
+  violet: "bg-violet-50 text-violet-600 ring-violet-100",
+  emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+  amber: "bg-amber-50 text-amber-600 ring-amber-100",
+  cyan: "bg-cyan-50 text-cyan-600 ring-cyan-100",
+  rose: "bg-rose-50 text-rose-600 ring-rose-100",
+};
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"students" | "attendance" | "fees" | "exams" | "reports">("students");
+  const [activeTab, setActiveTab] = useState("overview");
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
-  const [schools, setSchools] = useState<RegisteredSchool[]>([]);
   const [plans, setPlans] = useState<PublicPlan[]>([]);
-  const [loadingSchools, setLoadingSchools] = useState(true);
   const [loadingPlans, setLoadingPlans] = useState(true);
 
-  // Fetch real registered schools and plans from backend
   useEffect(() => {
-    apiClient
-      .get<RegisteredSchool[]>("/public/schools")
-      .then((res) => setSchools(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setSchools([]))
-      .finally(() => setLoadingSchools(false));
-
-    apiClient
-      .get<PublicPlan[]>("/public/plans")
+    apiClient.get<PublicPlan[]>("/public/plans")
       .then((res) => setPlans(Array.isArray(res.data) ? res.data : []))
       .catch(() => setPlans([]))
       .finally(() => setLoadingPlans(false));
   }, []);
 
+  const monthlyPlan = plans.find((plan) => plan.planKey === "PROFESSIONAL" && plan.price === 3000)
+    || plans.find((plan) => plan.price > 0);
+
   const handlePlanSelect = (planKey: string) => {
     sessionStorage.setItem("edusphere_registration_plan", planKey);
-    navigate(`/register-school/form?plan=${encodeURIComponent(planKey)}`);
+    navigate("/register-school/form?plan=" + encodeURIComponent(planKey));
   };
 
-  const monthlyPlan = plans.find((plan) => plan.planKey === "PROFESSIONAL" && plan.price === 3000);
-
-  const faqs = [
-    { q: "What is SchoolOS?", a: "SchoolOS is a school management platform designed to bring essential administrative and academic workflows into one organised system." },
-    { q: "How does school registration work?", a: "Submit your school's details and administrator information. The application is reviewed by the Super Admin. Access is provided after approval." },
-    { q: "How much does SchoolOS cost?", a: "The public SchoolOS subscription is PKR 3,000 per month. The plan details and applicable limits are shown during registration." },
-    { q: "Can any school start using the platform immediately?", a: "No. Each school must submit an application and wait for Super Admin approval before its school account is activated." },
-    { q: "How do I access my school after approval?", a: "After approval, use the school login page and the credentials created during registration to access your school workspace." },
-  ];
+  const selectedPreview = previewTabs.find((tab) => tab.id === activeTab) || previewTabs[0];
 
   return (
-    <div className="min-h-screen bg-white text-[#14213D] font-sans selection:bg-[#3563EB] selection:text-white overflow-x-hidden">
-      {/* ── Subtle Background Mesh Layer ── */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-gradient-to-b from-[#EEF4FF] via-[#F5F8FF] to-transparent rounded-full blur-3xl opacity-75" />
-        <div className="absolute top-[35%] -right-48 w-[600px] h-[600px] bg-gradient-to-bl from-[#E0E7FF]/60 via-[#F5F3FF]/40 to-transparent rounded-full blur-3xl opacity-60" />
-        <div className="absolute top-[65%] -left-48 w-[600px] h-[600px] bg-gradient-to-tr from-[#E0F2FE]/60 via-[#EEF2FF]/40 to-transparent rounded-full blur-3xl opacity-60" />
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f030_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f030_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_70%,transparent_100%)]" />
+    <div className="min-h-screen overflow-x-hidden bg-[#F8FAFF] font-sans text-[#101B36] selection:bg-blue-600 selection:text-white">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-48 left-[38%] h-[620px] w-[620px] rounded-full bg-blue-200/35 blur-[110px]" />
+        <div className="absolute right-[-180px] top-[34%] h-[540px] w-[540px] rounded-full bg-violet-200/30 blur-[110px]" />
+        <div className="absolute bottom-[-180px] left-[-160px] h-[520px] w-[520px] rounded-full bg-cyan-100/60 blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.22] [background-image:linear-gradient(rgba(100,116,139,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(100,116,139,.12)_1px,transparent_1px)] [background-size:54px_54px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]" />
       </div>
 
-      {/* ── 1. Sticky Commercial Light Navbar ── */}
-      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 transition-all duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#3563EB] via-[#4F46E5] to-[#8257E8] p-[1.5px] shadow-md shadow-blue-500/15 group-hover:scale-105 transition-transform duration-200">
-              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
-                <img src="/logo.svg" alt="SchoolOS ERP" className="w-7 h-7" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-[#14213D]">
-                  SchoolOS
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200/80">
-                  ERP SaaS
-                </span>
-              </div>
-              <p className="text-[11px] font-semibold text-[#66738A]">
-                School Management System
-              </p>
-            </div>
+      <header className="sticky top-0 z-50 border-b border-white/70 bg-white/75 shadow-[0_8px_30px_rgba(15,23,42,.04)] backdrop-blur-2xl">
+        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="group flex items-center gap-3">
+            <span className="relative flex h-11 w-11 items-center justify-center rounded-[16px] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 shadow-lg shadow-blue-600/20 transition-transform group-hover:-rotate-3 group-hover:scale-105">
+              <img src="/logo.svg" alt="SchoolOS" className="h-7 w-7 brightness-0 invert" />
+              <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-cyan-300" />
+            </span>
+            <span>
+              <span className="block text-[21px] font-black leading-none tracking-tight text-[#111B36]">SchoolOS</span>
+              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[.19em] text-slate-500">School operating system</span>
+            </span>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-[14px] font-semibold text-[#475569]">
-            <a href="#platform" className="hover:text-[#3563EB] transition-colors">
-              Platform
-            </a>
-            <a href="#features" className="hover:text-[#3563EB] transition-colors">
-              Features
-            </a>
-            <a href="#preview" className="hover:text-[#3563EB] transition-colors">
-              Product Tour
-            </a>
-            <a href="#campuses" className="hover:text-[#3563EB] transition-colors">
-              Campuses
-            </a>
-            <a href="#pricing" className="hover:text-[#3563EB] transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="hover:text-[#3563EB] transition-colors">
-              FAQ
-            </a>
+          <nav className="hidden items-center gap-7 text-[13px] font-semibold text-slate-600 lg:flex">
+            <a href="#platform" className="transition hover:text-blue-600">Platform</a>
+            <a href="#features" className="transition hover:text-blue-600">Features</a>
+            <a href="#preview" className="transition hover:text-blue-600">Product tour</a>
+            <a href="#process" className="transition hover:text-blue-600">How it works</a>
+            <a href="#pricing" className="transition hover:text-blue-600">Pricing</a>
           </nav>
 
-          {/* Desktop Right CTAs */}
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#66738A] hover:text-[#14213D] hover:bg-slate-100/80 border border-slate-200 transition"
-              title="Find Registered School"
-            >
-              <Search size={14} className="text-[#3563EB]" />
-              <span>Find School</span>
+          <div className="hidden items-center gap-2.5 md:flex">
+            <button onClick={() => setSearchOpen(true)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
+              <Search size={15} /> Find school
             </button>
-            <Link
-              to="/school-login"
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#14213D] hover:text-[#3563EB] hover:bg-blue-50/80 transition"
-            >
-              School Login
-            </Link>
-            <Link
-              to="/register-school/plans"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] text-white text-xs font-bold shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 hover:brightness-105 transition-all duration-150 active:scale-95"
-            >
-              <span>Register Your School</span>
-              <ArrowRight size={13} />
+            <Link to="/school-login" className="rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700">Sign in</Link>
+            <Link to="/register-school/plans" className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">
+              Register your school <ArrowUpRight size={15} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
-            >
-              <Search size={18} />
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-700 hover:text-slate-950 rounded-lg hover:bg-slate-100"
-            >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 md:hidden" aria-label="Toggle navigation">
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
-
-        {/* Mobile Dropdown Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden border-b border-slate-200 bg-white px-6 py-5 space-y-4 shadow-xl"
-            >
-              <div className="flex flex-col gap-3 font-semibold text-sm text-slate-700">
-                <a
-                  href="#platform"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  Platform
-                </a>
-                <a
-                  href="#features"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  Features
-                </a>
-                <a
-                  href="#preview"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  Product Tour
-                </a>
-                <a
-                  href="#campuses"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  Campuses
-                </a>
-                <a
-                  href="#pricing"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  Pricing
-                </a>
-                <a
-                  href="#faq"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-1 hover:text-[#3563EB]"
-                >
-                  FAQ
-                </a>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
-                <Link
-                  to="/school-login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 text-center rounded-xl border border-slate-200 text-sm font-bold text-slate-800"
-                >
-                  School Portal Login
-                </Link>
-                <Link
-                  to="/register-school/plans"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 text-center rounded-xl bg-gradient-to-r from-[#3563EB] to-[#8257E8] text-white text-sm font-bold shadow-md shadow-blue-500/20"
-                >
-                  Register Your School
-                </Link>
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden border-t border-slate-100 bg-white px-5 py-5 md:hidden">
+              <div className="flex flex-col gap-4 text-sm font-semibold text-slate-700">
+                {["Platform", "Features", "Product tour", "How it works", "Pricing"].map((item) => <a key={item} href={"#" + (item === "Product tour" ? "preview" : item === "How it works" ? "process" : item.toLowerCase())} onClick={() => setMobileMenuOpen(false)}>{item}</a>)}
+                <Link to="/school-login" onClick={() => setMobileMenuOpen(false)}>School login</Link>
+                <Link to="/register-school/plans" onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-blue-600 px-4 py-3 text-center text-white">Register your school</Link>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
 
-      {/* ── 2. HERO SECTION — Two-Column Commercial Light SaaS ── */}
-      <section className="relative z-10 pt-12 pb-20 lg:pt-16 lg:pb-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* LEFT COLUMN: Strategic Selling Proposition */}
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="lg:col-span-6 space-y-6 text-center lg:text-left"
-            >
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EEF4FF] border border-[#BFDBFE] text-[#3563EB] text-xs font-bold tracking-wide">
-                <Sparkles size={14} className="text-[#3563EB]" />
-                <span>School Management for Growing Schools</span>
+      <main className="relative z-10">
+        <section className="relative px-4 pb-24 pt-14 sm:px-6 sm:pt-20 lg:px-8 lg:pb-32 lg:pt-24">
+          <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-[.92fr_1.08fr]">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65 }} className="relative z-10 text-center lg:text-left">
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-white/80 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[.13em] text-blue-700 shadow-sm shadow-blue-900/5 backdrop-blur">
+                <Sparkles size={14} className="text-violet-600" /> One workspace. Every school operation.
               </div>
-
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#14213D] tracking-tight leading-[1.12]">
-                Bring Your School Operations{" "}
-                <span className="bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] bg-clip-text text-transparent">
-                  Together in One Place.
-                </span>
+              <h1 className="text-[43px] font-black leading-[1.06] tracking-[-.055em] text-[#111B36] sm:text-6xl lg:text-[68px]">
+                Run your school
+                <span className="mt-1 block bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text pb-2 text-transparent">with clarity.</span>
+                <span className="block text-[34px] leading-tight tracking-[-.045em] text-slate-700 sm:text-5xl lg:text-[53px]">Teach more. Manage less.</span>
               </h1>
-
-              {/* Supporting Subtitle */}
-              <p className="text-lg sm:text-xl text-[#66738A] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
-                Manage your school’s essential records, attendance, fees and academic workflows from one organised platform.
+              <p className="mx-auto mt-7 max-w-xl text-base leading-8 text-slate-600 sm:text-lg lg:mx-0">
+                A connected school management platform for admissions, attendance, fees, examinations, staff and parent communication — designed to make everyday school work feel simpler.
               </p>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
-                <Link
-                  to="/register-school/plans"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] text-white text-base font-bold shadow-xl shadow-blue-600/25 hover:shadow-2xl hover:shadow-blue-600/35 hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  <span>Register Your School</span>
-                  <ArrowRight size={18} />
+              <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+                <Link to="/register-school/plans" className="group flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-7 py-4 text-sm font-extrabold text-white shadow-[0_16px_35px_rgba(79,70,229,.25)] transition hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(79,70,229,.32)]">
+                  Get started <ArrowRight size={17} className="transition group-hover:translate-x-1" />
                 </Link>
-                <a
-                  href="#preview"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-white border border-slate-200 text-[#14213D] text-base font-bold hover:bg-[#F5F8FF] hover:border-blue-200 transition-all duration-200 shadow-sm"
-                >
-                  <span>Explore Platform</span>
-                  <ChevronDown size={18} className="text-[#66738A]" />
+                <a href="#preview" className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/85 px-7 py-4 text-sm font-bold text-slate-700 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:text-blue-700">
+                  Explore the platform <ChevronDown size={17} />
                 </a>
               </div>
-
-              {/* Trust Micro-Badge */}
-              <div className="pt-3 flex items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-[#66738A]">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
-                  Guided Onboarding
-                </span>
-                <span className="w-1 h-1 rounded-full bg-slate-300" />
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
-                  Role-Based Security
-                </span>
-                <span className="w-1 h-1 rounded-full bg-slate-300" />
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
-                  School Approval Required
-                </span>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-[11px] font-bold text-slate-500 lg:justify-start">
+                <span className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-emerald-500" /> Role-based access</span>
+                <span className="flex items-center gap-1.5"><LockKeyhole size={14} className="text-blue-500" /> School data separation</span>
+                <span className="flex items-center gap-1.5"><UserRoundCheck size={15} className="text-violet-500" /> Approval-led onboarding</span>
               </div>
             </motion.div>
 
-            {/* RIGHT COLUMN: Realistic Light-Mode School ERP Dashboard Preview */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
-              className="lg:col-span-6 relative"
-            >
-              {/* Decorative back-layer glow */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-[#3563EB]/15 via-[#8257E8]/15 to-[#43C7DF]/15 rounded-[—px] blur-2xl" />
-
-              {/* Main Dashboard Window Mockup */}
-              <div className="relative rounded-3xl border border-slate-200/90 bg-white shadow-2xl shadow-blue-900/10 overflow-hidden">
-                {/* Window Title Bar */}
-                <div className="bg-[#F8FAFC] border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-rose-400" />
-                    <div className="w-3 h-3 rounded-full bg-amber-400" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                    <span className="ml-2 text-[11px] font-bold text-slate-500 font-mono">
-                      SchoolOS • Dashboard Preview
-                    </span>
+            <motion.div initial={{ opacity: 0, scale: .94, y: 28 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: .8, delay: .12 }} className="relative mx-auto w-full max-w-[680px]">
+              <div className="absolute -inset-8 rounded-[44px] bg-gradient-to-br from-blue-300/40 via-violet-300/35 to-cyan-200/45 blur-3xl" />
+              <div className="absolute -right-2 top-4 h-28 w-28 rounded-full border border-white/80 bg-gradient-to-br from-violet-200/70 to-blue-200/30 blur-[1px] lg:-right-8" />
+              <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-gradient-to-br from-cyan-200/60 to-blue-200/30 blur-2xl" />
+              <div className="relative rounded-[30px] border border-white/90 bg-white/75 p-2.5 shadow-[0_35px_90px_rgba(30,64,175,.18)] backdrop-blur-2xl sm:rounded-[36px] sm:p-3.5">
+                <div className="overflow-hidden rounded-[23px] border border-slate-200/80 bg-[#F7F9FE] sm:rounded-[29px]">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 py-3.5 sm:px-5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-rose-400" /><i className="h-2.5 w-2.5 rounded-full bg-amber-400" /><i className="h-2.5 w-2.5 rounded-full bg-emerald-400" /></div>
+                      <span className="ml-2 text-[10px] font-bold tracking-wide text-slate-500">SCHOOLOS / OVERVIEW</span>
+                    </div>
+                    <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-blue-700">Sample dashboard</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Illustrative UI Preview
-                  </div>
-                </div>
-
-                {/* Dashboard Inner App Canvas */}
-                <div className="p-5 space-y-4 bg-gradient-to-b from-white to-[#F8FAFC]">
-                  {/* Top Header inside preview */}
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3563EB] to-[#8257E8] text-white flex items-center justify-center font-black text-sm">
-                        U
+                  <div className="grid grid-cols-[58px_1fr] sm:grid-cols-[70px_1fr]">
+                    <aside className="flex flex-col items-center gap-5 border-r border-slate-200/80 bg-white/75 py-5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white"><School size={17} /></div>
+                      {[LayoutDashboard, GraduationCap, CalendarDays, WalletCards, BarChart3].map((Icon, i) => <span key={i} className={"flex h-8 w-8 items-center justify-center rounded-xl " + (i === 0 ? "bg-blue-50 text-blue-600" : "text-slate-400")}><Icon size={16} /></span>)}
+                    </aside>
+                    <div className="min-w-0 p-3.5 sm:p-5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-slate-400">School workspace</p><h3 className="mt-1 text-sm font-black text-slate-800 sm:text-base">Good morning, Admin</h3></div>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm"><BellRing size={14} /></div>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-black text-[#14213D] leading-tight">
-                          Your School Name
-                        </h4>
-                        <p className="text-[10px] text-[#66738A]">School Admin Workspace • Your Campus</p>
+                      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                        {[["Students","1,248","blue"],["Attendance","94.8%","emerald"],["Fee records","PKR 8.4M","violet"],["Classes","36","amber"]].map(([label,value,tone]) => <div key={label} className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-[0_4px_12px_rgba(15,23,42,.03)]"><p className="text-[9px] font-bold text-slate-400 sm:text-[10px]">{label}</p><p className={"mt-2 text-sm font-black sm:text-lg " + (tone === "blue" ? "text-blue-700" : tone === "emerald" ? "text-emerald-600" : tone === "violet" ? "text-violet-700" : "text-amber-600")}>{value}</p><p className="mt-1 text-[8px] font-semibold text-slate-400">Illustrative</p></div>)}
                       </div>
-                    </div>
-                    <span className="text-[11px] font-bold text-[#3563EB] bg-[#EEF4FF] px-2.5 py-1 rounded-lg">
-                      Academic Session
-                    </span>
-                  </div>
-
-                  {/* 4 Metric Cards */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100">
-                      <p className="text-[10px] font-bold text-[#3563EB] uppercase">Students</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
-                      <p className="text-[9px] text-emerald-600 font-bold">● No attendance records yet</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-100">
-                      <p className="text-[10px] font-bold text-[#8257E8] uppercase">Faculty</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">32</p>
-                      <p className="text-[9px] text-slate-500">Add departments after setup</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                      <p className="text-[10px] font-bold text-emerald-700 uppercase">Fee Inflow</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
-                      <p className="text-[9px] text-emerald-600 font-bold">↑ No payments recorded</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-100">
-                      <p className="text-[10px] font-bold text-sky-700 uppercase">Exams</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
-                      <p className="text-[9px] text-sky-600 font-bold">Exam data appears after setup</p>
-                    </div>
-                  </div>
-
-                  {/* Activity Table inside preview */}
-                  <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-bold text-[#14213D] flex items-center gap-1.5">
-                        <Activity size={13} className="text-[#3563EB]" />
-                        Recent Admissions & Financial Vouchers
-                      </span>
-                      <span className="text-[9px] font-bold text-[#3563EB] hover:underline cursor-pointer">
-                        No records yet
-                      </span>
-                    </div>
-                    <div className="space-y-1.5">
-                      {[
-
-                      ].map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-[11px] py-1.5 px-2 rounded-lg bg-slate-50/80 border border-slate-100">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-blue-100 text-[#3563EB] font-bold flex items-center justify-center text-[9px]">
-                              {item.name[0]}
-                            </span>
-                            <div>
-                              <p className="font-bold text-slate-800 leading-none">{item.name}</p>
-                              <p className="text-[9px] text-slate-400 mt-0.5">{item.class}</p>
-                            </div>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-[1.25fr_.75fr]">
+                        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5">
+                          <div className="flex items-center justify-between"><p className="text-[10px] font-extrabold text-slate-700">Weekly attendance</p><span className="text-[9px] font-bold text-emerald-600">Sample view</span></div>
+                          <div className="mt-4 flex h-24 items-end justify-around gap-2">
+                            {[44,68,57,86,73,94,63].map((h,i)=><div key={i} className="flex h-full flex-1 items-end"><div style={{height:h+"%"}} className="w-full rounded-t-md bg-gradient-to-t from-blue-600 to-cyan-400 opacity-90" /></div>)}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-slate-700 text-[10px]">{item.fee}</span>
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${item.badge}`}>
-                              {item.status}
-                            </span>
-                          </div>
+                          <div className="mt-2 flex justify-between text-[8px] font-semibold text-slate-400"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
                         </div>
-                      ))}
+                        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5">
+                          <p className="text-[10px] font-extrabold text-slate-700">Quick actions</p>
+                          <div className="mt-3 space-y-2.5">{[[GraduationCap,"Add student"],[ClipboardCheck,"Mark attendance"],[CreditCard,"Create voucher"]].map(([Icon,label],i)=><div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2 py-2 text-[9px] font-bold text-slate-600"><span className="text-blue-600"><Icon size={13} /></span>{label}</div>)}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Floating Layered UI Card 1 — Top Right Fee Alert */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.35 }}
-                className="hidden sm:flex absolute -top-5 -right-5 items-center gap-3 p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-xl shadow-emerald-500/10 backdrop-blur-md"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <CreditCard size={18} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fee Reconciliation</p>
-                  <p className="text-xs font-black text-slate-900">No payments recorded yet</p>
-                  <p className="text-[10px] text-emerald-600 font-bold">Payment activity will appear here</p>
-                </div>
+              <motion.div animate={{ y: [0,-8,0], rotate: [0,1,0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="absolute -left-5 top-[24%] hidden items-center gap-3 rounded-2xl border border-white bg-white/90 p-3.5 shadow-[0_18px_45px_rgba(15,23,42,.13)] backdrop-blur-xl sm:flex lg:-left-12">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><CheckCircle2 size={19} /></span>
+                <span><b className="block text-[11px] text-slate-800">Attendance marked</b><small className="text-[9px] font-semibold text-slate-400">Illustrative activity</small></span>
               </motion.div>
-
-              {/* Floating Layered UI Card 2 — Bottom Left Attendance Badge */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.45 }}
-                className="hidden sm:flex absolute -bottom-5 -left-5 items-center gap-3 p-3.5 rounded-2xl bg-white border border-blue-200 shadow-xl shadow-blue-500/10 backdrop-blur-md"
-              >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#3563EB] flex items-center justify-center shrink-0">
-                  <UserCheck size={18} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Morning Roll Call</p>
-                  <p className="text-xs font-black text-slate-900">100% Attendance Verified</p>
-                  <p className="text-[10px] text-blue-600 font-bold">Class 10-A • Register Printed</p>
-                </div>
+              <motion.div animate={{ y: [0,8,0], rotate: [0,-1,0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -right-3 bottom-[14%] hidden items-center gap-3 rounded-2xl border border-white bg-white/90 p-3.5 shadow-[0_18px_45px_rgba(15,23,42,.13)] backdrop-blur-xl sm:flex lg:-right-9">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600"><WalletCards size={19} /></span>
+                <span><b className="block text-[11px] text-slate-800">Fee ledger updated</b><small className="text-[9px] font-semibold text-slate-400">Sample workflow</small></span>
               </motion.div>
             </motion.div>
           </div>
+          <div className="mx-auto mt-20 max-w-5xl rounded-[26px] border border-white bg-white/65 p-5 shadow-[0_16px_45px_rgba(30,64,175,.07)] backdrop-blur-xl sm:p-7">
+            <div className="grid grid-cols-2 gap-5 text-center md:grid-cols-4 md:divide-x md:divide-slate-200">
+              {[["09","Core modules"],["04","Role-based portals"],["01","Connected workspace"],["24/7","Cloud access"]].map(([value,label])=><div key={label}><p className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{value}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">{label}</p></div>)}
+            </div>
+            <p className="mt-4 text-center text-[9px] font-semibold uppercase tracking-[.13em] text-slate-400">Platform capabilities — not customer registration totals</p>
+          </div>
+        </section>
+
+        <section id="platform" className="relative py-24">
+          <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[.8fr_1.2fr] lg:px-8">
+            <div className="lg:sticky lg:top-32 lg:self-start">
+              <span className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-violet-700"><Layers3 size={13}/> One connected platform</span>
+              <h2 className="mt-5 text-3xl font-black leading-tight tracking-[-.04em] text-slate-900 sm:text-5xl">Less switching.<br/><span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">More control.</span></h2>
+              <p className="mt-5 max-w-md text-sm leading-7 text-slate-600">SchoolOS connects the work that usually gets scattered across paper registers, spreadsheets and disconnected tools.</p>
+              <Link to="/register-school/plans" className="mt-8 inline-flex items-center gap-2 text-sm font-extrabold text-blue-700 hover:gap-3">Bring your school onto SchoolOS <ArrowRight size={16}/></Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <motion.div whileHover={{ y: -5 }} className="relative min-h-[240px] overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-7 text-white shadow-xl shadow-blue-900/10 sm:col-span-2">
+                <div className="absolute -right-8 -top-10 h-52 w-52 rounded-full border-[30px] border-white/10"/><div className="absolute -bottom-24 right-24 h-64 w-64 rounded-full bg-cyan-300/20 blur-3xl"/>
+                <div className="relative max-w-lg"><span className="rounded-full bg-white/15 px-3 py-1 text-[9px] font-extrabold uppercase tracking-[.18em] text-blue-100">The school command centre</span><h3 className="mt-5 text-2xl font-black sm:text-3xl">A single view of your school’s moving parts.</h3><p className="mt-3 max-w-lg text-sm leading-6 text-blue-100">Bring academic, financial and administrative workflows together, with access shaped around each role.</p></div>
+                <div className="absolute bottom-6 right-7 hidden h-28 w-48 rotate-[-5deg] rounded-2xl border border-white/20 bg-white/10 p-3 backdrop-blur-xl sm:block"><div className="flex gap-1"><i className="h-1.5 w-1.5 rounded-full bg-white/70"/><i className="h-1.5 w-1.5 rounded-full bg-white/40"/><i className="h-1.5 w-1.5 rounded-full bg-white/30"/></div><div className="mt-4 flex items-end gap-2">{[30,60,44,85,58,95,70].map((h,i)=><i key={i} style={{height:h+"%"}} className="flex-1 rounded-t bg-cyan-200/90"/>)}</div></div>
+              </motion.div>
+              <motion.div whileHover={{ y: -5 }} className="rounded-[26px] border border-violet-100 bg-white p-6 shadow-[0_12px_40px_rgba(30,41,59,.05)]"><div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-600"><MonitorSmartphone size={23}/></div><h3 className="mt-5 text-lg font-black text-slate-900">Separate portals</h3><p className="mt-2 text-sm leading-6 text-slate-500">Purposeful experiences for administrators, teachers, students and parents.</p><div className="mt-5 flex -space-x-2">{["A","T","S","P"].map((v,i)=><span key={v} className={"flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-[10px] font-black text-white "+["bg-blue-600","bg-violet-600","bg-cyan-600","bg-emerald-600"][i]}>{v}</span>)}</div></motion.div>
+              <motion.div whileHover={{ y: -5 }} className="rounded-[26px] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-[0_12px_40px_rgba(30,41,59,.05)]"><div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm"><ShieldCheck size={23}/></div><h3 className="mt-5 text-lg font-black text-slate-900">Controlled access</h3><p className="mt-2 text-sm leading-6 text-slate-500">Role-aware access and school-specific workspaces help keep operations organised.</p><div className="mt-5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-emerald-700"><LockKeyhole size={13}/> Access by role</div></motion.div>
+            </div>
+          </div>
+        </section>
+
+        <section id="features" className="bg-white/80 py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
+              <span className="rounded-full border border-blue-100 bg-blue-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-blue-700">Built for daily school work</span>
+              <h2 className="mt-5 text-3xl font-black tracking-[-.04em] text-slate-900 sm:text-5xl">Every department, <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">in sync.</span></h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500">Explore the modules that help your team spend less time managing paperwork and more time supporting students.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {modules.map((item,index)=>{const Icon=item.icon;return <motion.article key={item.title} initial={{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.15}} transition={{delay:(index%3)*.06}} whileHover={{y:-5}} className={"group relative overflow-hidden rounded-[25px] border border-slate-200/80 bg-white p-6 shadow-[0_5px_22px_rgba(15,23,42,.035)] transition hover:shadow-[0_18px_40px_rgba(30,64,175,.09)] "+(index===0?"lg:col-span-1":"")}>
+                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-slate-100/80 transition-transform duration-500 group-hover:scale-150"/><div className="relative"><div className={"flex h-12 w-12 items-center justify-center rounded-2xl ring-1 "+toneClasses[item.tone]}><Icon size={22}/></div><p className="mt-5 text-[9px] font-extrabold uppercase tracking-[.15em] text-slate-400">{item.tag}</p><h3 className="mt-2 text-lg font-black text-slate-900">{item.title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{item.desc}</p><div className="mt-5 flex items-center gap-2 text-[11px] font-extrabold text-blue-700">Explore capability <ArrowUpRight size={14} className="transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div></div>
+              </motion.article>})}
+            </div>
+          </div>
+        </section>
+
+        <section id="preview" className="relative overflow-hidden bg-[#0B1530] py-24 text-white">
+          <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-blue-600/20 blur-[100px]"/><div className="absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-violet-600/20 blur-[100px]"/>
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-12 max-w-3xl text-center"><span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-cyan-200">Interactive product tour</span><h2 className="mt-5 text-3xl font-black tracking-[-.04em] sm:text-5xl">See how the workspace comes together.</h2><p className="mt-4 text-sm leading-7 text-slate-400">Switch between modules to explore illustrative screens. All figures and records below are sample data, not live school records.</p></div>
+            <div className="mb-7 flex gap-2 overflow-x-auto pb-2">{previewTabs.map((tab)=>{const Icon=tab.icon;return <button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={"flex shrink-0 items-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition "+(activeTab===tab.id?"border-cyan-300/50 bg-cyan-300 text-[#0B1530] shadow-lg shadow-cyan-900/30":"border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]")}><Icon size={15}/>{tab.label}</button>})}</div>
+            <AnimatePresence mode="wait"><motion.div key={selectedPreview.id} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}} transition={{duration:.25}} className="grid gap-8 rounded-[30px] border border-white/10 bg-white/[.055] p-5 shadow-2xl backdrop-blur-xl sm:p-8 lg:grid-cols-[.8fr_1.2fr] lg:p-10">
+              <div className="flex flex-col justify-center"><span className="text-[10px] font-extrabold uppercase tracking-[.18em] text-cyan-200">Feature preview / {selectedPreview.label}</span><h3 className="mt-4 text-2xl font-black leading-tight sm:text-4xl">{selectedPreview.heading}</h3><p className="mt-4 text-sm leading-7 text-slate-300">{selectedPreview.detail}</p><div className="mt-8 flex items-center gap-3 text-xs font-bold text-emerald-300"><CheckCircle2 size={16}/> Illustrative interface preview</div><Link to="/register-school/plans" className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-extrabold text-slate-900 transition hover:bg-cyan-100">Start with your school <ArrowRight size={15}/></Link></div>
+              <div className="rounded-[24px] border border-white/10 bg-[#F6F8FC] p-4 text-slate-900 shadow-[0_20px_60px_rgba(0,0,0,.22)] sm:p-5"><div className="flex items-center justify-between border-b border-slate-200 pb-4"><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white"><School size={15}/></span><span><b className="block text-[11px]">Your School Workspace</b><small className="text-[9px] font-semibold text-slate-400">Illustrative sample</small></span></div><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-extrabold text-emerald-700">Preview mode</span></div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">{selectedPreview.stats.map(([label,value,sub],i)=><div key={label} className="rounded-2xl border border-slate-200 bg-white p-3"><p className="text-[9px] font-bold text-slate-400">{label}</p><p className={"mt-2 break-words text-lg font-black "+["text-blue-700","text-emerald-600","text-violet-700","text-amber-600"][i]}>{value}</p><p className="mt-1 text-[8px] font-semibold text-slate-400">{sub}</p></div>)}</div><div className="mt-4 grid gap-3 sm:grid-cols-[1fr_.8fr]"><div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="flex items-center justify-between"><b className="text-[10px]">Recent activity</b><span className="text-[9px] font-bold text-blue-600">Sample</span></div>{["Admission record created","Attendance register updated","Fee voucher generated"].map((line,i)=><div key={line} className="mt-3 flex items-center gap-2 border-b border-slate-100 pb-2 last:border-0"><span className={"h-2 w-2 rounded-full "+["bg-blue-500","bg-emerald-500","bg-violet-500"][i]}/><span className="text-[9px] font-semibold text-slate-600">{line}</span></div>)}</div><div className="rounded-2xl border border-slate-200 bg-white p-4"><b className="text-[10px]">Workflow status</b><div className="mt-4 space-y-3">{["Records organised","Roles assigned","Reports available"].map((line,i)=><div key={line}><div className="mb-1 flex justify-between text-[9px] font-bold text-slate-500"><span>{line}</span><Check size={11} className="text-emerald-500"/></div><div className="h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{width:(72+i*9)+"%"}}/></div></div>)}</div></div></div></div>
+            </motion.div></AnimatePresence>
+          </div>
+        </section>
+
+        <section id="process" className="py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-14 max-w-3xl text-center"><span className="rounded-full bg-violet-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-violet-700">Getting started</span><h2 className="mt-5 text-3xl font-black tracking-[-.04em] text-slate-900 sm:text-5xl">A clear path from application to launch.</h2><p className="mt-4 text-sm leading-7 text-slate-500">Your school stays in control at every step. Access begins after the application review.</p></div>
+            <div className="relative grid gap-5 md:grid-cols-4">{[{n:"01",title:"Submit application",desc:"Share your institution and administrator details.",icon:School},{n:"02",title:"Application review",desc:"The SchoolOS Super Admin reviews your request.",icon:ShieldCheck},{n:"03",title:"Approval & setup",desc:"After approval, configure your school workspace.",icon:Layers3},{n:"04",title:"Start managing",desc:"Set up records and invite your school community.",icon:ChartNoAxesCombined}].map((step,i)=>{const Icon=step.icon;return <div key={step.n} className="relative rounded-[25px] border border-slate-200 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,.04)]"><div className="flex items-center justify-between"><span className="text-3xl font-black tracking-tight text-blue-100">{step.n}</span><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"><Icon size={21}/></span></div><h3 className="mt-6 text-base font-black text-slate-900">{step.title}</h3><p className="mt-2 text-xs leading-6 text-slate-500">{step.desc}</p>{i<3&&<span className="absolute -right-4 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-blue-500 shadow-sm md:flex"><ArrowRight size={14}/></span>}</div>})}</div>
+          </div>
+        </section>
+
+        <section className="bg-gradient-to-br from-[#EEF4FF] via-white to-[#F4F0FF] py-24">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+            <div><span className="rounded-full border border-blue-100 bg-white px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.15em] text-blue-700">Your school. Your identity.</span><h2 className="mt-5 text-3xl font-black leading-tight tracking-[-.04em] text-slate-900 sm:text-5xl">A digital front door for every school.</h2><p className="mt-5 text-sm leading-7 text-slate-600">SchoolOS supports dedicated public school pages, giving each approved institution a place to present its identity, information and access links.</p><ul className="mt-7 space-y-3 text-sm font-semibold text-slate-700">{["School profile and campus information","Public-facing school identity","Direct access to the relevant school login"].map((item)=><li key={item} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-emerald-600"/>{item}</li>)}</ul><Link to="/register-school/plans" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3.5 text-xs font-extrabold text-white shadow-lg transition hover:-translate-y-0.5">Create your school presence <ArrowRight size={15}/></Link></div>
+            <div className="relative"><div className="absolute -inset-5 rounded-[36px] bg-gradient-to-br from-blue-300/40 to-violet-300/40 blur-2xl"/><div className="relative rotate-1 rounded-[30px] border border-white bg-white p-3 shadow-[0_30px_80px_rgba(30,64,175,.16)]"><div className="overflow-hidden rounded-[22px] border border-slate-100"><div className="flex items-center justify-between bg-slate-50 px-4 py-3"><span className="flex items-center gap-2 text-[10px] font-bold text-slate-500"><Globe2 size={13}/> schoolos.app / your-school</span><span className="text-[9px] font-bold text-emerald-600">PREVIEW</span></div><div className="bg-gradient-to-br from-[#172554] via-blue-800 to-violet-800 px-6 py-10 text-center text-white"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10"><School size={27}/></span><p className="mt-4 text-[9px] font-extrabold uppercase tracking-[.2em] text-blue-200">Your institution</p><h3 className="mt-2 text-2xl font-black">Your School Name</h3><p className="mt-2 text-xs text-blue-100">Your City, Pakistan</p><div className="mt-6 flex justify-center gap-2"><span className="rounded-lg bg-white px-3 py-2 text-[9px] font-extrabold text-blue-800">About school</span><span className="rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-[9px] font-bold">Contact</span></div></div><div className="grid grid-cols-3 gap-2 p-4"><div className="h-14 rounded-xl bg-blue-50"/><div className="h-14 rounded-xl bg-violet-50"/><div className="h-14 rounded-xl bg-cyan-50"/></div></div></div></div>
+          </div>
+        </section>
+
+        <section id="pricing" className="py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-12 max-w-3xl text-center"><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-emerald-700">Straightforward pricing</span><h2 className="mt-5 text-3xl font-black tracking-[-.04em] text-slate-900 sm:text-5xl">Choose the right start for your school.</h2><p className="mt-4 text-sm leading-7 text-slate-500">Plan availability and final limits are confirmed during registration.</p></div>
+            <div className="mx-auto max-w-xl rounded-[30px] border border-blue-200 bg-white p-7 shadow-[0_24px_70px_rgba(30,64,175,.11)] sm:p-10"><div className="flex items-start justify-between gap-4"><div><span className="rounded-full bg-blue-50 px-3 py-1 text-[9px] font-extrabold uppercase tracking-[.16em] text-blue-700">School subscription</span><h3 className="mt-4 text-2xl font-black text-slate-900">{monthlyPlan?.name || "SchoolOS Monthly"}</h3><p className="mt-2 text-sm text-slate-500">A connected workspace for your institution.</p></div><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg"><Star size={22}/></span></div>
+              <div className="mt-7 flex items-end gap-2 border-b border-slate-100 pb-7"><span className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">{monthlyPlan ? "PKR " + monthlyPlan.price.toLocaleString("en-PK") : "View plans"}</span>{monthlyPlan&&<span className="pb-1 text-sm font-semibold text-slate-500">/ {monthlyPlan.period || "month"}</span>}</div>
+              {loadingPlans?<p className="py-6 text-sm font-semibold text-slate-400">Loading current plan details…</p>:monthlyPlan?<><div className="mt-6 space-y-3"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Included plan features</p>{monthlyPlan.features.map((feature,i)=><div key={i} className="flex items-start gap-3 text-sm text-slate-700"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-emerald-500"/>{feature}</div>)}</div><button onClick={()=>handlePlanSelect(monthlyPlan.planKey)} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-6 py-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">Apply for school access <ArrowRight size={16}/></button></>:<Link to="/register-school/plans" className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-4 text-sm font-extrabold text-white">View available plans <ArrowRight size={16}/></Link>}
+              <p className="mt-4 text-center text-[10px] leading-5 text-slate-400">School access is enabled after application review and approval.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="bg-white/75 py-24">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8"><div className="mb-12 text-center"><span className="rounded-full bg-blue-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.15em] text-blue-700">Frequently asked</span><h2 className="mt-5 text-3xl font-black tracking-[-.04em] text-slate-900 sm:text-4xl">Good questions. Clear answers.</h2></div><div className="space-y-3">{faqs.map((faq,i)=><div key={faq.q} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_5px_20px_rgba(15,23,42,.03)]"><button onClick={()=>setActiveFaq(activeFaq===i?null:i)} className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left text-sm font-extrabold text-slate-800 transition hover:text-blue-700"><span>{faq.q}</span><ChevronDown size={18} className={"shrink-0 text-slate-400 transition "+(activeFaq===i?"rotate-180 text-blue-600":"")}/></button><AnimatePresence>{activeFaq===i&&<motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden"><p className="border-t border-slate-100 px-5 pb-5 pt-4 text-sm leading-7 text-slate-500">{faq.a}</p></motion.div>}</AnimatePresence></div>)}</div></div>
+        </section>
+
+        <section className="px-4 py-20 sm:px-6 lg:px-8"><div className="relative mx-auto max-w-6xl overflow-hidden rounded-[34px] bg-gradient-to-br from-[#14265B] via-blue-800 to-violet-800 px-7 py-14 text-center text-white shadow-[0_30px_80px_rgba(30,64,175,.22)] sm:px-12 sm:py-20"><div className="absolute -left-20 -top-28 h-72 w-72 rounded-full border-[35px] border-white/5"/><div className="absolute -bottom-32 -right-16 h-80 w-80 rounded-full bg-cyan-300/10 blur-2xl"/><div className="relative"><span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] text-blue-100"><Sparkles size={13}/> Your next school day, better organised</span><h2 className="mx-auto mt-6 max-w-3xl text-3xl font-black tracking-[-.04em] sm:text-5xl">Give your school a smarter way to work.</h2><p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-blue-100">Explore the platform, review the available plan and submit your school application to get started.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link to="/register-school/plans" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-7 py-4 text-sm font-extrabold text-blue-800 shadow-lg transition hover:-translate-y-1 hover:bg-cyan-50">Register your school <ArrowRight size={16}/></Link><Link to="/school-login" className="inline-flex items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white transition hover:bg-white/15">School login</Link></div></div></div></section>
+      </main>
+
+      <footer className="relative z-10 border-t border-slate-200 bg-white py-14 text-slate-500">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
+          <div><Link to="/" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600"><img src="/logo.svg" alt="" className="h-6 w-6 brightness-0 invert"/></span><b className="text-lg font-black text-slate-900">SchoolOS</b></Link><p className="mt-4 max-w-xs text-xs leading-6">A connected school management platform for academic, administrative and financial workflows.</p></div>
+          <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Platform</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><a href="#features" className="hover:text-blue-700">Features</a><a href="#preview" className="hover:text-blue-700">Product tour</a><a href="#process" className="hover:text-blue-700">How it works</a><a href="#pricing" className="hover:text-blue-700">Pricing</a></div></div>
+          <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Portals</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><Link to="/school-login" className="hover:text-blue-700">School login</Link><Link to="/portal" className="hover:text-blue-700">Parent & student portal</Link><Link to="/admin-login" className="hover:text-blue-700">Super Admin</Link></div></div>
+          <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Get started</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><Link to="/register-school/plans" className="hover:text-blue-700">Register school</Link><button onClick={()=>setSearchOpen(true)} className="w-fit hover:text-blue-700">Find a school</button></div></div>
         </div>
-      </section>
-
-      {/* ── 3. TRUST / INSTITUTIONAL VALUE STRIP ── */}
-      <section className="relative z-10 py-10 bg-[#F5F8FF] border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <div className="flex items-center justify-center gap-2 text-[#3563EB]">
-                <Layers size={18} />
-                <h4 className="text-sm font-black text-[#14213D] uppercase tracking-wide">
-                  Centralized Operations
-                </h4>
-              </div>
-              <p className="text-xs text-[#66738A]">Admissions, staff, and classes in one place</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-center gap-2 text-[#8257E8]">
-                <ShieldCheck size={18} />
-                <h4 className="text-sm font-black text-[#14213D] uppercase tracking-wide">
-                  Multi-Tenant Security
-                </h4>
-              </div>
-              <p className="text-xs text-[#66738A]">Isolated institutional database & role policies</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-center gap-2 text-[#3563EB]">
-                <Award size={18} />
-                <h4 className="text-sm font-black text-[#14213D] uppercase tracking-wide">
-                  Standard DMCs & Challans
-                </h4>
-              </div>
-              <p className="text-xs text-[#66738A]">Official 3-copy bank slips & marks transcripts</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-center gap-2 text-emerald-600">
-                <Globe size={18} />
-                <h4 className="text-sm font-black text-[#14213D] uppercase tracking-wide">
-                  Public School Portals
-                </h4>
-              </div>
-              <p className="text-xs text-[#66738A]">Automatic branded website for every campus</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. PRODUCT MODULES OVERVIEW — "Everything Your School Needs" ── */}
-      <section id="features" className="relative z-10 py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200">
-              Complete Feature Suite
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight">
-              Everything Your School Needs. In One Powerful Platform.
-            </h2>
-            <p className="text-base text-[#66738A]">
-              Carefully engineered modules designed to eliminate manual registers, streamline treasury operations, and empower school leaders.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Module 1: Student Management */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-blue-100 text-[#3563EB] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <GraduationCap size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">Student Lifecycle & Enrollment</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Automated admission numbers, digital profiles, parent contacts, section allocation, and printable biometric ID cards in portrait & landscape.
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Printable Student ID Cards
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Class & Section Reassignments
-                </li>
-              </ul>
-            </div>
-
-            {/* Module 2: Fees & Treasury */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-purple-100 text-[#8257E8] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <WalletCards size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">Fee Management & Challans</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Configurable recurring fee structures, scholarship concessions, late surcharges, 3-copy bank challans, and instant fee defaulter audit reports.
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Standard 3-Part Bank Challan
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Printable Defaulters Audit List
-                </li>
-              </ul>
-            </div>
-
-            {/* Module 3: Daily Attendance */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-blue-100 text-[#3563EB] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <Calendar size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">Attendance & Roll Call</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Rapid section-wise daily roll call, instant all-present triggers, leave approval tracking, CSV exports, and daily printable class attendance registers.
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Printable Daily Class Register
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> One-Click All-Present / Absent
-                </li>
-              </ul>
-            </div>
-
-            {/* Module 4: Examinations & DMCs */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-blue-100 text-[#3563EB] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <Award size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">Examinations & Marksheets</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Term exams, subject marks entry, passing thresholds, grading scale matrix, class gazettes, and official Detailed Marks Certificates (DMCs).
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Pakistani & British Standard DMC
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Class Result Gazette Generator
-                </li>
-              </ul>
-            </div>
-
-            {/* Module 5: Teacher & Staff Management */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-purple-100 text-[#8257E8] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <Users size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">Faculty & Staff Allotment</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Teacher profiles, subject assignments, timetable schedules, classroom incharge designations, and departmental coordination.
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Teacher Timetable Scheduling
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Classroom Incharge Mapping
-                </li>
-              </ul>
-            </div>
-
-            {/* Module 6: Dynamic School Websites */}
-            <div className="p-7 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-blue-100 text-[#3563EB] flex items-center justify-center shadow-sm mb-5 group-hover:scale-105 transition-transform">
-                <Globe size={24} />
-              </div>
-              <h3 className="text-lg font-black text-[#14213D] mb-2">School Public Website</h3>
-              <p className="text-sm text-[#66738A] leading-relaxed mb-4">
-                Your school automatically gets an official public web presence (/school/:slug) with customizable logos, programs, facilities, and admissions inquiry.
-              </p>
-              <ul className="space-y-1.5 text-xs font-semibold text-slate-700">
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Live Public Admissions Form
-                </li>
-                <li className="flex items-center gap-2 text-emerald-600">
-                  <Check size={14} /> Custom Campus Branding
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. INTERACTIVE PRODUCT SHOWCASE (Light-Mode Tabbed Preview) ── */}
-      <section id="preview" className="relative z-10 py-20 bg-[#F5F8FF] border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100/80 text-[#3563EB] border border-blue-200">
-              Interactive Product Showcase
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight">
-              Designed For Principals. Built For Daily Precision.
-            </h2>
-            <p className="text-base text-[#66738A]">
-              Click through the modules below to see actual light-mode interfaces used by administrators every day.
-            </p>
-          </div>
-
-          {/* Module Switcher Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-            {[
-              { id: "students", label: "Student Roster", icon: GraduationCap },
-              { id: "attendance", label: "Attendance Sheet", icon: Calendar },
-              { id: "fees", label: "Fee Collection", icon: WalletCards },
-              { id: "exams", label: "DMC Exam Marks", icon: Award },
-              { id: "reports", label: "Executive Reports", icon: BarChart3 },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isSelected = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-150 ${
-                    isSelected
-                      ? "bg-[#3563EB] text-white shadow-lg shadow-blue-600/25 scale-[1.02]"
-                      : "bg-white text-[#475569] hover:bg-white/80 border border-slate-200"
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Interactive Screen Display */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-blue-900/10 p-6 sm:p-8">
-            {activeTab === "students" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-lg font-black text-[#14213D]">Student Enrollment & Directory</h3>
-                    <p className="text-xs text-[#66738A]">Student records appear here after a school is registered</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-[#3563EB] text-xs font-bold border border-blue-200">
-                      ID Cards Generated
-                    </span>
-                    <Link
-                      to="/register-school/plans"
-                      className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#3563EB] to-[#8257E8] text-white text-xs font-bold"
-                    >
-                      + Enroll Candidate
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-slate-50 border-y border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="py-3 px-4">Student Name</th>
-                        <th className="py-3 px-4">Adm #</th>
-                        <th className="py-3 px-4">Class & Section</th>
-                        <th className="py-3 px-4">Father / Guardian</th>
-                        <th className="py-3 px-4">Contact</th>
-                        <th className="py-3 px-4 text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
-                      <tr><td colSpan={6} className="py-10 text-center text-slate-500">No student records yet. Real student data will appear after school registration and admission.</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "attendance" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-lg font-black text-[#14213D]">Daily Class Roll Call & Register</h3>
-                    <p className="text-xs text-[#66738A]">Class 10 - Section A • Today's Attendance</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                      Attendance Rate: 96%
-                    </span>
-                    <button className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-[#3563EB] text-xs font-bold border border-blue-200 flex items-center gap-1.5">
-                      <span>Print Daily Register</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase">Enrolled</p>
-                    <p className="text-xl font-black text-slate-900 mt-1">36</p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
-                    <p className="text-[10px] font-bold text-emerald-700 uppercase">Present</p>
-                    <p className="text-xl font-black text-emerald-700 mt-1">34</p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200">
-                    <p className="text-[10px] font-bold text-rose-700 uppercase">Absent</p>
-                    <p className="text-xl font-black text-rose-700 mt-1">2</p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200">
-                    <p className="text-[10px] font-bold text-amber-700 uppercase">On Leave</p>
-                    <p className="text-xl font-black text-amber-700 mt-1">0</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "fees" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-lg font-black text-[#14213D]">Fee Ledger & 3-Part Bank Challan</h3>
-                    <p className="text-xs text-[#66738A]">Tuition collection, bank vouchers, and defaulters ledger</p>
-                  </div>
-                  <span className="px-3.5 py-1.5 rounded-xl bg-purple-50 text-[#8257E8] text-xs font-bold border border-purple-200">
-                    3-Copy Bank Challan Ready
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50/60 to-purple-50/60 border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="space-y-1 text-center sm:text-left">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#3563EB]">
-                      Standard 3-Part Slip
-                    </span>
-                    <h4 className="text-base font-black text-[#14213D]">
-                      Habib Bank Limited / Meezan Bank Collection Voucher
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      Bank Copy • School Accounts Copy • Student Copy with automated QR/barcode
-                    </p>
-                  </div>
-                  <Link
-                    to="/register-school/plans"
-                    className="px-5 py-2.5 rounded-xl bg-[#3563EB] text-white font-bold text-xs shadow-md shadow-blue-500/20 shrink-0"
-                  >
-                    View Challan Preview
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "exams" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-lg font-black text-[#14213D]">Examination & Detailed Marks Certificate (DMC)</h3>
-                    <p className="text-xs text-[#66738A]">Mid-Term & Annual Examination Transcripts</p>
-                  </div>
-                  <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                    Grading Matrix A+ to F
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold text-[#3563EB] uppercase">Official DMC Transcript</span>
-                    <h4 className="text-base font-black text-slate-900">
-                      Detailed Marks Certificate for Matriculation / Middle
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Includes student identity block, subject-wise marks, passing criteria, percentage, letter grades, watermark, and triple signatures (Class Teacher, Controller of Examinations, Principal).
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-center p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Sample Grade</p>
-                    <p className="text-2xl font-black text-emerald-600">A+</p>
-                    <p className="text-[10px] font-bold text-slate-600">89.4% (PASS)</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "reports" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-lg font-black text-[#14213D]">Executive School Dossier & Analytics</h3>
-                    <p className="text-xs text-[#66738A]">Cross-branch performance, revenue forecasts, and teacher workload</p>
-                  </div>
-                  <span className="px-3 py-1 rounded-xl bg-blue-50 text-[#3563EB] text-xs font-bold border border-blue-200">
-                    PDF & CSV Export
-                  </span>
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                    <p className="text-xs font-bold text-slate-500">Total Enrolled</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">Actual admission records</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                    <p className="text-xs font-bold text-slate-500">Collected Revenue</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
-                    <p className="text-[10px] text-slate-500 font-semibold mt-1">No payments recorded yet</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                    <p className="text-xs font-bold text-slate-500">Active Faculty</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
-                    <p className="text-[10px] text-blue-600 font-bold mt-1">Faculty records appear after setup</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 6. BENEFIT-FOCUSED STORYTELLING SECTIONS ── */}
-      <section id="platform" className="relative z-10 py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
-          {/* Story 1 */}
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 space-y-5">
-              <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200">
-                Administrative Relief
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight leading-tight">
-                Less Administrative Work. More Focus on Education.
-              </h2>
-              <p className="text-base text-[#66738A] leading-relaxed">
-                School staff waste hundreds of hours manually compiling fee receipts, marking paper registers, and re-typing marks. SchoolOS automates the entire paperwork pipeline so your faculty can focus on teaching excellence.
-              </p>
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check size={14} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#14213D]">Instant Batch Fee Generation</h4>
-                    <p className="text-xs text-[#66738A]">Generate monthly tuition challans for 500+ students in 10 seconds.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check size={14} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#14213D]">Zero Lost Records</h4>
-                    <p className="text-xs text-[#66738A]">All student history, sibling discounts, and exam scores stay safely backed up.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-6 p-8 rounded-3xl bg-[#F5F8FF] border border-slate-200 shadow-lg shadow-blue-500/5">
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Monthly Administrative Hours</p>
-                    <p className="text-2xl font-black text-rose-500 line-through">120 Hours Manual</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-emerald-600 uppercase">With SchoolOS ERP</p>
-                    <p className="text-2xl font-black text-emerald-600">8 Hours</p>
-                  </div>
-                </div>
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-slate-700">
-                    <span>Automation Efficiency</span>
-                    <span className="text-[#3563EB]">93% Saved</span>
-                  </div>
-                  <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#3563EB] to-[#8257E8] w-[93%]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Story 2 */}
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 order-2 lg:order-1 p-8 rounded-3xl bg-[#F5F8FF] border border-slate-200 shadow-lg shadow-blue-500/5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
-                  <School size={28} className="mx-auto text-[#3563EB] mb-2" />
-                  <p className="text-sm font-black text-slate-900">School Admin</p>
-                  <p className="text-xs text-slate-500">Executive command & fiscal controls</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
-                  <Users size={28} className="mx-auto text-[#8257E8] mb-2" />
-                  <p className="text-sm font-black text-slate-900">Teachers Portal</p>
-                  <p className="text-xs text-slate-500">Roll call, homework & marks entry</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
-                  <Smartphone size={28} className="mx-auto text-emerald-600 mb-2" />
-                  <p className="text-sm font-black text-slate-900">Parent Portal</p>
-                  <p className="text-xs text-slate-500">Fee tracking & digital receipts</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
-                  <Laptop size={28} className="mx-auto text-cyan-600 mb-2" />
-                  <p className="text-sm font-black text-slate-900">Student Portal</p>
-                  <p className="text-xs text-slate-500">Class notes & exam scorecards</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-6 order-1 lg:order-2 space-y-5">
-              <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-50 text-[#8257E8] border border-purple-200">
-                Connected Community
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight leading-tight">
-                Keep Your Entire School Community Connected.
-              </h2>
-              <p className="text-base text-[#66738A] leading-relaxed">
-                No more disjointed WhatsApp groups or paper circulars lost in student bags. SchoolOS provides distinct portals for principals, teachers, parents, and students with strict role permissions.
-              </p>
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check size={14} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#14213D]">Parent Trust & Transparency</h4>
-                    <p className="text-xs text-[#66738A]">Parents can independently verify attendance and download paid fee receipts.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 7. REGISTERED CAMPUSES DIRECTORY (Live DB) ── */}
-      <section id="campuses" className="relative z-10 py-20 bg-[#F5F8FF] border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100/80 text-[#3563EB] border border-blue-200">
-                Live Network
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight mt-3">
-                Registered Institutions & Public Portals
-              </h2>
-              <p className="text-sm text-[#66738A] mt-1 max-w-xl">
-                Explore real campuses powered by SchoolOS ERP. Every school gets its own responsive public portal and dedicated staff login gateway.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white border border-slate-200 text-[#14213D] text-xs font-bold shadow-sm hover:border-blue-300 transition"
-            >
-              <Search size={14} className="text-[#3563EB]" />
-              <span>Search Campuses by City</span>
-            </button>
-          </div>
-
-          {loadingSchools ? (
-            <div className="py-16 text-center text-sm font-semibold text-slate-400 animate-pulse">
-              Loading active institutions from database...
-            </div>
-          ) : schools.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-slate-200 rounded-3xl bg-white p-8">
-              <School size={40} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm font-bold text-slate-700">No public campuses registered yet.</p>
-              <Link
-                to="/register-school/plans"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#3563EB] hover:underline"
-              >
-                Register your school first <ArrowRight size={12} />
-              </Link>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {schools.map((s) => (
-                <div
-                  key={s.id}
-                  className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-300 transition-all duration-200 flex flex-col justify-between"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        {s.logoUrl ? (
-                          <img
-                            src={s.logoUrl}
-                            alt={s.name}
-                            className="w-12 h-12 rounded-2xl object-cover border border-slate-200 bg-slate-50 shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#3563EB] to-[#8257E8] text-white flex items-center justify-center font-black text-lg shrink-0 shadow-sm">
-                            {s.name[0]}
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-black text-base text-[#14213D] leading-tight">
-                            {s.name}
-                          </h4>
-                          {s.city && (
-                            <p className="text-xs text-[#66738A] flex items-center gap-1 mt-1 font-medium">
-                              <MapPin size={12} className="text-[#3563EB]" />
-                              {s.city}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 shrink-0">
-                        Active
-                      </span>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-center text-xs">
-                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">Public URL</p>
-                        <p className="font-mono text-slate-700 font-bold text-[11px] truncate mt-0.5">
-                          /school/{s.slug}
-                        </p>
-                      </div>
-                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">Status</p>
-                        <p className="text-emerald-600 font-bold text-[11px] mt-0.5">
-                          Verified Campus
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-5 mt-4 border-t border-slate-100 flex items-center gap-2">
-                    <Link
-                      to={`/school/${s.slug}`}
-                      className="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold text-center flex items-center justify-center gap-1.5 transition"
-                    >
-                      <Globe size={13} className="text-[#3563EB]" />
-                      <span>Visit School Website</span>
-                    </Link>
-                    <Link
-                      to={`/school-login/${s.slug}`}
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#3563EB] to-[#8257E8] text-white text-xs font-bold hover:brightness-105 transition flex items-center gap-1"
-                    >
-                      <span>Login</span>
-                      <ArrowRight size={12} />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── 8. HOW TO GET STARTED (4 Practical Steps) ── */}
-      <section className="relative z-10 py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200">
-              Simple Onboarding
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight">
-              How to Register & Launch Your School
-            </h2>
-            <p className="text-base text-[#66738A]">
-              Get your institution fully digitized in four transparent steps using our guided onboarding workflow.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                step: "01",
-                title: "Choose a Suitable Plan",
-                desc: "Select Review the single monthly subscription and continue with your school application.",
-              },
-              {
-                step: "02",
-                title: "Submit Registration",
-                desc: "Provide your school name, campus address, city, contact info, and create your master administrator credentials.",
-              },
-              {
-                step: "03",
-                title: "Institutional Verification",
-                desc: "The Super Admin reviews your application before access is approved.",
-              },
-              {
-                step: "04",
-                title: "Launch & Manage",
-                desc: "After approval, sign in to your school workspace and begin setup.",
-              },
-            ].map((st, idx) => (
-              <div
-                key={idx}
-                className="p-6 rounded-3xl bg-[#F5F8FF] border border-slate-200/80 relative space-y-3 hover:border-blue-300 transition-all"
-              >
-                <span className="text-3xl font-black bg-gradient-to-r from-[#3563EB] to-[#8257E8] bg-clip-text text-transparent">
-                  {st.step}
-                </span>
-                <h4 className="text-base font-black text-[#14213D]">{st.title}</h4>
-                <p className="text-xs text-[#66738A] leading-relaxed">{st.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              to="/register-school/plans"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] text-white text-sm font-bold shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/35 transition-all"
-            >
-              <span>Begin School Registration</span>
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 9. SINGLE SCHOOLOS SUBSCRIPTION ── */}
-      <section id="pricing" className="relative z-10 border-y border-slate-200/80 bg-[#F5F8FF] py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-3xl space-y-3 text-center">
-            <span className="rounded-full border border-blue-200 bg-blue-100/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#3563EB]">One simple subscription</span>
-            <h2 className="text-3xl font-black tracking-tight text-[#14213D] sm:text-4xl">Everything starts with one plan.</h2>
-            <p className="text-base text-[#66738A]">Straightforward monthly pricing for schools. No confusing tiers.</p>
-          </div>
-          <div className="mx-auto max-w-xl">
-            <div className="relative overflow-hidden rounded-[2rem] border-2 border-[#3563EB] bg-white p-7 shadow-2xl shadow-blue-500/10 sm:p-10">
-              <div className="absolute right-0 top-0 rounded-bl-2xl bg-[#3563EB] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white">SchoolOS Plan</div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#3563EB]"><School size={24} /></div>
-              <h3 className="mt-6 text-2xl font-black text-[#14213D]">SchoolOS Monthly</h3>
-              <p className="mt-2 text-sm leading-6 text-[#66738A]">One subscription for your school's day-to-day management.</p>
-              <div className="mt-7 flex items-end gap-2 border-b border-slate-100 pb-7">
-                <span className="text-4xl font-black tracking-tight text-[#14213D] sm:text-5xl">PKR 3,000</span>
-                <span className="pb-1 text-sm font-semibold text-slate-500">/ month</span>
-              </div>
-              {loadingPlans ? (
-                <p className="py-6 text-sm font-semibold text-slate-400">Loading plan details…</p>
-              ) : monthlyPlan ? (
-                <>
-                  <div className="mt-6 space-y-3 text-sm text-slate-700">
-                    <p className="font-bold text-[#14213D]">Included in this plan</p>
-                    {monthlyPlan.features.map((feature, index) => (
-                      <div key={index} className="flex items-start gap-3"><Check size={17} className="mt-0.5 shrink-0 text-emerald-600" /><span>{feature}</span></div>
-                    ))}
-                  </div>
-                  <button onClick={() => handlePlanSelect(monthlyPlan.planKey)} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#3563EB] to-[#6653D9] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">
-                    Apply for School Access <ArrowRight size={16} />
-                  </button>
-                </>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Registration is temporarily unavailable. Please try again later or contact the platform administrator.</div>
-              )}
-              <p className="mt-4 text-center text-xs leading-5 text-slate-500">School access is enabled after Super Admin review and approval.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 10. FAQ ACCORDION SECTION ── */}
-      <section id="faq" className="relative z-10 py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 space-y-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200">
-              Frequently Asked Questions
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight">
-              Everything You Need to Know
-            </h2>
-            <p className="text-base text-[#66738A]">
-              Direct answers to common questions asked by school owners, principals, and IT directors.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-2xl border border-slate-200/90 bg-[#F5F8FF] overflow-hidden transition-all"
-                >
-                  <button
-                    onClick={() => setActiveFaq(isOpen ? null : idx)}
-                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#14213D] hover:text-[#3563EB] transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown
-                      size={18}
-                      className={`text-[#66738A] shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-[#3563EB]" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="px-5 pb-5 text-xs sm:text-sm text-[#66738A] leading-relaxed border-t border-slate-200/60 pt-3"
-                      >
-                        {faq.a}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 11. FINAL CONVERSION CALL-TO-ACTION (Light Gradient) ── */}
-      <section className="relative z-10 py-20 bg-gradient-to-b from-[#F5F8FF] to-[#EEF4FF] border-t border-slate-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="w-16 h-16 rounded-3xl bg-white shadow-xl shadow-blue-500/10 border border-blue-100 flex items-center justify-center mx-auto text-[#3563EB]">
-            <School size={32} />
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-black text-[#14213D] tracking-tight">
-            Ready to Manage Your School Smarter?
-          </h2>
-
-          <p className="text-base sm:text-lg text-[#66738A] max-w-2xl mx-auto">
-            Bring your school's essential operations together with SchoolOS. Submit your application and get access after Super Admin approval.
-          </p>
-
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register-school/plans"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] text-white text-base font-bold shadow-xl shadow-blue-600/25 hover:shadow-2xl hover:shadow-blue-600/35 transition-all"
-            >
-              <span>Register Your School</span>
-              <ArrowRight size={18} />
-            </Link>
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-white border border-slate-200 text-[#14213D] text-base font-bold hover:bg-slate-50 transition shadow-sm"
-            >
-              <Search size={16} className="text-[#3563EB]" />
-              <span>Find Registered School</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 12. COMMERCIAL FOOTER ── */}
-      <footer className="relative z-10 bg-white border-t border-slate-200 py-16 text-slate-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-slate-200/80">
-            {/* Col 1: Brand */}
-            <div className="col-span-2 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3563EB] to-[#8257E8] p-[1px] flex items-center justify-center">
-                  <div className="w-full h-full bg-white rounded-[11px] flex items-center justify-center">
-                    <img src="/logo.svg" alt="SchoolOS" className="w-6 h-6" />
-                  </div>
-                </div>
-                <span className="font-black text-lg text-[#14213D]">SchoolOS ERP</span>
-              </div>
-              <p className="text-xs text-[#66738A] leading-relaxed max-w-sm">
-                Next-generation multi-tenant school operating system engineered for educational leaders, teachers, students, and parents.
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Official SaaS Architecture • Built for Modern Schools & Colleges
-              </p>
-            </div>
-
-            {/* Col 2: Platform */}
-            <div className="space-y-3 text-xs">
-              <p className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Platform</p>
-              <ul className="space-y-2">
-                <li><a href="#features" className="hover:text-[#3563EB] transition">Student Records</a></li>
-                <li><a href="#features" className="hover:text-[#3563EB] transition">Fee Management</a></li>
-                <li><a href="#features" className="hover:text-[#3563EB] transition">Daily Attendance</a></li>
-                <li><a href="#features" className="hover:text-[#3563EB] transition">Exam DMCs</a></li>
-              </ul>
-            </div>
-
-            {/* Col 3: Portals */}
-            <div className="space-y-3 text-xs">
-              <p className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Portals & Access</p>
-              <ul className="space-y-2">
-                <li><Link to="/school-login" className="hover:text-[#3563EB] transition">School Admin Login</Link></li>
-                <li><Link to="/school-login" className="hover:text-[#3563EB] transition">Teacher Portal</Link></li>
-                <li><Link to="/portal" className="hover:text-[#3563EB] transition">Parent & Student Portal</Link></li>
-                <li><Link to="/admin-login" className="hover:text-[#3563EB] transition">Super Admin</Link></li>
-              </ul>
-            </div>
-
-            {/* Col 4: Onboarding */}
-            <div className="space-y-3 text-xs">
-              <p className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Institution</p>
-              <ul className="space-y-2">
-                <li><Link to="/register-school/plans" className="hover:text-[#3563EB] transition font-bold text-[#3563EB]">Register Campus</Link></li>
-                <li><a href="#pricing" className="hover:text-[#3563EB] transition">Subscription Plans</a></li>
-                <li><a href="#campuses" className="hover:text-[#3563EB] transition">Registered Schools</a></li>
-                <li><button onClick={() => setSearchOpen(true)} className="hover:text-[#3563EB] transition">Search Campus</button></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} SchoolOS ERP. School Management Platform. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <span>Tenant Security</span>
-              <span>•</span>
-              <span>Secure Access</span>
-              <span>•</span>
-              <span>Role-Based Access</span>
-            </div>
-          </div>
-        </div>
+        <div className="mx-auto mt-10 flex max-w-7xl flex-col justify-between gap-3 border-t border-slate-100 px-4 pt-6 text-[10px] font-semibold text-slate-400 sm:flex-row sm:px-6 lg:px-8"><span>© {new Date().getFullYear()} SchoolOS. All rights reserved.</span><span>Secure access · Role-based workflows · School-specific workspaces</span></div>
       </footer>
-
-      {/* ── Search Modal Component ── */}
       <SchoolSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
