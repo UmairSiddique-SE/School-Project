@@ -732,7 +732,7 @@ export default function LandingPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div>
                     <h3 className="text-lg font-black text-[#14213D]">Student Enrollment & Directory</h3>
-                    <p className="text-xs text-[#66738A]">540 Active Students • Grade 1 through Matriculation</p>
+                    <p className="text-xs text-[#66738A]">Student records appear here after a school is registered</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-[#3563EB] text-xs font-bold border border-blue-200">
@@ -760,57 +760,7 @@ export default function LandingPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      <tr>
-                        <td className="py-3 px-4 font-bold text-[#14213D] flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-blue-100 text-[#3563EB] font-black flex items-center justify-center text-[10px]">
-                            U
-                          </span>
-                          Muhammad Umair
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-700">ADM-2026-001</td>
-                        <td className="py-3 px-4 font-semibold">Class 10 - Section A</td>
-                        <td className="py-3 px-4 text-slate-600">Tariq Mahmood</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">+92 300 1234567</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-3 px-4 font-bold text-[#14213D] flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-purple-100 text-[#8257E8] font-black flex items-center justify-center text-[10px]">
-                            H
-                          </span>
-                          Hannan Siddique
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-700">ADM-2026-002</td>
-                        <td className="py-3 px-4 font-semibold">Class 10 - Section A</td>
-                        <td className="py-3 px-4 text-slate-600">Siddique Ahmad</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">+92 321 7654321</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-3 px-4 font-bold text-[#14213D] flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-cyan-100 text-cyan-600 font-black flex items-center justify-center text-[10px]">
-                            A
-                          </span>
-                          Ayesha Khan
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-700">ADM-2026-003</td>
-                        <td className="py-3 px-4 font-semibold">Class 9 - Section B</td>
-                        <td className="py-3 px-4 text-slate-600">Naveed Khan</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">+92 345 8899001</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
+                      <tr><td colSpan={6} className="py-10 text-center text-slate-500">No student records yet. Real student data will appear after school registration and admission.</td></tr>
                     </tbody>
                   </table>
                 </div>
