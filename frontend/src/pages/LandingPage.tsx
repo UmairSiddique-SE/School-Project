@@ -142,10 +142,7 @@ export default function LandingPage() {
       <header className={`sticky top-0 z-50 border-b backdrop-blur-2xl ${c.header}`}>
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-4 sm:px-7 lg:px-10">
           <Link to="/" className="group flex items-center gap-3">
-            <span className="relative flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-600 shadow-lg shadow-blue-600/25 transition group-hover:rotate-[-5deg]">
-              <img src="/logo.svg" alt="SchoolOS" className="h-7 w-7 brightness-0 invert" />
-              <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-[#111827] bg-cyan-300" />
-            </span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-white/10 bg-[#07131F] shadow-lg shadow-cyan-950/25 transition group-hover:-rotate-3"><img src="/logo.svg" alt="SchoolOS logo" className="h-full w-full object-cover" /></span>
             <span><span className={`block text-[21px] font-black leading-none tracking-tight ${c.heading}`}>SchoolOS</span><span className={`mt-1 block text-[9px] font-bold uppercase tracking-[.22em] ${c.muted}`}>School operating system</span></span>
           </Link>
 
@@ -183,8 +180,8 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-[1440px] items-center gap-14 xl:grid-cols-[.83fr_1.17fr]">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="relative z-10 text-center xl:text-left">
               <div className={`mx-auto mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-extrabold uppercase tracking-[.16em] backdrop-blur xl:mx-0 ${dark ? "border-blue-300/20 bg-blue-400/10 text-blue-200" : "border-blue-200 bg-white text-blue-700 shadow-sm"}`}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" /></span> The operating system for modern schools</div>
-              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>Run your school with clarity.<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">Lead it with confidence.</span></h1>
-              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Your school deserves more than scattered registers, disconnected spreadsheets and daily follow-ups. SchoolOS brings the work of running a school into one clear, connected system — giving your team the confidence to act faster and giving you more time to focus on students, teachers and growth.</p>
+              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>Run your school<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">all in one place.</span></h1>
+              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Manage students, attendance, fees, exams and staff from one simple system. SchoolOS keeps your school organised, helps your team save time and makes daily work easier to manage.</p>
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row xl:justify-start">
                 <Link to="/register-school/plans" className={primary}>See how SchoolOS works <ArrowRight size={17} /></Link>
                 <a href="#tour" className={secondary}><Play size={15} /> Explore the product</a>
@@ -306,7 +303,7 @@ export default function LandingPage() {
 
       <footer className={`relative z-10 border-t py-14 ${c.footer} ${c.line}`}>
         <div className="mx-auto grid max-w-[1440px] gap-10 px-4 sm:px-7 md:grid-cols-[1.5fr_1fr_1fr_1fr] lg:px-10">
-          <div><Link to="/" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600"><img src="/logo.svg" alt="" className="h-6 w-6 brightness-0 invert"/></span><b className={`text-lg font-black ${c.heading}`}>SchoolOS</b></Link><p className={`mt-4 max-w-xs text-xs leading-6 ${c.muted}`}>A connected school management platform for academic, administrative and financial workflows.</p></div>
+          <div><Link to="/" className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#07131F]"><img src="/logo.svg" alt="" className="h-full w-full object-cover"/></span><b className={`text-lg font-black ${c.heading}`}>SchoolOS</b></Link><p className={`mt-4 max-w-xs text-xs leading-6 ${c.muted}`}>A connected school management platform for academic, administrative and financial workflows.</p></div>
           <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Platform</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><a href="#features">Modules</a><a href="#tour">Product tour</a><a href="#how-it-works">How it works</a><a href="#pricing">Pricing</a></div></div>
           <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Portals</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><Link to="/school-login">School login</Link><Link to="/portal">Parent & student portal</Link><Link to="/admin-login">Super Admin</Link></div></div>
           <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Get started</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><Link to="/register-school/plans">Register school</Link><Link to="/school-login">Sign in</Link><button onClick={toggleTheme} className="flex items-center gap-2 text-left hover:text-blue-500">{dark?<Sun size={13}/>:<Moon size={13}/>} Switch to {dark?"light":"dark"} theme</button></div></div>
