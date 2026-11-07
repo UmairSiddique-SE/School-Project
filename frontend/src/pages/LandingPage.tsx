@@ -73,7 +73,20 @@ export default function LandingPage() {
   const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
 
-  // Start every fresh visit in dark mode; the switch remains instant and reliable.
+  // The app-wide ThemeProvider defaults to light. Temporarily own the document theme
+  // on this public page so its global .light overrides cannot break the dark palette.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove("light");
+    if (dark) root.classList.add("dark");
+    else root.classList.remove("dark");
+    return () => {
+      root.classList.remove("dark");
+      root.classList.add("light");
+    };
+  }, [dark]);
+
+  // Every fresh visit starts in dark mode; visitors can switch instantly.
   const toggleTheme = () => setDark((previous) => !previous);
 
   useEffect(() => {
@@ -97,24 +110,28 @@ export default function LandingPage() {
   };
 
   const c = dark ? {
-    bg: "bg-[#080D1B]", header: "border-indigo-300/15 bg-[#090F20]/95", panel: "border-indigo-300/15 bg-gradient-to-br from-[#142344] via-[#101B34] to-[#1A1738]",
-    panel2: "border-cyan-300/10 bg-gradient-to-br from-[#122B43] to-[#171A39]", card: "border-indigo-300/15 bg-gradient-to-br from-[#14213D] via-[#101A32] to-[#17172F]",
-    heading: "text-white", body: "text-slate-200", muted: "text-slate-300", faint: "text-slate-400",
-    line: "border-indigo-200/10", soft: "bg-indigo-300/[0.09]", footer: "bg-[#090F20]",
-    glow: "from-blue-500/30 via-fuchsia-500/20 to-cyan-400/20", grid: "rgba(148,163,184,.16)"
+    bg: "bg-[#070B13]", header: "border-slate-700/70 bg-[#090F19]/95",
+    panel: "border-slate-700/80 bg-gradient-to-br from-[#172538] via-[#111D2C] to-[#102B32]",
+    panel2: "border-teal-400/20 bg-gradient-to-br from-[#102B32] to-[#13243A]",
+    card: "border-slate-700/75 bg-gradient-to-br from-[#142235] via-[#101B2A] to-[#10232C]",
+    heading: "text-[#F7FAFC]", body: "text-slate-200", muted: "text-slate-300", faint: "text-slate-400",
+    line: "border-slate-700/65", soft: "bg-slate-800/75", footer: "bg-[#080E17]",
+    glow: "from-cyan-400/25 via-teal-400/15 to-blue-500/20", grid: "rgba(148,163,184,.10)"
   } : {
-    bg: "bg-[#F4F6FF]", header: "border-indigo-100 bg-white/95", panel: "border-indigo-100 bg-gradient-to-br from-white via-blue-50 to-violet-50",
-    panel2: "border-blue-100 bg-gradient-to-br from-blue-50 to-violet-50", card: "border-indigo-100 bg-gradient-to-br from-white to-blue-50/70",
-    heading: "text-[#111A35]", body: "text-slate-700", muted: "text-slate-600", faint: "text-slate-500",
-    line: "border-indigo-100", soft: "bg-indigo-50", footer: "bg-[#F7F8FF]",
-    glow: "from-blue-300/70 via-fuchsia-200/55 to-cyan-200/70", grid: "rgba(79,70,229,.12)"
+    bg: "bg-[#F5F8FA]", header: "border-slate-200 bg-white/95",
+    panel: "border-slate-200 bg-gradient-to-br from-white via-slate-50 to-cyan-50",
+    panel2: "border-cyan-100 bg-gradient-to-br from-cyan-50 to-blue-50",
+    card: "border-slate-200 bg-gradient-to-br from-white to-slate-50",
+    heading: "text-[#10202C]", body: "text-slate-700", muted: "text-slate-600", faint: "text-slate-500",
+    line: "border-slate-200", soft: "bg-slate-100", footer: "bg-[#F1F5F7]",
+    glow: "from-cyan-300/55 via-teal-200/45 to-blue-200/50", grid: "rgba(15,118,110,.09)"
   };
 
-  const primary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_30px_-12px_rgba(79,70,229,.75)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_-12px_rgba(79,70,229,.8)]";
-  const secondary = `inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-bold transition duration-300 hover:-translate-y-0.5 ${dark ? "border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]" : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700"}`;
+  const primary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 px-5 py-3.5 text-sm font-extrabold text-[#041411] shadow-[0_12px_30px_-12px_rgba(20,184,166,.65)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_-12px_rgba(20,184,166,.75)]";
+  const secondary = `inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-bold transition duration-300 hover:-translate-y-0.5 ${dark ? "border-slate-600/80 bg-slate-800/55 text-slate-100 hover:border-teal-400/50 hover:bg-slate-800" : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-teal-300 hover:text-teal-800"}`;
 
   return (
-    <div className={`relative min-h-screen overflow-hidden font-sans transition-colors duration-500 ${c.bg} ${dark ? "text-white" : "text-[#10182D]"}`}>
+    <div className={`schoolos-landing relative min-h-screen overflow-hidden font-sans transition-colors duration-500 ${c.bg} ${dark ? "text-white" : "text-[#10182D]"}`}>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className={`absolute -top-72 left-[12%] h-[720px] w-[720px] rounded-full bg-gradient-to-br ${c.glow} blur-[120px]`} />
         <div className={`absolute right-[-320px] top-[28%] h-[700px] w-[700px] rounded-full bg-gradient-to-br ${c.glow} blur-[130px]`} />
@@ -124,7 +141,7 @@ export default function LandingPage() {
       <header className={`sticky top-0 z-50 border-b backdrop-blur-2xl ${c.header}`}>
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-4 sm:px-7 lg:px-10">
           <Link to="/" className="group flex items-center gap-3">
-            <span className="relative flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 shadow-lg shadow-blue-600/25 transition group-hover:rotate-[-5deg]">
+            <span className="relative flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-600 shadow-lg shadow-blue-600/25 transition group-hover:rotate-[-5deg]">
               <img src="/logo.svg" alt="SchoolOS" className="h-7 w-7 brightness-0 invert" />
               <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-[#111827] bg-cyan-300" />
             </span>
@@ -165,7 +182,7 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-[1440px] items-center gap-14 xl:grid-cols-[.83fr_1.17fr]">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="relative z-10 text-center xl:text-left">
               <div className={`mx-auto mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-extrabold uppercase tracking-[.16em] backdrop-blur xl:mx-0 ${dark ? "border-blue-300/20 bg-blue-400/10 text-blue-200" : "border-blue-200 bg-white text-blue-700 shadow-sm"}`}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" /></span> The operating system for modern schools</div>
-              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>You lead the school.<br/><span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 bg-clip-text text-transparent">SchoolOS handles the busywork.</span></h1>
+              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>You lead the school.<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">SchoolOS handles the busywork.</span></h1>
               <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Still chasing fee records, attendance sheets, exam results and endless registers? Bring your school into one organised workspace — so you can spend less time managing paperwork and more time building a better school.</p>
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row xl:justify-start">
                 <Link to="/register-school/plans" className={primary}>Build your school workspace <ArrowRight size={17} /></Link>
@@ -232,7 +249,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="platform" className={`border-y py-20 ${c.line} ${dark?"bg-gradient-to-r from-[#101D38] via-[#151A39] to-[#102A3B]":"bg-gradient-to-r from-blue-50 via-violet-50 to-cyan-50"}`}>
+        <section id="platform" className={`border-y py-20 ${c.line} ${dark?"bg-gradient-to-r from-[#101E2C] via-[#122A31] to-[#10232E]":"bg-gradient-to-r from-blue-50 via-violet-50 to-cyan-50"}`}>
           <div className="mx-auto grid max-w-[1440px] gap-8 px-4 sm:px-7 lg:grid-cols-3 lg:px-10">
             {[
               [Command,"One connected command centre","Replace scattered registers and disconnected tools with a unified school workspace.","text-blue-500","bg-blue-500/10"],
@@ -242,7 +259,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className={`px-4 py-24 sm:px-7 lg:px-10 ${dark?"bg-gradient-to-b from-[#080D1B] via-[#111B35] to-[#0B1427]":"bg-gradient-to-b from-[#F4F6FF] via-white to-[#F0F4FF]"}`}>
+        <section id="features" className={`px-4 py-24 sm:px-7 lg:px-10 ${dark?"bg-gradient-to-b from-[#070B13] via-[#101E2B] to-[#0A171D]":"bg-gradient-to-b from-[#F4F6FF] via-white to-[#F0F4FF]"}`}>
           <div className="mx-auto max-w-[1440px]">
             <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end"><div className="max-w-2xl"><span className={`inline-flex rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[.16em] ${dark?"bg-blue-400/10 text-blue-300":"bg-blue-50 text-blue-700"}`}>The complete school toolkit</span><h2 className={`mt-5 text-3xl font-black tracking-[-.05em] sm:text-5xl ${c.heading}`}>Every department.<br/><span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">Finally in sync.</span></h2></div><p className={`max-w-md text-sm leading-7 lg:pb-1 ${c.muted}`}>A connected set of tools for the people, processes and decisions that keep a school moving forward.</p></div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -251,7 +268,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="tour" className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-br from-[#111C36] via-[#151A3A] to-[#102A3A]":"bg-gradient-to-br from-blue-50 via-violet-50 to-cyan-50"}`}>
+        <section id="tour" className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-br from-[#11202D] via-[#142B31] to-[#10252C]":"bg-gradient-to-br from-blue-50 via-violet-50 to-cyan-50"}`}>
           <div className="mx-auto max-w-[1440px]">
             <div className="mx-auto mb-12 max-w-3xl text-center"><span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[.16em] ${dark?"bg-cyan-400/10 text-cyan-300":"bg-cyan-50 text-cyan-700"}`}><Sparkles size={13}/> A closer look</span><h2 className={`mt-5 text-3xl font-black tracking-[-.05em] sm:text-5xl ${c.heading}`}>See the work flow.<br/><span className="bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">Not just the promise.</span></h2><p className={`mt-4 text-sm leading-7 ${c.muted}`}>Explore illustrative previews of the key SchoolOS workflows.</p></div>
             <div className={`overflow-hidden rounded-[30px] border shadow-2xl ${c.panel}`}>
@@ -264,14 +281,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className={`px-4 py-24 sm:px-7 lg:px-10 ${dark?"bg-gradient-to-br from-[#0B1428] via-[#15152F] to-[#10283A]":"bg-gradient-to-br from-[#EEF4FF] via-[#F8F3FF] to-[#E9FAFF]"}`}>
+        <section className={`px-4 py-24 sm:px-7 lg:px-10 ${dark?"bg-gradient-to-br from-[#0A151E] via-[#12282E] to-[#10242B]":"bg-gradient-to-br from-[#EEF4FF] via-[#F8F3FF] to-[#E9FAFF]"}`}>
           <div className="mx-auto grid max-w-[1440px] items-center gap-12 lg:grid-cols-2">
             <div><span className="text-[9px] font-extrabold uppercase tracking-[.17em] text-violet-500">Your campus, online</span><h2 className={`mt-4 text-3xl font-black leading-tight tracking-[-.05em] sm:text-5xl ${c.heading}`}>Give your school<br/><span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">a digital front door.</span></h2><p className={`mt-5 max-w-xl text-sm leading-7 ${c.muted}`}>SchoolOS supports dedicated public school pages, giving each approved institution a place to present its identity, academic information and ways to connect.</p><div className="mt-7 space-y-3">{["Dedicated school profile and public identity","Academic levels, campus details and facilities","Admissions enquiry and portal entry points"].map((item)=><div key={item} className={`flex items-center gap-3 text-xs font-semibold ${c.body}`}><CheckCircle2 size={16} className="text-emerald-500"/>{item}</div>)}</div><Link to="/register-school/plans" className={`${primary} mt-8`}>Register your school <ArrowRight size={16}/></Link></div>
             <div className={`relative rounded-[30px] border p-4 shadow-2xl ${c.panel}`}><div className={`absolute -inset-5 -z-10 rounded-[40px] bg-gradient-to-br ${c.glow} blur-2xl`}/><div className={`flex items-center justify-between border-b px-2 pb-4 ${c.line}`}><span className={`flex items-center gap-2 text-[10px] font-bold ${c.body}`}><Globe2 size={14} className="text-cyan-500"/> School website preview</span><span className="text-[8px] font-extrabold uppercase text-emerald-500">Illustrative</span></div><div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-gradient-to-br from-[#102C62] via-[#3146A5] to-[#6D43C7] p-7 text-center text-white sm:p-10"><div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/20 bg-white/15 text-2xl font-black shadow-xl backdrop-blur">S</div><p className="mt-6 text-[8px] font-extrabold uppercase tracking-[.22em] text-blue-100">Welcome to</p><h3 className="mt-2 text-2xl font-black sm:text-3xl">Your School Name</h3><p className="mt-2 text-[10px] text-blue-100">Your City, Pakistan</p><div className="mt-7 flex flex-wrap justify-center gap-2">{["Admissions","Academics","Campus life","School portal"].map((label)=><span key={label} className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[9px] font-bold backdrop-blur">{label}</span>)}</div><div className="mt-8 grid grid-cols-3 gap-2 border-t border-white/15 pt-6"><div><p className="text-lg font-black">01</p><p className="mt-1 text-[8px] text-blue-100">School profile</p></div><div><p className="text-lg font-black">02</p><p className="mt-1 text-[8px] text-blue-100">Public info</p></div><div><p className="text-lg font-black">03</p><p className="mt-1 text-[8px] text-blue-100">Portal access</p></div></div></div></div>
           </div>
         </section>
 
-        <section id="how-it-works" className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-r from-[#111B33] via-[#17203D] to-[#102B3B]":"bg-gradient-to-r from-violet-50 via-blue-50 to-cyan-50"}`}>
+        <section id="how-it-works" className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-r from-[#10202B] via-[#152A31] to-[#10262D]":"bg-gradient-to-r from-violet-50 via-blue-50 to-cyan-50"}`}>
           <div className="mx-auto max-w-[1440px]"><div className="mx-auto mb-14 max-w-3xl text-center"><span className="text-[9px] font-extrabold uppercase tracking-[.17em] text-cyan-500">A clear start</span><h2 className={`mt-4 text-3xl font-black tracking-[-.05em] sm:text-5xl ${c.heading}`}>From application to<br/>your own school workspace.</h2><p className={`mt-4 text-sm ${c.muted}`}>A reviewed onboarding process helps each school get started with clarity.</p></div><div className="grid gap-4 md:grid-cols-3">{[[ "01","Choose a plan","Review the available plans and select the option that fits your school.",CreditCard ],[ "02","Submit your application","Share your school information and submit it for review.",ClipboardCheck ],[ "03","Get your workspace","After approval, your school administrator can begin setup.",Zap ]].map(([number,title,description,Icon],i)=>{const I=Icon as React.ElementType;return <motion.div key={String(number)} whileHover={{y:-5}} className={`relative overflow-hidden rounded-[26px] border p-7 ${c.card}`}><span className="absolute -right-3 -top-8 text-[100px] font-black leading-none text-blue-500/[0.06]">{String(number)}</span><div className="relative flex items-center justify-between"><span className="text-3xl font-black text-blue-500/50">{String(number)}</span><span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${dark?"bg-white/[0.05] text-cyan-300":"bg-blue-50 text-blue-600"}`}><I size={21}/></span></div><h3 className={`relative mt-8 text-lg font-black ${c.heading}`}>{String(title)}</h3><p className={`relative mt-2 text-sm leading-6 ${c.muted}`}>{String(description)}</p>{i<2&&<div className="absolute -right-4 top-1/2 hidden h-px w-8 bg-gradient-to-r from-blue-500 to-violet-500 md:block"/>}</motion.div>})}</div></div>
         </section>
 
@@ -281,9 +298,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-br from-[#111B34] via-[#171831] to-[#10293A]":"bg-gradient-to-br from-violet-50 via-blue-50 to-cyan-50"}`}><div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-[.8fr_1.2fr]"><div><span className="text-[9px] font-extrabold uppercase tracking-[.17em] text-violet-500">Questions, answered</span><h2 className={`mt-4 text-3xl font-black tracking-[-.05em] sm:text-5xl ${c.heading}`}>Good decisions<br/>start with clarity.</h2><p className={`mt-4 text-sm leading-7 ${c.muted}`}>A few answers to common questions about the SchoolOS platform and getting started.</p><div className={`mt-7 flex items-center gap-2 text-xs font-bold ${c.muted}`}><ShieldCheck size={16} className="text-emerald-500"/> Reviewed school onboarding</div></div><div className="space-y-3">{faqs.map((faq,index)=><div key={faq.question} className={`overflow-hidden rounded-2xl border ${c.card}`}><button onClick={()=>setOpenFaq(openFaq===index?null:index)} className="flex w-full items-center justify-between gap-4 p-5 text-left"><span className={`text-sm font-extrabold ${c.heading}`}>{faq.question}</span><ChevronDown size={17} className={`shrink-0 transition ${c.muted} ${openFaq===index?"rotate-180":""}`}/></button><AnimatePresence initial={false}>{openFaq===index&&<motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden"><p className={`px-5 pb-5 text-sm leading-7 ${c.muted}`}>{faq.answer}</p></motion.div>}</AnimatePresence></div>)}</div></div></section>
+        <section className={`border-y px-4 py-24 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-br from-[#10202D] via-[#172B31] to-[#10272E]":"bg-gradient-to-br from-violet-50 via-blue-50 to-cyan-50"}`}><div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-[.8fr_1.2fr]"><div><span className="text-[9px] font-extrabold uppercase tracking-[.17em] text-violet-500">Questions, answered</span><h2 className={`mt-4 text-3xl font-black tracking-[-.05em] sm:text-5xl ${c.heading}`}>Good decisions<br/>start with clarity.</h2><p className={`mt-4 text-sm leading-7 ${c.muted}`}>A few answers to common questions about the SchoolOS platform and getting started.</p><div className={`mt-7 flex items-center gap-2 text-xs font-bold ${c.muted}`}><ShieldCheck size={16} className="text-emerald-500"/> Reviewed school onboarding</div></div><div className="space-y-3">{faqs.map((faq,index)=><div key={faq.question} className={`overflow-hidden rounded-2xl border ${c.card}`}><button onClick={()=>setOpenFaq(openFaq===index?null:index)} className="flex w-full items-center justify-between gap-4 p-5 text-left"><span className={`text-sm font-extrabold ${c.heading}`}>{faq.question}</span><ChevronDown size={17} className={`shrink-0 transition ${c.muted} ${openFaq===index?"rotate-180":""}`}/></button><AnimatePresence initial={false}>{openFaq===index&&<motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden"><p className={`px-5 pb-5 text-sm leading-7 ${c.muted}`}>{faq.answer}</p></motion.div>}</AnimatePresence></div>)}</div></div></section>
 
-        <section className="px-4 py-24 sm:px-7 lg:px-10"><div className="mx-auto max-w-[1440px]"><div className="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-[#1646A5] via-[#4338CA] to-[#7138B8] px-7 py-16 text-center text-white shadow-2xl shadow-blue-900/25 sm:px-14 sm:py-20"><div className="absolute -left-24 -top-32 h-80 w-80 rounded-full border-[35px] border-white/[0.08]"/><div className="absolute -bottom-40 -right-10 h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl"/><div className="absolute inset-0 opacity-20" style={{backgroundImage:"radial-gradient(rgba(255,255,255,.7) 1px,transparent 1px)",backgroundSize:"22px 22px"}}/><div className="relative mx-auto max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[.16em]"><Star size={12}/> Bring clarity to your school operations</span><h2 className="mt-6 text-3xl font-black leading-tight tracking-[-.05em] sm:text-5xl">You started a school to shape futures.<br/>Let SchoolOS help you lead it.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-blue-100">Your time belongs in classrooms, leadership and student success — not buried under registers and repeated follow-ups. Take the next step towards a more organised school.</p><div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><Link to="/register-school/plans" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-blue-700 shadow-lg transition hover:-translate-y-1">Register your school <ArrowRight size={16}/></Link><Link to="/school-login" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-white/15">School login</Link></div></div></div></div></section>
+        <section className="px-4 py-24 sm:px-7 lg:px-10"><div className="mx-auto max-w-[1440px]"><div className="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-[#0E5B69] via-[#087F78] to-[#145B68] px-7 py-16 text-center text-white shadow-2xl shadow-teal-950/35 sm:px-14 sm:py-20"><div className="absolute -left-24 -top-32 h-80 w-80 rounded-full border-[35px] border-white/[0.08]"/><div className="absolute -bottom-40 -right-10 h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl"/><div className="absolute inset-0 opacity-20" style={{backgroundImage:"radial-gradient(rgba(255,255,255,.7) 1px,transparent 1px)",backgroundSize:"22px 22px"}}/><div className="relative mx-auto max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[.16em]"><Star size={12}/> Bring clarity to your school operations</span><h2 className="mt-6 text-3xl font-black leading-tight tracking-[-.05em] sm:text-5xl">You started a school to shape futures.<br/>Let SchoolOS help you lead it.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-blue-100">Your time belongs in classrooms, leadership and student success — not buried under registers and repeated follow-ups. Take the next step towards a more organised school.</p><div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><Link to="/register-school/plans" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-blue-700 shadow-lg transition hover:-translate-y-1">Register your school <ArrowRight size={16}/></Link><Link to="/school-login" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-white/15">School login</Link></div></div></div></div></section>
       </main>
 
       <footer className={`relative z-10 border-t py-14 ${c.footer} ${c.line}`}>
