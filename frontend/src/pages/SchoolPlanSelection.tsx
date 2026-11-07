@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Crown, Loader2, Star, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, School } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 
@@ -16,76 +16,78 @@ type PublicPlan = {
   features: string[];
 };
 
-const styles: Record<string, { icon: typeof Zap; gradient: string; border: string; badge?: string }> = {
-  FREE_TRIAL: { icon: Zap, gradient: "from-sky-500 to-cyan-600", border: "border-sky-400/30" },
-  PROFESSIONAL: { icon: Star, gradient: "from-indigo-500 via-blue-600 to-violet-600", border: "border-indigo-400/50", badge: "MOST POPULAR" },
-  PREMIUM: { icon: Crown, gradient: "from-emerald-500 via-teal-500 to-cyan-600", border: "border-emerald-400/50", badge: "BEST VALUE" },
-};
-
-const limit = (value: number, label: string) => value >= 999999 ? `Unlimited ${label}` : `Up to ${value.toLocaleString()} ${label}`;
-
 export default function SchoolPlanSelection() {
   const navigate = useNavigate();
-  const [plans, setPlans] = useState<PublicPlan[]>([]);
+  const [plan, setPlan] = useState<PublicPlan | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     apiClient.get<PublicPlan[]>("/public/plans")
-      .then((response) => setPlans(response.data || []))
-      .catch(() => setPlans([]))
+      .then(({ data }) => {
+        const monthlyPlan = Array.isArray(data)
+          ? data.find((item) => item.planKey === "PROFESSIONAL" && item.price === 3000)
+          : undefined;
+        setPlan(monthlyPlan ?? null);
+      })
+      .catch(() => setPlan(null))
       .finally(() => setLoading(false));
   }, []);
 
-  const choosePlan = (plan: PublicPlan) => {
+  const continueRegistration = () => {
+    if (!plan) return;
     sessionStorage.setItem("edusphere_registration_plan", plan.planKey);
     navigate(`/register-school/form?plan=${encodeURIComponent(plan.planKey)}`);
   };
 
   return (
-    <main className="min-h-screen bg-[#06111d] px-5 py-10 text-white">
-      <div className="mx-auto max-w-7xl">
-        <button onClick={() => navigate("/")} className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white">
-          <ArrowLeft size={16} /> Back to EduSphere
+    <main className="min-h-screen bg-[#F7F9FE] px-4 py-8 text-[#14213D] sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-5xl">
+        <button onClick={() => navigate("/")} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-white hover:text-[#3563EB]">
+          <ArrowLeft size={16} /> Back to SchoolOS
         </button>
 
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-300">School registration</span>
-          <h1 className="mt-3 text-4xl font-black sm:text-5xl">Choose your plan</h1>
-          <p className="mt-4 text-sm leading-6 text-slate-400">Select a plan first. Your school registration will continue with this plan attached to the application.</p>
-        </div>
+        <header className="mx-auto mt-10 max-w-2xl text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-[#3563EB]"><School size={27} /></div>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.2em] text-[#3563EB]">School registration</p>
+          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">One plan. Clear pricing.</h1>
+          <p className="mt-4 text-sm leading-6 text-slate-500 sm:text-base">Choose the SchoolOS monthly subscription and submit your school application for review.</p>
+        </header>
 
         {loading ? (
-          <div className="flex min-h-[420px] items-center justify-center"><Loader2 className="animate-spin text-cyan-300" size={32} /></div>
-        ) : plans.length === 0 ? (
-          <div className="mx-auto mt-12 max-w-xl rounded-3xl border border-red-400/20 bg-red-400/5 p-8 text-center">
-            <h2 className="text-xl font-black">Plans are temporarily unavailable</h2>
-            <p className="mt-2 text-sm text-slate-400">Please try again in a moment. Registration plans are loaded from the live platform configuration.</p>
-            <button onClick={() => window.location.reload()} className="mt-5 rounded-xl bg-cyan-500 px-5 py-3 text-sm font-black">Retry</button>
+          <div className="flex min-h-[360px] items-center justify-center"><Loader2 className="animate-spin text-[#3563EB]" size={32} /></div>
+        ) : !plan ? (
+          <div className="mx-auto mt-12 max-w-xl rounded-3xl border border-amber-200 bg-white p-8 text-center shadow-sm">
+            <h2 className="text-xl font-black">Registration is temporarily unavailable</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">The monthly plan could not be loaded. Please try again later or contact the platform administrator.</p>
+            <button onClick={() => window.location.reload()} className="mt-5 rounded-xl bg-[#3563EB] px-5 py-3 text-sm font-bold text-white">Try again</button>
           </div>
         ) : (
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {plans.map((plan) => {
-              const style = styles[plan.planKey] || styles.PROFESSIONAL;
-              const Icon = style.icon;
-              return (
-                <article key={plan.planKey} className={`relative overflow-hidden rounded-[28px] border ${style.border} bg-white/[.035] p-6 shadow-2xl backdrop-blur-xl`}>
-                  {style.badge && <span className="absolute right-5 top-5 rounded-full bg-white/10 px-3 py-1 text-[9px] font-black tracking-widest text-cyan-200">{style.badge}</span>}
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${style.gradient}`}><Icon size={22} /></div>
-                  <h2 className="mt-6 text-2xl font-black">{plan.name}</h2>
-                  <div className="mt-3 flex items-end gap-1"><span className="text-4xl font-black">PKR {plan.price.toLocaleString()}</span><span className="pb-1 text-xs text-slate-500">{plan.period}</span></div>
-                  <div className="mt-6 space-y-3 border-t border-white/10 pt-5 text-sm text-slate-300">
-                    <p>✓ {limit(plan.maxStudents, "students")}</p>
-                    <p>✓ {limit(plan.maxTeachers, "staff")}</p>
-                    <p>✓ {plan.storageMb >= 512000 ? "Large storage" : `${Math.round(plan.storageMb / 1024)} GB storage`}</p>
-                    {plan.features.slice(0, 5).map((feature) => <p key={feature} className="flex gap-2"><Check size={15} className="mt-0.5 shrink-0 text-emerald-300" />{feature}</p>)}
+          <section className="mx-auto mt-12 max-w-xl overflow-hidden rounded-[2rem] border border-blue-200 bg-white shadow-xl shadow-blue-900/5">
+            <div className="bg-gradient-to-r from-[#3563EB] to-[#6653D9] px-7 py-7 text-white sm:px-9">
+              <span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest">SchoolOS subscription</span>
+              <h2 className="mt-5 text-2xl font-black">{plan.name}</h2>
+              <p className="mt-1 text-sm text-blue-100">Everything your school needs to get started.</p>
+              <div className="mt-6 flex items-end gap-2">
+                <span className="text-4xl font-black sm:text-5xl">PKR {plan.price.toLocaleString()}</span>
+                <span className="pb-1 text-sm font-semibold text-blue-100">/ month</span>
+              </div>
+            </div>
+            <div className="p-7 sm:p-9">
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Included in this plan</h3>
+              <div className="mt-5 space-y-4">
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3 text-sm text-slate-700">
+                    <Check size={17} className="mt-0.5 shrink-0 text-emerald-600" />
+                    <span>{feature}</span>
                   </div>
-                  <button onClick={() => choosePlan(plan)} className={`mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${style.gradient} px-5 py-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110`}>
-                    Continue with {plan.name} <ArrowRight size={16} />
-                  </button>
-                </article>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+              <button onClick={continueRegistration} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#3563EB] to-[#6653D9] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">
+                Continue to School Registration <ArrowRight size={17} />
+              </button>
+              <p className="mt-4 text-center text-xs leading-5 text-slate-500">Your application is reviewed by the Super Admin. School access starts after approval.</p>
+            </div>
+          </section>
         )}
       </div>
     </main>
