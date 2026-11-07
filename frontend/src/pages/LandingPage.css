@@ -1,0 +1,202 @@
+/* SchoolOS public landing — signature editorial SaaS design */
+.schoolos-landing {
+  --so-ink: #07151a;
+  --so-ink-2: #0b2025;
+  --so-ink-3: #102b30;
+  --so-mint: #63e6be;
+  --so-lime: #d4f17a;
+  --so-cream: #f6f5ed;
+  --so-muted: #a9bdba;
+  --so-line: rgba(166, 207, 196, .16);
+  isolation: isolate;
+  background: var(--so-ink) !important;
+  color: #f3fbf8 !important;
+}
+.schoolos-landing.schoolos-light {
+  --so-ink: #f6f5ed;
+  --so-ink-2: #eeF2e9;
+  --so-ink-3: #e4eee7;
+  --so-mint: #087f68;
+  --so-lime: #c3df69;
+  --so-muted: #536760;
+  --so-line: rgba(20, 68, 57, .13);
+  background: var(--so-cream) !important;
+  color: #122720 !important;
+}
+.schoolos-landing::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1050px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 78% 12%, rgba(35, 173, 139, .18), transparent 34%),
+    radial-gradient(ellipse at 8% 34%, rgba(119, 157, 88, .10), transparent 32%),
+    linear-gradient(180deg, #08191d 0%, #07151a 72%, transparent 100%);
+}
+.schoolos-light::before {
+  background:
+    radial-gradient(ellipse at 78% 12%, rgba(94, 190, 152, .17), transparent 34%),
+    radial-gradient(ellipse at 8% 34%, rgba(199, 220, 131, .18), transparent 32%),
+    linear-gradient(180deg, #edf5eb 0%, #f6f5ed 78%, transparent 100%);
+}
+.schoolos-landing header {
+  background: rgba(7, 21, 26, .88) !important;
+  border-color: var(--so-line) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,.12);
+}
+.schoolos-light header { background: rgba(248, 249, 241, .88) !important; }
+.schoolos-landing header nav,
+.schoolos-landing header a,
+.schoolos-landing header button { letter-spacing: .015em; }
+.schoolos-landing header nav a { position: relative; }
+.schoolos-landing header nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 100%; bottom: -9px;
+  height: 2px;
+  background: var(--so-mint);
+  transition: right .25s ease;
+}
+.schoolos-landing header nav a:hover::after { right: 0; }
+.schoolos-landing header img { filter: brightness(0) invert(1); }
+.schoolos-light header img { filter: none; }
+.schoolos-landing main > section {
+  position: relative;
+  scroll-margin-top: 90px;
+}
+.schoolos-landing main > section:nth-child(2n) {
+  background: linear-gradient(135deg, rgba(19, 52, 52, .70), rgba(9, 30, 34, .92)) !important;
+  border-color: var(--so-line) !important;
+}
+.schoolos-landing main > section:nth-child(2n+1) {
+  background: linear-gradient(180deg, rgba(7, 21, 26, .10), rgba(7, 21, 26, .72)) !important;
+}
+.schoolos-light main > section:nth-child(2n) {
+  background: linear-gradient(135deg, #e8f1e8, #f2f4eb) !important;
+  border-color: var(--so-line) !important;
+}
+.schoolos-light main > section:nth-child(2n+1) {
+  background: linear-gradient(180deg, rgba(246,245,237,.2), rgba(237,243,232,.78)) !important;
+}
+.schoolos-landing main > section:first-child {
+  min-height: 680px;
+  padding-top: clamp(58px, 8vw, 112px) !important;
+  padding-bottom: clamp(76px, 9vw, 130px) !important;
+  background: transparent !important;
+}
+.schoolos-landing h1 {
+  max-width: 790px;
+  font-size: clamp(3rem, 5.5vw, 5.8rem) !important;
+  line-height: .99 !important;
+  letter-spacing: -.075em !important;
+  font-weight: 850 !important;
+}
+.schoolos-landing h1 span {
+  background-image: linear-gradient(100deg, #78edc7 0%, #c9ee86 55%, #f1e9b5 100%) !important;
+  filter: drop-shadow(0 8px 32px rgba(87, 211, 164, .13));
+}
+.schoolos-light h1 span {
+  background-image: linear-gradient(100deg, #087f68 0%, #3d9871 55%, #9aa94e 100%) !important;
+}
+.schoolos-landing main > section:first-child p {
+  max-width: 620px;
+  line-height: 1.9 !important;
+}
+.schoolos-landing main > section:first-child a[class*="bg-gradient"] {
+  background: linear-gradient(105deg, #bfe96f, #72dfb4) !important;
+  color: #10251e !important;
+  box-shadow: 0 16px 42px rgba(104, 205, 151, .20) !important;
+  border: 1px solid rgba(220,255,193,.32);
+}
+.schoolos-landing main > section:first-child a[class*="border"] {
+  border-color: rgba(151, 205, 186, .28) !important;
+  background: rgba(255,255,255,.045) !important;
+  color: #eaf7f1 !important;
+}
+.schoolos-light main > section:first-child a[class*="border"] {
+  color: #24443a !important;
+  background: rgba(255,255,255,.7) !important;
+  border-color: rgba(20,68,57,.18) !important;
+}
+.schoolos-landing main > section:first-child [class*="rounded-2xl"][class*="border"] {
+  border-color: rgba(153, 213, 190, .19) !important;
+  background: linear-gradient(145deg, rgba(23,62,59,.72), rgba(13,37,40,.72)) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,.12);
+}
+.schoolos-light main > section:first-child [class*="rounded-2xl"][class*="border"] {
+  border-color: rgba(30,91,70,.15) !important;
+  background: rgba(255,255,255,.78) !important;
+  box-shadow: 0 12px 28px rgba(24,64,48,.06);
+}
+.schoolos-landing h2 {
+  letter-spacing: -.06em !important;
+  line-height: 1.06 !important;
+  font-weight: 820 !important;
+}
+.schoolos-landing h2 span {
+  background-image: linear-gradient(100deg, #72e6bf, #d2ed8b) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+}
+.schoolos-light h2 span { background-image: linear-gradient(100deg, #087f68, #8a9c43) !important; }
+.schoolos-landing main > section [class*="rounded-["],
+.schoolos-landing main > section [class*="rounded-3xl"],
+.schoolos-landing main > section [class*="rounded-2xl"] {
+  border-color: var(--so-line) !important;
+}
+.schoolos-dark main > section [class*="rounded-["],
+.schoolos-dark main > section [class*="rounded-3xl"],
+.schoolos-dark main > section [class*="rounded-2xl"] {
+  background-color: rgba(15, 39, 43, .78);
+  box-shadow: 0 18px 54px rgba(0,0,0,.14);
+  backdrop-filter: blur(14px);
+}
+.schoolos-light main > section [class*="rounded-["],
+.schoolos-light main > section [class*="rounded-3xl"],
+.schoolos-light main > section [class*="rounded-2xl"] {
+  background-color: rgba(255,255,255,.78);
+  box-shadow: 0 16px 42px rgba(35,72,53,.055);
+}
+.schoolos-landing main > section [class*="bg-gradient-to-r"][class*="text-white"] {
+  color: #f5fff9;
+}
+.schoolos-landing main > section [class*="bg-gradient-to-r"][class*="from-blue-600"],
+.schoolos-landing main > section [class*="bg-gradient-to-br"][class*="from-blue-600"] {
+  background-image: linear-gradient(110deg, #bfe96f, #72dfb4) !important;
+  color: #10251e !important;
+}
+.schoolos-landing main > section [class*="text-blue-"],
+.schoolos-landing main > section [class*="text-violet-"] { color: var(--so-mint); }
+.schoolos-landing main > section [class*="bg-blue-"],
+.schoolos-landing main > section [class*="bg-violet-"] { background-color: rgba(83, 180, 143, .13); }
+.schoolos-landing main > section [class*="border-blue-"],
+.schoolos-landing main > section [class*="border-violet-"] { border-color: var(--so-line); }
+.schoolos-landing main > section [class*="shadow-blue-"] { --tw-shadow-color: rgba(20,90,68,.22); }
+.schoolos-landing footer {
+  background: #061217 !important;
+  border-color: var(--so-line) !important;
+}
+.schoolos-light footer { background: #eaf0e7 !important; }
+.schoolos-landing footer a:hover,
+.schoolos-landing footer button:hover { color: var(--so-mint) !important; }
+.schoolos-landing ::selection { background: rgba(114,223,180,.34); color: inherit; }
+.schoolos-landing button,
+.schoolos-landing a { -webkit-tap-highlight-color: transparent; }
+.schoolos-landing button:focus-visible,
+.schoolos-landing a:focus-visible { outline: 2px solid var(--so-mint); outline-offset: 4px; }
+@media (max-width: 767px) {
+  .schoolos-landing main > section:first-child { min-height: auto; padding-top: 48px !important; }
+  .schoolos-landing h1 { font-size: clamp(2.65rem, 12vw, 4.3rem) !important; line-height: 1.02 !important; }
+  .schoolos-landing main > section { padding-top: 68px !important; padding-bottom: 68px !important; }
+  .schoolos-landing header > div { height: 68px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .schoolos-landing *, .schoolos-landing *::before, .schoolos-landing *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
