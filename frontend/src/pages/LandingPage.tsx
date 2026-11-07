@@ -885,18 +885,18 @@ export default function LandingPage() {
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="text-xs font-bold text-slate-500">Total Enrolled</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">540</p>
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">↑ 12% Admissions Growth</p>
+                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1">Actual admission records</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="text-xs font-bold text-slate-500">Collected Revenue</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">PKR 1.2M</p>
-                    <p className="text-[10px] text-slate-500 font-semibold mt-1">Current Academic Month</p>
+                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-1">No payments recorded yet</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="text-xs font-bold text-slate-500">Active Faculty</p>
-                    <p className="text-2xl font-black text-slate-900 mt-1">32</p>
-                    <p className="text-[10px] text-blue-600 font-bold mt-1">1:17 Teacher-Student Ratio</p>
+                    <p className="text-2xl font-black text-slate-900 mt-1">—</p>
+                    <p className="text-[10px] text-blue-600 font-bold mt-1">Faculty records appear after setup</p>
                   </div>
                 </div>
               </div>
