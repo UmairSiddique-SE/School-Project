@@ -106,31 +106,14 @@ export default function LandingPage() {
     navigate(`/register-school/form?plan=${encodeURIComponent(planKey)}`);
   };
 
+  const monthlyPlan = plans.find((plan) => plan.planKey === "PROFESSIONAL" && plan.price === 3000);
+
   const faqs = [
-    {
-      q: "What is EduSphere ERP and who is it designed for?",
-      a: "EduSphere is a complete, multi-tenant cloud School Management ERP system built specifically for modern school owners, headmasters, principals, and administrative directors. It unifies student records, fee collection, teacher scheduling, biometric attendance, examinations, and official reporting into a single command center.",
-    },
-    {
-      q: "How does the school registration and approval workflow work?",
-      a: "1) Select your preferred plan (Free Trial, Professional, or Premium). 2) Submit your official school profile, campus address, and admin credentials. 3) Our governance board reviews and verifies the institution. 4) Once approved, you gain full access to your custom URL (e.g. /your-school/login) and live dashboard.",
-    },
-    {
-      q: "Does our school receive its own dedicated public website?",
-      a: "Yes! Every registered school automatically receives its own responsive, SEO-ready public website (e.g. /school/your-school-slug). You can customize your institution banner, mission statement, faculty directory, academic courses, and accept online admission inquiries directly from parents.",
-    },
-    {
-      q: "Can we print official Pakistani 3-copy Bank Fee Challans and DMCs?",
-      a: "Absolutely. EduSphere includes built-in institutional print generators for standard 3-copy bank challans (Bank Copy, School Copy, Student Copy) as well as Detailed Marks Certificates (DMCs) with grade matriculation, school logos, and signature authority blocks.",
-    },
-    {
-      q: "Can multiple branches or campuses be managed from one account?",
-      a: "Yes, our Professional and Premium tiers support multi-campus hierarchy. School group executives and owners can manage branch rosters, compare cross-campus collections, and inspect teacher allotments without switching software.",
-    },
-    {
-      q: "Are student and parent portals included?",
-      a: "Yes! Teachers, parents, and students have dedicated role-based portals. Parents can log in to view real-time fee dues, fee receipts, and attendance, while students can track homework and term examination grades.",
-    },
+    { q: "What is SchoolOS?", a: "SchoolOS is a school management platform designed to bring essential administrative and academic workflows into one organised system." },
+    { q: "How does school registration work?", a: "Submit your school's details and administrator information. The application is reviewed by the Super Admin. Access is provided after approval." },
+    { q: "How much does SchoolOS cost?", a: "The public SchoolOS subscription is PKR 3,000 per month. The plan details and applicable limits are shown during registration." },
+    { q: "Can any school start using the platform immediately?", a: "No. Each school must submit an application and wait for Super Admin approval before its school account is activated." },
+    { q: "How do I access my school after approval?", a: "After approval, use the school login page and the credentials created during registration to access your school workspace." },
   ];
 
   return (
@@ -151,20 +134,20 @@ export default function LandingPage() {
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#3563EB] via-[#4F46E5] to-[#8257E8] p-[1.5px] shadow-md shadow-blue-500/15 group-hover:scale-105 transition-transform duration-200">
               <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
-                <img src="/logo.svg" alt="EduSphere ERP" className="w-7 h-7" />
+                <img src="/logo.svg" alt="SchoolOS ERP" className="w-7 h-7" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-xl tracking-tight text-[#14213D]">
-                  EduSphere
+                  SchoolOS
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#3563EB] border border-blue-200/80">
                   ERP SaaS
                 </span>
               </div>
               <p className="text-[11px] font-semibold text-[#66738A]">
-                School Management Command Center
+                School Management System
               </p>
             </div>
           </Link>
@@ -321,20 +304,20 @@ export default function LandingPage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EEF4FF] border border-[#BFDBFE] text-[#3563EB] text-xs font-bold tracking-wide">
                 <Sparkles size={14} className="text-[#3563EB]" />
-                <span>Complete School Management Platform</span>
+                <span>School Management for Growing Schools</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#14213D] tracking-tight leading-[1.12]">
-                A Better Way to{" "}
+                Bring Your School Operations{" "}
                 <span className="bg-gradient-to-r from-[#3563EB] via-[#4F46E5] to-[#8257E8] bg-clip-text text-transparent">
-                  Run Your School.
+                  Together in One Place.
                 </span>
               </h1>
 
               {/* Supporting Subtitle */}
               <p className="text-lg sm:text-xl text-[#66738A] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
-                One powerful platform to manage students, teachers, attendance, fees, examinations and everyday school operations — with clarity, control and confidence.
+                Manage your school’s essential records, attendance, fees and academic workflows from one organised platform.
               </p>
 
               {/* Action Buttons */}
@@ -359,7 +342,7 @@ export default function LandingPage() {
               <div className="pt-3 flex items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-[#66738A]">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 size={16} className="text-emerald-500" />
-                  Instant Cloud Setup
+                  Guided Onboarding
                 </span>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <span className="flex items-center gap-1.5">
@@ -369,7 +352,7 @@ export default function LandingPage() {
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 size={16} className="text-emerald-500" />
-                  Free 14-Day Trial
+                  School Approval Required
                 </span>
               </div>
             </motion.div>
@@ -393,7 +376,7 @@ export default function LandingPage() {
                     <div className="w-3 h-3 rounded-full bg-amber-400" />
                     <div className="w-3 h-3 rounded-full bg-emerald-400" />
                     <span className="ml-2 text-[11px] font-bold text-slate-500 font-mono">
-                      https://edusphere.app/umair-model-school/dashboard
+                      SchoolOS • Dashboard Preview
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
@@ -987,7 +970,7 @@ export default function LandingPage() {
                 Less Administrative Work. More Focus on Education.
               </h2>
               <p className="text-base text-[#66738A] leading-relaxed">
-                School staff waste hundreds of hours manually compiling fee receipts, marking paper registers, and re-typing marks. EduSphere automates the entire paperwork pipeline so your faculty can focus on teaching excellence.
+                School staff waste hundreds of hours manually compiling fee receipts, marking paper registers, and re-typing marks. SchoolOS automates the entire paperwork pipeline so your faculty can focus on teaching excellence.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -1019,7 +1002,7 @@ export default function LandingPage() {
                     <p className="text-2xl font-black text-rose-500 line-through">120 Hours Manual</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-bold text-emerald-600 uppercase">With EduSphere ERP</p>
+                    <p className="text-xs font-bold text-emerald-600 uppercase">With SchoolOS ERP</p>
                     <p className="text-2xl font-black text-emerald-600">8 Hours</p>
                   </div>
                 </div>
@@ -1071,7 +1054,7 @@ export default function LandingPage() {
                 Keep Your Entire School Community Connected.
               </h2>
               <p className="text-base text-[#66738A] leading-relaxed">
-                No more disjointed WhatsApp groups or paper circulars lost in student bags. EduSphere provides distinct portals for principals, teachers, parents, and students with strict role permissions.
+                No more disjointed WhatsApp groups or paper circulars lost in student bags. SchoolOS provides distinct portals for principals, teachers, parents, and students with strict role permissions.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -1101,7 +1084,7 @@ export default function LandingPage() {
                 Registered Institutions & Public Portals
               </h2>
               <p className="text-sm text-[#66738A] mt-1 max-w-xl">
-                Explore real campuses powered by EduSphere ERP. Every school gets its own responsive public portal and dedicated staff login gateway.
+                Explore real campuses powered by SchoolOS ERP. Every school gets its own responsive public portal and dedicated staff login gateway.
               </p>
             </div>
 
@@ -1226,7 +1209,7 @@ export default function LandingPage() {
               {
                 step: "01",
                 title: "Choose a Suitable Plan",
-                desc: "Select Free Trial (20 students) or an enterprise tier with unlimited faculty and multi-campus support.",
+                desc: "Select Review the single monthly subscription and continue with your school application.",
               },
               {
                 step: "02",
@@ -1236,12 +1219,12 @@ export default function LandingPage() {
               {
                 step: "03",
                 title: "Institutional Verification",
-                desc: "Our governance board reviews your institution request to ensure tenant isolation and domain accuracy.",
+                desc: "The Super Admin reviews your application before access is approved.",
               },
               {
                 step: "04",
                 title: "Launch & Manage",
-                desc: "Once verified, log in to your custom URL to enroll students, mark roll call, and print bank fee challans.",
+                desc: "After approval, sign in to your school workspace and begin setup.",
               },
             ].map((st, idx) => (
               <div
@@ -1269,122 +1252,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 9. DYNAMIC BACKEND PRICING SECTION ── */}
-      <section id="pricing" className="relative z-10 py-20 bg-[#F5F8FF] border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100/80 text-[#3563EB] border border-blue-200">
-              Clear & Transparent Pricing
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#14213D] tracking-tight">
-              Invest in Administrative Excellence
-            </h2>
-            <p className="text-base text-[#66738A]">
-              Plans configured directly from live backend settings. No hidden setup charges or surprise fees.
-            </p>
+      {/* ── 9. SINGLE SCHOOLOS SUBSCRIPTION ── */}
+      <section id="pricing" className="relative z-10 border-y border-slate-200/80 bg-[#F5F8FF] py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-12 max-w-3xl space-y-3 text-center">
+            <span className="rounded-full border border-blue-200 bg-blue-100/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#3563EB]">One simple subscription</span>
+            <h2 className="text-3xl font-black tracking-tight text-[#14213D] sm:text-4xl">Everything starts with one plan.</h2>
+            <p className="text-base text-[#66738A]">Straightforward monthly pricing for schools. No confusing tiers.</p>
           </div>
-
-          {loadingPlans ? (
-            <div className="py-16 text-center text-sm font-semibold text-slate-400 animate-pulse">
-              Loading verified subscription tiers...
-            </div>
-          ) : plans.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-slate-200 rounded-3xl bg-white p-8">
-              <p className="text-sm font-bold text-slate-700">Contact administration for custom institutional quotes.</p>
-              <Link
-                to="/register-school/plans"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#3563EB]"
-              >
-                Proceed to plan selection <ArrowRight size={12} />
-              </Link>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-8 items-stretch">
-              {plans.map((p) => {
-                const isPro = p.planKey === "PROFESSIONAL";
-                const isFree = p.price === 0;
-                return (
-                  <div
-                    key={p.id}
-                    className={`rounded-3xl p-8 flex flex-col justify-between transition-all duration-200 relative ${
-                      isPro
-                        ? "bg-white border-2 border-[#3563EB] shadow-2xl shadow-blue-500/15 md:-translate-y-2"
-                        : "bg-white border border-slate-200 shadow-sm hover:shadow-lg"
-                    }`}
-                  >
-                    {isPro && (
-                      <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#3563EB] to-[#8257E8] text-white text-[11px] font-black uppercase tracking-wider shadow-md">
-                        Most Popular
-                      </span>
-                    )}
-
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-xl font-black text-[#14213D]">{p.name}</h3>
-                        <p className="text-xs text-[#66738A] mt-1">
-                          {isFree ? "Full feature trial for testing" : "Complete institutional operating package"}
-                        </p>
-                      </div>
-
-                      <div className="pb-6 border-b border-slate-100">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl sm:text-4xl font-black text-[#14213D]">
-                            {isFree ? "Free" : `PKR ${p.price.toLocaleString()}`}
-                          </span>
-                          {!isFree && (
-                            <span className="text-xs font-semibold text-slate-500">
-                              / {p.period || "month"}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1 font-medium">
-                          {p.maxStudents >= 999999 ? "Unlimited Students" : `Up to ${p.maxStudents.toLocaleString()} Students`} •{" "}
-                          {p.maxTeachers >= 999999 ? "Unlimited Faculty" : `Up to ${p.maxTeachers} Faculty`}
-                        </p>
-                      </div>
-
-                      <div className="space-y-3">
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                          Included Capabilities
-                        </p>
-                        <ul className="space-y-2.5 text-xs text-slate-700 font-medium">
-                          {Array.isArray(p.features) &&
-                            p.features.map((f, fIdx) => (
-                              <li key={fIdx} className="flex items-center gap-2.5">
-                                <Check size={15} className="text-emerald-500 shrink-0" />
-                                <span>{f}</span>
-                              </li>
-                            ))}
-                          <li className="flex items-center gap-2.5">
-                            <Check size={15} className="text-emerald-500 shrink-0" />
-                            <span>Official Public School Website</span>
-                          </li>
-                          <li className="flex items-center gap-2.5">
-                            <Check size={15} className="text-emerald-500 shrink-0" />
-                            <span>3-Copy Bank Challan Generator</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="pt-8">
-                      <button
-                        onClick={() => handlePlanSelect(p.planKey)}
-                        className={`w-full py-3.5 rounded-2xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 ${
-                          isPro
-                            ? "bg-gradient-to-r from-[#3563EB] to-[#8257E8] text-white shadow-blue-500/25 hover:brightness-105"
-                            : "bg-[#F5F8FF] hover:bg-blue-50 text-[#14213D] border border-slate-200"
-                        }`}
-                      >
-                        <span>Choose {p.name}</span>
-                        <ArrowRight size={14} />
-                      </button>
-                    </div>
+          <div className="mx-auto max-w-xl">
+            <div className="relative overflow-hidden rounded-[2rem] border-2 border-[#3563EB] bg-white p-7 shadow-2xl shadow-blue-500/10 sm:p-10">
+              <div className="absolute right-0 top-0 rounded-bl-2xl bg-[#3563EB] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white">SchoolOS Plan</div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#3563EB]"><School size={24} /></div>
+              <h3 className="mt-6 text-2xl font-black text-[#14213D]">SchoolOS Monthly</h3>
+              <p className="mt-2 text-sm leading-6 text-[#66738A]">One subscription for your school's day-to-day management.</p>
+              <div className="mt-7 flex items-end gap-2 border-b border-slate-100 pb-7">
+                <span className="text-4xl font-black tracking-tight text-[#14213D] sm:text-5xl">PKR 3,000</span>
+                <span className="pb-1 text-sm font-semibold text-slate-500">/ month</span>
+              </div>
+              {loadingPlans ? (
+                <p className="py-6 text-sm font-semibold text-slate-400">Loading plan details…</p>
+              ) : monthlyPlan ? (
+                <>
+                  <div className="mt-6 space-y-3 text-sm text-slate-700">
+                    <p className="font-bold text-[#14213D]">Included in this plan</p>
+                    {monthlyPlan.features.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-3"><Check size={17} className="mt-0.5 shrink-0 text-emerald-600" /><span>{feature}</span></div>
+                    ))}
                   </div>
-                );
-              })}
+                  <button onClick={() => handlePlanSelect(monthlyPlan.planKey)} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#3563EB] to-[#6653D9] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">
+                    Apply for School Access <ArrowRight size={16} />
+                  </button>
+                </>
+              ) : (
+                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Registration is temporarily unavailable. Please try again later or contact the platform administrator.</div>
+              )}
+              <p className="mt-4 text-center text-xs leading-5 text-slate-500">School access is enabled after Super Admin review and approval.</p>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -1456,7 +1361,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-base sm:text-lg text-[#66738A] max-w-2xl mx-auto">
-            Bring your school's essential operations together with EduSphere. Start your 14-day free trial today or register your institution for a guided setup.
+            Bring your school's essential operations together with SchoolOS. Submit your application and get access after Super Admin approval.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1487,10 +1392,10 @@ export default function LandingPage() {
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3563EB] to-[#8257E8] p-[1px] flex items-center justify-center">
                   <div className="w-full h-full bg-white rounded-[11px] flex items-center justify-center">
-                    <img src="/logo.svg" alt="EduSphere" className="w-6 h-6" />
+                    <img src="/logo.svg" alt="SchoolOS" className="w-6 h-6" />
                   </div>
                 </div>
-                <span className="font-black text-lg text-[#14213D]">EduSphere ERP</span>
+                <span className="font-black text-lg text-[#14213D]">SchoolOS ERP</span>
               </div>
               <p className="text-xs text-[#66738A] leading-relaxed max-w-sm">
                 Next-generation multi-tenant school operating system engineered for educational leaders, teachers, students, and parents.
@@ -1535,13 +1440,13 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} EduSphere ERP. Complete School Operating System. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} SchoolOS ERP. School Management Platform. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <span>Tenant Security</span>
               <span>•</span>
-              <span>Cloud Compliance</span>
+              <span>Secure Access</span>
               <span>•</span>
-              <span>High Availability</span>
+              <span>Role-Based Access</span>
             </div>
           </div>
         </div>
