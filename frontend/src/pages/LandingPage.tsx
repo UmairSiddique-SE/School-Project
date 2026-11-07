@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, ArrowUpRight, Sparkles, ShieldCheck, GraduationCap, Users,
-  WalletCards, CheckCircle2, CalendarDays, BookOpen, Menu, X, Search,
+  WalletCards, CheckCircle2, CalendarDays, BookOpen, Menu, X,
   ChevronDown, BarChart3, ClipboardCheck, Bus, Library, Globe2, LockKeyhole,
   LayoutDashboard, CreditCard, BellRing, ChartNoAxesCombined, School,
-  UserRoundCheck, Clock3, Layers3, MonitorSmartphone, Star, Check
+  UserRoundCheck, Layers3, MonitorSmartphone, Star, Check
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
 
