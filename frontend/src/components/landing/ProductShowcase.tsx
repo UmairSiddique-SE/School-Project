@@ -22,14 +22,14 @@ export const ProductShowcase: React.FC = () => {
       label: "School Overview",
       icon: LayoutDashboard,
       title: "Consolidated Campus Command Center",
-      desc: "Instant live metrics across student rolls, faculty attendance, fee settlement ratios, and campus alerts.",
+      desc: "A single workspace for reviewing student records, attendance, fee activity, and important school updates.",
       preview: {
         stats: [
-          { label: "Total Active Students", val: "420", sub: "Verified Profiles", color: "text-[#49D6E8]" },
-          { label: "Today's Attendance", val: "96.4%", sub: "Logged Digitally", color: "text-emerald-400" },
-          { label: "Fee Collection", val: "PKR 480K", sub: "Current Billing Cycle", color: "text-[#8B7CF6]" },
+          { label: "Student Records", val: "Live", sub: "Shown after school setup", color: "text-[#49D6E8]" },
+          { label: "Attendance", val: "Daily", sub: "Based on actual entries", color: "text-emerald-400" },
+          { label: "Fee Collection", val: "Tracked", sub: "Based on recorded payments", color: "text-[#8B7CF6]" },
         ],
-        badge: "Live Campus Metrics",
+        badge: "Feature Preview",
         details: [
           "Real-time administrative alert broadcasting",
           "Automated soft-delete safeguard on sensitive records",
@@ -45,9 +45,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Enrollment management with unique admission numbers, guardian phone linkages, and academic archival.",
       preview: {
         stats: [
-          { label: "Admissions Handled", val: "100%", sub: "Digital Onboarding", color: "text-[#49D6E8]" },
-          { label: "Guardian Directory", val: "Synced", sub: "SMS/Contact Ready", color: "text-white" },
-          { label: "Class Sections", val: "A, B, C", sub: "Balanced Allocation", color: "text-emerald-400" },
+          { label: "Admissions", val: "Managed", sub: "School workflow", color: "text-[#49D6E8]" },
+          { label: "Guardian Records", val: "Organised", sub: "Linked to students", color: "text-white" },
+          { label: "Class Sections", val: "Configured", sub: "School-defined setup", color: "text-emerald-400" },
         ],
         badge: "Registry Controls",
         details: [
@@ -65,9 +65,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Section-wise attendance logging with immediate percentage summaries and absentee records.",
       preview: {
         stats: [
-          { label: "Present Today", val: "405", sub: "Students In Class", color: "text-emerald-400" },
-          { label: "Absent / Leave", val: "15", sub: "Action Required", color: "text-amber-400" },
-          { label: "Faculty Logged", val: "100%", sub: "All Sections Marked", color: "text-[#49D6E8]" },
+          { label: "Present Today", val: "Live", sub: "From marked attendance", color: "text-emerald-400" },
+          { label: "Absent / Leave", val: "Tracked", sub: "From attendance register", color: "text-amber-400" },
+          { label: "Faculty Register", val: "Live", sub: "School-specific records", color: "text-[#49D6E8]" },
         ],
         badge: "Daily Roll Call",
         details: [
@@ -85,8 +85,8 @@ export const ProductShowcase: React.FC = () => {
       desc: "Configure tuition heads, generate monthly vouchers, print payment challans, and track overdue accounts.",
       preview: {
         stats: [
-          { label: "Vouchers Generated", val: "420", sub: "Monthly Invoices", color: "text-white" },
-          { label: "Settlement Rate", val: "88%", sub: "Bank & Cash Receipts", color: "text-emerald-400" },
+          { label: "Fee Vouchers", val: "Generated", sub: "For enrolled students", color: "text-white" },
+          { label: "Settlement", val: "Tracked", sub: "From actual receipts", color: "text-emerald-400" },
           { label: "Defaulter Notices", val: "Pending", sub: "Auto-Flagged", color: "text-[#8B7CF6]" },
         ],
         badge: "Financial Operations",
@@ -105,9 +105,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Manage mid-term and annual exams, record subject marks, and generate digital student result cards.",
       preview: {
         stats: [
-          { label: "Active Exam", val: "Mid-Term", sub: "Academic Cycle", color: "text-[#49D6E8]" },
-          { label: "Pass Benchmark", val: "33%", sub: "Passing Standard", color: "text-white" },
-          { label: "DMC Generation", val: "1-Click", sub: "Printable Format", color: "text-emerald-400" },
+          { label: "Exam Schedule", val: "Managed", sub: "School-defined schedule", color: "text-[#49D6E8]" },
+          { label: "Grading Rules", val: "Configurable", sub: "Set by the institution", color: "text-white" },
+          { label: "DMC Generation", val: "Available", sub: "After exam data entry", color: "text-emerald-400" },
         ],
         badge: "Academic Evaluation",
         details: [
@@ -125,9 +125,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Financial analytics, attendance trends, staff utilization, and campus expansion reporting.",
       preview: {
         stats: [
-          { label: "Financial Audits", val: "Verified", sub: "Clean Records", color: "text-emerald-400" },
+          { label: "Financial Reports", val: "Available", sub: "From recorded entries", color: "text-emerald-400" },
           { label: "Data Export", val: "CSV / Print", sub: "Official Handover", color: "text-white" },
-          { label: "System Health", val: "99.98%", sub: "Neon Cloud DB", color: "text-[#49D6E8]" },
+          { label: "System Status", val: "Monitored", sub: "Operational checks", color: "text-[#49D6E8]" },
         ],
         badge: "Leadership Insights",
         details: [
@@ -215,7 +215,7 @@ export const ProductShowcase: React.FC = () => {
               <div className="p-6 rounded-2xl border border-white/10 bg-[#07111F]/80 shadow-xl space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3 text-[11px] text-[#94A3B8]">
                   <span className="font-mono">Module Preview · {current.label}</span>
-                  <span className="text-emerald-400 font-bold">100% Operational</span>
+                  <span className="text-[#49D6E8] font-bold">Illustrative UI</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-center">
@@ -231,7 +231,7 @@ export const ProductShowcase: React.FC = () => {
                 <div className="p-4 rounded-xl border border-[#49D6E8]/20 bg-[#49D6E8]/5">
                   <div className="flex justify-between items-center text-xs font-bold text-white mb-2">
                     <span>Institutional Data Reliability</span>
-                    <span className="text-[#49D6E8]">Synced</span>
+                    <span className="text-[#49D6E8]">Preview</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-[#5577F5] to-[#49D6E8] w-[95%] rounded-full" />
