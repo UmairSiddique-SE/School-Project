@@ -9,7 +9,6 @@ import {
   UserRoundCheck, Clock3, Layers3, MonitorSmartphone, Star, Check
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
-import SchoolSearchModal from "@/component/SchoolSearchModal";
 
 interface PublicPlan {
   id: string;
@@ -63,7 +62,6 @@ const toneClasses: Record<string, string> = {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
@@ -118,9 +116,6 @@ export default function LandingPage() {
           </nav>
 
           <div className="hidden items-center gap-2.5 md:flex">
-            <button onClick={() => setSearchOpen(true)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
-              <Search size={15} /> Find school
-            </button>
             <Link to="/school-login" className="rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700">Sign in</Link>
             <Link to="/register-school/plans" className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl">
               Register your school <ArrowUpRight size={15} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -210,7 +205,7 @@ export default function LandingPage() {
                         </div>
                         <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5">
                           <p className="text-[10px] font-extrabold text-slate-700">Quick actions</p>
-                          <div className="mt-3 space-y-2.5">{[[GraduationCap,"Add student"],[ClipboardCheck,"Mark attendance"],[CreditCard,"Create voucher"]].map(([Icon,label],i)=><div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2 py-2 text-[9px] font-bold text-slate-600"><span className="text-blue-600"><Icon size={13} /></span>{label}</div>)}</div>
+                          <div className="mt-3 space-y-2.5">{[{icon:GraduationCap,label:"Add student"},{icon:ClipboardCheck,label:"Mark attendance"},{icon:CreditCard,label:"Create voucher"}].map(({icon:Icon,label})=><div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2 py-2 text-[9px] font-bold text-slate-600"><span className="text-blue-600"><Icon size={13} /></span>{label}</div>)}</div>
                         </div>
                       </div>
                     </div>
@@ -292,7 +287,7 @@ export default function LandingPage() {
         <section className="bg-gradient-to-br from-[#EEF4FF] via-white to-[#F4F0FF] py-24">
           <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
             <div><span className="rounded-full border border-blue-100 bg-white px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[.15em] text-blue-700">Your school. Your identity.</span><h2 className="mt-5 text-3xl font-black leading-tight tracking-[-.04em] text-slate-900 sm:text-5xl">A digital front door for every school.</h2><p className="mt-5 text-sm leading-7 text-slate-600">SchoolOS supports dedicated public school pages, giving each approved institution a place to present its identity, information and access links.</p><ul className="mt-7 space-y-3 text-sm font-semibold text-slate-700">{["School profile and campus information","Public-facing school identity","Direct access to the relevant school login"].map((item)=><li key={item} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-emerald-600"/>{item}</li>)}</ul><Link to="/register-school/plans" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3.5 text-xs font-extrabold text-white shadow-lg transition hover:-translate-y-0.5">Create your school presence <ArrowRight size={15}/></Link></div>
-            <div className="relative"><div className="absolute -inset-5 rounded-[36px] bg-gradient-to-br from-blue-300/40 to-violet-300/40 blur-2xl"/><div className="relative rotate-1 rounded-[30px] border border-white bg-white p-3 shadow-[0_30px_80px_rgba(30,64,175,.16)]"><div className="overflow-hidden rounded-[22px] border border-slate-100"><div className="flex items-center justify-between bg-slate-50 px-4 py-3"><span className="flex items-center gap-2 text-[10px] font-bold text-slate-500"><Globe2 size={13}/> schoolos.app / your-school</span><span className="text-[9px] font-bold text-emerald-600">PREVIEW</span></div><div className="bg-gradient-to-br from-[#172554] via-blue-800 to-violet-800 px-6 py-10 text-center text-white"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10"><School size={27}/></span><p className="mt-4 text-[9px] font-extrabold uppercase tracking-[.2em] text-blue-200">Your institution</p><h3 className="mt-2 text-2xl font-black">Your School Name</h3><p className="mt-2 text-xs text-blue-100">Your City, Pakistan</p><div className="mt-6 flex justify-center gap-2"><span className="rounded-lg bg-white px-3 py-2 text-[9px] font-extrabold text-blue-800">About school</span><span className="rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-[9px] font-bold">Contact</span></div></div><div className="grid grid-cols-3 gap-2 p-4"><div className="h-14 rounded-xl bg-blue-50"/><div className="h-14 rounded-xl bg-violet-50"/><div className="h-14 rounded-xl bg-cyan-50"/></div></div></div></div>
+            <div className="relative"><div className="absolute -inset-5 rounded-[36px] bg-gradient-to-br from-blue-300/40 to-violet-300/40 blur-2xl"/><div className="relative rotate-1 rounded-[30px] border border-white bg-white p-3 shadow-[0_30px_80px_rgba(30,64,175,.16)]"><div className="overflow-hidden rounded-[22px] border border-slate-100"><div className="flex items-center justify-between bg-slate-50 px-4 py-3"><span className="flex items-center gap-2 text-[10px] font-bold text-slate-500"><Globe2 size={13}/> schoolos / your-school</span><span className="text-[9px] font-bold text-emerald-600">PREVIEW</span></div><div className="bg-gradient-to-br from-[#172554] via-blue-800 to-violet-800 px-6 py-10 text-center text-white"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10"><School size={27}/></span><p className="mt-4 text-[9px] font-extrabold uppercase tracking-[.2em] text-blue-200">Your institution</p><h3 className="mt-2 text-2xl font-black">Your School Name</h3><p className="mt-2 text-xs text-blue-100">Your City, Pakistan</p><div className="mt-6 flex justify-center gap-2"><span className="rounded-lg bg-white px-3 py-2 text-[9px] font-extrabold text-blue-800">About school</span><span className="rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-[9px] font-bold">Contact</span></div></div><div className="grid grid-cols-3 gap-2 p-4"><div className="h-14 rounded-xl bg-blue-50"/><div className="h-14 rounded-xl bg-violet-50"/><div className="h-14 rounded-xl bg-cyan-50"/></div></div></div></div>
           </div>
         </section>
 
@@ -319,11 +314,10 @@ export default function LandingPage() {
           <div><Link to="/" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600"><img src="/logo.svg" alt="" className="h-6 w-6 brightness-0 invert"/></span><b className="text-lg font-black text-slate-900">SchoolOS</b></Link><p className="mt-4 max-w-xs text-xs leading-6">A connected school management platform for academic, administrative and financial workflows.</p></div>
           <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Platform</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><a href="#features" className="hover:text-blue-700">Features</a><a href="#preview" className="hover:text-blue-700">Product tour</a><a href="#process" className="hover:text-blue-700">How it works</a><a href="#pricing" className="hover:text-blue-700">Pricing</a></div></div>
           <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Portals</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><Link to="/school-login" className="hover:text-blue-700">School login</Link><Link to="/portal" className="hover:text-blue-700">Parent & student portal</Link><Link to="/admin-login" className="hover:text-blue-700">Super Admin</Link></div></div>
-          <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Get started</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><Link to="/register-school/plans" className="hover:text-blue-700">Register school</Link><button onClick={()=>setSearchOpen(true)} className="w-fit hover:text-blue-700">Find a school</button></div></div>
+          <div><b className="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-900">Get started</b><div className="mt-4 flex flex-col gap-3 text-xs font-semibold"><Link to="/register-school/plans" className="hover:text-blue-700">Register school</Link><Link to="/school-login" className="hover:text-blue-700">School login</Link></div></div>
         </div>
         <div className="mx-auto mt-10 flex max-w-7xl flex-col justify-between gap-3 border-t border-slate-100 px-4 pt-6 text-[10px] font-semibold text-slate-400 sm:flex-row sm:px-6 lg:px-8"><span>© {new Date().getFullYear()} SchoolOS. All rights reserved.</span><span>Secure access · Role-based workflows · School-specific workspaces</span></div>
       </footer>
-      <SchoolSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
