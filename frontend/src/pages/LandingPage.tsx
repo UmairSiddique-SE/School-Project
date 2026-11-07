@@ -365,7 +365,7 @@ export default function LandingPage() {
               className="lg:col-span-6 relative"
             >
               {/* Decorative back-layer glow */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-[#3563EB]/15 via-[#8257E8]/15 to-[#43C7DF]/15 rounded-[32px] blur-2xl" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-[#3563EB]/15 via-[#8257E8]/15 to-[#43C7DF]/15 rounded-[—px] blur-2xl" />
 
               {/* Main Dashboard Window Mockup */}
               <div className="relative rounded-3xl border border-slate-200/90 bg-white shadow-2xl shadow-blue-900/10 overflow-hidden">
@@ -381,7 +381,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Academic Term Live
+                    Illustrative UI Preview
                   </div>
                 </div>
 
@@ -395,13 +395,13 @@ export default function LandingPage() {
                       </div>
                       <div>
                         <h4 className="text-xs font-black text-[#14213D] leading-tight">
-                          Umair Model High School
+                          Your School Name
                         </h4>
-                        <p className="text-[10px] text-[#66738A]">Principal Admin Terminal • Sargodha</p>
+                        <p className="text-[10px] text-[#66738A]">School Admin Workspace • Your Campus</p>
                       </div>
                     </div>
                     <span className="text-[11px] font-bold text-[#3563EB] bg-[#EEF4FF] px-2.5 py-1 rounded-lg">
-                      Session 2026-2027
+                      Academic Session
                     </span>
                   </div>
 
@@ -409,23 +409,23 @@ export default function LandingPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100">
                       <p className="text-[10px] font-bold text-[#3563EB] uppercase">Students</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">540</p>
-                      <p className="text-[9px] text-emerald-600 font-bold">● 98.4% Present</p>
+                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
+                      <p className="text-[9px] text-emerald-600 font-bold">● No attendance records yet</p>
                     </div>
                     <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-100">
                       <p className="text-[10px] font-bold text-[#8257E8] uppercase">Faculty</p>
                       <p className="text-lg font-black text-[#14213D] mt-0.5">32</p>
-                      <p className="text-[9px] text-slate-500">14 Departments</p>
+                      <p className="text-[9px] text-slate-500">Add departments after setup</p>
                     </div>
                     <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
                       <p className="text-[10px] font-bold text-emerald-700 uppercase">Fee Inflow</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">PKR 1.2M</p>
-                      <p className="text-[9px] text-emerald-600 font-bold">↑ 92% Reconciled</p>
+                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
+                      <p className="text-[9px] text-emerald-600 font-bold">↑ No payments recorded</p>
                     </div>
                     <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-100">
                       <p className="text-[10px] font-bold text-sky-700 uppercase">Exams</p>
-                      <p className="text-lg font-black text-[#14213D] mt-0.5">Mid-Term</p>
-                      <p className="text-[9px] text-sky-600 font-bold">DMCs Ready</p>
+                      <p className="text-lg font-black text-[#14213D] mt-0.5">—</p>
+                      <p className="text-[9px] text-sky-600 font-bold">Exam data appears after setup</p>
                     </div>
                   </div>
 
@@ -437,14 +437,12 @@ export default function LandingPage() {
                         Recent Admissions & Financial Vouchers
                       </span>
                       <span className="text-[9px] font-bold text-[#3563EB] hover:underline cursor-pointer">
-                        View Register
+                        No records yet
                       </span>
                     </div>
                     <div className="space-y-1.5">
                       {[
-                        { name: "Muhammad Umair", class: "Class 10 - Sec A", fee: "PKR 12,000", status: "Paid", badge: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-                        { name: "Hannan Siddique", class: "Class 9 - Sec B", fee: "PKR 10,500", status: "Paid", badge: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-                        { name: "Zainab Fatima", class: "Class 8 - Sec A", fee: "PKR 9,500", status: "Pending", badge: "bg-amber-50 text-amber-700 border-amber-200" },
+
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between text-[11px] py-1.5 px-2 rounded-lg bg-slate-50/80 border border-slate-100">
                           <div className="flex items-center gap-2">
@@ -481,8 +479,8 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fee Reconciliation</p>
-                  <p className="text-xs font-black text-slate-900">+PKR 48,000 Collected</p>
-                  <p className="text-[10px] text-emerald-600 font-bold">Bank Challan #4902 Settled</p>
+                  <p className="text-xs font-black text-slate-900">No payments recorded yet</p>
+                  <p className="text-[10px] text-emerald-600 font-bold">Payment activity will appear here</p>
                 </div>
               </motion.div>
 
