@@ -40,10 +40,10 @@ export const SchoolWebsiteShowcase: React.FC = () => {
 
               <div className="mt-9 flex flex-wrap gap-4">
                 <Link
-                  to="/school/umair-model-school"
+                  to="/school-login"
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#5577F5] to-[#49D6E8] text-white font-bold text-xs transition flex items-center gap-2 shadow-lg shadow-[#5577F5]/25 hover:brightness-110"
                 >
-                  <span>Explore a School Website</span>
+                  <span>School Portal Login</span>
                   <ExternalLink size={14} />
                 </Link>
 
@@ -61,10 +61,10 @@ export const SchoolWebsiteShowcase: React.FC = () => {
               <div className="flex items-center justify-between pb-4 border-b border-white/10 text-xs">
                 <span className="font-mono text-[11px] text-[#94A3B8] flex items-center gap-2">
                   <Globe size={13} className="text-[#49D6E8]" />
-                  school-managment-pro.vercel.app/school/umair-model-school
+                  Your School Website · Preview
                 </span>
                 <span className="text-emerald-400 font-bold text-[10px] uppercase">
-                  Verified Campus
+                  Illustrative Preview
                 </span>
               </div>
 
@@ -72,18 +72,18 @@ export const SchoolWebsiteShowcase: React.FC = () => {
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-[#5577F5] to-[#49D6E8] flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-[#5577F5]/25 mb-4">
                   U
                 </div>
-                <h3 className="text-xl font-black text-white">Umair Model School</h3>
-                <p className="text-xs text-[#94A3B8] mt-1">Sargodha, Pakistan</p>
+                <h3 className="text-xl font-black text-white">Your School Name</h3>
+                <p className="text-xs text-[#94A3B8] mt-1">Your City, Pakistan</p>
 
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
                   <span className="px-3 py-1 rounded-full bg-[#49D6E8]/10 text-[#49D6E8] text-xs font-semibold">
-                    Admissions Open
+                    Admissions
                   </span>
                   <span className="px-3 py-1 rounded-full bg-[#5577F5]/10 text-[#5577F5] text-xs font-semibold">
-                    Primary to Matric
+                    Academic Levels
                   </span>
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold">
-                    Digital LMS
+                    School Portal
                   </span>
                 </div>
               </div>
