@@ -1,41 +1,40 @@
-/* SchoolOS — classical gradient design system for both themes */
+/* SchoolOS landing page — consistent full-page themes */
 .schoolos-landing {
-  --so-bg: #07131f;
-  --so-bg-soft: #0b1d2b;
-  --so-surface: rgba(16, 36, 52, .82);
-  --so-surface-strong: #10283a;
-  --so-text: #f5f8ff;
-  --so-body: #c1ccda;
-  --so-muted: #91a2b5;
-  --so-line: rgba(174, 197, 222, .16);
-  --so-accent: #73e0d0;
-  --so-accent-2: #8ca7ff;
-  --so-accent-3: #d4b6ff;
+  --so-bg: #07111f;
+  --so-bg-2: #0b1b2c;
+  --so-surface: #102337;
+  --so-surface-2: #142b40;
+  --so-text: #f4f7ff;
+  --so-body: #c5d0df;
+  --so-muted: #91a2b8;
+  --so-line: rgba(173, 196, 222, .17);
+  --so-accent: #70dfd0;
   isolation: isolate;
   position: relative;
+  min-height: 100vh;
   color: var(--so-text) !important;
   background:
-    radial-gradient(ellipse at 12% 8%, rgba(49, 112, 160, .24), transparent 30%),
-    radial-gradient(ellipse at 88% 18%, rgba(83, 66, 157, .22), transparent 32%),
-    linear-gradient(145deg, #07131f 0%, #0b1b2b 46%, #11182e 100%) !important;
+    radial-gradient(ellipse at 12% 4%, rgba(30, 105, 143, .25), transparent 34%),
+    radial-gradient(ellipse at 90% 20%, rgba(94, 72, 160, .22), transparent 36%),
+    linear-gradient(145deg, #07111f 0%, #0b1c2d 48%, #15182e 100%) !important;
 }
+.schoolos-landing.schoolos-dark { color-scheme: dark; }
 .schoolos-landing.schoolos-light {
-  --so-bg: #f6f8ff;
-  --so-bg-soft: #edf2ff;
-  --so-surface: rgba(255, 255, 255, .84);
-  --so-surface-strong: #ffffff;
-  --so-text: #17243b;
+  --so-bg: #f5f7ff;
+  --so-bg-2: #edf2fc;
+  --so-surface: #ffffff;
+  --so-surface-2: #f4f6ff;
+  --so-text: #17243a;
   --so-body: #46566e;
-  --so-muted: #687991;
-  --so-line: rgba(75, 94, 133, .16);
+  --so-muted: #667991;
+  --so-line: rgba(73, 94, 132, .17);
   --so-accent: #247e91;
-  --so-accent-2: #626bd0;
-  --so-accent-3: #9369bd;
+  color-scheme: light;
   color: var(--so-text) !important;
   background:
-    radial-gradient(ellipse at 8% 5%, rgba(151, 211, 224, .38), transparent 31%),
-    radial-gradient(ellipse at 92% 12%, rgba(192, 177, 238, .34), transparent 34%),
-    linear-gradient(145deg, #f8fbff 0%, #f0f3ff 48%, #f7f0ff 100%) !important;
+    radial-gradient(ellipse at 9% 5%, rgba(143, 208, 225, .34), transparent 34%),
+    radial-gradient(ellipse at 92% 12%, rgba(190, 174, 238, .30), transparent 36%),
+    linear-gradient(145deg, #f8fbff 0%, #eff3ff 52%, #f7f1ff 100%) !important;
 }
 .schoolos-landing::before {
   content: "";
@@ -43,180 +42,76 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: .55;
-  background-image:
-    linear-gradient(rgba(155, 184, 219, .045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(155, 184, 219, .045) 1px, transparent 1px);
+  opacity: .52;
+  background-image: linear-gradient(rgba(155,184,219,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(155,184,219,.05) 1px,transparent 1px);
   background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
+  mask-image: linear-gradient(to bottom,#000 0%,transparent 78%);
 }
 .schoolos-light::before {
-  opacity: .48;
-  background-image:
-    linear-gradient(rgba(73, 103, 153, .055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(73, 103, 153, .055) 1px, transparent 1px);
+  opacity: .5;
+  background-image: linear-gradient(rgba(73,103,153,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(73,103,153,.055) 1px,transparent 1px);
 }
 .schoolos-landing header {
-  background: rgba(7, 19, 31, .82) !important;
+  background: rgba(7,17,31,.91) !important;
   border-color: var(--so-line) !important;
-  box-shadow: 0 12px 42px rgba(0, 0, 0, .16);
+  box-shadow: 0 12px 42px rgba(0,0,0,.18);
   backdrop-filter: blur(24px);
 }
-.schoolos-light header {
-  background: rgba(249, 251, 255, .84) !important;
-  box-shadow: 0 12px 42px rgba(62, 78, 120, .08);
-}
-.schoolos-landing header nav,
-.schoolos-landing header a,
-.schoolos-landing header button { letter-spacing: .015em; }
+.schoolos-light header { background: rgba(249,251,255,.94) !important; box-shadow: 0 12px 42px rgba(62,78,120,.08); }
+.schoolos-landing header nav,.schoolos-landing header a,.schoolos-landing header button { letter-spacing: .01em; }
 .schoolos-landing header nav a { position: relative; }
-.schoolos-landing header nav a::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 100%; bottom: -9px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--so-accent), var(--so-accent-2));
-  transition: right .25s ease;
-}
-.schoolos-landing header nav a:hover::after { right: 0; }
-.schoolos-landing header img { filter: brightness(0) invert(1); }
-.schoolos-light header img { filter: none; }
+.schoolos-landing header nav a::after { content:""; position:absolute; left:0; right:100%; bottom:-9px; height:2px; border-radius:2px; background:linear-gradient(90deg,var(--so-accent),#8ea8ff); transition:right .25s ease; }
+.schoolos-landing header nav a:hover::after { right:0; }
+.schoolos-landing header img { filter:none !important; }
+.schoolos-landing main { position:relative; z-index:1; }
 .schoolos-landing main > section {
-  position: relative;
-  scroll-margin-top: 90px;
-  border-color: var(--so-line) !important;
+  position:relative;
+  scroll-margin-top:90px;
+  border-color:var(--so-line) !important;
+  background:linear-gradient(135deg,#0b1c2d 0%,#102538 52%,#171b35 100%) !important;
 }
-.schoolos-landing main > section:nth-child(2n) {
-  background: linear-gradient(128deg, rgba(16, 43, 61, .86), rgba(24, 31, 61, .88)) !important;
-  border-color: var(--so-line) !important;
+.schoolos-dark main > section:nth-child(2n) { background:linear-gradient(130deg,#102638 0%,#142b3b 52%,#1b203b 100%) !important; }
+.schoolos-dark main > section:nth-child(2n+1) { background:linear-gradient(145deg,rgba(7,17,31,.96),rgba(14,29,47,.97) 55%,rgba(22,24,46,.97)) !important; }
+.schoolos-light main > section { background:linear-gradient(135deg,#f7faff 0%,#edf3fc 55%,#f4effb 100%) !important; }
+.schoolos-light main > section:nth-child(2n) { background:linear-gradient(130deg,#e7f1f8 0%,#edf0fb 55%,#f2eafb 100%) !important; }
+.schoolos-landing main > section:first-child { min-height:690px; padding-top:clamp(58px,8vw,112px) !important; padding-bottom:clamp(76px,9vw,130px) !important; }
+.schoolos-landing h1 { max-width:820px; font-size:clamp(3rem,5.5vw,5.8rem) !important; line-height:1.04 !important; letter-spacing:-.055em !important; font-weight:850 !important; color:var(--so-text) !important; }
+.schoolos-landing h1 span { background-image:linear-gradient(100deg,#7ce6d8 0%,#9bb4ff 52%,#d8b8f6 100%) !important; filter:drop-shadow(0 8px 30px rgba(105,157,230,.18)); }
+.schoolos-light h1 span { background-image:linear-gradient(100deg,#147d91 0%,#596bc9 54%,#9365b9 100%) !important; }
+.schoolos-landing main > section:first-child p { max-width:640px; line-height:1.8 !important; }
+.schoolos-landing h2 { letter-spacing:-.045em !important; line-height:1.12 !important; font-weight:820 !important; color:var(--so-text); }
+.schoolos-landing h2 span { background-image:linear-gradient(100deg,#78e3d5,#9eb1ff 58%,#d5b4f2) !important; background-clip:text !important; -webkit-background-clip:text !important; color:transparent !important; }
+.schoolos-light h2 span { background-image:linear-gradient(100deg,#147d91,#596bc9 58%,#9365b9) !important; }
+.schoolos-dark main > section [class*="rounded-"][class*="border"] { border-color:var(--so-line) !important; }
+.schoolos-light main > section [class*="rounded-"][class*="border"] { border-color:var(--so-line) !important; }
+.schoolos-dark main > section [class*="rounded-2xl"],.schoolos-dark main > section [class*="rounded-3xl"],.schoolos-dark main > section [class*="rounded-["] {
+  background-color:rgba(15,35,53,.82);
+  box-shadow:0 16px 46px rgba(0,0,0,.18);
 }
-.schoolos-landing main > section:nth-child(2n+1) {
-  background: linear-gradient(145deg, rgba(7, 19, 31, .12), rgba(17, 24, 46, .34)) !important;
+.schoolos-light main > section [class*="rounded-2xl"],.schoolos-light main > section [class*="rounded-3xl"],.schoolos-light main > section [class*="rounded-["] {
+  background-color:rgba(255,255,255,.84);
+  box-shadow:0 14px 40px rgba(68,81,131,.07);
 }
-.schoolos-light main > section:nth-child(2n) {
-  background: linear-gradient(128deg, rgba(226, 241, 249, .94), rgba(238, 231, 252, .94)) !important;
-  border-color: var(--so-line) !important;
+.schoolos-landing main > section:first-child [class*="rounded-2xl"][class*="border"] { border-color:var(--so-line) !important; background:linear-gradient(145deg,rgba(24,54,75,.84),rgba(31,39,72,.78)) !important; }
+.schoolos-light main > section:first-child [class*="rounded-2xl"][class*="border"] { background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(238,242,255,.92)) !important; }
+.schoolos-landing main > section:first-child a[class*="bg-gradient"] { background:linear-gradient(105deg,#70ddd0,#8ea8ff 58%,#c8a8eb) !important; color:#101d31 !important; box-shadow:0 16px 42px rgba(91,139,218,.24) !important; border:1px solid rgba(255,255,255,.22); }
+.schoolos-landing main > section:first-child a[class*="border"] { border-color:var(--so-line) !important; background:rgba(255,255,255,.055) !important; color:var(--so-text) !important; }
+.schoolos-light main > section:first-child a[class*="border"] { color:#263a5c !important; background:rgba(255,255,255,.82) !important; }
+.schoolos-landing main > section [class*="text-blue-"],.schoolos-landing main > section [class*="text-violet-"] { color:var(--so-accent) !important; }
+.schoolos-light main > section [class*="text-blue-"],.schoolos-light main > section [class*="text-violet-"] { color:#596bc9 !important; }
+.schoolos-landing main > section [class*="border-blue-"],.schoolos-landing main > section [class*="border-violet-"] { border-color:var(--so-line) !important; }
+.schoolos-landing footer { background:linear-gradient(135deg,#07111f,#101c31 65%,#171d36) !important; border-color:var(--so-line) !important; }
+.schoolos-light footer { background:linear-gradient(135deg,#e8f0fa,#eeeafa 65%,#e5f2f2) !important; }
+.schoolos-landing footer a:hover,.schoolos-landing footer button:hover { color:var(--so-accent) !important; }
+.schoolos-landing ::selection { background:rgba(117,187,231,.32); color:inherit; }
+.schoolos-landing button,.schoolos-landing a { -webkit-tap-highlight-color:transparent; }
+.schoolos-landing button:focus-visible,.schoolos-landing a:focus-visible { outline:2px solid var(--so-accent); outline-offset:4px; }
+@media(max-width:767px) {
+  .schoolos-landing main > section:first-child { min-height:auto; padding-top:48px !important; }
+  .schoolos-landing h1 { font-size:clamp(2.65rem,12vw,4.3rem) !important; line-height:1.06 !important; }
+  .schoolos-landing main > section { padding-top:68px !important; padding-bottom:68px !important; }
+  .schoolos-landing header > div { height:68px !important; }
 }
-.schoolos-light main > section:nth-child(2n+1) {
-  background: linear-gradient(145deg, rgba(255,255,255,.38), rgba(235,241,255,.64)) !important;
-}
-.schoolos-landing main > section:first-child {
-  min-height: 690px;
-  padding-top: clamp(58px, 8vw, 112px) !important;
-  padding-bottom: clamp(76px, 9vw, 130px) !important;
-  background: transparent !important;
-}
-.schoolos-landing h1 {
-  max-width: 820px;
-  font-size: clamp(3rem, 5.5vw, 5.8rem) !important;
-  line-height: .99 !important;
-  letter-spacing: -.075em !important;
-  font-weight: 850 !important;
-  color: var(--so-text) !important;
-}
-.schoolos-landing h1 span {
-  background-image: linear-gradient(100deg, #7ce6d8 0%, #9bb4ff 52%, #d8b8f6 100%) !important;
-  filter: drop-shadow(0 8px 30px rgba(105, 157, 230, .18));
-}
-.schoolos-light h1 span {
-  background-image: linear-gradient(100deg, #147d91 0%, #596bc9 54%, #9365b9 100%) !important;
-}
-.schoolos-landing main > section:first-child p {
-  max-width: 640px;
-  line-height: 1.9 !important;
-}
-.schoolos-landing h2 {
-  letter-spacing: -.06em !important;
-  line-height: 1.06 !important;
-  font-weight: 820 !important;
-  color: var(--so-text);
-}
-.schoolos-landing h2 span {
-  background-image: linear-gradient(100deg, #78e3d5, #9eb1ff 58%, #d5b4f2) !important;
-  background-clip: text !important;
-  -webkit-background-clip: text !important;
-  color: transparent !important;
-}
-.schoolos-light h2 span {
-  background-image: linear-gradient(100deg, #147d91, #596bc9 58%, #9365b9) !important;
-}
-.schoolos-landing main > section [class*="rounded-["],
-.schoolos-landing main > section [class*="rounded-3xl"],
-.schoolos-landing main > section [class*="rounded-2xl"] {
-  border-color: var(--so-line) !important;
-}
-.schoolos-dark main > section [class*="rounded-["],
-.schoolos-dark main > section [class*="rounded-3xl"],
-.schoolos-dark main > section [class*="rounded-2xl"] {
-  background-color: rgba(15, 35, 53, .76);
-  box-shadow: 0 18px 54px rgba(0, 0, 0, .16);
-  backdrop-filter: blur(15px);
-}
-.schoolos-light main > section [class*="rounded-["],
-.schoolos-light main > section [class*="rounded-3xl"],
-.schoolos-light main > section [class*="rounded-2xl"] {
-  background-color: rgba(255, 255, 255, .78);
-  box-shadow: 0 16px 42px rgba(68, 81, 131, .075);
-}
-.schoolos-landing main > section:first-child [class*="rounded-2xl"][class*="border"] {
-  border-color: var(--so-line) !important;
-  background: linear-gradient(145deg, rgba(29, 63, 83, .72), rgba(31, 39, 72, .68)) !important;
-}
-.schoolos-light main > section:first-child [class*="rounded-2xl"][class*="border"] {
-  background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(238,242,255,.86)) !important;
-}
-.schoolos-landing main > section:first-child a[class*="bg-gradient"] {
-  background: linear-gradient(105deg, #70ddd0, #8ea8ff 58%, #c8a8eb) !important;
-  color: #101d31 !important;
-  box-shadow: 0 16px 42px rgba(91, 139, 218, .24) !important;
-  border: 1px solid rgba(255,255,255,.22);
-}
-.schoolos-landing main > section:first-child a[class*="border"] {
-  border-color: var(--so-line) !important;
-  background: rgba(255,255,255,.055) !important;
-  color: var(--so-text) !important;
-}
-.schoolos-light main > section:first-child a[class*="border"] {
-  color: #263a5c !important;
-  background: rgba(255,255,255,.78) !important;
-}
-.schoolos-landing main > section [class*="bg-gradient-to-r"][class*="from-blue-600"],
-.schoolos-landing main > section [class*="bg-gradient-to-br"][class*="from-blue-600"] {
-  background-image: linear-gradient(110deg, #70ddd0, #8ea8ff 58%, #c8a8eb) !important;
-  color: #101d31 !important;
-}
-.schoolos-landing main > section [class*="text-blue-"],
-.schoolos-landing main > section [class*="text-violet-"] { color: var(--so-accent-2); }
-.schoolos-light main > section [class*="text-blue-"],
-.schoolos-light main > section [class*="text-violet-"] { color: #596bc9; }
-.schoolos-landing main > section [class*="border-blue-"],
-.schoolos-landing main > section [class*="border-violet-"] { border-color: var(--so-line); }
-.schoolos-landing main > section [class*="shadow-blue-"] { --tw-shadow-color: rgba(91, 139, 218, .20); }
-.schoolos-landing footer {
-  background: linear-gradient(135deg, #07131f, #101b32 65%, #17203a) !important;
-  border-color: var(--so-line) !important;
-}
-.schoolos-light footer {
-  background: linear-gradient(135deg, #e8f0fa, #eeeafa 65%, #e5f2f2) !important;
-}
-.schoolos-landing footer a:hover,
-.schoolos-landing footer button:hover { color: var(--so-accent) !important; }
-.schoolos-landing ::selection { background: rgba(117, 187, 231, .32); color: inherit; }
-.schoolos-landing button,
-.schoolos-landing a { -webkit-tap-highlight-color: transparent; }
-.schoolos-landing button:focus-visible,
-.schoolos-landing a:focus-visible { outline: 2px solid var(--so-accent); outline-offset: 4px; }
-@media (max-width: 767px) {
-  .schoolos-landing main > section:first-child { min-height: auto; padding-top: 48px !important; }
-  .schoolos-landing h1 { font-size: clamp(2.65rem, 12vw, 4.3rem) !important; line-height: 1.02 !important; }
-  .schoolos-landing main > section { padding-top: 68px !important; padding-bottom: 68px !important; }
-  .schoolos-landing header > div { height: 68px !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .schoolos-landing *, .schoolos-landing *::before, .schoolos-landing *::after {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-  }
+@media(prefers-reduced-motion:reduce) {
+  .schoolos-landing *,.schoolos-landing *::before,.schoolos-landing *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; }
 }
