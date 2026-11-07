@@ -11,6 +11,7 @@ import {
   TrendingUp, FileText, UserRoundCheck, Command, Play, Plus
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
+import "./LandingPage.css";
 
 interface PublicPlan {
   id: string;
@@ -131,7 +132,7 @@ export default function LandingPage() {
   const secondary = `inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-bold transition duration-300 hover:-translate-y-0.5 ${dark ? "border-slate-600/80 bg-slate-800/55 text-slate-100 hover:border-teal-400/50 hover:bg-slate-800" : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-teal-300 hover:text-teal-800"}`;
 
   return (
-    <div className={`schoolos-landing relative min-h-screen overflow-hidden font-sans transition-colors duration-500 ${c.bg} ${dark ? "text-white" : "text-[#10182D]"}`}>
+    <div className={`schoolos-landing ${dark ? "schoolos-dark" : "schoolos-light"} relative min-h-screen overflow-hidden font-sans transition-colors duration-500 ${c.bg} ${dark ? "text-white" : "text-[#10182D]"}`}>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className={`absolute -top-72 left-[12%] h-[720px] w-[720px] rounded-full bg-gradient-to-br ${c.glow} blur-[120px]`} />
         <div className={`absolute right-[-320px] top-[28%] h-[700px] w-[700px] rounded-full bg-gradient-to-br ${c.glow} blur-[130px]`} />
@@ -182,10 +183,10 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-[1440px] items-center gap-14 xl:grid-cols-[.83fr_1.17fr]">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="relative z-10 text-center xl:text-left">
               <div className={`mx-auto mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-extrabold uppercase tracking-[.16em] backdrop-blur xl:mx-0 ${dark ? "border-blue-300/20 bg-blue-400/10 text-blue-200" : "border-blue-200 bg-white text-blue-700 shadow-sm"}`}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" /></span> The operating system for modern schools</div>
-              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>You lead the school.<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">SchoolOS handles the busywork.</span></h1>
-              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Still chasing fee records, attendance sheets, exam results and endless registers? Bring your school into one organised workspace — so you can spend less time managing paperwork and more time building a better school.</p>
+              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>Run your school with clarity.<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">Lead it with confidence.</span></h1>
+              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Your school deserves more than scattered registers, disconnected spreadsheets and daily follow-ups. SchoolOS brings the work of running a school into one clear, connected system — giving your team the confidence to act faster and giving you more time to focus on students, teachers and growth.</p>
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row xl:justify-start">
-                <Link to="/register-school/plans" className={primary}>Build your school workspace <ArrowRight size={17} /></Link>
+                <Link to="/register-school/plans" className={primary}>See how SchoolOS works <ArrowRight size={17} /></Link>
                 <a href="#tour" className={secondary}><Play size={15} /> Explore the product</a>
               </div>
               <div className={`mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[10px] font-bold xl:justify-start ${c.muted}`}>
@@ -198,7 +199,7 @@ export default function LandingPage() {
               </div>
               <div className={`mx-auto mt-12 flex max-w-md items-center justify-center gap-5 border-t pt-6 text-left xl:mx-0 xl:justify-start ${c.line}`}>
                 <div className="flex -space-x-2">{["A","T","S","P"].map((letter,i)=><span key={letter} className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-[10px] font-black text-white ${dark?"border-[#0C1423]":"border-[#F7F8FC]"} ${["bg-blue-600","bg-violet-600","bg-cyan-600","bg-emerald-600"][i]}`}>{letter}</span>)}</div>
-                <div><p className={`text-[11px] font-extrabold ${c.heading}`}>One connected experience</p><p className={`mt-1 text-[10px] ${c.muted}`}>For admins, teachers, students & parents</p></div>
+                <div><p className={`text-[11px] font-extrabold ${c.heading}`}>One school. One connected system</p><p className={`mt-1 text-[10px] ${c.muted}`}>For admins, teachers, students & parents</p></div>
               </div>
             </motion.div>
 
