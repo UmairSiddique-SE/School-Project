@@ -24,6 +24,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const root = window.document.documentElement;
+    // The public landing page manages its own dark/light switch. Do not force
+    // the application-wide light class over that page's independent theme.
+    if (window.location.pathname === '/') return;
     root.classList.remove('dark');
     root.classList.add('light');
     localStorage.setItem('theme', 'light');
