@@ -376,7 +376,7 @@ export default function LandingPage() {
                     <div className="w-3 h-3 rounded-full bg-amber-400" />
                     <div className="w-3 h-3 rounded-full bg-emerald-400" />
                     <span className="ml-2 text-[11px] font-bold text-slate-500 font-mono">
-                      https://schoolos.app/umair-model-school/dashboard
+                      SchoolOS • Dashboard Preview
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
@@ -1444,9 +1444,9 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <span>Tenant Security</span>
               <span>•</span>
-              <span>Cloud Compliance</span>
+              <span>Secure Access</span>
               <span>•</span>
-              <span>High Availability</span>
+              <span>Role-Based Access</span>
             </div>
           </div>
         </div>
