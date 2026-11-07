@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Globe, ExternalLink, CheckCircle2, School } from "lucide-react";
+import { Globe, ExternalLink, CheckCircle2 } from "lucide-react";
 
 export const SchoolWebsiteShowcase: React.FC = () => {
   return (
@@ -17,7 +16,7 @@ export const SchoolWebsiteShowcase: React.FC = () => {
                 Every school deserves its own digital identity.
               </h2>
               <p className="mt-5 text-sm sm:text-base text-[#94A3B8] leading-relaxed">
-                When an approved institution operates on EduSphere, the platform automatically provisions an official, dedicated public website reachable via dynamic routing at{" "}
+                When an approved institution operates on SchoolOS, the platform automatically provisions an official, dedicated public website reachable via dynamic routing at{" "}
                 <code className="text-[#49D6E8] bg-white/5 px-2 py-0.5 rounded-md font-mono text-xs">
                   /school/:slug
                 </code>
@@ -48,10 +47,10 @@ export const SchoolWebsiteShowcase: React.FC = () => {
                 </Link>
 
                 <Link
-                  to="/school-login"
+                  to="/register-school/plans"
                   className="px-6 py-3.5 rounded-2xl border border-white/10 hover:bg-white/5 text-white font-semibold text-xs transition"
                 >
-                  Browse School Directory
+                  Register your school
                 </Link>
               </div>
             </div>
