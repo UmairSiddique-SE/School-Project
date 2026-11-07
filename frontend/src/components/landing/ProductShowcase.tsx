@@ -85,8 +85,8 @@ export const ProductShowcase: React.FC = () => {
       desc: "Configure tuition heads, generate monthly vouchers, print payment challans, and track overdue accounts.",
       preview: {
         stats: [
-          { label: "Vouchers Generated", val: "420", sub: "Monthly Invoices", color: "text-white" },
-          { label: "Settlement Rate", val: "88%", sub: "Bank & Cash Receipts", color: "text-emerald-400" },
+          { label: "Fee Vouchers", val: "Generated", sub: "For enrolled students", color: "text-white" },
+          { label: "Settlement", val: "Tracked", sub: "From actual receipts", color: "text-emerald-400" },
           { label: "Defaulter Notices", val: "Pending", sub: "Auto-Flagged", color: "text-[#8B7CF6]" },
         ],
         badge: "Financial Operations",
@@ -105,9 +105,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Manage mid-term and annual exams, record subject marks, and generate digital student result cards.",
       preview: {
         stats: [
-          { label: "Active Exam", val: "Mid-Term", sub: "Academic Cycle", color: "text-[#49D6E8]" },
-          { label: "Pass Benchmark", val: "33%", sub: "Passing Standard", color: "text-white" },
-          { label: "DMC Generation", val: "1-Click", sub: "Printable Format", color: "text-emerald-400" },
+          { label: "Exam Schedule", val: "Managed", sub: "School-defined schedule", color: "text-[#49D6E8]" },
+          { label: "Grading Rules", val: "Configurable", sub: "Set by the institution", color: "text-white" },
+          { label: "DMC Generation", val: "Available", sub: "After exam data entry", color: "text-emerald-400" },
         ],
         badge: "Academic Evaluation",
         details: [
