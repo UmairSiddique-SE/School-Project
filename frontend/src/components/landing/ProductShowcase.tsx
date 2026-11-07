@@ -22,7 +22,7 @@ export const ProductShowcase: React.FC = () => {
       label: "School Overview",
       icon: LayoutDashboard,
       title: "Consolidated Campus Command Center",
-      desc: "Instant live metrics across student rolls, faculty attendance, fee settlement ratios, and campus alerts.",
+      desc: "A single workspace for reviewing student records, attendance, fee activity, and important school updates.",
       preview: {
         stats: [
           { label: "Student Records", val: "Live", sub: "Shown after school setup", color: "text-[#49D6E8]" },
@@ -45,9 +45,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Enrollment management with unique admission numbers, guardian phone linkages, and academic archival.",
       preview: {
         stats: [
-          { label: "Admissions Handled", val: "100%", sub: "Digital Onboarding", color: "text-[#49D6E8]" },
-          { label: "Guardian Directory", val: "Synced", sub: "SMS/Contact Ready", color: "text-white" },
-          { label: "Class Sections", val: "A, B, C", sub: "Balanced Allocation", color: "text-emerald-400" },
+          { label: "Admissions", val: "Managed", sub: "School workflow", color: "text-[#49D6E8]" },
+          { label: "Guardian Records", val: "Organised", sub: "Linked to students", color: "text-white" },
+          { label: "Class Sections", val: "Configured", sub: "School-defined setup", color: "text-emerald-400" },
         ],
         badge: "Registry Controls",
         details: [
@@ -125,9 +125,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Financial analytics, attendance trends, staff utilization, and campus expansion reporting.",
       preview: {
         stats: [
-          { label: "Financial Audits", val: "Verified", sub: "Clean Records", color: "text-emerald-400" },
+          { label: "Financial Reports", val: "Available", sub: "From recorded entries", color: "text-emerald-400" },
           { label: "Data Export", val: "CSV / Print", sub: "Official Handover", color: "text-white" },
-          { label: "System Health", val: "99.98%", sub: "Neon Cloud DB", color: "text-[#49D6E8]" },
+          { label: "System Status", val: "Monitored", sub: "Operational checks", color: "text-[#49D6E8]" },
         ],
         badge: "Leadership Insights",
         details: [
@@ -215,7 +215,7 @@ export const ProductShowcase: React.FC = () => {
               <div className="p-6 rounded-2xl border border-white/10 bg-[#07111F]/80 shadow-xl space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3 text-[11px] text-[#94A3B8]">
                   <span className="font-mono">Module Preview · {current.label}</span>
-                  <span className="text-emerald-400 font-bold">100% Operational</span>
+                  <span className="text-[#49D6E8] font-bold">Illustrative UI</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-center">
@@ -231,7 +231,7 @@ export const ProductShowcase: React.FC = () => {
                 <div className="p-4 rounded-xl border border-[#49D6E8]/20 bg-[#49D6E8]/5">
                   <div className="flex justify-between items-center text-xs font-bold text-white mb-2">
                     <span>Institutional Data Reliability</span>
-                    <span className="text-[#49D6E8]">Synced</span>
+                    <span className="text-[#49D6E8]">Preview</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-[#5577F5] to-[#49D6E8] w-[95%] rounded-full" />
