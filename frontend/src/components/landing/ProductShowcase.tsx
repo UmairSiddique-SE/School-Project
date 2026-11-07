@@ -25,11 +25,11 @@ export const ProductShowcase: React.FC = () => {
       desc: "Instant live metrics across student rolls, faculty attendance, fee settlement ratios, and campus alerts.",
       preview: {
         stats: [
-          { label: "Total Active Students", val: "420", sub: "Verified Profiles", color: "text-[#49D6E8]" },
-          { label: "Today's Attendance", val: "96.4%", sub: "Logged Digitally", color: "text-emerald-400" },
-          { label: "Fee Collection", val: "PKR 480K", sub: "Current Billing Cycle", color: "text-[#8B7CF6]" },
+          { label: "Student Records", val: "Live", sub: "Shown after school setup", color: "text-[#49D6E8]" },
+          { label: "Attendance", val: "Daily", sub: "Based on actual entries", color: "text-emerald-400" },
+          { label: "Fee Collection", val: "Tracked", sub: "Based on recorded payments", color: "text-[#8B7CF6]" },
         ],
-        badge: "Live Campus Metrics",
+        badge: "Feature Preview",
         details: [
           "Real-time administrative alert broadcasting",
           "Automated soft-delete safeguard on sensitive records",
@@ -65,9 +65,9 @@ export const ProductShowcase: React.FC = () => {
       desc: "Section-wise attendance logging with immediate percentage summaries and absentee records.",
       preview: {
         stats: [
-          { label: "Present Today", val: "405", sub: "Students In Class", color: "text-emerald-400" },
-          { label: "Absent / Leave", val: "15", sub: "Action Required", color: "text-amber-400" },
-          { label: "Faculty Logged", val: "100%", sub: "All Sections Marked", color: "text-[#49D6E8]" },
+          { label: "Present Today", val: "Live", sub: "From marked attendance", color: "text-emerald-400" },
+          { label: "Absent / Leave", val: "Tracked", sub: "From attendance register", color: "text-amber-400" },
+          { label: "Faculty Register", val: "Live", sub: "School-specific records", color: "text-[#49D6E8]" },
         ],
         badge: "Daily Roll Call",
         details: [
