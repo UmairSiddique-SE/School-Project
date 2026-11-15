@@ -793,16 +793,16 @@ export default function Teachers() {
         <form onSubmit={handleSave} className="space-y-6">
           
           {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
             <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <User size={18} />
                 <span className="font-bold text-sm sm:text-base">1. Personal & Contact Information</span>
               </div>
-              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Required</span>
+              <span className="bg-white dark:bg-slate-900/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Required</span>
             </div>
 
-            <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
+            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-900/70 dark:bg-muted/15 p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 
                 {/* Photo Upload */}
@@ -941,16 +941,16 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 2: ACADEMIC QUALIFICATIONS & SALARY */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
             <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-600 px-6 py-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <GraduationCap size={18} />
                 <span className="font-bold text-sm sm:text-base">2. Academic Qualifications & Compensation</span>
               </div>
-              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Academic Record</span>
+              <span className="bg-white dark:bg-slate-900/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Academic Record</span>
             </div>
 
-            <div className="rounded-2xl border border-border bg-slate-50/70 dark:bg-muted/15 p-6">
+            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-900/70 dark:bg-muted/15 p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <Field label="Educational Qualification" required>
@@ -1030,13 +1030,13 @@ export default function Teachers() {
           </div>
 
           {/* SECTION 3: OFFICIAL SCHOOL LOGIN ID & 8-CHARACTER PASSWORD */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
             <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 px-6 py-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Key size={18} />
                 <span className="font-bold text-sm sm:text-base">3. Official Faculty Portal Login Credentials</span>
               </div>
-              <span className="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Security</span>
+              <span className="bg-white dark:bg-slate-900/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">Security</span>
             </div>
 
             <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-indigo-950/20 via-purple-950/10 to-card p-6 space-y-4">
@@ -1340,13 +1340,13 @@ export default function Teachers() {
       </div>
 
       {/* Teachers Directory Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Users size={18} />
             <span className="font-bold text-sm sm:text-base">Faculty Directory & Academic Records</span>
           </div>
-          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Teachers</span>
+          <span className="bg-white dark:bg-slate-900/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Teachers</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -1385,7 +1385,7 @@ export default function Teachers() {
                         setSelectedTeacher(t);
                         setProfileTab('overview');
                       }}
-                      className="cursor-pointer hover:bg-slate-100/70 dark:bg-muted/40 transition group"
+                      className="cursor-pointer hover:bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 transition group"
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
@@ -1514,7 +1514,7 @@ export default function Teachers() {
             <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-purple-700 to-sky-700 p-6 text-white shrink-0">
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/80 shadow-md shrink-0 flex items-center justify-center font-black text-2xl text-white">
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/20 border-2 border-white/80 shadow-md shrink-0 flex items-center justify-center font-black text-2xl text-white">
                     {selectedTeacher.avatarUrl ? (
                       <img src={selectedTeacher.avatarUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -1531,13 +1531,13 @@ export default function Teachers() {
                     </div>
 
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-white/90 font-medium">
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Employee No: <strong className="text-white">{selectedTeacher.employeeNo}</strong>
                       </span>
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Qualification: <strong className="text-white">{selectedTeacher.qualification || 'Master'}</strong>
                       </span>
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Salary: <strong className="text-emerald-300">{money(selectedTeacher.salary)}</strong>
                       </span>
                     </div>
@@ -1546,7 +1546,7 @@ export default function Teachers() {
 
                 <button
                   onClick={() => setSelectedTeacher(null)}
-                  className="rounded-xl p-2 text-white/80 hover:bg-white/20 hover:text-white transition shrink-0"
+                  className="rounded-xl p-2 text-white/80 hover:bg-white dark:bg-slate-900/20 hover:text-white transition shrink-0"
                 >
                   <X size={20} />
                 </button>
@@ -1565,8 +1565,8 @@ export default function Teachers() {
                     onClick={() => setProfileTab(t.key as any)}
                     className={`rounded-xl px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
                       profileTab === t.key
-                        ? 'bg-white text-indigo-900 shadow-md font-black'
-                        : 'text-white/80 hover:bg-white/15 hover:text-white'
+                        ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-md font-black'
+                        : 'text-white/80 hover:bg-white dark:bg-slate-900/15 hover:text-white'
                     }`}
                   >
                     {t.label}
@@ -1886,7 +1886,7 @@ export default function Teachers() {
             </div>
 
             {/* Layout Switcher */}
-            <div className="flex items-center gap-2 mb-6 bg-slate-100/70 dark:bg-muted/40 p-1.5 rounded-2xl border border-border">
+            <div className="flex items-center gap-2 mb-6 bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-1.5 rounded-2xl border border-border">
               <button
                 onClick={() => setIdCardOrientation('portrait')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -1965,7 +1965,7 @@ export default function Teachers() {
                       <p className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-200">SchoolOS Faculty</p>
                       <p className="text-xs font-black uppercase tracking-wider text-white">Official Teacher ID Card</p>
                     </div>
-                    <span className="text-[10px] font-mono bg-white/20 px-2.5 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] font-mono bg-white dark:bg-slate-900/20 px-2.5 py-0.5 rounded-full font-bold">
                       {idCardTeacher.employeeNo}
                     </span>
                   </div>
