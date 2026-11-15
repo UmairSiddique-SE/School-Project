@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Trash2, X, Loader2, Search, UserCheck, Phone, Mail,
   Award, Edit2, Briefcase, Calendar, Building2, Users,
-  ArrowUpRight, Check, CheckCircle, AlertCircle, User, DollarSign, ShieldCheck
+  ArrowUpRight, Check, CheckCircle, AlertCircle, User, DollarSign, ShieldCheck, Printer, FileText
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { QUALIFICATION_CATEGORIES } from './Teachers';
 
@@ -58,6 +59,7 @@ const nextNo = (staff: StaffMember[], desig: string) => {
 };
 
 export default function Staff() {
+  const { user } = useAuth();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -124,6 +126,135 @@ export default function Staff() {
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Unable to archive');
     }
+  };
+
+  const printSalarySlip = (s: StaffMember) => {
+    const popup = window.open('', '_blank', 'width=800,height=750');
+    if (!popup) return toast.error('Please allow popups to print salary slip');
+
+    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const now = new Date();
+    const monthYear = now.toLocaleDateString('en-PK', { month: 'long', year: 'numeric' });
+    const issueDate = now.toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' });
+    const basicSalary = Number(s.salary || 0);
+    const allowance = Math.round(basicSalary * 0.10);
+    const medicalAllowance = Math.round(basicSalary * 0.05);
+    const grossSalary = basicSalary + allowance + medicalAllowance;
+    const taxDeduction = basicSalary > 50000 ? Math.round(basicSalary * 0.02) : 0;
+    const netSalary = grossSalary - taxDeduction;
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <title>Salary Slip — ${s.name} (${monthYear})</title>
+  <style>
+    @page { size: portrait; margin: 10mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #0f172a; background: #fff; }
+    .slip-border { border: 2px solid #0c4a6e; border-radius: 8px; padding: 24px; position: relative; }
+    .header { text-align: center; border-bottom: 2px solid #0891b2; padding-bottom: 12px; margin-bottom: 16px; }
+    .school-name { font-size: 22px; font-weight: 900; color: #0c4a6e; text-transform: uppercase; }
+    .slip-title { font-size: 14px; font-weight: 800; color: #0891b2; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin-bottom: 18px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; }
+    .meta-item { display: flex; justify-content: space-between; }
+    .meta-item span.lbl { color: #64748b; font-weight: 600; }
+    .meta-item span.val { font-weight: 800; color: #0f172a; }
+    .salary-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+    .salary-table th { background: #0c4a6e; color: #fff; padding: 8px 12px; font-size: 11px; text-transform: uppercase; font-weight: 800; text-align: left; }
+    .salary-table td { padding: 8px 12px; border: 1px solid #e2e8f0; }
+    .salary-table tr:nth-child(even) { background: #f8fafc; }
+    .net-box { background: #f0fdf4; border: 2px solid #16a34a; border-radius: 6px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+    .net-lbl { font-size: 13px; font-weight: 900; color: #166534; text-transform: uppercase; }
+    .net-val { font-size: 22px; font-weight: 900; color: #166534; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 45px; padding-top: 10px; font-size: 11px; font-weight: 700; color: #475569; }
+    .sig-line { width: 30%; text-align: center; border-top: 1.5px solid #94a3b8; padding-top: 5px; }
+    @media print { body { padding: 0; } .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 15px; border-radius: 6px;">
+    <span style="font-size: 12px; color: #64748b; font-weight: 600;">Official Faculty & Staff Salary Slip</span>
+    <button onclick="window.print()" style="padding: 7px 18px; background: #0c4a6e; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">
+      🖨️ Print Payslip
+    </button>
+  </div>
+
+  <div class="slip-border">
+    <div class="header">
+      <div class="school-name">${schoolName}</div>
+      <div class="slip-title">Staff Salary Slip &bull; ${monthYear}</div>
+      <div style="font-size: 10px; color: #64748b; margin-top: 3px;">Date of Disbursement: ${issueDate}</div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-item"><span class="lbl">Employee Name:</span><span class="val">${s.name}</span></div>
+      <div class="meta-item"><span class="lbl">Employee ID:</span><span class="val" style="font-family:monospace">${s.employeeNo}</span></div>
+      <div class="meta-item"><span class="lbl">Designation:</span><span class="val">${s.designation}</span></div>
+      <div class="meta-item"><span class="lbl">Department:</span><span class="val">${s.department || 'Academics'}</span></div>
+      <div class="meta-item"><span class="lbl">Payment Method:</span><span class="val">Bank Transfer / Cash</span></div>
+      <div class="meta-item"><span class="lbl">Status:</span><span class="val" style="color:#16a34a">PAID / DISBURSED</span></div>
+    </div>
+
+    <table class="salary-table">
+      <thead>
+        <tr>
+          <th>Earnings & Allowances</th>
+          <th style="text-align:right">Amount (PKR)</th>
+          <th>Deductions</th>
+          <th style="text-align:right">Amount (PKR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Basic Salary</td>
+          <td style="text-align:right; font-weight:700">PKR ${basicSalary.toLocaleString()}</td>
+          <td>Income Tax Withholding</td>
+          <td style="text-align:right; color:#dc2626">PKR ${taxDeduction.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td>Academic / House Allowance</td>
+          <td style="text-align:right">PKR ${allowance.toLocaleString()}</td>
+          <td>Provident / Welfare Fund</td>
+          <td style="text-align:right">PKR 0</td>
+        </tr>
+        <tr>
+          <td>Medical Allowance</td>
+          <td style="text-align:right">PKR ${medicalAllowance.toLocaleString()}</td>
+          <td>Absence / Leave Deduction</td>
+          <td style="text-align:right">PKR 0</td>
+        </tr>
+        <tr style="background:#f1f5f9; font-weight:800">
+          <td>Total Gross Earnings</td>
+          <td style="text-align:right">PKR ${grossSalary.toLocaleString()}</td>
+          <td>Total Deductions</td>
+          <td style="text-align:right; color:#dc2626">PKR ${taxDeduction.toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="net-box">
+      <div>
+        <div class="net-lbl">Net Payable Amount</div>
+        <div style="font-size:10px; color:#15803d; margin-top:2px">Transferred to Employee Registered Account</div>
+      </div>
+      <div class="net-val">PKR ${netSalary.toLocaleString()}</div>
+    </div>
+
+    <div class="signatures">
+      <div class="sig-line">Employee Signature</div>
+      <div class="sig-line">Bursar / Accountant</div>
+      <div class="sig-line">Principal / Director</div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 400); };
+  </script>
+</body>
+</html>`;
+
+    popup.document.write(html);
+    popup.document.close();
   };
 
   const formSteps = [
@@ -355,12 +486,22 @@ export default function Staff() {
                         </span>
                       </td>
                       <td className="px-8 py-6" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => handleDelete(s)}
-                          className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-rose-600 transition-all flex items-center justify-center border border-white/5"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => printSalarySlip(s)}
+                            className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-emerald-600 transition-all flex items-center justify-center border border-white/5"
+                            title="Print Salary Slip / Payslip"
+                          >
+                            <Printer size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(s)}
+                            className="h-11 w-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-rose-600 transition-all flex items-center justify-center border border-white/5"
+                            title="Archive Staff"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </motion.tr>
                   ))}
@@ -416,6 +557,14 @@ export default function Staff() {
                     <p className="text-sm font-bold text-white truncate">{value}</p>
                   </div>
                 ))}
+              </div>
+              <div className="p-6 bg-white/[0.02] border-t border-white/[0.05] flex justify-end">
+                <button
+                  onClick={() => printSalarySlip(selectedStaff)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:brightness-110 transition"
+                >
+                  <Printer size={15} /> Print Monthly Salary Slip
+                </button>
               </div>
             </motion.div>
           </motion.div>

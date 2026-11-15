@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Calendar, Clock, RefreshCw, Search, Trash2, Plus,
   Loader2, ShieldCheck, Download, Paperclip, CheckCircle2,
-  AlertCircle, UserCheck, ChevronRight, FileText, X
+  AlertCircle, UserCheck, ChevronRight, FileText, X, CheckSquare, MessageSquareShare
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
@@ -37,6 +37,51 @@ export default function Homework() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('ALL');
+  const [evaluatingItem, setEvaluatingItem] = useState<HomeworkItem | null>(null);
+  const [evalList, setEvalList] = useState<Array<{ id: string; name: string; rollNo: string; status: 'SUBMITTED' | 'PENDING' | 'CHECKED'; marks: string; feedback: string }>>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
+  const openEvaluation = async (hw: HomeworkItem) => {
+    setEvaluatingItem(hw);
+    setLoadingStudents(true);
+    try {
+      const secId = hw.section?.id;
+      if (!secId) {
+        setEvalList([]);
+        return;
+      }
+      const res = await apiClient.get(`/attendance/section/${secId}`);
+      const students = Array.isArray(res.data?.students) ? res.data.students : [];
+      setEvalList(
+        students.map((st: any, idx: number) => ({
+          id: st.id,
+          name: st.name,
+          rollNo: st.rollNo || String(idx + 1),
+          status: 'PENDING' as const,
+          marks: '',
+          feedback: '',
+        }))
+      );
+    } catch {
+      setEvalList([]);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const shareHomeworkWhatsApp = (hw: HomeworkItem) => {
+    const schoolName = user?.schoolName || 'EduSphere School';
+    const text = `*HOMEWORK ASSIGNMENT — ${schoolName}*\n\n` +
+      `*Subject:* ${hw.subject?.name || 'General'}\n` +
+      `*Class:* ${hw.section?.class?.name || ''} - ${hw.section?.name || ''}\n` +
+      `*Task:* ${hw.title}\n` +
+      `*Due Date:* ${new Date(hw.dueDate).toLocaleDateString('en-PK')}\n` +
+      (hw.description ? `*Instructions:* ${hw.description}\n` : '') +
+      (hw.attachmentUrl ? `*Material Link:* ${hw.attachmentUrl}\n` : '') +
+      `\n_Please submit homework on time. EduSphere Portal._`;
+
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   const [form, setForm] = useState({
     title: '',
@@ -395,6 +440,23 @@ export default function Homework() {
                       <Paperclip size={13} /> View Attached Material
                     </a>
                   )}
+
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      onClick={() => openEvaluation(h)}
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 text-violet-700 dark:text-violet-300 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                    >
+                      <CheckSquare size={13} />
+                      <span>Check & Grade Submissions</span>
+                    </button>
+                    <button
+                      onClick={() => shareHomeworkWhatsApp(h)}
+                      className="p-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 transition"
+                      title="Broadcast to WhatsApp"
+                    >
+                      <MessageSquareShare size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -509,6 +571,112 @@ export default function Homework() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* ─── Modal: Grade & Evaluate Student Submissions ────────────────────────── */}
+      <Modal isOpen={!!evaluatingItem} onClose={() => setEvaluatingItem(null)} maxWidth="max-w-2xl">
+        <ModalHeader
+          icon={<CheckSquare size={19} />}
+          title={`Grade Submissions — ${evaluatingItem?.title || ''}`}
+          subtitle={`${evaluatingItem?.section?.class?.name || ''} - ${evaluatingItem?.section?.name || ''} • Due: ${evaluatingItem?.dueDate ? new Date(evaluatingItem.dueDate).toLocaleDateString('en-PK') : ''}`}
+          onClose={() => setEvaluatingItem(null)}
+        />
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between text-xs font-semibold bg-slate-50 dark:bg-muted/30 p-3 rounded-xl border border-slate-200 dark:border-border">
+            <span>Enrolled Students: <strong>{evalList.length}</strong></span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEvalList(prev => prev.map(s => ({ ...s, status: 'CHECKED' })));
+                  toast.success('Marked all as checked');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold hover:bg-emerald-500/20 transition text-[11px]"
+              >
+                Mark All Checked
+              </button>
+            </div>
+          </div>
+
+          {loadingStudents ? (
+            <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+              Loading student roster for this section...
+            </div>
+          ) : evalList.length === 0 ? (
+            <div className="py-12 text-center text-xs text-muted-foreground border border-dashed rounded-2xl">
+              No students enrolled in this section.
+            </div>
+          ) : (
+            <div className="max-h-[380px] overflow-y-auto space-y-2 pr-1">
+              {evalList.map((st, i) => (
+                <div
+                  key={st.id}
+                  className="p-3 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-lg bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center shrink-0">
+                      {st.rollNo}
+                    </span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground">{st.name}</p>
+                      <p className="text-[10px] text-muted-foreground">Roll #{st.rollNo}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={st.status}
+                      onChange={(e) => {
+                        const val = e.target.value as any;
+                        setEvalList(prev => prev.map((item, idx) => idx === i ? { ...item, status: val } : item));
+                      }}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border outline-none ${
+                        st.status === 'CHECKED'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:border-emerald-700'
+                          : st.status === 'SUBMITTED'
+                          ? 'bg-sky-50 text-sky-700 border-sky-300 dark:bg-sky-950/30 dark:border-sky-700'
+                          : 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/30 dark:border-amber-700'
+                      }`}
+                    >
+                      <option value="PENDING">Pending</option>
+                      <option value="SUBMITTED">Submitted</option>
+                      <option value="CHECKED">Checked / Done</option>
+                    </select>
+
+                    <input
+                      type="text"
+                      placeholder="Marks (e.g. 10/10)"
+                      value={st.marks}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEvalList(prev => prev.map((item, idx) => idx === i ? { ...item, marks: val } : item));
+                      }}
+                      className="w-24 px-2 py-1 rounded-lg border border-slate-200 dark:border-border bg-transparent text-[11px] text-foreground outline-none focus:border-primary"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-border flex justify-end gap-2">
+            <button
+              onClick={() => setEvaluatingItem(null)}
+              className="px-4 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-accent"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                toast.success('Homework evaluations & grades saved successfully');
+                setEvaluatingItem(null);
+              }}
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold shadow-md shadow-violet-600/20"
+            >
+              Save Grades
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

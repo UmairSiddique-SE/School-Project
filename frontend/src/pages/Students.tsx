@@ -3,7 +3,7 @@ import {
   ArrowLeft, ArrowRight, Camera, GraduationCap, Loader2, Pencil, Plus, Printer, RefreshCw, Search, Trash2,
   UserRound, Users, X, MapPin, User,
   Eye, EyeOff, Check, HeartPulse, FileText, Key, Clock, Sparkles, Layout, Smartphone,
-  CheckCircle2, AlertTriangle, CheckSquare, ShieldCheck, Copy, Share2, Bus, Home, Building2, Calendar, Phone, Mail, Award, CheckCircle
+  CheckCircle2, AlertTriangle, CheckSquare, ShieldCheck, Copy, Share2, Bus, Home, Building2, Calendar, Phone, Mail, Award, CheckCircle, ScrollText
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
@@ -1099,6 +1099,196 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
     window.onload = function() {
       window.print();
     };
+  </script>
+</body>
+</html>`;
+
+    popup.document.write(html);
+    popup.document.close();
+  };
+
+  const printLeavingCertificate = (student: Student) => {
+    const popup = window.open('', '_blank', 'width=850,height=950');
+    if (!popup) return toast.error('Please allow popups to print the School Leaving Certificate');
+
+    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const admNo = student.admissionNo || 'ADM-0000';
+    const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
+    const dob = student.dob ? new Date(student.dob).toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' }) : 'As per official admission record';
+    const className = student.section?.class?.name || 'Class 10';
+    const session = student.session || currentSession;
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <title>School Leaving Certificate — ${student.name} (${admNo})</title>
+  <style>
+    @page { size: portrait; margin: 12mm 15mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: #fff;
+      color: #0f172a;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .cert-border {
+      border: 4px double #0c4a6e;
+      padding: 30px;
+      border-radius: 8px;
+      position: relative;
+      background: #ffffff;
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 65px;
+      font-weight: 900;
+      color: rgba(12, 74, 110, 0.04);
+      pointer-events: none;
+      z-index: 0;
+      letter-spacing: 5px;
+      white-space: nowrap;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #0c4a6e;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .school-name {
+      font-size: 26px;
+      font-weight: 900;
+      color: #0c4a6e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sub-head {
+      font-size: 13px;
+      color: #475569;
+      margin-top: 4px;
+      font-style: italic;
+    }
+    .cert-title {
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #0c4a6e;
+      margin-top: 15px;
+      display: inline-block;
+      padding: 4px 20px;
+      border: 2px solid #0c4a6e;
+      border-radius: 4px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 25px;
+      color: #334155;
+    }
+    .content-body {
+      font-size: 15px;
+      line-height: 2.2;
+      text-align: justify;
+      color: #1e293b;
+    }
+    .field-line {
+      display: inline-block;
+      border-bottom: 1.5px dotted #0c4a6e;
+      padding: 0 8px;
+      font-weight: bold;
+      color: #0c4a6e;
+    }
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 60px;
+      padding-top: 20px;
+    }
+    .sig-block {
+      text-align: center;
+      width: 28%;
+    }
+    .sig-line {
+      border-top: 1.5px solid #0f172a;
+      padding-top: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #0f172a;
+    }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px 15px; border-radius: 8px; font-family: sans-serif;">
+    <span style="font-size: 13px; color: #475569; font-weight: 600;">Official School Leaving Certificate (SLC)</span>
+    <button onclick="window.print()" style="padding: 8px 20px; background: #0c4a6e; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+      🖨️ Print Certificate
+    </button>
+  </div>
+
+  <div class="cert-border">
+    <div class="watermark">SCHOOL LEAVING CERTIFICATE</div>
+
+    <div>
+      <div class="header">
+        <div class="school-name">${schoolName}</div>
+        <div class="sub-head">Affiliated / Registered Educational Institution &bull; Academic Directorate</div>
+        <div class="cert-title">School Leaving Certificate</div>
+      </div>
+
+      <div class="meta-row">
+        <span>Certificate Serial No: <span style="font-family: monospace; color: #0c4a6e;">SLC-${admNo.replace(/[^0-9]/g, '') || '2026-01'}</span></span>
+        <span>Date of Issue: <span>${issueDate}</span></span>
+      </div>
+
+      <div class="content-body">
+        This is to certify that Master / Miss <span class="field-line" style="min-width: 220px; text-align: center;">${student.name}</span>, 
+        Son / Daughter of Mr. <span class="field-line" style="min-width: 220px; text-align: center;">${student.emergencyContact ? 'Guardian on Record' : 'Father on Record'}</span>, 
+        bearing Admission / Registration Number <span class="field-line" style="font-family: monospace;">${admNo}</span>, 
+        was a bona-fide student of this institution from session <span class="field-line">${session}</span>.
+        <br/><br/>
+        According to the school admission register, his/her Date of Birth is 
+        <span class="field-line">${dob}</span>.
+        He/She left the school on <span class="field-line">${issueDate}</span> 
+        while studying in <span class="field-line" style="min-width: 150px; text-align: center;">${className}</span>.
+        <br/><br/>
+        All school dues and institutional library accounts have been settled up to date.
+        His/Her moral character and general conduct during his/her stay at this school has been 
+        <span class="field-line" style="font-weight: 900; color: #166534;">EXCELLENT / SATISFACTORY</span>.
+        <br/><br/>
+        Reason for leaving the school: <span class="field-line" style="min-width: 240px;">Completion of Studies / Parent Transfer</span>.
+        We wish him/her every success in all future academic endeavors.
+      </div>
+    </div>
+
+    <div class="signatures">
+      <div class="sig-block">
+        <div class="sig-line">Class Incharge</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line">Office Superintendent</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line">Principal / Headmaster</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 400); };
   </script>
 </body>
 </html>`;
@@ -2532,6 +2722,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                           title="View & Print ID Card"
                         >
                           <Printer size={15} />
+                        </button>
+                        <button
+                          onClick={() => printLeavingCertificate(student)}
+                          className="rounded-lg p-2 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition"
+                          title="Print School Leaving Certificate (SLC)"
+                        >
+                          <ScrollText size={15} />
                         </button>
                         <button
                           onClick={() => {

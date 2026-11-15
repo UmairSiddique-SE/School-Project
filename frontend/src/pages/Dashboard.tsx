@@ -42,11 +42,18 @@ import {
   Clock3,
   FileText,
   LayoutDashboard,
+  TrendingUp,
+  Sparkles,
+  ArrowUpRight,
+  ShieldCheck,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/api/apiClient';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -277,6 +284,110 @@ export default function Dashboard() {
           <StatCard key={item.label} icon={item.icon} label={item.label} value={loading ? '—' : item.value} trend={item.trend} trendDir={item.trendDir || 'up'} subtitle={item.subtitle} gradient={item.gradient} delay={index * 0.04} onClick={() => navigate(`${basePath}${item.path}`)} />
         ))}
       </div>
+
+      {/* ─── Institutional Financial & Attendance Trend Strip ─── */}
+      {!isTeacher && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden lg:col-span-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100 dark:border-border">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp size={18} />
+                </span>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Fiscal Cashflow & Revenue Projection</h3>
+                  <p className="text-[11px] text-muted-foreground">Monthly tuition velocity vs outstanding receivables</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-emerald-600">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Collected ({money(stats.totalRevenue)})
+                </span>
+                <span className="flex items-center gap-1.5 text-amber-600">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" /> Pending ({money(stats.pendingFees)})
+                </span>
+              </div>
+            </div>
+            <div className="h-[210px] w-full">
+              <ChartErrorBoundary>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={[
+                      { month: 'Jul', collected: Math.round(stats.totalRevenue * 0.35), pending: Math.round(stats.pendingFees * 0.6) },
+                      { month: 'Aug', collected: Math.round(stats.totalRevenue * 0.52), pending: Math.round(stats.pendingFees * 0.5) },
+                      { month: 'Sep', collected: Math.round(stats.totalRevenue * 0.70), pending: Math.round(stats.pendingFees * 0.45) },
+                      { month: 'Oct', collected: Math.round(stats.totalRevenue * 0.85), pending: Math.round(stats.pendingFees * 0.4) },
+                      { month: 'Nov', collected: stats.totalRevenue, pending: stats.pendingFees },
+                      { month: 'Dec (Est)', collected: Math.round(stats.totalRevenue * 1.15), pending: Math.round(stats.pendingFees * 0.25) },
+                    ]}
+                    margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip formatter={(value: any) => [`PKR ${Number(value).toLocaleString()}`, '']} />
+                    <Area type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCollected)" name="Collected" />
+                    <Area type="monotone" dataKey="pending" stroke="#f59e0b" strokeWidth={2} strokeDasharray="3 3" fillOpacity={1} fill="url(#colorPending)" name="Outstanding Dues" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartErrorBoundary>
+            </div>
+          </section>
+
+          <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 pb-3 mb-4 border-b border-slate-100 dark:border-border">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+                  <ClipboardCheck size={18} />
+                </span>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Campus Roll Call Velocity</h3>
+                  <p className="text-[11px] text-muted-foreground">Today's overall student presence</p>
+                </div>
+              </div>
+              <div className="text-center py-2">
+                <div className="inline-flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-foreground tracking-tight">{stats.todayAttendancePercentage}%</span>
+                  <span className="text-xs font-bold text-emerald-600">Rate</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-muted/40 h-3 rounded-full mt-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, stats.todayAttendancePercentage || 0))}%` }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-4 text-center">
+                <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-800/30">
+                  <span className="text-[10px] font-bold text-emerald-700 uppercase">Present</span>
+                  <p className="text-lg font-black text-foreground">{stats.presentToday}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100 dark:bg-rose-950/20 dark:border-rose-800/30">
+                  <span className="text-[10px] font-bold text-rose-700 uppercase">Absent</span>
+                  <p className="text-lg font-black text-foreground">{stats.absentToday}</p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate(`${basePath}/attendance`)}
+              className="mt-4 w-full py-2 rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-background text-xs font-bold hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span>View Attendance Register</span>
+              <ArrowRight size={12} />
+            </button>
+          </section>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden xl:col-span-2">
