@@ -1,9 +1,12 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { PeopleService } from './people.service';
 import { PlanLimitService } from './plan-limit.service';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('people/students')
 export class StudentBulkController {
   constructor(
@@ -17,6 +20,7 @@ export class StudentBulkController {
     const rows = Array.isArray(dto?.students) ? dto.students : [];
     if (!rows.length) throw new BadRequestException('At least one student record is required');
     if (rows.length > 500) throw new BadRequestException('A maximum of 500 students can be imported at once');
+    if (!user?.schoolId) throw new BadRequestException('School association is missing');
 
     const results: any[] = [];
     for (const row of rows) {
@@ -26,7 +30,7 @@ export class StudentBulkController {
       }
       results.push(await this.peopleService.createStudent(user.schoolId, {
         ...row,
-        parentPassword: row.parentPassword || 'EduSphereParent2026!',
+        parentPassword: row.parentPassword,
       }));
     }
 
