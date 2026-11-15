@@ -691,13 +691,13 @@ export default function Attendance() {
           <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1">Try adjusting your search query.</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
           <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <CheckSquare size={18} />
               <span className="font-bold text-sm sm:text-base">Daily Attendance Roster & Student Roll Call</span>
             </div>
-            <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filteredStudents.length} Students</span>
+            <span className="bg-white dark:bg-slate-900/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filteredStudents.length} Students</span>
           </div>
 
           <div className="overflow-x-auto">
