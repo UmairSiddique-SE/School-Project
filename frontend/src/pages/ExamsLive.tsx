@@ -812,7 +812,7 @@ export default function ExamsLive() {
                     <>
                       <button
                         onClick={printClassGazette}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:bg-slate-900 transition shadow-sm"
                         title="Print Consolidated Class Result Sheet"
                       >
                         <Printer size={14} className="text-cyan-600" /> Print Gazette
