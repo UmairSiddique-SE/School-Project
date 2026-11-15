@@ -229,6 +229,7 @@ return { school, user };
     user = await this.prisma.user.findFirst({
       where: {
         ...roleFilter,
+        deletedAt: null,
         OR: [
           { email: { equals: rawIdentifier, mode: 'insensitive' } },
           { email: { equals: `${rawIdentifier}@school.edu`, mode: 'insensitive' } },
