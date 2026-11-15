@@ -8,7 +8,7 @@ import {
   ShieldCheck, Sparkles, Sun, Users, WalletCards, X, Globe2,
   MonitorSmartphone, Bell, ChartNoAxesCombined, School, Layers3,
   Star, Zap, CircleHelp, Settings2, MessageCircle,
-  TrendingUp, FileText, UserRoundCheck, Command, Play, Plus
+  TrendingUp, FileText, UserRoundCheck, Command, Play, Plus, Search, MapPin
 } from "lucide-react";
 import apiClient from "@/api/apiClient";
 import "./LandingPage.css";
@@ -24,6 +24,18 @@ interface PublicPlan {
   storageMb: number;
   supportTier: string;
   features: string[];
+}
+
+interface PublicSchool {
+  id: string;
+  name: string;
+  slug: string;
+  city?: string | null;
+  country?: string | null;
+  logoUrl?: string | null;
+  isActive: boolean;
+  loginAvailable: boolean;
+  status: string;
 }
 
 const modules = [
@@ -73,6 +85,8 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [schools, setSchools] = useState<PublicSchool[]>([]);
+  const [schoolsLoading, setSchoolsLoading] = useState(true);
 
   // The app-wide ThemeProvider defaults to light. Temporarily own the document theme
   // on this public page so its global .light overrides cannot break the dark palette.
@@ -96,6 +110,17 @@ export default function LandingPage() {
       .then((response) => { if (active) setPlans(Array.isArray(response.data) ? response.data : []); })
       .catch(() => { if (active) setPlans([]); })
       .finally(() => { if (active) setPlansLoading(false); });
+
+    apiClient.get("/public/schools")
+      .then((response) => {
+        if (!active) return;
+        const data = response?.data;
+        const list = Array.isArray(data) ? data : Array.isArray(data?.schools) ? data.schools : [];
+        setSchools(list);
+      })
+      .catch(() => { if (active) setSchools([]); })
+      .finally(() => { if (active) setSchoolsLoading(false); });
+
     return () => { active = false; };
   }, []);
 
@@ -149,12 +174,16 @@ export default function LandingPage() {
           <nav className={`hidden items-center gap-8 text-[12px] font-bold lg:flex ${c.muted}`}>
             <a href="#platform" className="transition hover:text-blue-500">Platform</a>
             <a href="#features" className="transition hover:text-blue-500">Modules</a>
+            <a href="#campuses" className="transition hover:text-blue-500">Campuses</a>
             <a href="#tour" className="transition hover:text-blue-500">Product tour</a>
             <a href="#how-it-works" className="transition hover:text-blue-500">How it works</a>
             <a href="#pricing" className="transition hover:text-blue-500">Pricing</a>
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
+            <Link to="/school-login" className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${c.line} ${c.soft} ${c.body} hover:text-blue-500`}>
+              <Search size={14} /> Find School
+            </Link>
             <button onClick={toggleTheme} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Switch to light theme" : "Switch to dark theme"} className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${c.line} ${c.soft} ${c.body} hover:text-blue-500`}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
             <Link to="/school-login" className={`rounded-xl px-3 py-2.5 text-xs font-bold transition hover:text-blue-500 ${c.body}`}>Sign in</Link>
             <Link to="/register-school/plans" className={`${primary} !rounded-xl !px-4 !py-3 !text-xs`}>Register school <ArrowUpRight size={14} /></Link>
@@ -263,6 +292,73 @@ export default function LandingPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {modules.map((module,index)=>{const Icon=module.icon;return <motion.article key={module.name} initial={{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.12}} transition={{duration:.4,delay:(index%3)*.06}} whileHover={{y:-6}} className={`group relative overflow-hidden rounded-[26px] border p-6 transition duration-300 hover:border-blue-500/35 hover:shadow-2xl ${c.card} ${dark?"hover:shadow-blue-950/20":"hover:shadow-blue-950/10"}`}><div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/10 to-violet-500/10 blur-2xl transition group-hover:scale-150"/><div className="relative flex items-start justify-between"><span className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${colorStyles[module.color][dark?"dark":"light"]}`}><Icon size={22}/></span><span className={`flex h-8 w-8 items-center justify-center rounded-full transition group-hover:translate-x-1 group-hover:-translate-y-1 ${c.soft} ${c.faint}`}><ArrowUpRight size={15}/></span></div><p className="relative mt-7 text-[9px] font-extrabold uppercase tracking-[.15em] text-blue-500">{module.tag}</p><h3 className={`relative mt-2 text-lg font-black ${c.heading}`}>{module.name}</h3><p className={`relative mt-2 text-sm leading-6 ${c.muted}`}>{module.description}</p></motion.article>})}
             </div>
+          </div>
+        </section>
+
+        {/* Campuses & Schools Directory Showcase */}
+        <section id="campuses" className={`border-y px-4 py-20 sm:px-7 lg:px-10 ${c.line} ${dark?"bg-gradient-to-r from-[#0B1522] via-[#0E1E2C] to-[#0A1724]":"bg-gradient-to-r from-slate-50 via-blue-50/40 to-slate-50"}`}>
+          <div className="mx-auto max-w-[1440px]">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[.16em] ${dark?"bg-cyan-400/10 text-cyan-300":"bg-blue-50 text-blue-700"}`}>
+                  <School size={13} /> Active Institutions
+                </span>
+                <h2 className={`mt-4 text-3xl font-black tracking-[-.05em] sm:text-4xl ${c.heading}`}>
+                  Trusted by Forward-Thinking <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Campuses</span>
+                </h2>
+                <p className={`mt-3 text-sm max-w-xl ${c.muted}`}>
+                  Explore live school portals and public web addresses hosted on the SchoolOS multi-tenant cloud.
+                </p>
+              </div>
+              <Link to="/school-login" className="inline-flex items-center gap-2 text-xs font-bold text-blue-500 hover:text-blue-400 transition">
+                Find your campus gateway <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {schoolsLoading ? (
+              <div className={`p-8 text-center rounded-2xl border ${c.line} ${c.card} text-sm ${c.muted}`}>
+                Checking registered school network...
+              </div>
+            ) : schools.length > 0 ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {schools.slice(0, 6).map((item) => (
+                  <div key={item.id || item.slug} className={`rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 ${c.card} ${c.line}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-black text-base shadow-sm ${item.logoUrl ? "bg-white overflow-hidden p-1 border" : "bg-gradient-to-br from-blue-600 to-violet-600 text-white"}`}>
+                          {item.logoUrl ? <img src={item.logoUrl} alt={item.name} className="h-full w-full object-contain" /> : item.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className={`text-sm font-black line-clamp-1 ${c.heading}`}>{item.name}</h4>
+                          <p className={`text-[11px] flex items-center gap-1 mt-0.5 ${c.muted}`}>
+                            <MapPin size={11} className="text-cyan-500" /> {item.city || "Pakistan"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                        <CheckCircle2 size={10} /> Active
+                      </span>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-slate-700/20 flex items-center justify-between text-xs font-bold">
+                      <Link to={`/school/${item.slug}`} className="inline-flex items-center gap-1 text-cyan-500 hover:underline">
+                        <Globe2 size={13} /> View Website
+                      </Link>
+                      <Link to={`/school-login/${item.slug}`} className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 ${c.soft} ${c.body} hover:text-blue-500 transition`}>
+                        Portal Login <ArrowUpRight size={13} />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`p-8 text-center rounded-2xl border ${c.line} ${c.card}`}>
+                <p className={`text-sm ${c.muted}`}>Every registered institution gets a high-performance public landing page & admin portal.</p>
+                <Link to="/register-school/plans" className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-blue-500">
+                  Register Your School Now <ArrowRight size={14} />
+                </Link>
+              </div>
+            )}
           </div>
         </section>
 
