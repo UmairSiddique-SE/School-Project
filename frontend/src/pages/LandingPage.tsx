@@ -142,7 +142,7 @@ export default function LandingPage() {
       <header className={`sticky top-0 z-50 border-b backdrop-blur-2xl ${c.header}`}>
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-4 sm:px-7 lg:px-10">
           <Link to="/" className="group flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-white/10 bg-[#07131F] shadow-lg shadow-cyan-950/25 transition group-hover:-rotate-3"><img src="/logo.svg" alt="SchoolOS logo" className="h-full w-full object-cover" /></span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-white/10 bg-[#07131F] shadow-lg shadow-cyan-950/25 transition group-hover:-rotate-3"><img src="/logo.svg" alt="SchoolOS logo" className="h-full w-full object-contain" /></span>
             <span><span className={`block text-[21px] font-black leading-none tracking-tight ${c.heading}`}>SchoolOS</span><span className={`mt-1 block text-[9px] font-bold uppercase tracking-[.22em] ${c.muted}`}>School operating system</span></span>
           </Link>
 
@@ -179,12 +179,12 @@ export default function LandingPage() {
         <section className="relative px-4 pb-24 pt-14 sm:px-7 sm:pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="mx-auto grid max-w-[1440px] items-center gap-14 xl:grid-cols-[.83fr_1.17fr]">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="relative z-10 text-center xl:text-left">
-              <div className={`mx-auto mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-extrabold uppercase tracking-[.16em] backdrop-blur xl:mx-0 ${dark ? "border-blue-300/20 bg-blue-400/10 text-blue-200" : "border-blue-200 bg-white text-blue-700 shadow-sm"}`}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" /></span> The operating system for modern schools</div>
-              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>Run your school<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">all in one place.</span></h1>
-              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Manage students, attendance, fees, exams and staff from one simple system. SchoolOS keeps your school organised, helps your team save time and makes daily work easier to manage.</p>
+              <div className={`mx-auto mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-extrabold uppercase tracking-[.16em] backdrop-blur xl:mx-0 ${dark ? "border-blue-300/20 bg-blue-400/10 text-blue-200" : "border-blue-200 bg-white text-blue-700 shadow-sm"}`}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" /></span> A simple system for running your school</div>
+              <h1 className={`text-[43px] font-black leading-[1.02] tracking-[-.065em] sm:text-6xl lg:text-[72px] 2xl:text-[82px] ${c.heading}`}>Run your school<br/><span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">from one simple place.</span></h1>
+              <p className={`mx-auto mt-7 max-w-[590px] text-base leading-8 sm:text-lg xl:mx-0 ${c.body}`}>Manage students, teachers, attendance, fees, exams and daily school work in one place. SchoolOS helps your team stay organised, save time and work with less paperwork.</p>
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row xl:justify-start">
-                <Link to="/register-school/plans" className={primary}>See how SchoolOS works <ArrowRight size={17} /></Link>
-                <a href="#tour" className={secondary}><Play size={15} /> Explore the product</a>
+                <Link to="/register-school/plans" className={primary}>Register your school <ArrowRight size={17} /></Link>
+                <a href="#tour" className={secondary}><Play size={15} /> See the product</a>
               </div>
               <div className={`mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[10px] font-bold xl:justify-start ${c.muted}`}>
                 <span className="flex items-center gap-2"><ShieldCheck size={15} className="text-emerald-500" /> Role-based access</span>
