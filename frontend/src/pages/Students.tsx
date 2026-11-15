@@ -147,9 +147,9 @@ const emptyForm = (): FormState => ({
   rollNo: '',
   name: '',
   dateOfBirth: '',
-  gender: 'MALE',
-  bloodGroup: 'O+',
-  religion: 'Muslim',
+  gender: '',
+  bloodGroup: '',
+  religion: '',
   nationality: 'Pakistani',
   bFormNumber: '',
   email: '',
@@ -272,13 +272,13 @@ export default function Students() {
 
   // Document collection admission checklist
   const [checklist, setChecklist] = useState({
-    bForm: true,
-    fatherCnic: true,
+    bForm: false,
+    fatherCnic: false,
     motherOrGuardianCnic: false,
-    photos: true,
+    photos: false,
     leavingCertificate: false,
     academicRecord: false,
-    admissionFormSigned: true,
+    admissionFormSigned: false,
   });
 
   // Success Banner after admission & Modal Dialog
@@ -450,6 +450,7 @@ export default function Students() {
   const openCreate = () => {
     setEditing(null);
     setCurrentStep(1);
+    setChecklist({ bForm: false, fatherCnic: false, motherOrGuardianCnic: false, photos: false, leavingCertificate: false, academicRecord: false, admissionFormSigned: false });
     const initialPass = generate8CharPassword();
     const initialForm = emptyForm();
     initialForm.password = initialPass;
@@ -472,6 +473,7 @@ export default function Students() {
   const openEdit = (student: Student) => {
     setEditing(student);
     setCurrentStep(1);
+    setChecklist({ bForm: false, fatherCnic: false, motherOrGuardianCnic: false, photos: false, leavingCertificate: false, academicRecord: false, admissionFormSigned: false });
     const matchedSection = sections.find((s) => s.id === student.sectionId);
     const primaryParent = student.parents?.[0]?.parent;
 
@@ -479,9 +481,9 @@ export default function Students() {
       ...emptyForm(),
       name: student.name || '',
       rollNo: student.rollNo || '',
-      gender: student.gender || 'MALE',
-      bloodGroup: student.bloodGroup || 'O+',
-      religion: student.religion || 'Muslim',
+      gender: student.gender || '',
+      bloodGroup: student.bloodGroup || '',
+      religion: student.religion || '',
       nationality: student.nationality || 'Pakistani',
       classId: matchedSection?.classId || student.section?.classId || '',
       sectionId: student.sectionId || '',
@@ -608,7 +610,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
       <tr><th>Admission Number</th><td><strong style="color: #0e7490; font-family: monospace;">${student.admissionNo || 'N/A'}</strong></td></tr>
       <tr><th>Class & Section</th><td>${student.section?.className || 'Class'} — Section ${student.section?.name || 'A'}</td></tr>
       <tr><th>Roll Number</th><td><strong>${student.rollNo || 'N/A'}</strong></td></tr>
-      <tr><th>Date of Birth / Gender</th><td>${student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'} (${student.gender || 'MALE'})</td></tr>
+      <tr><th>Date of Birth / Gender</th><td>${student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'} (${student.gender || 'Not provided'})</td></tr>
       <tr><th>B-Form / CNIC</th><td>${student.bFormNumber || 'N/A'}</td></tr>
     </table>
     <div class="photo-box">
@@ -1047,7 +1049,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
         </div>
         <div class="data-row">
           <span class="label">Gender / Blood</span>
-          <span class="val">${student.gender || 'Male'} / ${student.bloodGroup || 'O+'}</span>
+          <span class="val">${student.gender || 'Not provided'} / ${student.bloodGroup || 'Not provided'}</span>
         </div>
         <div class="data-row" style="border-bottom:none">
           <span class="label">Emergency Mobile</span>
@@ -1056,7 +1058,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
       </div>
       <div class="footer-barcode">
         ${barSvg}
-        <span class="stamp">✓ VERIFIED STUDENT</span>
+        <span class="stamp">STUDENT ID</span>
       </div>
     ` : `
       <div class="land-content">
@@ -1064,7 +1066,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div class="photo-area">
             ${photo ? `<img src="${photo}" />` : student.name.charAt(0)}
           </div>
-          <span class="stamp" style="margin-top:8px">✓ VERIFIED</span>
+          <span class="stamp" style="margin-top:8px">STUDENT ID</span>
         </div>
         <div class="card-body">
           <div class="student-name">${student.name}</div>
@@ -1500,6 +1502,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                       value={form.bloodGroup}
                       onChange={(e) => update('bloodGroup', e.target.value)}
                     >
+                      <option value="">Select blood group</option>
                       {bloodGroups.map((bg) => (
                         <option key={bg} value={bg}>{bg}</option>
                       ))}
@@ -1528,6 +1531,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                       value={form.religion}
                       onChange={(e) => update('religion', e.target.value)}
                     >
+                      <option value="">Select religion</option>
                       {religions.map((r) => (
                         <option key={r} value={r}>{r}</option>
                       ))}
@@ -1708,7 +1712,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-cyan-800 border border-cyan-200 shadow-sm">
-                      Capacity: {currentSectionObj.capacity || 40} Students
+                      Capacity: {currentSectionObj.capacity != null ? `${currentSectionObj.capacity} Students` : 'Not configured'}
                     </span>
                   </div>
                 </div>
@@ -2715,7 +2719,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
                     <td className="px-5 py-3.5">
                       <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-foreground border border-border">
-                        {student.bloodGroup || 'O+'}
+                        {student.bloodGroup || 'Not provided'}
                       </span>
                     </td>
 
@@ -2821,10 +2825,10 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                         Roll No: <strong className="text-white">{profile.rollNo || '1'}</strong>
                       </span>
                       <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
-                        Class: <strong className="text-white">{profile.section?.class?.name || 'Class'} ({profile.section?.name || 'A'})</strong>
+                        Class: <strong className="text-white">{profile.section?.class?.name || 'Not assigned'} ({profile.section?.name || 'Not assigned'})</strong>
                       </span>
                       <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
-                        Blood: <strong className="text-white">{profile.bloodGroup || 'O+'}</strong>
+                        Blood: <strong className="text-white">{profile.bloodGroup || 'Not provided'}</strong>
                       </span>
                     </div>
                   </div>
@@ -3185,7 +3189,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     </div>
                     <div className="flex justify-between border-b border-slate-800 pb-1.5">
                       <span className="text-[10px] uppercase font-bold text-slate-400">Blood Group</span>
-                      <span className="font-bold text-rose-400">{idCardStudent.bloodGroup || 'O+'}</span>
+                      <span className="font-bold text-rose-400">{idCardStudent.bloodGroup || 'Not provided'}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-800 pb-1.5">
                       <span className="text-[10px] uppercase font-bold text-slate-400">Session</span>
@@ -3200,7 +3204,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   <div className="px-5 py-3 border-t border-slate-800 bg-slate-950 text-center">
                     <p className="font-mono text-[10px] text-slate-400 mb-1">{idCardStudent.admissionNo}</p>
                     <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-0.5 rounded-full">
-                      ✓ VERIFIED STUDENT
+                      STUDENT ID
                     </span>
                   </div>
                 </div>
@@ -3227,7 +3231,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                         )}
                       </div>
                       <span className="mt-2 text-[8px] font-black uppercase bg-emerald-900 text-emerald-400 border border-emerald-700 px-2 py-0.5 rounded-full">
-                        ✓ VERIFIED
+                        STUDENT ID
                       </span>
                     </div>
 
@@ -3244,7 +3248,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                         </div>
                         <div>
                           <p className="text-[9px] uppercase font-bold text-slate-400">Blood Group</p>
-                          <p className="font-bold text-rose-400">{idCardStudent.bloodGroup || 'O+'}</p>
+                          <p className="font-bold text-rose-400">{idCardStudent.bloodGroup || 'Not provided'}</p>
                         </div>
                         <div>
                           <p className="text-[9px] uppercase font-bold text-slate-400">Emergency</p>
