@@ -385,10 +385,10 @@ export default function Timetable() {
       </div>
 
       {/* ── Active View Summary Banner ── */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
         <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-white/20 text-white flex items-center justify-center font-black">
+            <div className="h-9 w-9 rounded-xl bg-white dark:bg-slate-900/20 text-white flex items-center justify-center font-black">
               {filterMode === 'section' ? <GraduationCap size={18} /> : <User size={18} />}
             </div>
             <div>
@@ -402,7 +402,7 @@ export default function Timetable() {
               </p>
             </div>
           </div>
-          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{visibleSlots.length} Periods</span>
+          <span className="bg-white dark:bg-slate-900/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{visibleSlots.length} Periods</span>
         </div>
       </div>
       <div className="hidden">
@@ -475,7 +475,7 @@ export default function Timetable() {
                     {dayPeriods.map((slot) => (
                       <div
                         key={slot.id}
-                        className="group relative rounded-2xl border border-border/70 bg-slate-50 dark:bg-muted/20 p-3.5 hover:border-violet-500/40 hover:bg-slate-100/70 dark:bg-muted/40 transition space-y-2"
+                        className="group relative rounded-2xl border border-border/70 bg-slate-50 dark:bg-muted/20 p-3.5 hover:border-violet-500/40 hover:bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 transition space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
