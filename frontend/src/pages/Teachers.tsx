@@ -686,7 +686,7 @@ export default function Teachers() {
         </div>
         <div class="data-row">
           <span class="label">Qualification</span>
-          <span class="val">${teacher.qualification || 'Master Degree'}</span>
+          <span class="val">${teacher.qualification || 'Not provided'}</span>
         </div>
         <div class="data-row">
           <span class="label">Specialization</span>
@@ -721,7 +721,7 @@ export default function Teachers() {
           </div>
           <div class="data-row">
             <span class="label">Qualification</span>
-            <span class="val">${teacher.qualification || 'Master Degree'}</span>
+            <span class="val">${teacher.qualification || 'Not provided'}</span>
           </div>
           <div class="data-row">
             <span class="label">Specialization</span>
@@ -1407,7 +1407,7 @@ export default function Teachers() {
 
                       <td className="px-5 py-3.5 font-mono">
                         <span className="font-bold text-cyan-600 block">{t.employeeNo}</span>
-                        <span className="text-[10px] text-slate-500 dark:text-muted-foreground">{t.gender || 'Male'}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-muted-foreground">{t.gender || 'Not provided'}</span>
                       </td>
 
                       <td className="px-5 py-3.5">
@@ -1424,8 +1424,8 @@ export default function Teachers() {
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <p className="font-bold text-slate-900 dark:text-foreground">{t.qualification || 'Master Degree'}</p>
-                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground">{t.experience || 3} Yrs Experience</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground">{t.qualification || 'Not provided'}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground">{t.experience != null ? `${t.experience} Yrs Experience` : 'Experience not provided'}</p>
                       </td>
 
                       <td className="px-5 py-3.5">
@@ -1629,7 +1629,7 @@ export default function Teachers() {
                       <p className="font-black text-sm text-foreground mb-2">Qualifications & Department</p>
                       <div className="flex justify-between border-b border-border/60 pb-2">
                         <span className="text-slate-500 dark:text-muted-foreground">Qualification:</span>
-                        <span className="font-bold text-slate-900 dark:text-foreground">{selectedTeacher.qualification || 'Master Degree'}</span>
+                        <span className="font-bold text-slate-900 dark:text-foreground">{selectedTeacher.qualification || 'Not provided'}</span>
                       </div>
                       <div className="flex justify-between border-b border-border/60 pb-2">
                         <span className="text-slate-500 dark:text-muted-foreground">Specialization:</span>
@@ -1934,7 +1934,7 @@ export default function Teachers() {
                     </div>
                     <div className="flex justify-between border-b border-slate-800 pb-1.5">
                       <span className="text-[10px] uppercase font-bold text-slate-400">Qualification</span>
-                      <span className="font-bold text-white">{idCardTeacher.qualification || 'Master Degree'}</span>
+                      <span className="font-bold text-white">{idCardTeacher.qualification || 'Not provided'}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-800 pb-1.5">
                       <span className="text-[10px] uppercase font-bold text-slate-400">Specialization</span>
