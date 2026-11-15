@@ -220,7 +220,7 @@ export default function SchoolOfflinePage() {
             E
           </span>
           <span className="hidden text-sm font-black sm:block">
-            EduSphere <span className="opacity-70">ERP</span>
+            SchoolOS <span className="opacity-70">Cloud</span>
           </span>
         </Link>
 
@@ -414,7 +414,7 @@ export default function SchoolOfflinePage() {
           {/* Super Admin Support Footer */}
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>
-              EduSphere Platform Support Desk: <strong className="text-slate-300">support@edusphere.pk</strong>
+              SchoolOS Platform Support Desk: <strong className="text-slate-300">support@schoolos.com</strong>
             </span>
             <div className="flex items-center gap-3">
               <Link to="/school-login" className="text-cyan-400 hover:underline">
@@ -422,7 +422,7 @@ export default function SchoolOfflinePage() {
               </Link>
               <span>•</span>
               <Link to="/" className="text-cyan-400 hover:underline">
-                EduSphere Home
+                SchoolOS Home
               </Link>
             </div>
           </div>

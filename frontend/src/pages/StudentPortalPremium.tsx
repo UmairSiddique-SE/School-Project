@@ -294,7 +294,7 @@ export default function StudentPortalPremium() {
   }, [results]);
 
   const unread = notifications.filter(item => !item.isRead).length;
-  const schoolName = user?.schoolName || 'EduSphere ERP Academy';
+  const schoolName = user?.schoolName || 'SchoolOS Academy';
   const initials = (student?.name || user?.name || 'S')
     .split(/\s+/)
     .map(part => part.charAt(0))
