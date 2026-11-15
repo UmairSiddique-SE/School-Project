@@ -807,7 +807,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
     const popup = window.open('', '_blank', orientation === 'portrait' ? 'width=540,height=820' : 'width=840,height=560');
     if (!popup) return toast.error('Please allow popups to print the ID card');
     const photo = student.avatarUrl || '';
-    const admNo = student.admissionNo || 'ADM-0000';
+    const admNo = student.admissionNo || 'Not recorded';
     const barcodeData = admNo.replace(/[^A-Z0-9-]/gi, '').padEnd(16, '0').slice(0, 16);
     const bars = barcodeData.split('').map((ch: string) => {
       const code = ch.charCodeAt(0);
@@ -1111,11 +1111,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
     const popup = window.open('', '_blank', 'width=850,height=950');
     if (!popup) return toast.error('Please allow popups to print the School Leaving Certificate');
 
-    const schoolName = user?.schoolName || 'SchoolOS Model High School';
+    const schoolName = user?.schoolName || 'School name not configured';
     const admNo = student.admissionNo || 'ADM-0000';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
-    const dob = student.dob ? new Date(student.dob).toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' }) : 'As per official admission record';
-    const className = student.section?.class?.name || 'Class 10';
+    const dob = student.dob ? new Date(student.dob).toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Not recorded';
+    const className = student.section?.class?.name || 'Not assigned';
     const session = student.session || currentSession;
 
     const html = `<!doctype html>
