@@ -196,7 +196,7 @@ const initialForm = () => ({
   email: '',
   employeeNo: '',
   phone: '',
-  gender: 'MALE',
+  gender: '',
   qualification: 'M.Sc (Master of Science - 16 Years)',
   experience: '3',
   salary: '45000',
@@ -383,7 +383,7 @@ export default function Teachers() {
       email: teacher.email || '',
       employeeNo: teacher.employeeNo || '',
       phone: teacher.phone ? phoneFormat(teacher.phone) : '',
-      gender: teacher.gender || 'MALE',
+      gender: teacher.gender || '',
       qualification: teacher.qualification || '',
       experience: teacher.experience ? String(teacher.experience) : '',
       salary: teacher.salary ? String(teacher.salary) : '',
@@ -690,11 +690,11 @@ export default function Teachers() {
         </div>
         <div class="data-row">
           <span class="label">Specialization</span>
-          <span class="val">${teacher.specialization || 'Academic Faculty'}</span>
+          <span class="val">${teacher.specialization || 'Not provided'}</span>
         </div>
         <div class="data-row">
           <span class="label">Experience</span>
-          <span class="val">${teacher.experience || '3'} Years</span>
+          <span class="val">${teacher.experience != null ? `${teacher.experience} Years` : 'Not provided'}</span>
         </div>
         <div class="data-row" style="border-bottom:none">
           <span class="label">Official Phone</span>
@@ -703,7 +703,7 @@ export default function Teachers() {
       </div>
       <div class="footer-barcode">
         ${barSvg}
-        <span class="stamp">✓ VERIFIED FACULTY</span>
+        <span class="stamp">FACULTY ID</span>
       </div>
     ` : `
       <div class="land-content">
@@ -711,7 +711,7 @@ export default function Teachers() {
           <div class="photo-area">
             ${photo ? `<img src="${photo}" />` : teacher.name.charAt(0)}
           </div>
-          <span class="stamp" style="margin-top:8px">✓ FACULTY</span>
+          <span class="stamp" style="margin-top:8px">FACULTY ID</span>
         </div>
         <div class="card-body">
           <div class="teacher-name">${teacher.name}</div>
@@ -725,7 +725,7 @@ export default function Teachers() {
           </div>
           <div class="data-row">
             <span class="label">Specialization</span>
-            <span class="val">${teacher.specialization || 'Academic Faculty'}</span>
+            <span class="val">${teacher.specialization || 'Not provided'}</span>
           </div>
           <div class="data-row">
             <span class="label">Phone</span>
@@ -1953,7 +1953,7 @@ export default function Teachers() {
                   <div className="px-5 py-3 border-t border-slate-800 bg-slate-950 text-center">
                     <p className="font-mono text-[10px] text-slate-400 mb-1">{idCardTeacher.employeeNo}</p>
                     <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-0.5 rounded-full">
-                      ✓ VERIFIED FACULTY
+                      FACULTY ID
                     </span>
                   </div>
                 </div>
@@ -1980,7 +1980,7 @@ export default function Teachers() {
                         )}
                       </div>
                       <span className="mt-2 text-[8px] font-black uppercase bg-emerald-900 text-emerald-400 border border-emerald-700 px-2 py-0.5 rounded-full">
-                        ✓ FACULTY
+                        FACULTY ID
                       </span>
                     </div>
 
