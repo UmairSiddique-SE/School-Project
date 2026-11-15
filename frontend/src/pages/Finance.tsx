@@ -339,7 +339,7 @@ export default function Finance() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'EduSphere Model School';
+    const schoolName = user?.schoolName || 'SchoolOS Model School';
     const admNo = payment.student?.admissionNo || 'ADM-2026';
     const studentName = payment.student?.name || 'Student Name';
     const className = payment.student?.class?.name || payment.student?.section?.class?.name || 'Class 10';
@@ -504,7 +504,7 @@ export default function Finance() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'EduSphere Model School';
+    const schoolName = user?.schoolName || 'SchoolOS Model School';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
     let totalOutstanding = 0;
 
