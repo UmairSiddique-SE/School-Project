@@ -876,7 +876,7 @@ export default function Reports() {
                   <div className="space-y-5">
                     {reportCardData.exams.map((ex: any) => (
                       <div key={ex.examId} className="rounded-2xl border border-border/80 overflow-hidden space-y-2">
-                        <div className="bg-slate-100/70 dark:bg-muted/40 p-3.5 flex items-center justify-between border-b border-border/60">
+                        <div className="bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-3.5 flex items-center justify-between border-b border-border/60">
                           <div>
                             <span className="font-black text-sm text-slate-900 dark:text-foreground">{ex.examName}</span>
                             <span className="text-xs text-slate-500 dark:text-muted-foreground ml-2">({ex.examType})</span>
@@ -1191,25 +1191,25 @@ export default function Reports() {
 
       {/* 5. Print Modal */}
       <Modal isOpen={showPrintModal} onClose={() => setShowPrintModal(false)} maxWidth="max-w-2xl">
-        <div className="bg-white text-slate-900 rounded-3xl p-8">
+        <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground rounded-3xl p-8">
           <div className="flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-6">
             <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">{schoolName}</h2>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-foreground">{schoolName}</h2>
               <p className="text-xs text-slate-600 font-semibold mt-0.5">EXECUTIVE PERFORMANCE DOSSIER</p>
             </div>
-            <button onClick={() => setShowPrintModal(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600">
+            <button onClick={() => setShowPrintModal(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-600">
               <X size={20} />
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-100 mb-6 text-xs">
+          <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-800 mb-6 text-xs">
             <div>
               <span className="block text-slate-500 font-bold uppercase text-[10px]">Generated</span>
-              <strong className="text-slate-900">{new Date().toLocaleDateString('en-PK')}</strong>
+              <strong className="text-slate-900 dark:text-foreground">{new Date().toLocaleDateString('en-PK')}</strong>
             </div>
             <div>
               <span className="block text-slate-500 font-bold uppercase text-[10px]">Total Students</span>
-              <strong className="text-slate-900">{stats?.studentsCount ?? '—'}</strong>
+              <strong className="text-slate-900 dark:text-foreground">{stats?.studentsCount ?? '—'}</strong>
             </div>
             <div>
               <span className="block text-slate-500 font-bold uppercase text-[10px]">Status</span>
@@ -1217,7 +1217,7 @@ export default function Reports() {
             </div>
           </div>
 
-          <table className="w-full text-left text-xs mb-6 border border-slate-200">
+          <table className="w-full text-left text-xs mb-6 border border-slate-200 dark:border-slate-700">
             <thead className="bg-slate-900 text-white font-bold">
               <tr>
                 <th className="p-2.5">Key Performance Indicator</th>
@@ -1258,7 +1258,7 @@ export default function Reports() {
             </tbody>
           </table>
 
-          <div className="flex justify-between items-end pt-12 text-xs border-t border-slate-200">
+          <div className="flex justify-between items-end pt-12 text-xs border-t border-slate-200 dark:border-slate-700">
             <div className="text-center">
               <div className="w-40 border-b border-slate-400 mb-1" />
               <span className="text-slate-600 font-bold uppercase text-[10px]">Academic Coordinator</span>
@@ -1269,10 +1269,10 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               onClick={() => setShowPrintModal(false)}
-              className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100"
+              className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100 dark:bg-slate-800"
             >
               Close
             </button>
