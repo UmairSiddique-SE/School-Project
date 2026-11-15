@@ -475,7 +475,7 @@ export default function DailyOperations() {
               className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
                 active
                   ? 'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30 shadow-sm'
-                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-slate-100/70 dark:bg-muted/40'
+                  : 'text-slate-500 dark:text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40'
               }`}
             >
               <Icon size={15} />
@@ -512,7 +512,7 @@ export default function DailyOperations() {
                 {sections.slice(0, 8).map((sec) => (
                   <div
                     key={sec.id}
-                    className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 hover:bg-slate-100/70 dark:bg-muted/40 transition"
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-slate-50 dark:bg-muted/20 hover:bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 transition"
                   >
                     <div>
                       <h4 className="font-bold text-xs text-slate-900 dark:text-foreground">
@@ -557,7 +557,7 @@ export default function DailyOperations() {
                   notices.map((n) => (
                     <div
                       key={n.id}
-                      className="p-3 rounded-2xl border border-border/60 bg-slate-50/70 dark:bg-muted/15 space-y-1"
+                      className="p-3 rounded-2xl border border-border/60 bg-slate-50 dark:bg-slate-900/70 dark:bg-muted/15 space-y-1"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-xs text-foreground truncate">{n.title}</span>
@@ -593,7 +593,7 @@ export default function DailyOperations() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
+                <thead className="bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">Receipt #</th>
                     <th className="px-4 py-3">Student Name</th>
@@ -704,7 +704,7 @@ export default function DailyOperations() {
 
           <div className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
+              <thead className="bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Receipt No</th>
                   <th className="px-4 py-3">Student Name</th>
@@ -822,7 +822,7 @@ export default function DailyOperations() {
 
           <div className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
+              <thead className="bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 border-b border-border text-[10px] font-black uppercase text-slate-500 dark:text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Pass No</th>
                   <th className="px-4 py-3">Student</th>
