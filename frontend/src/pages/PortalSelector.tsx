@@ -14,8 +14,8 @@ export default function PortalSelector() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col items-center mb-14 relative z-10">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white text-3xl font-black mb-4 shadow-2xl shadow-violet-600/40">E</div>
-        <h1 className="text-4xl font-black text-white tracking-tight">EduSphere <span className="text-violet-400">ERP</span></h1>
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white text-3xl font-black mb-4 shadow-2xl shadow-violet-600/40">S</div>
+        <h1 className="text-4xl font-black text-white tracking-tight">SchoolOS <span className="text-violet-400">Cloud</span></h1>
         <div className="mt-3 flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold">
           <Zap size={12} />
           <span>Secure Portal Selection</span>
@@ -36,7 +36,7 @@ export default function PortalSelector() {
         </motion.button>
       </div>
 
-      <p className="mt-10 text-slate-500 text-xs text-center relative z-10">EduSphere ERP — Secure access to the correct platform portal.</p>
+      <p className="mt-10 text-slate-500 text-xs text-center relative z-10">SchoolOS Cloud — Secure access to the correct platform portal.</p>
     </div>
   );
 }
