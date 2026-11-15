@@ -207,7 +207,9 @@ return { school, user };
         where: { slug: dto.schoolSlug.trim().toLowerCase() },
         select: { id: true },
       });
-      if (sch) targetSchoolId = sch.id;
+      // Never fall back to an unscoped account lookup when a school was selected.
+      if (!sch) throw new UnauthorizedException('Invalid school or credentials');
+      targetSchoolId = sch.id;
     }
 
     const requestedRole = dto.portalRole ? String(dto.portalRole).trim().toUpperCase() : null;
@@ -242,12 +244,14 @@ return { school, user };
       user = await this.prisma.user.findFirst({
         where: {
           ...roleFilter,
+          deletedAt: null,
           OR: [
             { email: { equals: rawIdentifier, mode: 'insensitive' } },
             { email: { equals: `${rawIdentifier}@school.edu`, mode: 'insensitive' } },
             { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
             { phone: rawIdentifier },
           ],
+          ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
         include: userInclude,
       });
