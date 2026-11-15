@@ -30,31 +30,14 @@ export class PublicService {
         name: true,
         slug: true,
         city: true,
-        address: true,
-        phone: true,
-        email: true,
         country: true,
         logoUrl: true,
-        website: true,
         isActive: true,
-        subscription: {
-          select: { plan: true, status: true, endDate: true },
-        },
-        _count: {
-          select: {
-            students: { where: { deletedAt: null } },
-            teachers: { where: { deletedAt: null } },
-            classes: { where: { deletedAt: null } },
-          },
-        },
       },
     });
 
     return schools.map((school) => ({
       ...school,
-      studentCount: school._count?.students || 0,
-      teacherCount: school._count?.teachers || 0,
-      classCount: school._count?.classes || 0,
       loginAvailable: Boolean(school.slug),
       status: school.isActive ? 'ACTIVE' : 'PENDING_APPROVAL',
     }));
@@ -75,7 +58,6 @@ export class PublicService {
         country: true,
         website: true,
         isActive: true,
-        subscription: { select: { plan: true, status: true, endDate: true } },
         alerts: {
           where: { isActive: true },
           orderBy: { createdAt: 'desc' },
@@ -92,11 +74,6 @@ export class PublicService {
             createdAt: true,
           },
         },
-        users: {
-          where: { role: 'SCHOOL_ADMIN', deletedAt: null },
-          select: { name: true, email: true, phone: true },
-          take: 1,
-        },
         classes: {
           where: { deletedAt: null },
           select: { id: true, name: true, numeric: true },
@@ -110,15 +87,14 @@ export class PublicService {
       },
     });
     if (!school) throw new NotFoundException(`School with slug "${slug}" not found`);
-    const adminUser = school.users?.[0] || null;
     const offlineNotice = school.alerts?.[0] || null;
     return {
       ...school,
       adminContact: {
-        name: adminUser?.name || 'School Administration',
-        email: adminUser?.email || school.email || 'admin@edusphere.pk',
-        phone: adminUser?.phone || school.phone || '+92 300 0000000',
-        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
+        name: 'School Administration',
+        email: school.email || null,
+        phone: school.phone || null,
+        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : null),
       },
       offlineNotice,
     };
@@ -139,7 +115,6 @@ export class PublicService {
         country: true,
         website: true,
         isActive: true,
-        subscription: { select: { plan: true, status: true, endDate: true } },
         alerts: {
           where: { isActive: true },
           orderBy: { createdAt: 'desc' },
@@ -156,11 +131,6 @@ export class PublicService {
             createdAt: true,
           },
         },
-        users: {
-          where: { role: 'SCHOOL_ADMIN', deletedAt: null },
-          select: { name: true, email: true, phone: true },
-          take: 1,
-        },
         classes: {
           where: { deletedAt: null },
           select: { id: true, name: true, numeric: true },
@@ -174,15 +144,14 @@ export class PublicService {
       },
     });
     if (!school) throw new NotFoundException(`No school found for domain "${domain}"`);
-    const adminUser = school.users?.[0] || null;
     const offlineNotice = school.alerts?.[0] || null;
     return {
       ...school,
       adminContact: {
-        name: adminUser?.name || 'School Administration',
-        email: adminUser?.email || school.email || 'admin@edusphere.pk',
-        phone: adminUser?.phone || school.phone || '+92 300 0000000',
-        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
+        name: 'School Administration',
+        email: school.email || null,
+        phone: school.phone || null,
+        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : null),
       },
       offlineNotice,
     };
