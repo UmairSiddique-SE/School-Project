@@ -658,6 +658,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    for (let stepNumber = 1; stepNumber <= 5; stepNumber += 1) {
+      const validation = validateStep(stepNumber);
+      if (!validation.valid) return toast.error(validation.error || 'Please review the admission details');
+    }
+
     if (!form.name.trim()) return toast.error('Student full name is required');
     if (!form.classId) return toast.error('Please select a class level');
     if (!form.sectionId) return toast.error('Please assign a classroom section');
