@@ -345,13 +345,13 @@ export default function Homework() {
       </div>
 
       {/* ─── Homework Cards Grid ──────────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm mb-4">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm mb-4">
         <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <BookOpen size={18} />
             <span className="font-bold text-sm sm:text-base">Active Homework Tasks & Curriculum Assignments</span>
           </div>
-          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Assignments</span>
+          <span className="bg-white dark:bg-slate-900/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{filtered.length} Assignments</span>
         </div>
       </div>
       {loading ? (
