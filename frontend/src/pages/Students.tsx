@@ -1926,7 +1926,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
             {/* Guardian Information Card */}
             <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-500 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <ShieldCheck size={20} className="text-white" />
@@ -1940,7 +1940,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-amber-50 font-normal">Legal guardian responsible if father is absent, abroad, or deceased.</p>
+                    <p className="text-xs text-cyan-50 font-normal">Legal guardian responsible if father is absent, abroad, or deceased.</p>
                   </div>
                 </div>
               </div>
@@ -2006,14 +2006,14 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
             {/* Mother Information Card */}
             <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <HeartPulse size={20} className="text-white" />
                   </div>
                   <div>
                     <h2 className="text-base font-black text-white">Mother Information</h2>
-                    <p className="text-xs text-rose-50 font-normal">Mother name, status, contact, and CNIC number.</p>
+                    <p className="text-xs text-cyan-50 font-normal">Mother name, status, contact, and CNIC number.</p>
                   </div>
                 </div>
 
