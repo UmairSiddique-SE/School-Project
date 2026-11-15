@@ -1372,25 +1372,22 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           {/* ══════════════════════════════════════════════════════════ */}
           {/* SECTION 1: STUDENT PERSONAL INFORMATION                   */}
           {/* ══════════════════════════════════════════════════════════ */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {/* Vibrant Cyan Header Banner */}
-            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+          <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <UserRound size={20} className="text-white" />
+                <div className="h-10 w-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <UserRound size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white flex items-center gap-2">
-                    Student Personal Information
-                  </h2>
-                  <p className="text-xs text-cyan-50 font-normal">
-                    Basic identification, official full name, date of birth, photo, and NADRA B-Form.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground">Student Personal Information</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+                      Personal Data
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal">Basic identification, official full name, date of birth, photo, and NADRA B-Form.</p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
-                Personal Data
-              </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
@@ -1573,25 +1570,22 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           {/* ══════════════════════════════════════════════════════════ */}
           {/* SECTION 2: ACADEMIC & CLASSROOM ASSIGNMENT                */}
           {/* ══════════════════════════════════════════════════════════ */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {/* Vibrant Cyan Header Banner */}
-            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+          <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <GraduationCap size={20} className="text-white" />
+                <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <GraduationCap size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white flex items-center gap-2">
-                    Academic & Classroom Assignment
-                  </h2>
-                  <p className="text-xs text-cyan-50 font-normal">
-                    Assign student to grade level, classroom section with live capacity, and official roll number.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground">Academic & Classroom Assignment</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2.5 py-0.5 rounded-full border border-indigo-500/20">
+                      Academic Data
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal">Assign student to grade level, classroom section with live capacity, and official roll number.</p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
-                Academic Data
-              </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
@@ -1797,30 +1791,35 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="space-y-6">
             
             {/* Father Information Card */}
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <Users size={20} className="text-white" />
+                  <div className="h-10 w-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <Users size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-white">Father Information</h2>
-                    <p className="text-xs text-cyan-50 font-normal">Primary contact numbers used for SMS alerts, attendance, and fee notices.</p>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-black text-foreground">Father Information</h2>
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-500/20">
+                        Primary Parent
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-normal">Primary contact numbers used for SMS alerts, attendance, and fee notices.</p>
                   </div>
                 </div>
 
                 {/* Father Status Toggle */}
-                <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                <div className="flex items-center gap-1.5 bg-background p-1 rounded-2xl border border-border">
                   <button
                     type="button"
                     onClick={() => update('fatherStatus', 'ALIVE')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.fatherStatus === 'ALIVE'
-                        ? 'bg-white text-cyan-900 shadow-sm'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className={`h-2 w-2 rounded-full ${form.fatherStatus === 'ALIVE' ? 'bg-white' : 'bg-emerald-500'}`} />
                     Alive
                   </button>
                   <button
@@ -1828,11 +1827,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     onClick={() => update('fatherStatus', 'DECEASED')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.fatherStatus === 'DECEASED'
-                        ? 'bg-rose-600 text-white shadow-sm'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-rose-500 text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="h-2 w-2 rounded-full bg-rose-200" />
+                    <span className={`h-2 w-2 rounded-full ${form.fatherStatus === 'DECEASED' ? 'bg-white' : 'bg-rose-500'}`} />
                     Deceased
                   </button>
                 </div>
@@ -1925,22 +1924,26 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             </div>
 
             {/* Guardian Information Card */}
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+            <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <ShieldCheck size={20} className="text-white" />
+                  <div className="h-10 w-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <ShieldCheck size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-black text-white">Guardian Information</h2>
-                      {form.fatherStatus === 'DECEASED' && (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 text-white px-2.5 py-0.5 rounded-full border border-white/30">
+                      <h2 className="text-base font-black text-foreground">Guardian Information</h2>
+                      {form.fatherStatus === 'DECEASED' ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-0.5 rounded-full border border-rose-500/20">
                           Mandatory
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                          Optional
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-cyan-50 font-normal">Legal guardian responsible if father is absent, abroad, or deceased.</p>
+                    <p className="text-xs text-muted-foreground font-normal">Legal guardian responsible if father is absent, abroad, or deceased.</p>
                   </div>
                 </div>
               </div>
@@ -2005,30 +2008,35 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             </div>
 
             {/* Mother Information Card */}
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <HeartPulse size={20} className="text-white" />
+                  <div className="h-10 w-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <HeartPulse size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-white">Mother Information</h2>
-                    <p className="text-xs text-cyan-50 font-normal">Mother name, status, contact, and CNIC number.</p>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-black text-foreground">Mother Information</h2>
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-0.5 rounded-full border border-rose-500/20">
+                        Family Record
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-normal">Mother name, status, contact, and CNIC number.</p>
                   </div>
                 </div>
 
                 {/* Mother Status Toggle */}
-                <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                <div className="flex items-center gap-1.5 bg-background p-1 rounded-2xl border border-border">
                   <button
                     type="button"
                     onClick={() => update('motherStatus', 'ALIVE')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.motherStatus === 'ALIVE'
-                        ? 'bg-white text-rose-900 shadow-sm'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className={`h-2 w-2 rounded-full ${form.motherStatus === 'ALIVE' ? 'bg-white' : 'bg-emerald-500'}`} />
                     Alive
                   </button>
                   <button
@@ -2036,11 +2044,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     onClick={() => update('motherStatus', 'DECEASED')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.motherStatus === 'DECEASED'
-                        ? 'bg-rose-800 text-white shadow-sm'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-rose-500 text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="h-2 w-2 rounded-full bg-rose-200" />
+                    <span className={`h-2 w-2 rounded-full ${form.motherStatus === 'DECEASED' ? 'bg-white' : 'bg-rose-500'}`} />
                     Deceased
                   </button>
                 </div>
@@ -2100,25 +2108,22 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           {/* ══════════════════════════════════════════════════════════ */}
           {/* SECTION 4: RESIDENTIAL ADDRESS & SCHOOL FACILITIES        */}
           {/* ══════════════════════════════════════════════════════════ */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {/* Vibrant Cyan Header Banner */}
-            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+          <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <MapPin size={20} className="text-white" />
+                <div className="h-10 w-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <MapPin size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white flex items-center gap-2">
-                    Residential Address & Location
-                  </h2>
-                  <p className="text-xs text-cyan-50 font-normal">
-                    Current residential address and permanent home town location.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground">Residential Address & Location</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+                      Address
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal">Current residential address and permanent home town location.</p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
-                Address
-              </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
@@ -2226,24 +2231,22 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           {/* ══════════════════════════════════════════════════════════ */}
           {/* SECTION 5: STUDENT PORTAL ONLINE LOGIN CREDENTIALS        */}
           {/* ══════════════════════════════════════════════════════════ */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+          <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <Key size={20} className="text-white" />
+                <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <Key size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white">
-                    Student Online Portal Login Credentials
-                  </h2>
-                  <p className="text-xs text-cyan-50 font-normal">
-                    Verified login pattern allowing the student to access LMS, attendance, report cards & fees.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground">Student Online Portal Login Credentials</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2.5 py-0.5 rounded-full border border-indigo-500/20">
+                      Portal Access
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal">Verified login pattern allowing the student to access LMS, attendance, report cards & fees.</p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
-                Portal Access
-              </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
@@ -2327,24 +2330,22 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           {/* ══════════════════════════════════════════════════════════ */}
           {/* SECTION 6: SUBMITTED DOCUMENTS & ADMISSION CHECKLIST      */}
           {/* ══════════════════════════════════════════════════════════ */}
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
+          <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-border/60 bg-muted/30 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <CheckSquare size={20} className="text-white" />
+                <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <CheckSquare size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white">
-                    Submitted Documents & File Verification Checklist
-                  </h2>
-                  <p className="text-xs text-cyan-50 font-normal">
-                    Mark physical documents received from parent/guardian for official student record file.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground">Submitted Documents & File Verification Checklist</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Documents File
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-normal">Mark physical documents received from parent/guardian for official student record file.</p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
-                Documents File
-              </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-4">
