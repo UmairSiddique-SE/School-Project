@@ -115,3 +115,40 @@
 @media(prefers-reduced-motion:reduce) {
   .schoolos-landing *,.schoolos-landing *::before,.schoolos-landing *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; }
 }
+
+
+/* Final theme guard: keep every landing-page surface inside the selected theme. */
+.schoolos-landing.schoolos-dark,
+.schoolos-landing.schoolos-dark main,
+.schoolos-landing.schoolos-dark main > section,
+.schoolos-landing.schoolos-dark footer {
+  color-scheme: dark;
+}
+.schoolos-landing.schoolos-dark main > section,
+.schoolos-landing.schoolos-dark footer {
+  background-color: #08121f !important;
+}
+.schoolos-landing.schoolos-dark main > section:nth-child(2n) {
+  background-color: #102638 !important;
+}
+.schoolos-landing.schoolos-light,
+.schoolos-landing.schoolos-light main,
+.schoolos-landing.schoolos-light main > section,
+.schoolos-landing.schoolos-light footer {
+  color-scheme: light;
+}
+.schoolos-landing.schoolos-light main > section,
+.schoolos-landing.schoolos-light footer {
+  background-color: #f4f7fc !important;
+}
+.schoolos-landing img {
+  max-width: 100%;
+}
+.schoolos-landing header img {
+  display: block;
+  object-fit: contain !important;
+}
+.schoolos-landing a,
+.schoolos-landing button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+}
