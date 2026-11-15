@@ -1335,15 +1335,15 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
     return (
       <div className="w-full min-h-screen pb-20 space-y-6 max-w-6xl mx-auto animate-fade-in">
         {/* Top Header Card with Vibrant Cyan Banner matching reference image */}
-        <div className="overflow-hidden rounded-3xl border border-cyan-200/80 bg-white shadow-md">
+        <div className="overflow-hidden rounded-3xl border border-cyan-200/80 bg-white dark:bg-slate-900 shadow-md">
           <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-5 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-white/20 text-white flex items-center justify-center backdrop-blur-md shadow-inner shrink-0">
+              <div className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900/20 text-white flex items-center justify-center backdrop-blur-md shadow-inner shrink-0">
                 <GraduationCap size={26} className="text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 flex items-center gap-1.5">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white border border-white/30 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
                     {editing ? 'UPDATE STUDENT PROFILE' : 'STUDENT ADMISSION FORM'}
                   </span>
@@ -1361,7 +1361,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <button
               type="button"
               onClick={() => setView('list')}
-              className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm shrink-0 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900/15 hover:bg-white dark:bg-slate-900/25 border border-white/30 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm shrink-0 backdrop-blur-sm"
             >
               <ArrowLeft size={16} /> Exit to Student List
             </button>
@@ -1377,7 +1377,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="rounded-3xl border border-cyan-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                   <UserRound size={20} className="text-white" />
                 </div>
                 <div>
@@ -1389,18 +1389,18 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+              <span className="text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                 Personal Data
               </span>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
               {/* Photo & Main Identification Card */}
-              <div className="flex flex-col md:flex-row gap-6 items-start rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex flex-col md:flex-row gap-6 items-start rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/70 p-5 sm:p-6">
                 
                 {/* Photo Upload Area */}
                 <div className="flex flex-col items-center gap-2 shrink-0 mx-auto md:mx-0">
-                  <label className="relative flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-cyan-400 bg-white shadow-inner hover:border-cyan-500 transition-all group">
+                  <label className="relative flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-cyan-400 bg-white dark:bg-slate-900 shadow-inner hover:border-cyan-500 transition-all group">
                     <input
                       type="file"
                       accept="image/*"
@@ -1449,7 +1449,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     <Field label="Student Full Name" required>
                       <input
                         required
-                        className={`${inputClass} text-base font-bold text-slate-900`}
+                        className={`${inputClass} text-base font-bold text-slate-900 dark:text-foreground`}
                         placeholder="e.g. Muhammad Ali Siddique"
                         value={form.name}
                         onChange={(e) => update('name', e.target.value)}
@@ -1487,7 +1487,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                           className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition text-center ${
                             form.gender === g.val
                               ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
-                              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 hover:text-slate-900 dark:text-foreground hover:bg-slate-50 dark:bg-slate-900'
                           }`}
                         >
                           {g.label}
@@ -1579,7 +1579,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="rounded-3xl border border-indigo-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                   <GraduationCap size={20} className="text-white" />
                 </div>
                 <div>
@@ -1591,7 +1591,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+              <span className="text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                 Academic Data
               </span>
             </div>
@@ -1601,7 +1601,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 <Field label="Class Level" required>
                   <select
                     required
-                    className={`${inputClass} font-bold text-slate-900`}
+                    className={`${inputClass} font-bold text-slate-900 dark:text-foreground`}
                     value={form.classId}
                     onChange={(e) => {
                       const newClassId = e.target.value;
@@ -1626,7 +1626,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 <Field label="Section Assignment" required>
                   <select
                     required
-                    className={`${inputClass} font-bold text-slate-900`}
+                    className={`${inputClass} font-bold text-slate-900 dark:text-foreground`}
                     value={form.sectionId}
                     onChange={(e) => {
                       const secId = e.target.value;
@@ -1711,7 +1711,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-cyan-800 border border-cyan-200 shadow-sm">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white dark:bg-slate-900 text-cyan-800 border border-cyan-200 shadow-sm">
                       Capacity: {currentSectionObj.capacity != null ? `${currentSectionObj.capacity} Students` : 'Not configured'}
                     </span>
                   </div>
@@ -1719,7 +1719,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
               )}
 
               {/* Admission Type Selection */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/70 p-5 space-y-4">
                 <div className="bg-slate-200/70 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                   <Sparkles size={14} className="text-cyan-600" />
                   Admission Category & Previous Schooling
@@ -1732,12 +1732,12 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     className={`p-3.5 rounded-2xl border text-left transition flex items-center gap-3 ${
                       form.admissionType === 'NEW'
                         ? 'bg-cyan-50 border-cyan-500 text-cyan-900 shadow-sm ring-1 ring-cyan-500/30'
-                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 hover:text-slate-900 dark:text-foreground'
                     }`}
                   >
                     <span className={`h-2.5 w-2.5 rounded-full ${form.admissionType === 'NEW' ? 'bg-cyan-500' : 'bg-slate-300'}`} />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">New Admission</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-foreground">New Admission</p>
                       <p className="text-[10px] text-slate-500">First time enrollment in this school</p>
                     </div>
                   </button>
@@ -1748,19 +1748,19 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     className={`p-3.5 rounded-2xl border text-left transition flex items-center gap-3 ${
                       form.admissionType === 'TRANSFER'
                         ? 'bg-amber-50 border-amber-500 text-amber-900 shadow-sm ring-1 ring-amber-500/30'
-                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 hover:text-slate-900 dark:text-foreground'
                     }`}
                   >
                     <span className={`h-2.5 w-2.5 rounded-full ${form.admissionType === 'TRANSFER' ? 'bg-amber-500' : 'bg-slate-300'}`} />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Transfer / Migration</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-foreground">Transfer / Migration</p>
                       <p className="text-[10px] text-slate-500">School Leaving Certificate / Transfer</p>
                     </div>
                   </button>
                 </div>
 
                 {form.admissionType === 'TRANSFER' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-200 dark:border-slate-700">
                     <Field label="Previous School Name" required>
                       <input
                         required
@@ -1802,13 +1802,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <div className="rounded-3xl border border-blue-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
               <div className="bg-gradient-to-r from-blue-600 via-sky-600 to-indigo-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                     <Users size={20} className="text-white" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-base font-black text-white">Father Information</h2>
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
                         Primary Parent
                       </span>
                     </div>
@@ -1817,13 +1817,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 </div>
 
                 {/* Father Status Toggle */}
-                <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
                   <button
                     type="button"
                     onClick={() => update('fatherStatus', 'ALIVE')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.fatherStatus === 'ALIVE'
-                        ? 'bg-white text-blue-900 shadow-sm'
+                        ? 'bg-white dark:bg-slate-900 text-blue-900 shadow-sm'
                         : 'text-white/80 hover:text-white'
                     }`}
                   >
@@ -1935,7 +1935,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <div className="rounded-3xl border border-indigo-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
               <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-6 py-4 text-white flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                     <ShieldCheck size={20} className="text-white" />
                   </div>
                   <div>
@@ -1946,7 +1946,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                           Mandatory
                         </span>
                       ) : (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
                           Optional
                         </span>
                       )}
@@ -2019,13 +2019,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <div className="rounded-3xl border border-violet-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
               <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                     <HeartPulse size={20} className="text-white" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-base font-black text-white">Mother Information</h2>
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
                         Family Record
                       </span>
                     </div>
@@ -2034,13 +2034,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 </div>
 
                 {/* Mother Status Toggle */}
-                <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900/20 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
                   <button
                     type="button"
                     onClick={() => update('motherStatus', 'ALIVE')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                       form.motherStatus === 'ALIVE'
-                        ? 'bg-white text-purple-900 shadow-sm'
+                        ? 'bg-white dark:bg-slate-900 text-purple-900 shadow-sm'
                         : 'text-white/80 hover:text-white'
                     }`}
                   >
@@ -2119,7 +2119,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="rounded-3xl border border-sky-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                   <MapPin size={20} className="text-white" />
                 </div>
                 <div>
@@ -2131,7 +2131,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+              <span className="text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                 Address
               </span>
             </div>
@@ -2173,7 +2173,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
               {/* School Facilities: Transport & Hostel (RENDERED ONLY IF SCHOOL HAS FACILITIES IN RECORD) */}
               {(facilities.transport || facilities.hostel) && (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/70 p-5 space-y-4">
                   <div className="bg-slate-200/70 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                     <Bus size={15} className="text-cyan-600" />
                     School Facilities Required (Enabled for School)
@@ -2183,7 +2183,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     {/* Transport Option (if school has transport) */}
                     {facilities.transport && (
                       <div className={`p-4 rounded-2xl border transition ${
-                        form.transportRequired ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-white'
+                        form.transportRequired ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                       }`}>
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input
@@ -2193,7 +2193,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                             onChange={(e) => update('transportRequired', e.target.checked)}
                           />
                           <div className="flex-1">
-                            <span className="text-xs font-bold text-slate-900 block">🚌 School Transport / Van Service</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-foreground block">🚌 School Transport / Van Service</span>
                             <span className="text-[11px] text-slate-500">Pick & drop van service for this student</span>
                           </div>
                         </label>
@@ -2216,7 +2216,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     {/* Hostel Option (if school has hostel) */}
                     {facilities.hostel && (
                       <div className={`p-4 rounded-2xl border transition ${
-                        form.hostelRequired ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-slate-200 bg-white'
+                        form.hostelRequired ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                       }`}>
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input
@@ -2226,7 +2226,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                             onChange={(e) => update('hostelRequired', e.target.checked)}
                           />
                           <div className="flex-1">
-                            <span className="text-xs font-bold text-slate-900 block">🏠 Hostel Accommodation Facility</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-foreground block">🏠 Hostel Accommodation Facility</span>
                             <span className="text-[11px] text-slate-500">Boarding school accommodation & room</span>
                           </div>
                         </label>
@@ -2244,7 +2244,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="rounded-3xl border border-indigo-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                   <Key size={20} className="text-white" />
                 </div>
                 <div>
@@ -2256,7 +2256,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+              <span className="text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                 Portal Access
               </span>
             </div>
@@ -2277,7 +2277,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 </div>
 
                 {/* Official Portal Email ending in .edu.pk */}
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/70 p-4">
                   <p className="text-[10px] font-black uppercase tracking-wider text-slate-600 mb-1">
                     📧 Official Portal Email
                   </p>
@@ -2312,7 +2312,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required={!editing}
-                      className={`${inputClass} font-mono font-bold tracking-widest text-amber-900 pr-10 bg-white`}
+                      className={`${inputClass} font-mono font-bold tracking-widest text-amber-900 pr-10 bg-white dark:bg-slate-900`}
                       placeholder="8-digit password"
                       value={form.password}
                       onChange={(e) => update('password', e.target.value)}
@@ -2345,7 +2345,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           <div className="rounded-3xl border border-teal-500/30 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-700 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900/20 flex items-center justify-center shrink-0">
                   <CheckSquare size={20} className="text-white" />
                 </div>
                 <div>
@@ -2357,7 +2357,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
+              <span className="text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900/20 text-white px-3 py-1 rounded-full border border-white/30 shrink-0">
                 Documents File
               </span>
             </div>
@@ -2412,7 +2412,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                       className={`flex items-start gap-3 p-4 rounded-2xl border transition cursor-pointer select-none ${
                         isChecked
                           ? 'border-cyan-500 bg-cyan-50/70 shadow-sm'
-                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-900'
                       }`}
                     >
                       <input
@@ -2439,11 +2439,11 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
           </div>
 
           {/* ── BOTTOM ACTION & SUBMIT BUTTONS ── */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => setView('list')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:bg-slate-900 transition shadow-sm"
             >
               <ArrowLeft size={16} /> Cancel & Return to Student List
             </button>
@@ -2804,7 +2804,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 p-6 text-white shrink-0">
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/80 shadow-md shrink-0 flex items-center justify-center font-black text-2xl text-white">
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/20 border-2 border-white/80 shadow-md shrink-0 flex items-center justify-center font-black text-2xl text-white">
                     {profile.avatarUrl ? (
                       <img src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
                     ) : (
@@ -2821,13 +2821,13 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     </div>
 
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-white/90 font-medium">
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Roll No: <strong className="text-white">{profile.rollNo || '1'}</strong>
                       </span>
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Class: <strong className="text-white">{profile.section?.class?.name || 'Not assigned'} ({profile.section?.name || 'Not assigned'})</strong>
                       </span>
-                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+                      <span className="bg-white dark:bg-slate-900/15 px-2.5 py-0.5 rounded-full border border-white/20">
                         Blood: <strong className="text-white">{profile.bloodGroup || 'Not provided'}</strong>
                       </span>
                     </div>
@@ -2836,7 +2836,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
                 <button
                   onClick={() => setProfile(null)}
-                  className="rounded-xl p-2 text-white/80 hover:bg-white/20 hover:text-white transition shrink-0"
+                  className="rounded-xl p-2 text-white/80 hover:bg-white dark:bg-slate-900/20 hover:text-white transition shrink-0"
                 >
                   <X size={20} />
                 </button>
@@ -2858,8 +2858,8 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     onClick={() => setProfileTab(t.key as any)}
                     className={`rounded-xl px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
                       profileTab === t.key
-                        ? 'bg-white text-blue-900 shadow-md font-black'
-                        : 'text-white/80 hover:bg-white/15 hover:text-white'
+                        ? 'bg-white dark:bg-slate-900 text-blue-900 shadow-md font-black'
+                        : 'text-white/80 hover:bg-white dark:bg-slate-900/15 hover:text-white'
                     }`}
                   >
                     {t.label}
@@ -3216,7 +3216,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                       <p className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-200">SchoolOS Campus</p>
                       <p className="text-xs font-black uppercase tracking-wider text-white">Student Identity Card</p>
                     </div>
-                    <span className="text-[10px] font-mono bg-white/20 px-2.5 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] font-mono bg-white dark:bg-slate-900/20 px-2.5 py-0.5 rounded-full font-bold">
                       {idCardStudent.session || currentSession}
                     </span>
                   </div>
@@ -3388,12 +3388,12 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
       {/* ── CELEBRATORY ADMISSION SUCCESS & CREDENTIALS MODAL ── */}
       {admittedModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-2xl rounded-3xl border border-cyan-200 bg-white shadow-2xl overflow-hidden">
+          <div className="w-full max-w-2xl rounded-3xl border border-cyan-200 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
             
             {/* Top Cyan Banner matching the reference image */}
             <div className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 px-6 py-4 text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 shadow-inner">
+                <div className="h-9 w-9 rounded-full bg-white dark:bg-slate-900/20 text-white flex items-center justify-center shrink-0 shadow-inner">
                   <CheckCircle2 size={22} className="text-white" />
                 </div>
                 <div>
@@ -3408,7 +3408,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 
               <button
                 onClick={() => setAdmittedModal(null)}
-                className="rounded-full p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition"
+                className="rounded-full p-1.5 text-white/80 hover:text-white hover:bg-white dark:bg-slate-900/20 transition"
               >
                 <X size={20} />
               </button>
@@ -3431,7 +3431,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     </span>
                     <span className="text-xs text-slate-500 font-semibold">Session {admittedModal.student.session || currentSession}</span>
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-foreground">
                     {admittedModal.student.name}
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -3441,24 +3441,24 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
               </div>
 
               {/* Student ID & Academic Info */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] font-bold uppercase text-slate-500 block">Admission No:</span>
                   <span className="font-mono font-bold text-cyan-700">{admittedModal.student.admissionNo || 'N/A'}</span>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase text-slate-500 block">Class & Sec:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="font-bold text-slate-900 dark:text-foreground">
                     {admittedModal.student.section?.className || ''} {admittedModal.student.section?.name ? `(${admittedModal.student.section.name})` : ''}
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase text-slate-500 block">Roll Number:</span>
-                  <span className="font-mono font-bold text-slate-900">#{admittedModal.student.rollNo || '1'}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-foreground">#{admittedModal.student.rollNo || '1'}</span>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase text-slate-500 block">Academic Session:</span>
-                  <span className="font-bold text-slate-900">{admittedModal.student.session || currentSession}</span>
+                  <span className="font-bold text-slate-900 dark:text-foreground">{admittedModal.student.session || currentSession}</span>
                 </div>
               </div>
 
@@ -3468,19 +3468,19 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   <h3 className="text-xs font-black uppercase tracking-wider text-cyan-900 flex items-center gap-1.5">
                     <Key size={15} className="text-cyan-600" /> Student Online Portal Login Credentials
                   </h3>
-                  <span className="text-[10px] font-bold text-cyan-700 bg-white px-2 py-0.5 rounded-full border border-cyan-200">
+                  <span className="text-[10px] font-bold text-cyan-700 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-cyan-200">
                     Multi-Identifier Ready
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-xl border border-cyan-200 bg-white p-3 shadow-sm">
+                  <div className="rounded-xl border border-cyan-200 bg-white dark:bg-slate-900 p-3 shadow-sm">
                     <span className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">🎓 Friendly Login ID:</span>
                     <span className="font-mono font-bold text-sm text-cyan-950 break-all">{admittedModal.creds.loginId}</span>
                   </div>
-                  <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 shadow-sm">
                     <span className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">📧 Portal Email:</span>
-                    <span className="font-mono font-bold text-xs text-slate-900 break-all">
+                    <span className="font-mono font-bold text-xs text-slate-900 dark:text-foreground break-all">
                       {admittedModal.creds.fullEmail || admittedModal.student.email || 'N/A'}
                     </span>
                   </div>
@@ -3520,7 +3520,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     setAdmittedModal(null);
                     setIdCardStudent(s);
                   }}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-800 hover:bg-slate-50 transition shadow-sm"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-xs font-bold text-slate-800 hover:bg-slate-50 dark:bg-slate-900 transition shadow-sm"
                 >
                   <FileText size={16} /> View & Print Student ID Card
                 </button>
