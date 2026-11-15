@@ -42,16 +42,17 @@ type OverviewData = {
 const money = (value: number) => `PKR ${Number(value || 0).toLocaleString()}`;
 const number = (value: number) => Number(value || 0).toLocaleString();
 
-function StatCard({ title, value, caption, icon: Icon, tone }: { title: string; value: string; caption: string; icon: React.ComponentType<any>; tone: string }) {
+function StatCard({ title, value, caption, icon: Icon, tone, gradient }: { title: string; value: string; caption: string; icon: React.ComponentType<any>; tone: string; gradient?: string }) {
   return (
-    <motion.div whileHover={{ y: -3 }} className="group rounded-[22px] border border-border bg-card p-5 shadow-sm transition-all hover:shadow-xl">
+    <motion.div whileHover={{ y: -4 }} className="group relative overflow-hidden rounded-[22px] border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/40">
+      {gradient && <div className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40 ${gradient}`} />}
       <div className="flex items-start justify-between gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tone}`}><Icon size={20} /></div>
-        <span className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground">Live</span>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-105 ${tone}`}><Icon size={22} /></div>
+        <span className="inline-flex items-center gap-1 rounded-full border border-border/80 bg-background/80 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-sm">Live</span>
       </div>
-      <p className="mt-5 text-3xl font-black tracking-tight text-foreground">{value}</p>
+      <p className="mt-4 text-3xl font-black tracking-tight text-foreground">{value}</p>
       <p className="mt-1 text-xs font-black uppercase tracking-wider text-foreground">{title}</p>
-      <p className="mt-1 text-[10px] text-muted-foreground">{caption}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{caption}</p>
     </motion.div>
   );
 }
@@ -139,22 +140,22 @@ export default function Overview() {
       <section>
         <div className="mb-3 flex items-center justify-between"><p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Institutional overview</p><span className="text-[10px] font-bold text-muted-foreground">Live DB metrics</span></div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-          <StatCard title="Total Schools" value={number(d.totalSchools)} caption="All registered schools" icon={School} tone="bg-cyan-500/10 text-cyan-600 dark:text-cyan-300" />
-          <StatCard title="Active Schools" value={number(d.activeSchools)} caption="Currently operational" icon={CheckCircle2} tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
-          <StatCard title="Inactive" value={number(inactiveSchools)} caption="Not currently active" icon={XCircle} tone="bg-rose-500/10 text-rose-600 dark:text-rose-300" />
-          <StatCard title="Free Trials" value={number(d.trialSchools)} caption="Trial subscriptions" icon={Clock3} tone="bg-amber-500/10 text-amber-600 dark:text-amber-300" />
-          <StatCard title="Expired" value={number(d.expiredSchools)} caption="Needs renewal" icon={CalendarClock} tone="bg-orange-500/10 text-orange-600 dark:text-orange-300" />
+          <StatCard title="Total Schools" value={number(d.totalSchools)} caption="All registered schools" icon={School} tone="bg-cyan-500/10 text-cyan-500" gradient="bg-cyan-500" />
+          <StatCard title="Active Schools" value={number(d.activeSchools)} caption="Currently operational" icon={CheckCircle2} tone="bg-emerald-500/10 text-emerald-500" gradient="bg-emerald-500" />
+          <StatCard title="Inactive" value={number(inactiveSchools)} caption="Not currently active" icon={XCircle} tone="bg-rose-500/10 text-rose-500" gradient="bg-rose-500" />
+          <StatCard title="Free Trials" value={number(d.trialSchools)} caption="Trial subscriptions" icon={Clock3} tone="bg-amber-500/10 text-amber-500" gradient="bg-amber-500" />
+          <StatCard title="Expired" value={number(d.expiredSchools)} caption="Needs renewal" icon={CalendarClock} tone="bg-orange-500/10 text-orange-500" gradient="bg-orange-500" />
         </div>
       </section>
 
       <section>
         <div className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Revenue & platform people</div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-          <StatCard title="Month Revenue" value={money(d.monthRevenue)} caption="Approved payments" icon={WalletCards} tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
-          <StatCard title="Today's Income" value={money(d.todayRevenue)} caption="Approved today" icon={WalletCards} tone="bg-blue-500/10 text-blue-600 dark:text-blue-300" />
-          <StatCard title="Pending Payments" value={number(d.pendingPayments)} caption="Awaiting review" icon={BellRing} tone="bg-amber-500/10 text-amber-600 dark:text-amber-300" />
-          <StatCard title="Students" value={number(d.totalStudents)} caption="Across all schools" icon={GraduationCap} tone="bg-indigo-500/10 text-indigo-600 dark:text-indigo-300" />
-          <StatCard title="Teachers" value={number(d.totalTeachers)} caption="Across all schools" icon={Users} tone="bg-violet-500/10 text-violet-600 dark:text-violet-300" />
+          <StatCard title="Month Revenue" value={money(d.monthRevenue)} caption="Approved payments" icon={WalletCards} tone="bg-emerald-500/10 text-emerald-500" gradient="bg-emerald-500" />
+          <StatCard title="Today's Income" value={money(d.todayRevenue)} caption="Approved today" icon={WalletCards} tone="bg-blue-500/10 text-blue-500" gradient="bg-blue-500" />
+          <StatCard title="Pending Payments" value={number(d.pendingPayments)} caption="Awaiting review" icon={BellRing} tone="bg-amber-500/10 text-amber-500" gradient="bg-amber-500" />
+          <StatCard title="Students" value={number(d.totalStudents)} caption="Across all schools" icon={GraduationCap} tone="bg-indigo-500/10 text-indigo-500" gradient="bg-indigo-500" />
+          <StatCard title="Teachers" value={number(d.totalTeachers)} caption="Across all schools" icon={Users} tone="bg-violet-500/10 text-violet-500" gradient="bg-violet-500" />
         </div>
       </section>
 
