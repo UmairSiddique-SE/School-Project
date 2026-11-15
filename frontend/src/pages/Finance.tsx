@@ -504,7 +504,7 @@ export default function Finance() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'SchoolOS Model School';
+    const schoolName = user?.schoolName || 'School name not configured';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
     let totalOutstanding = 0;
 
