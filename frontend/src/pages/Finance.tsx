@@ -347,7 +347,7 @@ export default function Finance() {
     const challanNo = payment.receiptNo || 'Not generated';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' });
     const dueDate = payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not set';
-    const feeName = payment.feeStructure?.name || 'Tuition & Academic Fee';
+    const feeName = payment.feeStructure?.name || 'Not specified';
     const amount = Number(payment.amount || 0);
     const discount = Number(payment.discount || 0);
     const fine = Number(payment.fine || 0);
@@ -521,7 +521,7 @@ export default function Finance() {
           <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${p.student?.admissionNo || '—'}</td>
           <td style="padding: 6px 8px;">${className} - ${sectionName}</td>
           <td style="padding: 6px 8px; color: #64748b;">${p.feeStructure?.name || 'Fee'}</td>
-          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${p.receiptNo}</td>
+          <td style="padding: 6px 8px; font-family: monospace; font-size: 10px;">${p.receiptNo || 'Not generated'}</td>
           <td style="padding: 6px 8px; text-align: center; color: #e11d48; font-weight: 600;">
             ${p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-PK') : 'Overdue'}
           </td>
