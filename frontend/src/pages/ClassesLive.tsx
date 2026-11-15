@@ -49,7 +49,7 @@ type TeacherMapping = {
 type ModalType = 'grade' | 'section' | 'subject' | 'edit_subject' | 'assign' | 'academic_year' | null;
 
 /* ─── Shared input style ────────────────────────────────────── */
-const inp = `w-full rounded-xl border border-border/80 bg-slate-100/70 dark:bg-muted/40 px-3.5 py-2.5 text-sm
+const inp = `w-full rounded-xl border border-border/80 bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 px-3.5 py-2.5 text-sm
   text-foreground outline-none placeholder:text-slate-500 dark:text-muted-foreground/60 transition
   focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15 font-medium`;
 
@@ -533,7 +533,7 @@ export default function ClassesLive() {
             }`}
           >
             <GraduationCap size={16} /> Classes & Sections
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'classes' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'classes' ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {classes.length}
             </span>
           </button>
@@ -547,7 +547,7 @@ export default function ClassesLive() {
             }`}
           >
             <BookMarked size={16} /> Subjects & Curriculum
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'subjects' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'subjects' ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {subjects.length}
             </span>
           </button>
@@ -561,7 +561,7 @@ export default function ClassesLive() {
             }`}
           >
             <UserCheck size={16} /> Teacher ↔ Subject Allocation
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'mapping' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'mapping' ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {teacherMappings.length}
             </span>
           </button>
@@ -575,7 +575,7 @@ export default function ClassesLive() {
             }`}
           >
             <Calendar size={16} /> Academic Sessions
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'sessions' ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'sessions' ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-muted text-slate-500 dark:text-muted-foreground'}`}>
               {academicYears.length}
             </span>
           </button>
@@ -675,7 +675,7 @@ export default function ClassesLive() {
                       className={`group relative cursor-pointer rounded-2xl border p-4 transition-all ${
                         isSelected
                           ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/10 scale-[1.01]'
-                          : 'border-border/80 bg-card hover:border-violet-500/40 hover:bg-slate-100/70 dark:bg-muted/40'
+                          : 'border-border/80 bg-card hover:border-violet-500/40 hover:bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -837,7 +837,7 @@ export default function ClassesLive() {
                   ) : (
                     <div className="rounded-2xl border border-border/60 overflow-hidden">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-100/70 dark:bg-muted/40 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
+                        <thead className="bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 text-slate-500 dark:text-muted-foreground uppercase text-[10px] font-black border-b border-border/60">
                           <tr>
                             <th className="p-3">Subject</th>
                             <th className="p-3">Code</th>
@@ -1026,11 +1026,11 @@ export default function ClassesLive() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                    <div className="rounded-xl bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-2 border border-border/50">
                       <p className="text-lg font-black text-slate-900 dark:text-foreground">{tm.assignedSubjects.length}</p>
                       <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Subjects Assigned</p>
                     </div>
-                    <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                    <div className="rounded-xl bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-2 border border-border/50">
                       <p className="text-lg font-black text-amber-500">{tm.totalWeeklyPeriods}</p>
                       <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-muted-foreground">Weekly Periods</p>
                     </div>
@@ -1130,15 +1130,15 @@ export default function ClassesLive() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                  <div className="rounded-xl bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-2 border border-border/50">
                     <p className="font-black text-slate-900 dark:text-foreground">{year._count?.classes || 0}</p>
                     <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Classes</p>
                   </div>
-                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                  <div className="rounded-xl bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-2 border border-border/50">
                     <p className="font-black text-slate-900 dark:text-foreground">{year._count?.exams || 0}</p>
                     <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Exams</p>
                   </div>
-                  <div className="rounded-xl bg-slate-100/70 dark:bg-muted/40 p-2 border border-border/50">
+                  <div className="rounded-xl bg-slate-100 dark:bg-slate-800/70 dark:bg-muted/40 p-2 border border-border/50">
                     <p className="font-black text-slate-900 dark:text-foreground">{year._count?.attendances || 0}</p>
                     <p className="text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">Records</p>
                   </div>
