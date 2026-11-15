@@ -92,7 +92,7 @@ export default function SchoolPublicLanding() {
           setSchool(res.data);
           setError(null);
           // Set dynamic page title
-          document.title = `${res.data.name} — Official Campus Website | EduSphere`;
+          document.title = `${res.data.name} — Official Campus Website | SchoolOS`;
         }
       })
       .catch((err) => {
@@ -672,7 +672,7 @@ export default function SchoolPublicLanding() {
           <p>© {new Date().getFullYear()} {school.name}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/" className="text-cyan-400 hover:underline">
-              Powered by EduSphere ERP
+              Powered by SchoolOS Cloud
             </Link>
             <Link to="/school-login" className="hover:text-slate-300">
               Browse Schools
