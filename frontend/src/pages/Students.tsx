@@ -721,7 +721,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
         previousAcademicRecord: form.previousAcademicRecord.trim() || undefined,
         transportRequired: form.transportRequired,
         hostelRequired: form.hostelRequired,
-        remarks: finalRemarks || undefined,
+        remarks: [form.remarks.trim(), finalRemarks].filter(Boolean).join(' | ') || undefined,
 
         // Father Information
         fatherName: form.fatherName.trim() || undefined,
