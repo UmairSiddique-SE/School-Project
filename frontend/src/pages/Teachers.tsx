@@ -670,7 +670,7 @@ export default function Teachers() {
 <body>
   <div class="card-wrap">
     <div class="card-header">
-      <div class="school-title">EduSphere Campus Faculty</div>
+      <div class="school-title">SchoolOS Campus Faculty</div>
       <div class="card-sub">Official Teacher ID Card</div>
     </div>
 
@@ -1915,7 +1915,7 @@ export default function Teachers() {
                 /* PORTRAIT CARD */
                 <div className="w-[340px] rounded-3xl overflow-hidden border border-slate-700 bg-slate-900 text-white shadow-2xl flex flex-col">
                   <div className="px-5 pt-5 pb-4 bg-gradient-to-r from-indigo-700 via-purple-700 to-sky-700 text-center relative">
-                    <p className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-200">EduSphere Faculty</p>
+                    <p className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-200">SchoolOS Faculty</p>
                     <p className="text-xs font-black uppercase tracking-wider text-white mt-0.5">Faculty Identity Card</p>
                     <div className="mt-3 mx-auto h-20 w-20 rounded-2xl overflow-hidden border-2 border-white bg-slate-800 flex items-center justify-center font-black text-2xl shadow-md">
                       {idCardTeacher.avatarUrl ? (
@@ -1962,7 +1962,7 @@ export default function Teachers() {
                 <div className="w-[520px] rounded-3xl overflow-hidden border border-slate-700 bg-slate-900 text-white shadow-2xl flex flex-col">
                   <div className="px-5 py-3 bg-gradient-to-r from-indigo-700 via-purple-700 to-sky-700 flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-200">EduSphere Faculty</p>
+                      <p className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-200">SchoolOS Faculty</p>
                       <p className="text-xs font-black uppercase tracking-wider text-white">Official Teacher ID Card</p>
                     </div>
                     <span className="text-[10px] font-mono bg-white/20 px-2.5 py-0.5 rounded-full font-bold">

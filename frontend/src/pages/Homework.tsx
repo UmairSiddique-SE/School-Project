@@ -70,7 +70,7 @@ export default function Homework() {
   };
 
   const shareHomeworkWhatsApp = (hw: HomeworkItem) => {
-    const schoolName = user?.schoolName || 'EduSphere School';
+    const schoolName = user?.schoolName || 'SchoolOS Model School';
     const text = `*HOMEWORK ASSIGNMENT — ${schoolName}*\n\n` +
       `*Subject:* ${hw.subject?.name || 'General'}\n` +
       `*Class:* ${hw.section?.class?.name || ''} - ${hw.section?.name || ''}\n` +
@@ -78,7 +78,7 @@ export default function Homework() {
       `*Due Date:* ${new Date(hw.dueDate).toLocaleDateString('en-PK')}\n` +
       (hw.description ? `*Instructions:* ${hw.description}\n` : '') +
       (hw.attachmentUrl ? `*Material Link:* ${hw.attachmentUrl}\n` : '') +
-      `\n_Please submit homework on time. EduSphere Portal._`;
+      `\n_Please submit homework on time. SchoolOS Portal._`;
 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };

@@ -548,7 +548,7 @@ export default function Students() {
   };
 
   const copyWhatsAppCredentials = (student: any, creds: any) => {
-    const text = `*🎒 ${user?.schoolName || 'EduSphere Academy'} — Student Admission & Portal Credentials*
+    const text = `*🎒 ${user?.schoolName || 'SchoolOS Academy'} — Student Admission & Portal Credentials*
 ----------------------------------------
 *Student Name:* ${student.name}
 *Admission No:* ${student.admissionNo || 'N/A'}
@@ -597,7 +597,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 </head>
 <body>
   <div class="header">
-    <h1 class="school-name">${user?.schoolName || 'EduSphere International Academy'}</h1>
+    <h1 class="school-name">${user?.schoolName || 'SchoolOS International Academy'}</h1>
     <p class="slip-title">Official Student Admission Slip & Record</p>
     <p style="font-size: 11px; color: #64748b; margin: 2px 0 0;">Session: ${student.session || currentSession} | Date: ${new Date().toLocaleDateString()}</p>
   </div>
@@ -1019,7 +1019,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
 <body>
   <div class="card-wrap">
     <div class="card-header">
-      <div class="school-title">EduSphere Campus System</div>
+      <div class="school-title">SchoolOS Campus System</div>
       <div class="card-sub">Student Identity Card</div>
     </div>
 
@@ -1111,7 +1111,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
     const popup = window.open('', '_blank', 'width=850,height=950');
     if (!popup) return toast.error('Please allow popups to print the School Leaving Certificate');
 
-    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const schoolName = user?.schoolName || 'SchoolOS Model High School';
     const admNo = student.admissionNo || 'ADM-0000';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
     const dob = student.dob ? new Date(student.dob).toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' }) : 'As per official admission record';
@@ -3151,7 +3151,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 /* PORTRAIT CARD */
                 <div className="w-[340px] rounded-3xl overflow-hidden border border-slate-700 bg-slate-900 text-white shadow-2xl flex flex-col">
                   <div className="px-5 pt-5 pb-4 bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 text-center relative">
-                    <p className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-200">EduSphere Campus</p>
+                    <p className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-200">SchoolOS Campus</p>
                     <p className="text-xs font-black uppercase tracking-wider text-white mt-0.5">Student Identity Card</p>
                     <div className="mt-3 mx-auto h-20 w-20 rounded-2xl overflow-hidden border-2 border-white bg-slate-800 flex items-center justify-center font-black text-2xl shadow-md">
                       {idCardStudent.avatarUrl ? (
@@ -3198,7 +3198,7 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                 <div className="w-[520px] rounded-3xl overflow-hidden border border-slate-700 bg-slate-900 text-white shadow-2xl flex flex-col">
                   <div className="px-5 py-3 bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-200">EduSphere Campus</p>
+                      <p className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-200">SchoolOS Campus</p>
                       <p className="text-xs font-black uppercase tracking-wider text-white">Student Identity Card</p>
                     </div>
                     <span className="text-[10px] font-mono bg-white/20 px-2.5 py-0.5 rounded-full font-bold">

@@ -269,7 +269,7 @@ export default function Settings() {
               <div>
                 <p className="font-bold text-slate-900 dark:text-foreground">{name || 'Administrator'}</p>
                 <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5 flex items-center gap-1">
-                  <Building2 size={12} /> {user?.schoolName || 'EduSphere Institutional System'}
+                  <Building2 size={12} /> {user?.schoolName || 'SchoolOS Institutional System'}
                 </p>
               </div>
             </div>

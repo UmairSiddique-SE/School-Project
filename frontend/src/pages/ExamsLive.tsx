@@ -308,7 +308,7 @@ export default function ExamsLive() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const schoolName = user?.schoolName || 'SchoolOS Model High School';
     const examName = selectedExam.name;
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' });
     const session = new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
@@ -406,7 +406,7 @@ export default function ExamsLive() {
         </div>
 
         <!-- Watermark -->
-        <div class="watermark">EDUSPHERE ERP</div>
+        <div class="watermark">SCHOOLOS ERP</div>
 
         <!-- Header -->
         <div class="dmc-header">
@@ -546,7 +546,7 @@ export default function ExamsLive() {
 
         <!-- Footer note -->
         <div style="margin-top: 20px; padding-top: 10px; border-top: 1px dashed #cbd5e1; font-size: 9px; color: #94a3b8; text-align: center; line-height: 1.6;">
-          This is a computer-generated Detailed Marks Certificate (DMC) issued by EduSphere ERP. &nbsp;|&nbsp;
+          This is a computer-generated Detailed Marks Certificate (DMC) issued by SchoolOS ERP. &nbsp;|&nbsp;
           ${schoolName} &nbsp;|&nbsp; Session ${session} &nbsp;|&nbsp; Generated on ${issueDate}
         </div>
 
@@ -567,7 +567,7 @@ export default function ExamsLive() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const schoolName = user?.schoolName || 'SchoolOS Model High School';
     const examName = selectedExam.name;
     const className = selectedExam.section?.class?.name || 'Class 10';
     const sectionName = selectedExam.section?.name || 'A';

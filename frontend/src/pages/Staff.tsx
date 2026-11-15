@@ -132,7 +132,7 @@ export default function Staff() {
     const popup = window.open('', '_blank', 'width=800,height=750');
     if (!popup) return toast.error('Please allow popups to print salary slip');
 
-    const schoolName = user?.schoolName || 'EduSphere Model High School';
+    const schoolName = user?.schoolName || 'SchoolOS Model High School';
     const now = new Date();
     const monthYear = now.toLocaleDateString('en-PK', { month: 'long', year: 'numeric' });
     const issueDate = now.toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' });

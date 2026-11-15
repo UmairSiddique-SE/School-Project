@@ -310,7 +310,7 @@ export default function DailyOperations() {
               <Calendar size={14} className="text-cyan-400" />
               <span>{todayFormatted}</span>
               <span>•</span>
-              <span className="text-foreground font-semibold">{user?.schoolName || 'EduSphere School'}</span>
+              <span className="text-foreground font-semibold">{user?.schoolName || 'SchoolOS School'}</span>
             </p>
           </div>
 
@@ -992,7 +992,7 @@ export default function DailyOperations() {
 
             <div className="border-2 border-dashed border-amber-500/50 p-5 rounded-2xl space-y-3 bg-amber-500/5">
               <div className="border-b border-border/80 pb-2">
-                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">{user?.schoolName || 'EduSphere School'}</h3>
+                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">{user?.schoolName || 'SchoolOS School'}</h3>
                 <p className="text-[10px] font-black uppercase text-amber-500">Student Early Exit Gate Pass</p>
                 <p className="font-mono font-bold text-xs text-foreground mt-1">{selectedPassForPrint.passNo}</p>
               </div>
