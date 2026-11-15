@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 type Theme = 'light' | 'dark';
 
@@ -11,26 +12,27 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme] = useState<Theme>('light');
+  const location = useLocation();
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return window.localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+  });
 
-  const setTheme = (_newTheme: Theme) => {
-    localStorage.setItem('theme', 'light');
+  const setTheme = (nextTheme: Theme) => {
+    setThemeState(nextTheme);
+    window.localStorage.setItem('theme', nextTheme);
   };
 
-  const toggleTheme = () => {
-    // Pure VIP light theme enforced across all pages
-    localStorage.setItem('theme', 'light');
-  };
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   useEffect(() => {
+    // The public landing page owns its independent theme controls.
+    if (location.pathname === '/') return;
     const root = window.document.documentElement;
-    // The public landing page manages its own dark/light switch. Do not force
-    // the application-wide light class over that page's independent theme.
-    if (window.location.pathname === '/') return;
-    root.classList.remove('dark');
-    root.classList.add('light');
-    localStorage.setItem('theme', 'light');
-  }, []);
+    root.classList.toggle('dark', theme === 'dark');
+    root.classList.toggle('light', theme === 'light');
+    root.style.colorScheme = theme;
+  }, [theme, location.pathname]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
