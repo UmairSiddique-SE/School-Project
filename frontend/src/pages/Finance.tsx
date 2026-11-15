@@ -339,14 +339,14 @@ export default function Finance() {
       return;
     }
 
-    const schoolName = user?.schoolName || 'SchoolOS Model School';
-    const admNo = payment.student?.admissionNo || 'ADM-2026';
-    const studentName = payment.student?.name || 'Student Name';
-    const className = payment.student?.class?.name || payment.student?.section?.class?.name || 'Class 10';
-    const sectionName = payment.student?.section?.name || 'A';
-    const challanNo = payment.receiptNo || 'CH-2026-001';
+    const schoolName = user?.schoolName || 'School name not configured';
+    const admNo = payment.student?.admissionNo || 'Not recorded';
+    const studentName = payment.student?.name || 'Not provided';
+    const className = payment.student?.class?.name || payment.student?.section?.class?.name || 'Not assigned';
+    const sectionName = payment.student?.section?.name || 'Not assigned';
+    const challanNo = payment.receiptNo || 'Not generated';
     const issueDate = new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' });
-    const dueDate = payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : '10th of Month';
+    const dueDate = payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not set';
     const feeName = payment.feeStructure?.name || 'Tuition & Academic Fee';
     const amount = Number(payment.amount || 0);
     const discount = Number(payment.discount || 0);
@@ -513,7 +513,7 @@ export default function Finance() {
       const balance = Math.max(0, payable - Number(p.totalPaid || 0));
       totalOutstanding += balance;
       const className = p.student?.class?.name || p.student?.section?.class?.name || 'Class';
-      const sectionName = p.student?.section?.name || 'A';
+      const sectionName = p.student?.section?.name || 'Not assigned';
       return `
         <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
           <td style="padding: 6px 8px; text-align: center; color: #64748b;">${idx + 1}</td>
