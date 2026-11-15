@@ -37,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         name: true,
         role: true,
         isActive: true,
+        deletedAt: true,
         schoolId: true,
         school: {
           select: {
@@ -51,7 +52,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    if (!user) {
+    if (!user || !user.isActive || user.deletedAt) {
       throw new UnauthorizedException('User not found or inactive');
     }
 
