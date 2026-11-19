@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Param, Req,
+  Controller, Get, Post, Body, Param, Req, Query,
 } from '@nestjs/common';
 import { PublicService } from './public.service';
 import type { Request } from 'express';
@@ -18,6 +18,11 @@ export class PublicController {
   @Get('schools')
   getSchools() {
     return this.publicService.getSchools();
+  }
+
+  @Get('slug-availability')
+  checkSlugAvailability(@Query('slug') slug: string) {
+    return this.publicService.checkSlugAvailability(slug);
   }
 
   @Get('tenant/slug/:slug')
