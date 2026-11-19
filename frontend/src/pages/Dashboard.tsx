@@ -279,7 +279,7 @@ export default function Dashboard() {
         {error ? <div className="mt-5 rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</div> : null}
       </motion.section>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
         {kpis.map((item, index) => (
           <StatCard key={item.label} icon={item.icon} label={item.label} value={loading ? '—' : item.value} trend={item.trend} trendDir={item.trendDir || 'up'} subtitle={item.subtitle} gradient={item.gradient} delay={index * 0.04} onClick={() => navigate(`${basePath}${item.path}`)} />
         ))}
