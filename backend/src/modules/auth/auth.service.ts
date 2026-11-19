@@ -253,93 +253,51 @@ return { school, user };
       });
     }
 
-    // 2. School Admin Resolution (if SCHOOL_ADMIN requested or no role specified)
+    // Login identifiers must be stable and tenant-safe. Do not authenticate by
+    // display names, first names, school names/slugs, or partial numeric matches.
+    // Those values are not unique credentials and can cause ambiguous or cross-tenant
+    // account resolution. Supported identifiers are exact email/login IDs, phone,
+    // teacher employee numbers, and student admission/B-Form numbers.
     if (!user && rawIdentifier && (requestedRole === 'SCHOOL_ADMIN' || requestedRole === 'ADMIN' || !requestedRole)) {
-      const adminUsers = await this.prisma.user.findMany({
+      user = await this.prisma.user.findFirst({
         where: {
           role: { in: ['SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'] },
           deletedAt: null,
+          OR: [{ email: { equals: rawIdentifier, mode: 'insensitive' } }, { phone: rawIdentifier }],
           ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
         include: userInclude,
       });
-
-      const matchedAdmin = adminUsers.find((adm) => {
-        if (!adm) return false;
-        if (adm.email.toLowerCase() === identifier) return true;
-        if (adm.phone && adm.phone.replace(/\D/g, '') === cleanId && cleanId.length >= 7) return true;
-        const nameClean = (adm.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const firstName = (adm.name || '').trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
-        if (cleanId && (cleanId === nameClean || cleanId === firstName)) return true;
-        if (cleanId === 'admin') return true;
-        if (adm.school?.slug && cleanId === adm.school.slug.replace(/[^a-z0-9]/g, '')) return true;
-        return false;
-      });
-
-      if (matchedAdmin) {
-        user = matchedAdmin;
-      }
     }
 
-    // 3. Teacher Resolution (if TEACHER requested or no role specified)
     if (!user && rawIdentifier && (requestedRole === 'TEACHER' || !requestedRole)) {
-      const teachers = await this.prisma.teacher.findMany({
+      const teacher = await this.prisma.teacher.findFirst({
         where: {
           deletedAt: null,
+          OR: [
+            { email: { equals: rawIdentifier, mode: 'insensitive' } },
+            { employeeNo: { equals: rawIdentifier, mode: 'insensitive' } },
+            { phone: rawIdentifier },
+          ],
           ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
-        select: { id: true, name: true, employeeNo: true, email: true, phone: true, schoolId: true },
+        select: { email: true, schoolId: true },
       });
-
-      const matchedTeacher = teachers.find((t) => {
-        if (!t) return false;
-        if (t.email && t.email.toLowerCase() === identifier) return true;
-        if (t.employeeNo && t.employeeNo.toLowerCase() === identifier) return true;
-        if (t.phone && t.phone.replace(/\D/g, '') === cleanId && cleanId.length >= 7) return true;
-
-        const empClean = (t.employeeNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (empClean && empClean === cleanId) return true;
-
-        const regDigits = (t.employeeNo || '').replace(/\D/g, '');
-        const shortRegDigits = regDigits.slice(-3); // e.g. "001" from "EMP-2026-001"
-        const firstName = (t.name || '').trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
-        const fullNameClean = (t.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        if (firstName && shortRegDigits && (cleanId === `${firstName}${shortRegDigits}` || identifier === `${firstName}-${shortRegDigits}`)) return true;
-        if (firstName && regDigits && (cleanId === `${firstName}${regDigits}` || cleanId === `${firstName}${empClean}`)) return true;
-        if (fullNameClean && shortRegDigits && cleanId === `${fullNameClean}${shortRegDigits}`) return true;
-        if (fullNameClean && regDigits && cleanId === `${fullNameClean}${regDigits}`) return true;
-
-        if (shortRegDigits && (cleanId === shortRegDigits || cleanId === regDigits) && cleanId.length >= 2) return true;
-        if (firstName && cleanId === firstName) return true;
-        if (fullNameClean && cleanId === fullNameClean) return true;
-
-        return false;
-      });
-
-      if (matchedTeacher?.email) {
+      if (teacher?.email) {
         user = await this.prisma.user.findFirst({
-          where: { role: 'TEACHER', email: { equals: matchedTeacher.email, mode: 'insensitive' } },
+          where: {
+            role: 'TEACHER',
+            email: { equals: teacher.email, mode: 'insensitive' },
+            schoolId: teacher.schoolId,
+            deletedAt: null,
+          },
           include: userInclude,
         });
-
-        if (!user && matchedTeacher.schoolId) {
-          user = await this.prisma.user.findFirst({
-            where: {
-              schoolId: matchedTeacher.schoolId,
-              role: 'TEACHER',
-              name: { equals: matchedTeacher.name, mode: 'insensitive' },
-              deletedAt: null,
-            },
-            include: userInclude,
-          });
-        }
       }
     }
 
-    // 4. Student Resolution (if STUDENT requested or no role specified)
     if (!user && rawIdentifier && (requestedRole === 'STUDENT' || !requestedRole)) {
-      let student = await this.prisma.student.findFirst({
+      const student = await this.prisma.student.findFirst({
         where: {
           OR: [
             { admissionNo: { equals: rawIdentifier, mode: 'insensitive' } },
@@ -350,134 +308,37 @@ return { school, user };
           deletedAt: null,
           ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
+        select: { admissionNo: true, email: true, schoolId: true },
       });
 
-      if (!student) {
-        const students = await this.prisma.student.findMany({
-          where: {
-            deletedAt: null,
-            ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
-          },
-          select: { id: true, name: true, admissionNo: true, rollNo: true, email: true, phone: true, bFormNumber: true, schoolId: true },
-        });
-
-        student = students.find((s) => {
-          if (!s) return false;
-          if (s.email && s.email.toLowerCase() === identifier) return true;
-          if (s.admissionNo && s.admissionNo.toLowerCase() === identifier) return true;
-          if (s.phone && s.phone.replace(/\D/g, '') === cleanId && cleanId.length >= 7) return true;
-          if (s.bFormNumber && s.bFormNumber.replace(/\D/g, '') === cleanId && cleanId.length >= 7) return true;
-
-          const admClean = (s.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (admClean && admClean === cleanId) return true;
-
-          const admDigits = (s.admissionNo || '').replace(/\D/g, '');
-          const lastNumSeq = parseInt((s.admissionNo || '').split('-').pop() || '', 10);
-          const shortDigits = isNaN(lastNumSeq) ? admDigits.slice(-3) : String(lastNumSeq); // e.g. "1" from "ADM-2026-0001"
-          const padDigits = isNaN(lastNumSeq) ? '' : String(lastNumSeq).padStart(4, '0'); // e.g. "0001"
-
-          const firstName = (s.name || '').trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
-          const fullNameClean = (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-          // Match Student Name + Last Registration Number combinations (e.g. umair1, hannan2, hannan4, haider3, ammar5, ali20, ali100)
-          if (firstName && shortDigits && (cleanId === `${firstName}${shortDigits}` || identifier === `${firstName}-${shortDigits}`)) return true;
-          if (firstName && padDigits && (cleanId === `${firstName}${padDigits}` || identifier === `${firstName}-${padDigits}`)) return true;
-          if (firstName && admDigits && cleanId === `${firstName}${admDigits}`) return true;
-          if (fullNameClean && shortDigits && cleanId === `${fullNameClean}${shortDigits}`) return true;
-          if (fullNameClean && padDigits && cleanId === `${fullNameClean}${padDigits}`) return true;
-          if (fullNameClean && admDigits && cleanId === `${fullNameClean}${admDigits}`) return true;
-
-          // Match pure sequence digits: e.g. entering "1" or "0001" or "01"
-          if (shortDigits && cleanId === shortDigits) return true;
-          if (padDigits && cleanId === padDigits) return true;
-          if (admDigits && admDigits.length >= 3 && cleanId === admDigits) return true;
-
-          // Roll number match if prefixed with name
-          if (s.rollNo && (cleanId === `${firstName}${s.rollNo}` || identifier === `${firstName}-${s.rollNo}`)) return true;
-
-          // Name match if unique
-          if (firstName && cleanId === firstName) return true;
-          if (fullNameClean && cleanId === fullNameClean) return true;
-
-          return false;
-        }) as any;
-      }
-
       if (student) {
-        if (student.email) {
-          user = await this.prisma.user.findFirst({
-            where: { role: 'STUDENT', email: { equals: student.email, mode: 'insensitive' } },
-            include: userInclude,
-          });
-        }
-        if (!user && student.admissionNo) {
-          const cleanAdm = student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '');
-          user = await this.prisma.user.findFirst({
-            where: {
-              role: 'STUDENT',
-              OR: [
-                { email: { equals: `${cleanAdm}@school.edu`, mode: 'insensitive' } },
-                { schoolId: student.schoolId, name: { equals: student.name, mode: 'insensitive' } },
-              ],
-            },
-            include: userInclude,
-          });
-        }
-      }
-
-      // Fallback for generated student email templates (e.g. adm20260001 -> adm20260001@school.edu)
-      if (!user && cleanId.length >= 4) {
+        const studentEmail = student.email ||
+          `${student.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu`;
         user = await this.prisma.user.findFirst({
           where: {
             role: 'STUDENT',
+            schoolId: student.schoolId,
             OR: [
-              { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
-              { email: { startsWith: cleanId, mode: 'insensitive' } },
+              { email: { equals: studentEmail, mode: 'insensitive' } },
+              ...(student.email ? [{ email: { equals: student.email, mode: 'insensitive' } }] : []),
             ],
-            ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
+            deletedAt: null,
           },
           include: userInclude,
         });
       }
 
-      // Legacy format: first123@student.schoolslug.pk
-      if (!user && identifier.includes('@student.')) {
-        const match = identifier.match(
-          /^([a-z0-9]+?)(\d+)@student\.([a-z0-9-]+)\.pk$/i,
-        );
-        if (match) {
-          const [, firstName, admissionSuffix, schoolSlug] = match;
-          const school = await this.prisma.school.findUnique({
-            where: { slug: schoolSlug },
-            select: { id: true },
-          });
-          if (school) {
-            const students = await this.prisma.student.findMany({
-              where: { schoolId: school.id, deletedAt: null },
-              select: { admissionNo: true, name: true, email: true },
-            });
-            const st = students.find((s) => {
-              const nameFirst = s.name
-                .trim()
-                .split(/\s+/)[0]
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, '');
-              const suffix =
-                s.admissionNo.match(/(\d+)$/)?.[1] ||
-                s.admissionNo.replace(/\D/g, '');
-              return (
-                nameFirst === firstName.toLowerCase() &&
-                suffix === admissionSuffix
-              );
-            });
-            if (st?.email) {
-              user = await this.prisma.user.findFirst({
-                where: { role: 'STUDENT', email: { equals: st.email, mode: 'insensitive' } },
-                include: userInclude,
-              });
-            }
-          }
-        }
+      // Some existing student accounts use the generated school email directly.
+      if (!user && cleanId.length >= 4) {
+        user = await this.prisma.user.findFirst({
+          where: {
+            role: 'STUDENT',
+            email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' },
+            ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
+            deletedAt: null,
+          },
+          include: userInclude,
+        });
       }
     }
 
