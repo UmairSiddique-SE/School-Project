@@ -291,7 +291,7 @@ export default function RegisterSchoolPremium() {
   return (
     <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-clip bg-white text-slate-900 dark:bg-[#080d14] dark:text-white">
 {/* ── Wrapper ─────────────────────────────────────────────────────── */}
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-screen max-w-[1600px] flex-col px-4 py-5 sm:px-6 lg:px-10 2xl:px-14">
 
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className="school-reg-header flex items-center justify-between border-b border-slate-200 pb-5 dark:border-white/10">
@@ -313,7 +313,7 @@ export default function RegisterSchoolPremium() {
         </div>
 
         {/* ── Main grid ─────────────────────────────────────────────────── */}
-        <div className="school-reg-layout grid flex-1 items-start gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:py-10">
+        <div className="school-reg-layout grid flex-1 items-start gap-8 py-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start lg:gap-10 xl:gap-14 lg:py-8">
 
           {/* ── Left hero panel ─────────────────────────────────────────── */}
           <section className="school-reg-intro flex flex-col justify-center">
@@ -370,7 +370,7 @@ export default function RegisterSchoolPremium() {
           </section>
 
           {/* ── Right: form card ─────────────────────────────────────────── */}
-          <section className="mx-auto w-full max-w-2xl">
+          <section className="school-reg-form w-full min-w-0">
             <div className="rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 dark:border-white/10 dark:bg-[#0f1824] dark:shadow-cyan-950/30">
 
               {/* Card header */}
@@ -519,34 +519,15 @@ function DetailsForm({
           />
         </div>
 
-        {/* URL preview */}
-        <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 dark:border-white/[.07] dark:bg-black/10">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2 text-xs">
-              <Globe2 size={13} className="shrink-0 text-cyan-500 dark:text-cyan-400" />
-              <span className="font-bold text-slate-600 dark:text-slate-300">Your free school website</span>
-            </div>
-            {slugStatus === 'checking' && <Loader2 size={13} className="animate-spin text-cyan-500" />}
-            {slugStatus === 'available' && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-300">
-                <CheckCircle2 size={12} /> Available
-              </span>
-            )}
-            {slugStatus === 'taken' && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-500 dark:text-rose-400">
-                <CircleAlert size={12} /> Already used
-              </span>
-            )}
-            {slugStatus === 'invalid' && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400">
-                <CircleAlert size={12} /> Invalid format
-              </span>
-            )}
-          </div>
-          <p className="mt-1.5 break-all font-mono text-[11px] text-slate-500 dark:text-slate-300">{schoolPublicUrl}</p>
-          <p className="mt-1 text-[10px] text-slate-400">
-            This address opens your public school website. It is checked for uniqueness before registration.
-          </p>
+        {/* Compact single-line public website preview */}
+        <div className="school-reg-url mt-3 flex min-w-0 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 dark:border-white/[.07] dark:bg-black/10">
+          <Globe2 size={14} className="shrink-0 text-cyan-500 dark:text-cyan-400" />
+          <span className="shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">Free school website:</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-600 dark:text-slate-300" title={schoolPublicUrl}>{schoolPublicUrl}</span>
+          {slugStatus === 'checking' && <Loader2 size={13} className="shrink-0 animate-spin text-cyan-500" />}
+          {slugStatus === 'available' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-300"><CheckCircle2 size={12} /> Available</span>}
+          {slugStatus === 'taken' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-rose-500 dark:text-rose-400"><CircleAlert size={12} /> Taken</span>}
+          {slugStatus === 'invalid' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400"><CircleAlert size={12} /> Invalid</span>}
         </div>
       </Section>
 
