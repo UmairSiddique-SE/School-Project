@@ -25,6 +25,24 @@ describe('RolesGuard', () => {
     );
   });
 
+  it('denies SUPER_ADMIN from school-tenant routes unless explicitly listed', () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue(['SCHOOL_ADMIN', 'TEACHER']),
+    } as unknown as Reflector;
+    const guard = new RolesGuard(reflector);
+
+    expect(guard.canActivate(makeContext('SUPER_ADMIN'))).toBe(false);
+  });
+
+  it('allows SUPER_ADMIN only when explicitly required', () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue(['SUPER_ADMIN']),
+    } as unknown as Reflector;
+    const guard = new RolesGuard(reflector);
+
+    expect(guard.canActivate(makeContext('SUPER_ADMIN'))).toBe(true);
+  });
+
   it('denies SCHOOL_ADMIN from a SUPER_ADMIN-only route', () => {
     const reflector = {
       getAllAndOverride: jest.fn().mockReturnValue(['SUPER_ADMIN']),
