@@ -108,6 +108,7 @@ export class PendingSchoolRegistrationService {
 
     const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
     const otp = String(randomInt(100000, 1000000));
+    const otpHash = await bcrypt.hash(otp, 10);
     const id = uuidv4();
     const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
 
@@ -121,7 +122,7 @@ export class PendingSchoolRegistrationService {
         (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolType},
          ${dto.logoUrl}, ${dto.schoolAddress}, ${dto.schoolPhone}, ${dto.country},
          ${dto.city}, ${dto.adminName.trim()}, ${adminEmail}, ${dto.adminPhone},
-         ${passwordHash}, ${planKey}, ${otp}, ${otpExpiresAt})
+         ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt})
       ON CONFLICT ("schoolSlug") DO UPDATE SET
         "schoolName" = EXCLUDED."schoolName",
         "schoolType" = EXCLUDED."schoolType",
@@ -197,8 +198,9 @@ export class PendingSchoolRegistrationService {
 
     await this.prisma.$executeRaw`
       UPDATE "PendingSchoolRegistration"
-      SET "otp" = ${otp},
+      SET "otp" = ${await bcrypt.hash(otp, 10)},
           "otpExpiresAt" = ${otpExpiresAt},
+          "otpAttempts" = 0,
           "verifiedAt" = NULL,
           "updatedAt" = CURRENT_TIMESTAMP
       WHERE "id" = ${id}
@@ -231,7 +233,6 @@ export class PendingSchoolRegistrationService {
     }
 
     const submittedOtp = this.normalizeOtp(otp);
-    const storedOtp = this.normalizeOtp(pending.otp);
 
     if (!/^\d{6}$/.test(submittedOtp)) {
       throw new BadRequestException('OTP must be a 6-digit code.');
@@ -256,7 +257,7 @@ export class PendingSchoolRegistrationService {
       WHERE "id" = ${id}
     `;
 
-    if (storedOtp !== submittedOtp) {
+    if (!(await bcrypt.compare(submittedOtp, pending.otp))) {
       throw new BadRequestException(
         'Invalid OTP. Please enter the latest 6-digit code sent to your email.',
       );
