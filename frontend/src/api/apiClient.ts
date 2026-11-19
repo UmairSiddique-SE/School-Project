@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { queueOfflineOperation, type QueuedOperation } from "@/services/offlineQueue";
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -48,6 +49,17 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+const QUEUEABLE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const NON_QUEUEABLE_PATHS = /\/auth\/(login|refresh|logout|verify-email|resend-otp|forgot-password|reset-password|register-school)/;
+
+const queueCategoryFor = (url: string): QueuedOperation["category"] => {
+  if (/\/attendance/i.test(url)) return "ATTENDANCE";
+  if (/\/students|\/people|\/teachers/i.test(url)) return "STUDENT";
+  if (/\/finance|\/fees|\/payments/i.test(url)) return "FINANCE";
+  if (/\/exams|\/results/i.test(url)) return "EXAMS";
+  return "OTHER";
+};
+
 let refreshPromise: Promise<string | null> | null = null;
 
 const refreshAccessToken = async (): Promise<string | null> => {
@@ -91,6 +103,24 @@ apiClient.interceptors.response.use(
     const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
     const status = error.response?.status;
     const requestUrl = String(original?.url || "");
+    const method = String(original?.method || "").toUpperCase();
+
+    // Network failures (no HTTP response) are safe to replay later only for
+    // explicit mutations. Auth and registration calls are never queued.
+    if (!error.response && original && QUEUEABLE_METHODS.has(method) && !NON_QUEUEABLE_PATHS.test(requestUrl)) {
+      try {
+        await queueOfflineOperation({
+          url: requestUrl,
+          method: method as QueuedOperation["method"],
+          payload: typeof original.data === "string" ? JSON.parse(original.data) : original.data,
+          label: `${method} ${requestUrl}`,
+          category: queueCategoryFor(requestUrl),
+        });
+      } catch {
+        // If IndexedDB is unavailable, keep the original network error.
+      }
+      return Promise.reject(error);
+    }
 
     if (status === 401 && original && !original._retry && !/\/auth\/(login|refresh|logout|verify-email)/.test(requestUrl)) {
       original._retry = true;

@@ -115,6 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    // Revoke the server-side refresh token before discarding local state.
+    if (refreshToken) {
+      void apiClient.post('/auth/logout', { refreshToken }).catch(() => undefined);
+    }
     setToken(null);
     setRefreshToken(null);
     setUser(null);

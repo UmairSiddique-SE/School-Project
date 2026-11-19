@@ -321,6 +321,11 @@ export default function LoginPage() {
                     className="w-full rounded-2xl border border-white/10 bg-white/[.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[.06] focus:ring-4 focus:ring-cyan-400/10 font-medium"
                   />
                 </div>
+                <div className="flex justify-end">
+                  <Link to="/forgot-password" className="text-xs font-bold text-cyan-300 hover:text-cyan-200">
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
 
               <button

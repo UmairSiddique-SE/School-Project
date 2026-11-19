@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import {
   getQueuedOperations,
   removeQueuedOperation,
+  markOperationAttempt,
   type QueuedOperation,
 } from '@/services/offlineQueue';
 
@@ -43,7 +44,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Process and sync all queued operations to the cloud
   const syncNow = useCallback(async () => {
     if (!navigator.onLine || isSyncing) return;
-    const ops = await getQueuedOperations();
+    const ops = (await getQueuedOperations()).filter((op) => !op.permanentlyFailed);
     if (ops.length === 0) return;
 
     setIsSyncing(true);
@@ -56,11 +57,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: op.method,
           url: op.url,
           data: op.payload,
+          headers: { "X-Idempotency-Key": op.idempotencyKey },
         });
+        await markOperationAttempt(op.id, false);
         await removeQueuedOperation(op.id);
         successCount++;
       } catch (err: any) {
         console.error(`[OfflineSync] Failed to sync ${op.label}:`, err);
+        await markOperationAttempt(op.id, true);
         failCount++;
       }
     }

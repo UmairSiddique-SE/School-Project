@@ -7,6 +7,7 @@ import { MailService } from '../mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterSchoolDto } from './dto/auth.dto';
+import { parseDurationMs } from '../../config/env.config';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const OTP_TTL_MS = 30 * 60 * 1000;
@@ -29,8 +30,10 @@ type PendingRow = {
   requestedPlan: string;
   otp: string;
   otpExpiresAt: Date;
+  otpLastSentAt: Date | null;
   verifiedAt: Date | null;
   otpAttempts: number;
+  updatedAt: Date;
 };
 
 @Injectable()
@@ -70,7 +73,7 @@ export class PendingSchoolRegistrationService {
       SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
+             "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "id" = ${id}
       LIMIT 1
@@ -112,7 +115,8 @@ export class PendingSchoolRegistrationService {
     const otp = String(randomInt(100000, 1000000));
     const otpHash = await bcrypt.hash(otp, 10);
     const id = uuidv4();
-    const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    const now = new Date();
+    const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
     // Replace an unfinished registration session for the same slug without relying
     // on a database ON CONFLICT constraint that may not exist on older deployments.
@@ -124,19 +128,19 @@ export class PendingSchoolRegistrationService {
         ("id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
          "schoolAddress", "schoolPhone", "country", "city", "adminName",
          "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-         "otp", "otpExpiresAt")
+         "otp", "otpExpiresAt", "otpLastSentAt")
       VALUES
         (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolType},
          ${dto.logoUrl}, ${dto.schoolAddress}, ${dto.schoolPhone}, ${dto.country},
          ${dto.city}, ${dto.adminName.trim()}, ${adminEmail}, ${dto.adminPhone},
-         ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt})
+         ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt}, ${now})
     `;
 
     const pending = await this.prisma.$queryRaw<PendingRow[]>`
       SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
+             "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "schoolSlug" = ${schoolSlug}
       LIMIT 1
@@ -176,21 +180,23 @@ export class PendingSchoolRegistrationService {
       );
     }
 
-    // Enforce 30-second resend cooldown (server-side)
-    const lastUpdated = new Date((pending as any).updatedAt || 0);
+    // Cooldown is measured from the last OTP email, not from failed attempts.
+    const lastSentAt = new Date(pending.otpLastSentAt || pending.updatedAt || 0);
     const cooldownMs = 30 * 1000;
-    if (Date.now() - lastUpdated.getTime() < cooldownMs) {
+    if (Date.now() - lastSentAt.getTime() < cooldownMs) {
       throw new BadRequestException('Please wait before requesting another OTP.');
     }
 
     const otp = String(randomInt(100000, 1000000));
-    const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    const now = new Date();
+    const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
     await this.prisma.$executeRaw`
       UPDATE "PendingSchoolRegistration"
       SET "otp" = ${await bcrypt.hash(otp, 10)},
           "otpExpiresAt" = ${otpExpiresAt},
           "otpAttempts" = 0,
+          "otpLastSentAt" = ${now},
           "verifiedAt" = NULL,
           "updatedAt" = CURRENT_TIMESTAMP
       WHERE "id" = ${id}
@@ -234,7 +240,8 @@ export class PendingSchoolRegistrationService {
       // Invalidate this OTP session so attacker cannot keep trying
       await this.prisma.$executeRaw`
         UPDATE "PendingSchoolRegistration"
-        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP
+        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP,
+            "verifiedAt" = NULL
         WHERE "id" = ${id}
       `;
       throw new BadRequestException(
@@ -361,7 +368,10 @@ export class PendingSchoolRegistrationService {
       data: {
         token: refreshToken,
         userId: result.user.id,
-        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+        expiresAt: new Date(
+          Date.now() +
+            parseDurationMs(this.configService.get('JWT_REFRESH_EXPIRATION'), '7d'),
+        ),
       },
     });
 

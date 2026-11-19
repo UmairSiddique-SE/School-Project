@@ -43,6 +43,12 @@ export class MailService {
     });
   }
 
+  private escapeHtml(value: string): string {
+    return value.replace(/[&<>"']/g, (char) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char
+    ));
+  }
+
   private getSender(): string {
     return (
       this.configService.get<string>('SMTP_FROM') ||
@@ -81,10 +87,10 @@ export class MailService {
             <h2>SchoolOS</h2>
             <p>Your verification code is:</p>
             <h1>${otp}</h1>
-            <p>This code expires in 15 minutes.</p>
+            <p>This code expires in 30 minutes.</p>
           </div>
         `,
-        `Your SchoolOS verification code is ${otp}. It expires in 15 minutes.`,
+        `Your SchoolOS verification code is ${otp}. It expires in 30 minutes.`,
       );
 
       return true;
@@ -127,6 +133,8 @@ export class MailService {
     schoolName: string,
     loginUrl: string,
   ): Promise<void> {
+    const safeSchoolName = this.escapeHtml(schoolName);
+    const safeLoginUrl = this.escapeHtml(loginUrl);
     await this.sendMail(
       to,
       'Your SchoolOS school has been approved',
@@ -136,12 +144,12 @@ export class MailService {
 
           <p>
             Your school
-            <strong>${schoolName}</strong>
+            <strong>${safeSchoolName}</strong>
             has been approved.
           </p>
 
           <p>
-            <a href="${loginUrl}">
+            <a href="${safeLoginUrl}">
               Open School Portal
             </a>
           </p>
@@ -233,6 +241,9 @@ export class MailService {
 
     const loginUrl =
       `${frontendUrl}/${details.schoolSlug}/login`;
+    const safeSchoolName = this.escapeHtml(details.schoolName);
+    const safeAdminName = this.escapeHtml(details.adminName);
+    const safeLoginUrl = this.escapeHtml(loginUrl);
 
     try {
       await this.sendMail(
@@ -243,25 +254,25 @@ export class MailService {
             <h2>School Approved</h2>
 
             <p>
-              Hello ${details.adminName},
+              Hello ${safeAdminName},
             </p>
 
             <p>
               Your school
-              <strong>${details.schoolName}</strong>
+              <strong>${safeSchoolName}</strong>
               has been approved.
             </p>
 
             <p>
               <strong>Login:</strong>
-              <a href="${loginUrl}">
-                ${loginUrl}
+              <a href="${safeLoginUrl}">
+                ${safeLoginUrl}
               </a>
             </p>
 
             <p>
               <strong>Email:</strong>
-              ${to}
+              ${this.escapeHtml(to)}
             </p>
 
             <p>

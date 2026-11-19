@@ -1,3 +1,5 @@
+> Project-specific routes, environment variables, and API proxying are documented in the [root README](../README.md).
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

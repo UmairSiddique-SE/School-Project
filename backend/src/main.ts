@@ -11,8 +11,6 @@ const server: Express = express();
 let isInitialized = false;
 
 export async function bootstrapApp() {
-  const isProduction = process.env.NODE_ENV === 'production';
-
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(server),

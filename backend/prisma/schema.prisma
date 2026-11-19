@@ -1036,6 +1036,33 @@ model Building {
   @@index([schoolId])
 }
 
+model PendingSchoolRegistration {
+  id              String    @id @default(uuid())
+  schoolName      String
+  schoolSlug      String    @unique
+  schoolType      String
+  logoUrl         String
+  schoolAddress   String
+  schoolPhone     String
+  country         String
+  city            String
+  adminName       String
+  adminEmail      String    @unique
+  adminPhone      String
+  passwordHash    String
+  requestedPlan   String    @default("FREE_TRIAL")
+  otp             String
+  otpExpiresAt    DateTime
+  otpAttempts     Int       @default(0)
+  otpLastSentAt   DateTime?
+  verifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([otpExpiresAt])
+  @@index([createdAt])
+}
+
 model Room {
   id         String   @id @default(uuid())
   roomNo     String

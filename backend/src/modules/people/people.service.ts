@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class PeopleService {
@@ -393,13 +394,16 @@ export class PeopleService {
     const shortSeq = isNaN(lastNumSeq) ? regDigits.slice(-3) : String(lastNumSeq);
     const friendlyLoginId = `${firstName}${shortSeq}`; // e.g. "umair1", "ali20", "ammar100"
 
-    const generatedPassword = (data.password && String(data.password).trim().length >= 6)
-      ? String(data.password).trim()
-      : '12345678';
-    const passwordHash = await bcrypt.hash(generatedPassword, 10);
+    const suppliedPassword = data.password ? String(data.password).trim() : '';
+    if (suppliedPassword && suppliedPassword.length < 8) {
+      throw new BadRequestException('Student password must be at least 8 characters');
+    }
+    const generatedPassword = suppliedPassword || randomBytes(12).toString('base64url');
+    const passwordHash = await bcrypt.hash(generatedPassword, 12);
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email.`);
+    let generatedParentPassword: string | null = null;
     try {
       const student = await this.prisma.$transaction(async (tx) => {
         await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true } });
@@ -407,8 +411,13 @@ export class PeopleService {
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
           const parentEmail = data.parentEmail || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}_parent@school.edu.pk`;
-          const rawParentPass = data.parentPassword && data.parentPassword.length >= 6 ? data.parentPassword : '12345678';
-          const parentPasswordHash = await bcrypt.hash(rawParentPass, 10);
+          const suppliedParentPassword = data.parentPassword ? String(data.parentPassword).trim() : '';
+          if (suppliedParentPassword && suppliedParentPassword.length < 8) {
+            throw new BadRequestException('Parent password must be at least 8 characters');
+          }
+          const rawParentPass = suppliedParentPassword || randomBytes(12).toString('base64url');
+          if (!suppliedParentPassword) generatedParentPassword = rawParentPass;
+          const parentPasswordHash = await bcrypt.hash(rawParentPass, 12);
           let parentUser = await tx.user.findUnique({ where: { email: parentEmail } });
           if (!parentUser) parentUser = await tx.user.create({ data: { name: parentName, email: parentEmail, passwordHash: parentPasswordHash, role: 'PARENT', schoolId } });
           else if (parentUser.schoolId !== schoolId) throw new ConflictException('Parent account belongs to another school');
@@ -424,6 +433,7 @@ export class PeopleService {
           admissionNo,
           fullEmail: email,
           password: generatedPassword,
+          parentPassword: generatedParentPassword,
         },
       };
     } catch (error: any) {
