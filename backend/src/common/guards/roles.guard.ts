@@ -28,11 +28,6 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    // SUPER_ADMIN has platform-wide access
-    if (userRole === 'SUPER_ADMIN') {
-      return true;
-    }
-
     const normalizedRequired = requiredRoles.map((r) => r.trim().toUpperCase());
 
     // Allow ADMIN where SCHOOL_ADMIN is required
