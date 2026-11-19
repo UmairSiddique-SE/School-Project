@@ -78,7 +78,9 @@ export class PendingSchoolRegistrationService {
   async register(dto: RegisterSchoolDto) {
     const schoolSlug = dto.schoolSlug.trim().toLowerCase();
     const adminEmail = dto.adminEmail.trim().toLowerCase();
-    const planKey = dto.requestedPlan || 'FREE_TRIAL';
+    // Never trust the client-selected plan for public registration.
+    // SchoolOS currently exposes Professional as the single public subscription.
+    const planKey = 'PROFESSIONAL';
 
     const plan = await this.prisma.platformPlan.findUnique({
       where: { planKey },
