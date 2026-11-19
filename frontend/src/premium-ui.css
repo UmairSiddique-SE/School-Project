@@ -59,3 +59,39 @@ main .stat-card:hover {
   border-color: #bae6fd !important;
   box-shadow: 0 8px 24px rgba(6,182,212,0.08);
 }
+
+
+/* Registration page: isolate it from the site's global dashboard/landing backgrounds. */
+html:has(.school-registration-page),
+body:has(.school-registration-page) {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+html.dark:has(.school-registration-page),
+html.dark body:has(.school-registration-page) {
+  background: #080d14 !important;
+  background-color: #080d14 !important;
+  background-image: none !important;
+}
+body:has(.school-registration-page)::before,
+body:has(.school-registration-page)::after,
+.school-registration-page::before,
+.school-registration-page::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+.school-registration-page {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  isolation: isolate;
+}
+html.dark .school-registration-page {
+  background: #080d14 !important;
+  background-color: #080d14 !important;
+  background-image: none !important;
+}
