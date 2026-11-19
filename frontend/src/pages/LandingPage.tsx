@@ -63,7 +63,7 @@ const faqs = [
   { question: "How does a school get started?", answer: "A school submits its registration application and selects a plan. The SchoolOS Super Admin reviews the application before the school workspace is activated." },
   { question: "Can different people have different access?", answer: "Yes. SchoolOS is designed around role-based workflows so administrators, teachers, students and parents can access the areas intended for them, where enabled." },
   { question: "Are the dashboard figures on this page real?", answer: "No. Dashboard visuals are illustrative product previews. They do not represent live customer counts, school records or database totals." },
-  { question: "Can we see the plans before registering?", answer: "Yes. Available public plans are loaded from the platform. You can review current plan details and continue to the school registration flow." },
+  { question: "Can we see the plans before registering?", answer: "Yes. SchoolOS offers one straightforward Professional subscription. Review the included features and continue to the school registration flow." },
 ];
 
 const colorStyles: Record<string, { light: string; dark: string }> = {
@@ -126,12 +126,24 @@ export default function LandingPage() {
 
   const activePreview = tourTabs.find((tab) => tab.id === activeTab) || tourTabs[0];
   const featuredPlan = useMemo(
-    () => plans.find((plan) => plan.planKey === "PROFESSIONAL" && plan.price === 3000) || plans.find((plan) => plan.price > 0) || plans[0],
-    [plans]
+    () => plans.find((plan) => plan.planKey === "PROFESSIONAL") || {
+      id: "professional",
+      planKey: "PROFESSIONAL",
+      name: "Professional",
+      price: 3000,
+      period: "per month",
+      maxStudents: 500,
+      maxTeachers: 100,
+      storageMb: 10240,
+      supportTier: "Standard",
+      features: ["Students & admissions", "Attendance & timetable", "Fees & finance", "Exams & results", "Staff & role-based access", "Reports & school operations"],
+    },
+    [plans],
   );
 
   const choosePlan = (planKey: string) => {
-    sessionStorage.setItem("edusphere_registration_plan", planKey);
+    sessionStorage.setItem("schoolos_registration_plan", "PROFESSIONAL");
+    sessionStorage.setItem("edusphere_registration_plan", "PROFESSIONAL");
     navigate("/register-school/form?plan=" + encodeURIComponent(planKey));
   };
 
