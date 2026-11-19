@@ -289,7 +289,7 @@ export default function RegisterSchoolPremium() {
      Render
   ══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-white dark:bg-[#080d14]">
+    <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-hidden bg-white dark:bg-[#080d14]">
 {/* ── Wrapper ─────────────────────────────────────────────────────── */}
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
