@@ -33,6 +33,19 @@ export default function AttendanceLive(){
           <p className="text-sm text-muted-foreground mt-1">Live daily attendance recording synchronized directly with student database records.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {counts.absent > 0 && (
+            <button
+              onClick={() => {
+                const absentNames = rows.filter(r => r.status === 'ABSENT').map(r => r.name).slice(0, 3).join(', ');
+                const more = counts.absent > 3 ? ` and ${counts.absent - 3} more` : '';
+                toast.info(`Absent notification preview: SMS alert drafted for ${counts.absent} student(s) (${absentNames}${more}).`);
+              }}
+              className="rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3.5 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 transition-colors flex items-center gap-1.5 shadow-sm"
+              title="Preview SMS alert for absent students"
+            >
+              <AlertCircle size={14} /> Absent Alerts ({counts.absent})
+            </button>
+          )}
           <button onClick={load} className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-colors flex items-center gap-2 shadow-sm">
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh
           </button>

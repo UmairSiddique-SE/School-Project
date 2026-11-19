@@ -288,27 +288,110 @@ export default function Dashboard() {
       {/* ─── Institutional Financial & Attendance Trend Strip ─── */}
       {!isTeacher && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden lg:col-span-2">
+          {/* Action Center / Today's Pending Operational Tasks */}
+          <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 dark:border-border">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                    <AlertTriangle size={18} />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Action Center & Daily Tasks</h3>
+                    <p className="text-[11px] text-muted-foreground">Critical operational items requiring attention</p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 text-[10px] font-black text-rose-600 dark:text-rose-400">
+                  {((stats.presentToday === 0 && stats.absentToday === 0 ? 1 : 0) + (stats.pendingFeePaymentsCount > 0 ? 1 : 0) + (stats.pendingHomeworks > 0 ? 1 : 0))} Pending
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Task 1: Attendance Check */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-border/60 bg-slate-50/70 dark:bg-slate-900/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${attendanceTotal > 0 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`} />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">Daily Student Roll Call</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{attendanceTotal > 0 ? `${attendanceTotal} students recorded today` : 'Attendance not marked yet'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`${basePath}/attendance`)}
+                    className="shrink-0 text-[11px] font-bold text-primary hover:underline"
+                  >
+                    {attendanceTotal > 0 ? 'Review' : 'Mark Now'} →
+                  </button>
+                </div>
+
+                {/* Task 2: Fee Defaulters */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-border/60 bg-slate-50/70 dark:bg-slate-900/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${stats.pendingFeePaymentsCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">Fee Dues & Challans</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{stats.pendingFeePaymentsCount > 0 ? `${stats.pendingFeePaymentsCount} invoices pending payment` : 'All invoices settled'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`${basePath}/finance`)}
+                    className="shrink-0 text-[11px] font-bold text-primary hover:underline"
+                  >
+                    View Ledger →
+                  </button>
+                </div>
+
+                {/* Task 3: Admissions & Docs */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-border/60 bg-slate-50/70 dark:bg-slate-900/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="h-2 w-2 rounded-full bg-cyan-500 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">New Student Intake</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{stats.recentAdmissions.length} new enrolments this session</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`${basePath}/students`)}
+                    className="shrink-0 text-[11px] font-bold text-primary hover:underline"
+                  >
+                    Enrol Student →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-border mt-3">
+              <button
+                onClick={() => navigate(`${basePath}/daily-operations`)}
+                className="w-full py-2 rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-xs font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+              >
+                <span>Open Operations Command Hub</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </section>
+
+          <section className="bg-white dark:bg-card border border-slate-200 dark:border-border/40 rounded-2xl shadow-sm p-6 overflow-hidden lg:col-span-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100 dark:border-border">
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp size={18} />
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Fiscal Cashflow & Revenue Projection</h3>
-                  <p className="text-[11px] text-muted-foreground">Monthly tuition velocity vs outstanding receivables</p>
+                  <h3 className="text-sm font-bold text-foreground">Cashflow & Revenue</h3>
+                  <p className="text-[11px] text-muted-foreground">Tuition velocity vs receivables</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-xs font-semibold">
-                <span className="flex items-center gap-1.5 text-emerald-600">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Collected ({money(stats.totalRevenue)})
-                </span>
-                <span className="flex items-center gap-1.5 text-amber-600">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" /> Pending ({money(stats.pendingFees)})
-                </span>
-              </div>
             </div>
-            <div className="h-[210px] w-full">
+            <div className="flex items-center justify-between gap-2 mb-3 text-xs font-semibold">
+              <span className="flex items-center gap-1.5 text-emerald-600">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Collected ({money(stats.totalRevenue)})
+              </span>
+              <span className="flex items-center gap-1.5 text-amber-600">
+                <span className="h-2 w-2 rounded-full bg-amber-500" /> Dues ({money(stats.pendingFees)})
+              </span>
+            </div>
+            <div className="h-[180px] w-full">
               <ChartErrorBoundary>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
