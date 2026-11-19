@@ -289,12 +289,12 @@ export default function RegisterSchoolPremium() {
      Render
   ══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-hidden bg-white dark:bg-[#080d14]">
+    <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-clip bg-white text-slate-900 dark:bg-[#080d14] dark:text-white">
 {/* ── Wrapper ─────────────────────────────────────────────────────── */}
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
         {/* ── Header ────────────────────────────────────────────────────── */}
-        <header className="flex items-center justify-between border-b border-slate-200 pb-5 dark:border-white/10">
+        <div className="school-reg-header flex items-center justify-between border-b border-slate-200 pb-5 dark:border-white/10">
           <Link to="/" className="flex items-center gap-3 group">
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 text-slate-950 shadow-lg shadow-cyan-500/20 transition group-hover:shadow-cyan-500/40">
               <Sparkles size={19} />
@@ -310,13 +310,13 @@ export default function RegisterSchoolPremium() {
           >
             School Login
           </Link>
-        </header>
+        </div>
 
         {/* ── Main grid ─────────────────────────────────────────────────── */}
-        <main className="grid flex-1 items-start gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:py-10">
+        <div className="school-reg-layout grid flex-1 items-start gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:py-10">
 
           {/* ── Left hero panel ─────────────────────────────────────────── */}
-          <aside className="flex flex-col justify-center">
+          <section className="school-reg-intro flex flex-col justify-center">
             {/* Badge */}
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-300">
               <ShieldCheck size={13} />
@@ -367,7 +367,7 @@ export default function RegisterSchoolPremium() {
                 </p>
               </div>
             </div>
-          </aside>
+          </section>
 
           {/* ── Right: form card ─────────────────────────────────────────── */}
           <section className="mx-auto w-full max-w-2xl">
@@ -430,7 +430,7 @@ export default function RegisterSchoolPremium() {
               </div>
             </div>
           </section>
-        </main>
+        </div>
       </div>
     </div>
   );
