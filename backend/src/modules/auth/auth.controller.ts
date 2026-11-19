@@ -7,6 +7,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PendingSchoolRegistrationService } from './pending-school-registration.service';
 import { SchoolRegistrationService } from './school-registration.service';
 import { PrismaService } from '../database/prisma.service';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -21,7 +22,7 @@ export class AuthController {
   @Post('register-school')
   registerSchool(@Body() dto: RegisterSchoolDto) { return this.schoolRegistrationService.register(dto); }
 
-  @Post('login') @HttpCode(HttpStatus.OK)
+  @Post('login') @Throttle({ default: { limit: 10, ttl: 60_000 } }) @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) { return this.authService.login(dto); }
 
   @Post('refresh') @HttpCode(HttpStatus.OK)
@@ -30,13 +31,13 @@ export class AuthController {
   @Post('logout') @HttpCode(HttpStatus.OK)
   logout(@Body() dto: RefreshTokenDto) { return this.authService.logout(dto.refreshToken); }
 
-  @Post('forgot-password') @HttpCode(HttpStatus.OK)
+  @Post('forgot-password') @Throttle({ default: { limit: 5, ttl: 60_000 } }) @HttpCode(HttpStatus.OK)
   forgotPassword(@Body() dto: ForgotPasswordDto) { return this.authService.forgotPassword(dto); }
 
   @Post('reset-password') @HttpCode(HttpStatus.OK)
   resetPassword(@Body() dto: ResetPasswordDto) { return this.authService.resetPassword(dto); }
 
-  @Post('verify-email') @HttpCode(HttpStatus.OK)
+  @Post('verify-email') @Throttle({ default: { limit: 8, ttl: 60_000 } }) @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() dto: VerifyEmailDto) {
     const pendingResult = await this.pendingSchoolRegistrationService.verify(dto.userId, dto.otp);
     if (pendingResult) return pendingResult;
@@ -47,7 +48,7 @@ export class AuthController {
     return result;
   }
 
-  @Post('resend-otp') @HttpCode(HttpStatus.OK)
+  @Post('resend-otp') @Throttle({ default: { limit: 3, ttl: 60_000 } }) @HttpCode(HttpStatus.OK)
   resendOtp(@Body() dto: { userId: string }) { return this.pendingSchoolRegistrationService.resend(dto.userId); }
 
   @Post('onboarding-payment') @UseGuards(JwtAuthGuard) @ApiBearerAuth() @HttpCode(HttpStatus.OK)
