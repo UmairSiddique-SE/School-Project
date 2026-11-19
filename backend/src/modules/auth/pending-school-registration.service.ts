@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../database/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { RegisterSchoolDto } from './dto/auth.dto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -38,6 +39,7 @@ export class PendingSchoolRegistrationService {
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   private endDate(start: Date, period: string) {
@@ -354,6 +356,14 @@ export class PendingSchoolRegistrationService {
       role: result.user.role,
       schoolId: result.school.id,
     });
+    const refreshToken = uuidv4();
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: result.user.id,
+        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+      },
+    });
 
     return {
       message: 'Email verified successfully',
@@ -369,6 +379,7 @@ export class PendingSchoolRegistrationService {
         plan: plan.planKey,
       },
       accessToken,
+      refreshToken,
     };
   }
 }
