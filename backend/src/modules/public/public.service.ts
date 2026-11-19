@@ -31,31 +31,14 @@ export class PublicService {
         name: true,
         slug: true,
         city: true,
-        address: true,
-        phone: true,
-        email: true,
         country: true,
         logoUrl: true,
-        website: true,
         isActive: true,
-        subscription: {
-          select: { plan: true, status: true, endDate: true },
-        },
-        _count: {
-          select: {
-            students: { where: { deletedAt: null } },
-            teachers: { where: { deletedAt: null } },
-            classes: { where: { deletedAt: null } },
-          },
-        },
       },
     });
 
     return schools.map((school) => ({
       ...school,
-      studentCount: school._count?.students || 0,
-      teacherCount: school._count?.teachers || 0,
-      classCount: school._count?.classes || 0,
       loginAvailable: Boolean(school.slug),
       status: school.isActive ? 'ACTIVE' : 'PENDING_APPROVAL',
     }));
