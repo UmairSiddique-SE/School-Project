@@ -255,7 +255,7 @@ export default function Dashboard() {
               </span>
               <span className="text-xs text-muted-foreground">{new Date().toLocaleDateString('en-PK', { dateStyle: 'full' })}</span>
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{user?.schoolName || 'Your School'}</h1>
+            <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Dashboard Overview</h1>
             <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{isTeacher ? `Welcome back, ${user?.name || 'Teacher'}. Your portal provides access to your classes, daily attendance, homework, exams and academic routines.` : 'Your school operations overview is synchronized directly with live database records.'}</p>
           </div>
           <div className="flex flex-wrap gap-2">
