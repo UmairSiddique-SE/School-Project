@@ -25,9 +25,15 @@ export default function SchoolPlanSelection() {
     apiClient.get<PublicPlan[]>("/public/plans")
       .then(({ data }) => {
         const monthlyPlan = Array.isArray(data)
-          ? data.find((item) => item.planKey === "PROFESSIONAL" && item.price === 3000)
+          ? data.find((item) => item.planKey === "PROFESSIONAL")
           : undefined;
-        setPlan(monthlyPlan ?? null);
+        setPlan(monthlyPlan ? {
+          ...monthlyPlan,
+          planKey: "PROFESSIONAL",
+          name: "Professional",
+          price: 3000,
+          period: "per month",
+        } : null);
       })
       .catch(() => setPlan(null))
       .finally(() => setLoading(false));
@@ -35,7 +41,8 @@ export default function SchoolPlanSelection() {
 
   const continueRegistration = () => {
     if (!plan) return;
-    sessionStorage.setItem("edusphere_registration_plan", plan.planKey);
+    sessionStorage.setItem("schoolos_registration_plan", "PROFESSIONAL");
+    sessionStorage.setItem("edusphere_registration_plan", "PROFESSIONAL");
     navigate(`/register-school/form?plan=${encodeURIComponent(plan.planKey)}`);
   };
 
