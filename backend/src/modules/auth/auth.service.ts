@@ -803,17 +803,22 @@ return { school, user };
       include: { subscription: true },
     });
     if (!school) throw new BadRequestException('School account not found');
+    const publicPlanKey = 'PROFESSIONAL';
     const plan = await this.prisma.platformPlan.findUnique({
-      where: { planKey: dto.plan },
+      where: { planKey: publicPlanKey },
     });
     if (!plan || !plan.isActive)
       throw new BadRequestException(
-        'Selected subscription plan is unavailable',
+        'The Professional subscription plan is unavailable',
       );
     if (Number(plan.price) <= 0)
       throw new BadRequestException(
         'This plan does not require a payment submission',
       );
+    const allowedMethods = new Set(['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']);
+    const method = String(dto.method || '').trim().toUpperCase();
+    if (!allowedMethods.has(method))
+      throw new BadRequestException('Invalid payment method');
     const amount = dto.amount == null ? Number(plan.price) : Number(dto.amount);
     if (!Number.isFinite(amount) || amount !== Number(plan.price))
       throw new BadRequestException(
@@ -837,8 +842,8 @@ return { school, user };
           schoolId: dto.schoolId,
           plan: plan.planKey,
           amount: plan.price,
-          method: dto.method,
-          reference: dto.reference,
+          method,
+          reference: dto.reference?.trim() || null,
           screenshotUrl: dto.screenshotUrl || null,
         },
       });
