@@ -44,6 +44,17 @@ export class PublicService {
     }));
   }
 
+  async checkSlugAvailability(slug: string) {
+    const normalized = String(slug || '').trim().toLowerCase();
+    if (!/^[a-z0-9-]{3,70}$/.test(normalized)) {
+      return { available: false, valid: false, slug: normalized, message: 'Use 3–70 lowercase letters, numbers, or hyphens.' };
+    }
+    const existing = await this.prisma.school.findFirst({ where: { slug: normalized, deletedAt: null }, select: { id: true } });
+    return existing
+      ? { available: false, valid: true, slug: normalized, message: 'This school website address is already in use.' }
+      : { available: true, valid: true, slug: normalized, message: 'This school website address is available.' };
+  }
+
   async resolveBySlug(slug: string) {
     const school = await this.prisma.school.findFirst({
       where: { slug, deletedAt: null },
