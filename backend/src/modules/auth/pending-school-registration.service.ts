@@ -112,6 +112,11 @@ export class PendingSchoolRegistrationService {
     const id = uuidv4();
     const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
 
+    // Replace an unfinished registration session for the same slug without relying
+    // on a database ON CONFLICT constraint that may not exist on older deployments.
+    await this.prisma.$executeRaw`
+      DELETE FROM "PendingSchoolRegistration" WHERE "schoolSlug" = ${schoolSlug}
+    `;
     await this.prisma.$executeRaw`
       INSERT INTO "PendingSchoolRegistration"
         ("id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
@@ -123,23 +128,6 @@ export class PendingSchoolRegistrationService {
          ${dto.logoUrl}, ${dto.schoolAddress}, ${dto.schoolPhone}, ${dto.country},
          ${dto.city}, ${dto.adminName.trim()}, ${adminEmail}, ${dto.adminPhone},
          ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt})
-      ON CONFLICT ("schoolSlug") DO UPDATE SET
-        "schoolName" = EXCLUDED."schoolName",
-        "schoolType" = EXCLUDED."schoolType",
-        "logoUrl" = EXCLUDED."logoUrl",
-        "schoolAddress" = EXCLUDED."schoolAddress",
-        "schoolPhone" = EXCLUDED."schoolPhone",
-        "country" = EXCLUDED."country",
-        "city" = EXCLUDED."city",
-        "adminName" = EXCLUDED."adminName",
-        "adminEmail" = EXCLUDED."adminEmail",
-        "adminPhone" = EXCLUDED."adminPhone",
-        "passwordHash" = EXCLUDED."passwordHash",
-        "requestedPlan" = EXCLUDED."requestedPlan",
-        "otp" = EXCLUDED."otp",
-        "otpExpiresAt" = EXCLUDED."otpExpiresAt",
-        "verifiedAt" = NULL,
-        "updatedAt" = CURRENT_TIMESTAMP
     `;
 
     const pending = await this.prisma.$queryRaw<PendingRow[]>`
