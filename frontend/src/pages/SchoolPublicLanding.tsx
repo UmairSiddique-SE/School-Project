@@ -92,7 +92,7 @@ export default function SchoolPublicLanding() {
           setSchool(res.data);
           setError(null);
           // Set dynamic page title
-          document.title = `${res.data.name} — Official Campus Website | SchoolOS`;
+          document.title = `${res.data.name} — Official School Website`;
         }
       })
       .catch((err) => {
@@ -159,9 +159,7 @@ export default function SchoolPublicLanding() {
     );
   }
 
-  const campusLocation = [school.address, school.city, school.country || "Pakistan"]
-    .filter(Boolean)
-    .join(", ");
+  const campusLocation = [school.address, school.city, school.country].filter(Boolean).join(", ");
 
   return (
     <div className="min-h-screen bg-[#030b17] text-slate-100 font-sans selection:bg-cyan-500 selection:text-white">
@@ -269,7 +267,7 @@ export default function SchoolPublicLanding() {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Committed to academic rigor, character development, and holistic student growth. Empowered with modern digital facilities and dedicated educators.
+            Official information, admissions updates, campus details, and contact information from the school.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
@@ -300,10 +298,10 @@ export default function SchoolPublicLanding() {
               About Our Institution
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              A Legacy of Academic Integrity & Character
+              About Our School
             </h2>
             <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-              At {school.name}, we believe every child possesses unique potential waiting to be ignited. Our learning environment pairs strong discipline with creative freedom, preparing students for university success and global citizenship.
+              Welcome to the official website of {school.name}. School information and announcements published here are managed by the school administration.
             </p>
 
             <div className="mt-6 space-y-4">
@@ -312,7 +310,7 @@ export default function SchoolPublicLanding() {
                   <Award size={16} className="text-cyan-400" /> Our Mission
                 </h4>
                 <p className="text-xs text-slate-400 mt-1">
-                  To provide quality, values-driven education that develops analytical minds, ethical leaders, and lifelong learners.
+                  The school administration can publish its mission and institutional information here.
                 </p>
               </div>
 
@@ -321,7 +319,7 @@ export default function SchoolPublicLanding() {
                   <Sparkles size={16} className="text-cyan-400" /> Our Vision
                 </h4>
                 <p className="text-xs text-slate-400 mt-1">
-                  To be recognized as a center of educational excellence where modern science and traditional values converge.
+                  The school can publish its vision and long-term goals here.
                 </p>
               </div>
             </div>
@@ -357,10 +355,10 @@ export default function SchoolPublicLanding() {
               Curriculum & Programs
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
-              Academic Levels Offered
+              Academic Levels
             </h2>
             <p className="mt-3 text-sm text-slate-400">
-              Structured grades aligned with state curricula and modern science programs.
+              Academic classes published by the school administration.
             </p>
           </div>
 
@@ -400,10 +398,10 @@ export default function SchoolPublicLanding() {
               Campus Infrastructure
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
-              World-Class Facilities
+              Campus Facilities
             </h2>
             <p className="mt-3 text-sm text-slate-400">
-              Enabling both theoretical discovery and extracurricular vigor.
+              Facilities published by the school administration.
             </p>
           </div>
 
@@ -461,15 +459,15 @@ export default function SchoolPublicLanding() {
               Join the {school.name} Family
             </h2>
             <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-              We welcome applications from motivated learners. Admissions for the upcoming academic cycle are now being reviewed. Submit an enquiry below and our admissions counsellor will connect with you.
+              Use the enquiry form to contact the school administration. Admissions information shown here should be published and maintained by the school.
             </p>
 
             <div className="mt-8 space-y-3">
               {[
-                "Birth Certificate / B-Form copy",
-                "Previous school leaving certificate / progress report",
-                "2 Passport-sized photographs",
-                "Guardian CNIC copy",
+                "Required documents will be published by the school.",
+                "Admission requirements will be published by the school.",
+                "School-specific requirements",
+                "Guardian information",
               ].map((doc, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-xs text-slate-300">
                   <CheckCircle2 size={15} className="text-cyan-400 shrink-0" />
@@ -576,7 +574,7 @@ export default function SchoolPublicLanding() {
               Life at {school.name}
             </h2>
             <p className="mt-3 text-sm text-slate-400">
-              Snapshots of academic enthusiasm, ceremonies, sports, and science showcases.
+              School gallery images can be published by the school administration.
             </p>
           </div>
 
@@ -596,7 +594,7 @@ export default function SchoolPublicLanding() {
                   {title}
                 </p>
                 <span className="relative z-10 text-[10px] text-cyan-300 font-semibold">
-                  Official Campus Archive
+                  School Gallery
                 </span>
               </div>
             ))}
@@ -615,7 +613,7 @@ export default function SchoolPublicLanding() {
               Campus Location & Directory
             </h2>
             <p className="mt-4 text-sm text-slate-400 leading-relaxed">
-              Visit our campus or contact our administration office during active school hours (8:00 AM – 2:00 PM, Monday through Saturday).
+              Contact details and visiting information published by the school administration.
             </p>
 
             <div className="mt-8 space-y-4 text-xs">
@@ -654,7 +652,7 @@ export default function SchoolPublicLanding() {
               Staff & Student Access
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed mb-6">
-              Enrolled students, faculty, and school administrators can access their digital attendance, homework, report cards, and fee challans directly through our authenticated cloud portal.
+              Authorized students, parents, teachers, and administrators can use the school portal for their accounts and school services.
             </p>
             <Link
               to={`/${school.slug}/login`}
