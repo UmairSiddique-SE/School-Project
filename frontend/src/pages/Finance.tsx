@@ -1273,9 +1273,34 @@ export default function Finance() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-foreground mb-1.5">
-                    Scholarship / Discount (PKR)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-foreground">
+                      Scholarship / Concession (PKR)
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const base = Number(paymentForm.amount) || 0;
+                          setPaymentForm({ ...paymentForm, discount: String(Math.round(base * 0.5)) });
+                        }}
+                        className="text-[10px] font-bold text-primary hover:underline px-1 py-0.5 rounded bg-primary/10"
+                        title="Apply 50% Sibling/Teacher Concession"
+                      >
+                        50% Sibling
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentForm({ ...paymentForm, discount: paymentForm.amount });
+                        }}
+                        className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline px-1 py-0.5 rounded bg-emerald-500/10"
+                        title="Apply 100% Full Orphan / Need Concession"
+                      >
+                        100% Free
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="number"
                     min="0"

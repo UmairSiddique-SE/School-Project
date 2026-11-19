@@ -248,6 +248,7 @@ export default function Students() {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [sectionFilter, setSectionFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'DOCS_PENDING' | 'ALUMNI'>('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Navigation views: 'list' | 'add'
@@ -420,6 +421,13 @@ export default function Students() {
     if (sectionFilter) {
       result = result.filter((s) => s.sectionId === sectionFilter);
     }
+    if (statusFilter === 'DOCS_PENDING') {
+      result = result.filter((s) => !s.bFormNumber || !s.avatarUrl);
+    } else if (statusFilter === 'ACTIVE') {
+      result = result.filter((s) => s.status !== 'ALUMNI' && s.status !== 'SUSPENDED');
+    } else if (statusFilter === 'ALUMNI') {
+      result = result.filter((s) => s.status === 'ALUMNI' || s.status === 'TRANSFERRED');
+    }
     const q = search.trim().toLowerCase();
     if (q) {
       result = result.filter((student) =>
@@ -437,7 +445,7 @@ export default function Students() {
       );
     }
     return result;
-  }, [students, search, classFilter, sectionFilter]);
+  }, [students, search, classFilter, sectionFilter, statusFilter]);
 
   const boysCount = useMemo(() => students.filter((s) => s.gender === 'MALE').length, [students]);
   const girlsCount = useMemo(() => students.filter((s) => s.gender === 'FEMALE').length, [students]);
@@ -2635,11 +2643,23 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
             ))}
           </select>
 
-          {(classFilter || sectionFilter || search) && (
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground outline-none w-full md:w-auto"
+          >
+            <option value="ALL">All Lifecycle Status</option>
+            <option value="ACTIVE">Active Students</option>
+            <option value="DOCS_PENDING">Documents Pending (NADRA / Photo)</option>
+            <option value="ALUMNI">Alumni / Transferred</option>
+          </select>
+
+          {(classFilter || sectionFilter || statusFilter !== 'ALL' || search) && (
             <button
               onClick={() => {
                 setClassFilter('');
                 setSectionFilter('');
+                setStatusFilter('ALL');
                 setSearch('');
               }}
               className="text-xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 shrink-0"
@@ -2729,9 +2749,20 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                     </td>
 
                     <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                        </span>
+                        {!student.bFormNumber || !student.avatarUrl ? (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                            Docs: {!student.bFormNumber ? 'No B-Form' : 'No Photo'}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                            ✓ Docs verified
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
