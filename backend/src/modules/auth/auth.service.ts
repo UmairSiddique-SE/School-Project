@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import {
   Injectable,
   UnauthorizedException,
@@ -319,8 +320,8 @@ return { school, user };
             role: 'STUDENT',
             schoolId: student.schoolId,
             OR: [
-              { email: { equals: studentEmail, mode: 'insensitive' } },
-              ...(student.email ? [{ email: { equals: student.email, mode: 'insensitive' } }] : []),
+              { email: { equals: studentEmail, mode: Prisma.QueryMode.insensitive } },
+              ...(student.email ? [{ email: { equals: student.email, mode: Prisma.QueryMode.insensitive } }] : []),
             ],
             deletedAt: null,
           },

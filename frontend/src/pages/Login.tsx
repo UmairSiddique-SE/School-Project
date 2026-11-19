@@ -34,7 +34,7 @@ export default function LoginPage() {
   const [schoolStatus, setSchoolStatus] = useState<any>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const schoolName = urlSchoolSlug ? urlSchoolSlug.replace(/-/g, " ") : "your school";
+  const schoolName = schoolStatus?.name || (urlSchoolSlug ? urlSchoolSlug.replace(/-/g, " ") : "your school");
 
   useEffect(() => {
     const roleParam = searchParams.get("role")?.toUpperCase();
@@ -191,6 +191,21 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .45 }} className="w-full max-w-lg">
           
           <div className="mb-6 text-center">
+            {urlSchoolSlug && (
+              <div className="mb-4 flex flex-col items-center justify-center gap-2">
+                {schoolStatus?.logoUrl ? (
+                  <img src={schoolStatus.logoUrl} alt={schoolName + " logo"} className="h-20 w-20 rounded-2xl border border-white/10 bg-white object-contain p-1.5 shadow-xl shadow-black/20" />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-white/[.06] text-cyan-300 shadow-xl">
+                    <School size={34} />
+                  </div>
+                )}
+                <div className="max-w-full">
+                  <p className="text-lg font-black tracking-tight text-white sm:text-xl">{schoolName}</p>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.2em] text-slate-500">School Portal</p>
+                </div>
+              </div>
+            )}
             <div className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${currentConfig.accentGradient} text-2xl font-black shadow-2xl ${currentConfig.btnShadow}`}>
               <ConfigIcon size={26} className="text-white" />
             </div>
@@ -198,7 +213,7 @@ export default function LoginPage() {
               <ShieldCheck size={13} /> {currentConfig.badge}
             </div>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{currentConfig.title}</h1>
-            <p className="mt-1 text-xs capitalize text-slate-400">Campus: {schoolName}</p>
+            <p className="mt-1 text-xs text-slate-400">{urlSchoolSlug ? "Secure sign in to your school workspace" : "Sign in to your SchoolOS workspace"}</p>
           </div>
 
           {schoolStatus && schoolStatus.isActive === false && (
