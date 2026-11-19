@@ -11,6 +11,16 @@ const server: Express = express();
 let isInitialized = false;
 
 export async function bootstrapApp() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const configuredOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (isProduction && configuredOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS must contain the exact production frontend origin(s).');
+  }
+
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(server),
@@ -21,15 +31,8 @@ export async function bootstrapApp() {
 
   app.use(helmet());
 
-  const configuredOrigins = (process.env.CORS_ORIGINS || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
-  const corsOrigins = configuredOrigins.length ? configuredOrigins : '*';
-
   app.enableCors({
-    origin: corsOrigins,
+    origin: isProduction ? configuredOrigins : configuredOrigins.length ? configuredOrigins : true,
     credentials: true,
   });
 
