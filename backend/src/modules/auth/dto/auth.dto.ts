@@ -72,8 +72,9 @@ export class RegisterSchoolDto {
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   adminPassword: string;
 
+  /** Public SchoolOS registration currently supports one paid plan only. */
   @IsOptional()
-  @IsString()
+  @IsIn(['PROFESSIONAL'])
   requestedPlan?: string;
 }
 
