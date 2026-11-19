@@ -109,12 +109,14 @@ export class PublicService {
     const offlineNotice = school.alerts?.[0] || null;
     return {
       ...school,
-      adminContact: {
-        name: adminUser?.name || 'School Administration',
-        email: adminUser?.email || school.email || 'admin@schoolos.app',
-        phone: adminUser?.phone || school.phone || '+92 300 0000000',
-        address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
-      },
+      adminContact: adminUser || school.email || school.phone || school.address
+        ? {
+            name: adminUser?.name || 'School Administration',
+            email: adminUser?.email || school.email || null,
+            phone: adminUser?.phone || school.phone || null,
+            address: school.address || null,
+          }
+        : null,
       offlineNotice,
     };
   }
