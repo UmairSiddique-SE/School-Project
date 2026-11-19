@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight, ArrowUpRight, BarChart3, BookOpen, Bus, CalendarDays,
   Check, CheckCircle2, ChevronDown, ClipboardCheck, CreditCard,
-  GraduationCap, LayoutDashboard, Library, LockKeyhole, Menu, Moon,
-  ShieldCheck, Sparkles, Sun, Users, WalletCards, X, Globe2,
+  GraduationCap, LayoutDashboard, Library, LockKeyhole, Menu,
+  ShieldCheck, Sparkles, Users, WalletCards, X, Globe2,
   MonitorSmartphone, Bell, ChartNoAxesCombined, School, Layers3,
   Star, Zap, CircleHelp, Settings2, MessageCircle,
   TrendingUp, FileText, UserRoundCheck, Command, Play, Plus, Search, MapPin
@@ -79,7 +79,7 @@ const formatPrice = (price: number) => new Intl.NumberFormat("en-PK").format(pri
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [dark, setDark] = useState(true);
+  const dark = false;
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -88,21 +88,15 @@ export default function LandingPage() {
   const [schools, setSchools] = useState<PublicSchool[]>([]);
   const [schoolsLoading, setSchoolsLoading] = useState(true);
 
-  // The app-wide ThemeProvider defaults to light. Temporarily own the document theme
-  // on this public page so its global .light overrides cannot break the dark palette.
+  // Enforce consistent light mode across the platform
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove("light");
-    if (dark) root.classList.add("dark");
-    else root.classList.remove("dark");
-    return () => {
-      root.classList.remove("dark");
-      root.classList.add("light");
-    };
-  }, [dark]);
+    root.classList.remove("dark");
+    root.classList.add("light");
+    root.style.colorScheme = "light";
+  }, []);
 
-  // Every fresh visit starts in dark mode; visitors can switch instantly.
-  const toggleTheme = () => setDark((previous) => !previous);
+  const toggleTheme = () => {};
 
   useEffect(() => {
     let active = true;
@@ -211,12 +205,10 @@ export default function LandingPage() {
             <Link to="/school-login" className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${c.line} ${c.soft} ${c.body} hover:text-blue-500`}>
               <Search size={14} /> Find School
             </Link>
-            <button onClick={toggleTheme} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Switch to light theme" : "Switch to dark theme"} className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${c.line} ${c.soft} ${c.body} hover:text-blue-500`}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
             <Link to="/school-login" className={`rounded-xl px-3 py-2.5 text-xs font-bold transition hover:text-blue-500 ${c.body}`}>Sign in</Link>
             <Link to="/register-school/plans" className={`${primary} !rounded-xl !px-4 !py-3 !text-xs`}>Register school <ArrowUpRight size={14} /></Link>
           </div>
           <div className="flex items-center gap-2 md:hidden">
-            <button onClick={toggleTheme} aria-label="Toggle colour theme" className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.line} ${c.soft}`}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
             <button onClick={() => setMenuOpen((v) => !v)} aria-label="Toggle navigation" className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.line} ${c.soft}`}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
           </div>
         </div>
@@ -467,7 +459,7 @@ export default function LandingPage() {
           <div><Link to="/" className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#07131F]"><img src="/logo.svg" alt="" className="h-full w-full object-cover"/></span><b className={`text-lg font-black ${c.heading}`}>SchoolOS</b></Link><p className={`mt-4 max-w-xs text-xs leading-6 ${c.muted}`}>A connected school management platform for academic, administrative and financial workflows.</p></div>
           <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Platform</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><a href="#features">Modules</a><a href="#tour">Product tour</a><a href="#how-it-works">How it works</a><a href="#pricing">Pricing</a></div></div>
           <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Portals</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><Link to="/school-login">School login</Link><Link to="/portal">Parent & student portal</Link><Link to="/admin-login">Super Admin</Link></div></div>
-          <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Get started</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><Link to="/register-school/plans">Register school</Link><Link to="/school-login">Sign in</Link><button onClick={toggleTheme} className="flex items-center gap-2 text-left hover:text-blue-500">{dark?<Sun size={13}/>:<Moon size={13}/>} Switch to {dark?"light":"dark"} theme</button></div></div>
+          <div><b className={`text-[10px] font-extrabold uppercase tracking-[.16em] ${c.heading}`}>Get started</b><div className={`mt-4 flex flex-col gap-3 text-xs font-semibold ${c.muted}`}><Link to="/register-school/plans">Register school</Link><Link to="/school-login">Sign in</Link></div></div>
         </div>
         <div className={`mx-auto mt-10 flex max-w-[1440px] flex-col justify-between gap-3 border-t px-4 pt-6 text-[9px] font-semibold sm:flex-row sm:px-7 lg:px-10 ${c.line} ${c.faint}`}><span>© {new Date().getFullYear()} SchoolOS. All rights reserved.</span><span>Secure access · Role-based workflows · School-specific workspaces</span></div>
       </footer>

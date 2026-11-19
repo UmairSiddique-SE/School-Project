@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -12,30 +11,29 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light';
-    return window.localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
-  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem('theme', 'light');
+    } catch {
+      // ignore storage errors
+    }
+    const root = window.document.documentElement;
+    root.classList.remove('dark');
+    root.classList.add('light');
+    root.style.colorScheme = 'light';
+  }, []);
 
-  const setTheme = (nextTheme: Theme) => {
-    setThemeState(nextTheme);
-    window.localStorage.setItem('theme', nextTheme);
+  const setTheme = () => {
+    // Only light theme is supported across SchoolOS
   };
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
-
-  useEffect(() => {
-    // The public landing page owns its independent theme controls.
-    if (location.pathname === '/') return;
-    const root = window.document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-    root.style.colorScheme = theme;
-  }, [theme, location.pathname]);
+  const toggleTheme = () => {
+    // Only light theme is supported across SchoolOS
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme: 'light', setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  LockKeyhole, Mail, Moon, Phone, Save, ShieldCheck, Sun,
+  LockKeyhole, Mail, Phone, Save, ShieldCheck, Sun,
   UserRound, Building2, KeyRound, Sparkles, Check, CheckCircle2,
   Globe, MapPin, Upload, ExternalLink, School
 } from 'lucide-react';
@@ -370,19 +370,15 @@ export default function Settings() {
           <section className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-foreground">Display Theme</h3>
-                <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
-                  Currently using <span className="font-bold text-foreground capitalize">{theme}</span> mode.
+                <h3 className="font-bold text-sm text-slate-900">Display Theme</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Standard SchoolOS Light Theme (Clean &amp; High Contrast)
                 </p>
               </div>
 
-              <button
-                onClick={toggleTheme}
-                className="h-11 w-11 rounded-2xl border border-border bg-accent/40 hover:bg-accent flex items-center justify-center text-foreground transition-all active:scale-95 cursor-pointer"
-                title="Toggle Theme"
-              >
-                {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
-              </button>
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 border border-emerald-200">
+                <Sun size={15} /> Light Theme Active
+              </div>
             </div>
           </section>
         </div>
