@@ -47,7 +47,7 @@ export class MailService {
     return (
       this.configService.get<string>('SMTP_FROM') ||
       this.configService.get<string>('SMTP_USER') ||
-      'noreply@edusphere.app'
+      'noreply@schoolos.app'
     );
   }
 
@@ -75,16 +75,16 @@ export class MailService {
     try {
       await this.sendMail(
         to,
-        'EduSphere — Verify Your Email',
+        'SchoolOS — Verify Your Email',
         `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
-            <h2>EduSphere</h2>
+            <h2>SchoolOS</h2>
             <p>Your verification code is:</p>
             <h1>${otp}</h1>
             <p>This code expires in 15 minutes.</p>
           </div>
         `,
-        `Your EduSphere verification code is ${otp}. It expires in 15 minutes.`,
+        `Your SchoolOS verification code is ${otp}. It expires in 15 minutes.`,
       );
 
       return true;
@@ -106,10 +106,10 @@ export class MailService {
   ): Promise<void> {
     await this.sendMail(
       to,
-      'Verify your EduSphere email',
+      'Verify your SchoolOS email',
       `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
-          <h2>Welcome to EduSphere</h2>
+          <h2>Welcome to SchoolOS</h2>
           <p>Hello ${name},</p>
           <p>
             <a href="${verificationUrl}">
@@ -129,7 +129,7 @@ export class MailService {
   ): Promise<void> {
     await this.sendMail(
       to,
-      'Your EduSphere school has been approved',
+      'Your SchoolOS school has been approved',
       `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
           <h2>School Approved</h2>
@@ -165,7 +165,7 @@ export class MailService {
     try {
       await this.sendMail(
         to,
-        'EduSphere — Password Reset',
+        'SchoolOS — Password Reset',
         `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
             <h2>Password Reset</h2>
@@ -177,7 +177,7 @@ export class MailService {
             </p>
           </div>
         `,
-        `Reset your EduSphere password: ${resetUrl}`,
+        `Reset your SchoolOS password: ${resetUrl}`,
       );
 
       return true;
@@ -199,7 +199,7 @@ export class MailService {
   ): Promise<void> {
     await this.sendMail(
       to,
-      'Reset your EduSphere password',
+      'Reset your SchoolOS password',
       `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
           <h2>Password Reset</h2>
@@ -213,7 +213,7 @@ export class MailService {
           </p>
         </div>
       `,
-      `Hello ${name}, reset your EduSphere password: ${resetUrl}`,
+      `Hello ${name}, reset your SchoolOS password: ${resetUrl}`,
     );
   }
 
@@ -237,7 +237,7 @@ export class MailService {
     try {
       await this.sendMail(
         to,
-        `Your ${details.schoolName} EduSphere account is ready`,
+        `Your ${details.schoolName} SchoolOS account is ready`,
         `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
             <h2>School Approved</h2>

@@ -1,4 +1,4 @@
-/* EduSphere legacy premium student profile restoration */
+/* SchoolOS legacy premium student profile restoration */
 @media (min-width: 1024px) {
   body:has(section.relative.overflow-hidden.rounded-\[28px\]) div.space-y-5.pb-10:has(> section.relative.overflow-hidden.rounded-\[28px\]) {
     display: grid !important;

@@ -1,4 +1,4 @@
-# Multi-stage production build for EduSphere NestJS Backend
+# Multi-stage production build for SchoolOS NestJS Backend
 FROM node:20-alpine AS builder
 
 WORKDIR /app

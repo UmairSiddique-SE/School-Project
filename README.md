@@ -1,312 +1,184 @@
-# 🏫 EduSphere — SaaS School Management System
+# 🏫 SchoolOS — Commercial Multi-School SaaS ERP
 
-A full-featured, multi-tenant **SaaS School Management System** built with **NestJS** (backend) and **React + Vite** (frontend). Designed for Pakistani schools with support for super-admin platform management, school onboarding, student/teacher/staff management, fees, exams, attendance, transport, hostel, library, and more.
-
----
-
-## 📋 Table of Contents
-
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Quick Start (Development)](#-quick-start-development)
-- [Environment Variables](#-environment-variables)
-- [Database Setup](#-database-setup)
-- [Production Deployment](#-production-deployment)
-- [CI/CD Pipeline](#-cicd-pipeline)
-- [Super Admin Setup](#-super-admin-setup)
-- [API Documentation](#-api-documentation)
-- [License](#-license)
+> A production-ready, multi-tenant School Management ERP for Pakistan's private school sector.  
+> Built on NestJS (backend) + React/Vite (frontend) + PostgreSQL (Prisma ORM).
 
 ---
 
-## ✨ Features
+## Overview
 
-### Platform (Super Admin)
-- Multi-school management & onboarding
-- Subscription & billing management
-- Platform-wide announcements & alerts
-- Support ticket system
-- School activation/deactivation
+SchoolOS is a full-stack, cloud-hosted school management platform designed for real-world commercial deployment. It is **not** a university project or demo app.
 
-### School Administration
-- **People Management** — Teachers, Students, Staff, Parents (CRUD, bulk operations, promotions, transfers)
-- **Academics** — Classes, Sections, Subjects, Timetable, Academic Years
-- **Examinations** — Exam creation, result recording, grading, report cards
-- **Attendance** — Student & teacher daily attendance tracking
-- **Finance** — Fee structures, payments, receipts, payroll, accounting
-- **Communication** — Announcements, notifications, notice board, homework
-- **Transport** — Routes, vehicles, GPS tracking, student assignments
-- **Hostel** — Hostel rooms, student allocation, fee management
-- **Library** — Book catalog, issue/return tracking
-- **Buildings** — Building & room management
-- **Reports** — Comprehensive analytics & exportable reports
+**Business model:** One paid plan — **Professional at PKR 3,000/month**.
 
-### Portals
-- **Student Portal** — View grades, attendance, homework, fee status
-- **Parent Portal** — Monitor child's academic progress
-- **School Admin Portal** — Full school management dashboard
+### Who uses it
+- Private schools, academies, secondary colleges in Pakistan
+- Multi-campus groups (future roadmap)
 
----
-
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | NestJS 11, Prisma 5, PostgreSQL, Passport JWT |
-| **Frontend** | React 19, Vite 8, TypeScript, Tailwind CSS 4, Radix UI |
-| **Auth** | JWT (access + refresh tokens), bcryptjs |
-| **Email** | Nodemailer (Brevo SMTP) |
-| **Storage** | Cloudinary (image uploads) |
-| **Deployment** | Vercel (frontend), any Node.js host (backend) |
-| **CI/CD** | GitHub Actions |
+### Core modules
+| Module | Description |
+|--------|-------------|
+| **Dashboard** | Live school statistics, attendance rate, revenue, admissions |
+| **Students** | Admission, profiles, documents, B-Form tracking, lifecycle status |
+| **Teachers & Staff** | HR records, attendance, leave management |
+| **Classes & Sections** | Academic year, class, section, subject management |
+| **Attendance** | Class-wise live marking, absent alerts, SMS integration |
+| **Exams & Results** | Exam scheduling, marks entry, grading, result cards |
+| **Fees & Finance** | Fee structures, collections, receipts, concessions, account ledger |
+| **Timetable** | Period scheduling per class/section |
+| **Homework** | Teacher-assigned homework per subject/section |
+| **Notice Board** | School-wide announcements |
+| **Transport** | Routes and vehicle management |
+| **Library** | Book inventory and issue tracking |
+| **Parent Portal** | Read-only portal for parents to track their children |
+| **Student Portal** | LMS-style portal for students |
+| **Teacher Portal** | Attendance marking, homework submission, timetable view |
+| **Reports** | Exportable date-wise, class-wise reports |
+| **Super Admin** | Multi-school management, approval workflow, billing, audit logs |
 
 ---
 
-## 📂 Project Structure
+## Architecture
 
 ```
-schol system/
-├── backend/                 # NestJS API server
-│   ├── prisma/
-│   │   └── schema.prisma    # Database schema (PostgreSQL)
+SchoolOS/
+├── backend/          # NestJS API (TypeScript)
 │   ├── src/
-│   │   ├── modules/         # Feature modules (auth, people, exam, etc.)
-│   │   ├── common/          # Guards, decorators, filters
-│   │   └── main.ts          # Application entry point
-│   ├── scripts/             # DB validation, admin bootstrap
-│   ├── .env.example         # Environment template
-│   └── package.json
-├── frontend/                # React + Vite SPA
-│   ├── src/
-│   │   ├── pages/           # Page components
-│   │   ├── components/      # Reusable UI components
-│   │   ├── contexts/        # React contexts (auth, theme)
-│   │   └── lib/             # Utilities, API client
-│   ├── .env.example         # Environment template
-│   └── package.json
-├── .github/workflows/       # CI pipeline
-├── vercel.json              # Vercel deployment config
-└── README.md
+│   │   ├── modules/  # Feature modules (auth, people, finance, school, admin, ...)
+│   │   ├── common/   # Guards, decorators, middleware
+│   │   └── main.ts
+│   └── prisma/       # PostgreSQL schema + migrations
+│
+└── frontend/         # React 18 + Vite + TailwindCSS (TypeScript)
+    └── src/
+        ├── pages/    # Route-level page components
+        ├── components/
+        ├── context/  # Auth, Sync, Theme contexts
+        ├── layouts/
+        └── api/      # Axios API client
+```
+
+### Key architectural decisions
+- **Multi-tenant**: Every school's data is isolated by `schoolId`. Enforced server-side, not just frontend.
+- **RBAC**: Roles: `SUPER_ADMIN`, `SCHOOL_ADMIN`, `TEACHER`, `STUDENT`, `PARENT`. All enforced by guards.
+- **OTP Email Verification**: Cryptographically secure 6-digit OTP using Node.js `crypto.randomInt`. Expires in 30 minutes. Max 5 attempts before invalidation.
+- **JWT Auth**: Short-lived access tokens (15m) + rotating refresh tokens (7 days). Logout revokes immediately.
+- **Offline Sync**: IndexedDB-based offline queue with automatic background sync when internet is restored.
+
+---
+
+## Registration Flow (Public)
+
+```
+Landing Page → Professional Plan (PKR 3,000/month)
+  → School Registration Form
+  → Email OTP Verification
+  → Onboarding / Payment Submission
+  → Super Admin Review
+  → Approval → School ERP activated
+  → Rejection → School portal disabled
 ```
 
 ---
 
-## 🚀 Quick Start (Development)
+## Authentication & Security
 
-### Prerequisites
-- **Node.js** ≥ 20
-- **npm** ≥ 10
-- **PostgreSQL** ≥ 14 (or use [Neon](https://neon.tech) / [Supabase](https://supabase.com) for managed DB)
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/your-org/schol-system.git
-cd "schol system"
-
-# Install backend dependencies
-cd backend && npm ci
-
-# Install frontend dependencies
-cd ../frontend && npm ci
-```
-
-### 2. Configure Environment
-
-```bash
-# Backend — copy and fill in your values
-cp backend/.env.example backend/.env
-
-# Frontend — copy and fill in your values
-cp frontend/.env.example frontend/.env
-```
-
-### 3. Setup Database
-
-```bash
-cd backend
-
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations
-npx prisma migrate deploy
-
-# (Optional) Create super admin user
-npm run admin:ensure
-```
-
-### 4. Start Development Servers
-
-```bash
-# Terminal 1 — Backend (port 3000)
-cd backend && npm run start:dev
-
-# Terminal 2 — Frontend (port 5173)
-cd frontend && npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Passwords hashed with bcryptjs (12 rounds)
+- JWT access tokens (15 min expiry)
+- Refresh tokens stored in DB, revoked on logout/password change
+- OTP: 6-digit, cryptographic, 30-min TTL, max 5 attempts, 30-sec resend cooldown
+- School approval status checked at login and token refresh
+- Rejected/inactive schools cannot log in
+- Super Admin endpoints protected by role guard
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 ### Backend (`backend/.env`)
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ |
-| `JWT_SECRET` | Secret key for JWT signing (min 32 chars) | ✅ |
-| `JWT_EXPIRATION` | Access token expiry (e.g., `15m`) | ✅ |
-| `JWT_REFRESH_EXPIRATION` | Refresh token expiry (e.g., `7d`) | ✅ |
-| `PORT` | Server port (default: `3000`) | ❌ |
-| `NODE_ENV` | `development` or `production` | ❌ |
-| `CORS_ORIGINS` | Allowed frontend origins | ❌ |
-| `SMTP_HOST` | SMTP server hostname | ✅ |
-| `SMTP_PORT` | SMTP port (default: `587`) | ✅ |
-| `SMTP_USER` | SMTP username | ✅ |
-| `SMTP_PASS` | SMTP password / app key | ✅ |
-| `SMTP_FROM` | Sender email address | ✅ |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | ✅ |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | ✅ |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | ✅ |
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/schoolos?schema=public"
+JWT_SECRET="your-jwt-secret"
+JWT_EXPIRATION="15m"
+JWT_REFRESH_SECRET="your-refresh-secret"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM="SchoolOS <your-email@gmail.com>"
+CLOUDINARY_CLOUD_NAME="your-cloud"
+CLOUDINARY_API_KEY="your-key"
+CLOUDINARY_API_SECRET="your-secret"
+FRONTEND_URL="https://your-frontend-domain.com"
+ROOT_DOMAIN="schoolos.app"
+```
 
 ### Frontend (`frontend/.env`)
+```env
+VITE_API_URL="https://your-backend-domain.com"
+```
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_API_URL` | Backend API base URL | ✅ |
+> ⚠️ Never commit `.env` files. Use `.env.example` as reference only.
 
 ---
 
-## 🗄 Database Setup
+## Local Development
 
-### Using Neon (Recommended for production)
+### Prerequisites
+- Node.js 20+
+- PostgreSQL 15+
+- pnpm or npm
 
-1. Create a project at [neon.tech](https://neon.tech)
-2. Copy the connection string to `DATABASE_URL` in `backend/.env`
-3. Run migrations:
-
+### Backend
 ```bash
 cd backend
+npm install
+# Copy .env.example to .env and fill in values
 npx prisma migrate deploy
+npx prisma generate
+npm run start:dev
 ```
 
-### PostgreSQL Migration Guide
-
+### Frontend
 ```bash
-cd backend
-
-# Validate DB config matches production requirements
-npm run validate:production-db
-
-# If migrating from a fresh setup, create baseline
-npm run db:baseline:postgres
-
-# Apply all pending migrations
-npm run db:deploy
-
-# Generate updated Prisma client
-npx prisma generate
+cd frontend
+npm install
+# Copy .env.example to .env
+npm run dev
 ```
 
 ---
 
-## 🌐 Production Deployment
+## Production Deployment
 
-### Frontend (Vercel)
-
-1. Connect your GitHub repo to [Vercel](https://vercel.com)
-2. Vercel will auto-detect settings from `vercel.json`:
-   - **Build Command**: `cd frontend && npm ci && npm run build`
-   - **Output Directory**: `frontend/dist`
-3. Set `VITE_API_URL` in Vercel Environment Variables
-4. Deploy!
-
-### Backend (Railway / Render / VPS)
-
-1. Set all required environment variables (see table above)
-2. Ensure `NODE_ENV=production`
-3. Build and start:
-
+### Backend
+Deployed on Railway / Render / VPS with:
 ```bash
-cd backend
-npm ci
 npm run build
+npx prisma migrate deploy
 npm run start:prod
 ```
 
-4. The server starts at the configured `PORT` (default 3000)
-
-### Post-Deployment Checklist
-
-- [ ] `DATABASE_URL` points to managed PostgreSQL
-- [ ] `npm run validate:production-db` passes
-- [ ] `npx prisma migrate deploy` applied successfully
-- [ ] Super admin created via `npm run admin:ensure`
-- [ ] `JWT_SECRET` is a strong, unique random string (≥ 32 characters)
-- [ ] SMTP credentials configured and tested
-- [ ] Cloudinary credentials configured
-- [ ] `CORS_ORIGINS` set to your frontend domain
-- [ ] HTTPS enabled on both frontend and backend
-
----
-
-## ⚙ CI/CD Pipeline
-
-The project includes a GitHub Actions CI workflow (`.github/workflows/ci.yml`) that runs on every push and PR to `main` and `feat/super-admin-market-ready`:
-
-### Backend Pipeline
-1. ✅ `npm ci` — Install dependencies
-2. ✅ `npx prisma generate` — Generate Prisma client
-3. ✅ `npm run validate:production-db` — Validate DB config
-4. ✅ `npm run lint:check` — ESLint (zero errors required)
-5. ✅ `npm run build` — NestJS compilation
-6. ✅ `npm run test` — Jest unit tests
-
-### Frontend Pipeline
-1. ✅ `npm ci` — Install dependencies
-2. ✅ `npm run lint` — ESLint
-3. ✅ `npm run build` — TypeScript + Vite production build
-
----
-
-## 👤 Super Admin Setup
-
-After initial deployment, create the platform super admin:
-
+### Frontend
+Deployed on Vercel with:
 ```bash
-cd backend
-
-# Set bootstrap credentials in .env:
-# BOOTSTRAP_ADMIN_NAME="Platform Administrator"
-# BOOTSTRAP_ADMIN_EMAIL="admin@yourdomain.com"
-# BOOTSTRAP_ADMIN_PASSWORD="use-a-unique-password-of-at-least-12-characters"
-
-npm run admin:ensure
-```
-
-This creates a `SUPER_ADMIN` user who can:
-- Create and manage schools
-- Manage subscriptions
-- Send platform announcements
-- Handle support tickets
-
----
-
-## 📖 API Documentation
-
-When the backend is running, Swagger API docs are available at:
-
-```
-http://localhost:3000/api/docs
+npm run build
+# dist/ folder is served
 ```
 
 ---
 
-## 📄 License
+## Commercial Plan
 
-This project is **UNLICENSED** — proprietary software. All rights reserved.
+| Plan | Price | Features |
+|------|-------|----------|
+| **Professional** | PKR 3,000/month | Up to 500 students, unlimited staff, full reports, fee management, email+chat support |
 
+Super Admin manually reviews and approves each school registration after payment verification.
+
+---
+
+## License
+
+Proprietary — All rights reserved. Not for redistribution.

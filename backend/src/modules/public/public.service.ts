@@ -7,6 +7,7 @@ export class PublicService {
 
   async getPlans() {
     const plans = await this.prisma.platformPlan.findMany({
+      where: { planKey: 'PROFESSIONAL', isActive: true },
       orderBy: { price: 'asc' },
     });
     return plans.map((p) => ({
@@ -116,7 +117,7 @@ export class PublicService {
       ...school,
       adminContact: {
         name: adminUser?.name || 'School Administration',
-        email: adminUser?.email || school.email || 'admin@edusphere.pk',
+        email: adminUser?.email || school.email || 'admin@schoolos.app',
         phone: adminUser?.phone || school.phone || '+92 300 0000000',
         address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
       },
@@ -180,7 +181,7 @@ export class PublicService {
       ...school,
       adminContact: {
         name: adminUser?.name || 'School Administration',
-        email: adminUser?.email || school.email || 'admin@edusphere.pk',
+        email: adminUser?.email || school.email || 'admin@schoolos.app',
         phone: adminUser?.phone || school.phone || '+92 300 0000000',
         address: school.address || (school.city ? `${school.city}, ${school.country || 'Pakistan'}` : 'Campus Address'),
       },

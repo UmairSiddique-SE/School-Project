@@ -17,26 +17,26 @@ const DEFAULT_PLANS = [
 ];
 
 const DEFAULT_TEMPLATES = [
-  { name: 'Welcome Email', subject: 'Welcome to EduSphere!', category: 'Onboarding', body: 'Dear {schoolName},\n\nWelcome to EduSphere ERP! Your account has been successfully created.', variables: JSON.stringify(['{schoolName}', '{slug}', '{adminEmail}', '{tempPassword}']) },
+  { name: 'Welcome Email', subject: 'Welcome to SchoolOS!', category: 'Onboarding', body: 'Dear {schoolName},\n\nWelcome to SchoolOS ERP! Your account has been successfully created.', variables: JSON.stringify(['{schoolName}', '{slug}', '{adminEmail}', '{tempPassword}']) },
   { name: 'Plan Expiry Reminder', subject: 'Your plan expires in {days} days', category: 'Billing', body: 'Dear {schoolName},\n\nYour {plan} plan will expire on {expiryDate}.', variables: JSON.stringify(['{schoolName}', '{plan}', '{expiryDate}', '{days}']) },
   { name: 'Payment Confirmation', subject: 'Payment received — Thank you!', category: 'Billing', body: 'Dear {schoolName},\n\nWe have received your payment of {amount} for the {plan} plan.', variables: JSON.stringify(['{schoolName}', '{amount}', '{plan}', '{receiptNo}', '{expiryDate}']) },
-  { name: 'Account Suspended', subject: 'Your EduSphere account has been suspended', category: 'Account', body: 'Dear {schoolName},\n\nYour EduSphere account has been suspended due to {reason}.', variables: JSON.stringify(['{schoolName}', '{reason}']) },
-  { name: 'Password Reset', subject: 'Reset your EduSphere password', category: 'Security', body: 'Dear {name},\n\nUse this link to reset your password: {resetLink}', variables: JSON.stringify(['{name}', '{resetLink}']) },
+  { name: 'Account Suspended', subject: 'Your SchoolOS account has been suspended', category: 'Account', body: 'Dear {schoolName},\n\nYour SchoolOS account has been suspended due to {reason}.', variables: JSON.stringify(['{schoolName}', '{reason}']) },
+  { name: 'Password Reset', subject: 'Reset your SchoolOS password', category: 'Security', body: 'Dear {name},\n\nUse this link to reset your password: {resetLink}', variables: JSON.stringify(['{name}', '{resetLink}']) },
 ];
 
 const DEFAULT_SETTINGS = [
   { key: 'platform.registrations', value: 'true', type: 'toggle', label: 'Allow New Registrations', description: 'Allow new schools to register on the platform.', category: 'platform' },
   { key: 'platform.maintenance', value: 'false', type: 'toggle', label: 'Maintenance Mode', description: 'Put the platform in maintenance mode.', category: 'platform' },
-  { key: 'platform.name', value: 'EduSphere ERP', type: 'text', label: 'Platform Name', description: 'Platform display name.', category: 'platform' },
-  { key: 'platform.supportEmail', value: 'support@edusphere.app', type: 'text', label: 'Support Email', description: 'Support email address.', category: 'platform' },
+  { key: 'platform.name', value: 'SchoolOS ERP', type: 'text', label: 'Platform Name', description: 'Platform display name.', category: 'platform' },
+  { key: 'platform.supportEmail', value: 'support@schoolos.app', type: 'text', label: 'Support Email', description: 'Support email address.', category: 'platform' },
   { key: 'subscription.defaultPlan', value: 'FREE_TRIAL', type: 'select', label: 'Default Plan', description: 'Default registration plan.', category: 'subscription' },
   { key: 'subscription.trialDays', value: '3', type: 'number', label: 'Free Trial Duration (days)', description: 'Free trial duration.', category: 'subscription' },
   { key: 'subscription.expiryWarningDays', value: '7', type: 'number', label: 'Expiry Warning (days before)', description: 'Expiry warning window.', category: 'subscription' },
   { key: 'subscription.autoSuspend', value: 'false', type: 'toggle', label: 'Auto-Suspend on Expiry', description: 'Suspend schools after expiry.', category: 'subscription' },
   { key: 'email.smtpHost', value: 'smtp.gmail.com', type: 'text', label: 'SMTP Host', description: 'SMTP host.', category: 'email' },
   { key: 'email.smtpPort', value: '587', type: 'number', label: 'SMTP Port', description: 'SMTP port.', category: 'email' },
-  { key: 'email.smtpUser', value: 'noreply@edusphere.app', type: 'text', label: 'SMTP Username', description: 'SMTP username.', category: 'email' },
-  { key: 'email.fromName', value: 'EduSphere Platform', type: 'text', label: 'From Name', description: 'Email sender name.', category: 'email' },
+  { key: 'email.smtpUser', value: 'noreply@schoolos.app', type: 'text', label: 'SMTP Username', description: 'SMTP username.', category: 'email' },
+  { key: 'email.fromName', value: 'SchoolOS Platform', type: 'text', label: 'From Name', description: 'Email sender name.', category: 'email' },
 ];
 
 @Injectable()

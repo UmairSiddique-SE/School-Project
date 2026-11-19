@@ -1,4 +1,4 @@
-# EduSphere Production Database
+# SchoolOS Production Database
 
 ## Target
 

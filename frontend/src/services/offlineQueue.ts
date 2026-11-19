@@ -6,6 +6,8 @@
 
 export interface QueuedOperation {
   id: string;
+  /** Idempotency key — unique per mutation. Backend can use X-Idempotency-Key header to prevent duplicate processing. */
+  idempotencyKey: string;
   url: string;
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   payload: any;
@@ -13,6 +15,10 @@ export interface QueuedOperation {
   label: string;
   category: 'ATTENDANCE' | 'STUDENT' | 'FINANCE' | 'EXAMS' | 'OTHER';
   retryCount: number;
+  /** Max retries before marking as permanently failed */
+  maxRetries: number;
+  /** Whether this operation failed permanently after maxRetries */
+  permanentlyFailed?: boolean;
 }
 
 const DB_NAME = 'SchoolOS_Offline_DB';
@@ -44,14 +50,18 @@ function openDatabase(): Promise<IDBDatabase> {
  * Add a mutation operation to the offline sync queue
  */
 export async function queueOfflineOperation(
-  op: Omit<QueuedOperation, 'id' | 'timestamp' | 'retryCount'>
+  op: Omit<QueuedOperation, 'id' | 'idempotencyKey' | 'timestamp' | 'retryCount' | 'maxRetries'>
 ): Promise<QueuedOperation> {
   const db = await openDatabase();
   const fullOp: QueuedOperation = {
     ...op,
     id: `sync_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+    // Idempotency key ties this exact mutation to a stable identity so that
+    // if the same op is replayed on reconnect, the backend can deduplicate it.
+    idempotencyKey: `idem_${op.url.replace(/\//g, '_')}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     timestamp: Date.now(),
     retryCount: 0,
+    maxRetries: 3,
   };
 
   return new Promise((resolve, reject) => {

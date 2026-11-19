@@ -20,14 +20,14 @@ export class AppController {
       await this.prisma.$queryRaw`SELECT 1`;
       return {
         status: 'ok',
-        service: 'edusphere-api',
+        service: 'schoolos-api',
         database: 'ok',
         timestamp: new Date().toISOString(),
       };
     } catch {
       throw new ServiceUnavailableException({
         status: 'error',
-        service: 'edusphere-api',
+        service: 'schoolos-api',
         database: 'unavailable',
         timestamp: new Date().toISOString(),
       });

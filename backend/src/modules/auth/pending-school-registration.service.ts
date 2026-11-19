@@ -29,6 +29,7 @@ type PendingRow = {
   otp: string;
   otpExpiresAt: Date;
   verifiedAt: Date | null;
+  otpAttempts: number;
 };
 
 @Injectable()
@@ -67,7 +68,7 @@ export class PendingSchoolRegistrationService {
       SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt"
+             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "id" = ${id}
       LIMIT 1
@@ -144,7 +145,7 @@ export class PendingSchoolRegistrationService {
       SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt"
+             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "schoolSlug" = ${schoolSlug}
       LIMIT 1
@@ -182,6 +183,13 @@ export class PendingSchoolRegistrationService {
       throw new BadRequestException(
         'Email is already verified. Please continue with your registration.',
       );
+    }
+
+    // Enforce 30-second resend cooldown (server-side)
+    const lastUpdated = new Date((pending as any).updatedAt || 0);
+    const cooldownMs = 30 * 1000;
+    if (Date.now() - lastUpdated.getTime() < cooldownMs) {
+      throw new BadRequestException('Please wait before requesting another OTP.');
     }
 
     const otp = String(randomInt(100000, 1000000));
@@ -228,6 +236,25 @@ export class PendingSchoolRegistrationService {
     if (!/^\d{6}$/.test(submittedOtp)) {
       throw new BadRequestException('OTP must be a 6-digit code.');
     }
+
+    // Brute-force guard: max 5 attempts per OTP session
+    const attempts = (pending.otpAttempts || 0) + 1;
+    if (attempts > 5) {
+      // Invalidate this OTP session so attacker cannot keep trying
+      await this.prisma.$executeRaw`
+        UPDATE "PendingSchoolRegistration"
+        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP
+        WHERE "id" = ${id}
+      `;
+      throw new BadRequestException(
+        'Too many incorrect OTP attempts. Please resend a new code.',
+      );
+    }
+    await this.prisma.$executeRaw`
+      UPDATE "PendingSchoolRegistration"
+      SET "otpAttempts" = ${attempts}, "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "id" = ${id}
+    `;
 
     if (storedOtp !== submittedOtp) {
       throw new BadRequestException(

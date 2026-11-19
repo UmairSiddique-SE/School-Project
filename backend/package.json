@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.1",
-  "description": "EduSphere SaaS school management API",
+  "description": "SchoolOS SaaS school management API",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

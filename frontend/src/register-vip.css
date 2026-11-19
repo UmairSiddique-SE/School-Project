@@ -1,4 +1,4 @@
-/* EduSphere premium school-registration experience. Scoped to the registration form so dashboard/login styles remain untouched. */
+/* SchoolOS premium school-registration experience. Scoped to the registration form so dashboard/login styles remain untouched. */
 body:has(input[type="file"]):has(select) {
   background:
     radial-gradient(circle at 12% 12%, rgba(124,58,237,.22), transparent 28%),

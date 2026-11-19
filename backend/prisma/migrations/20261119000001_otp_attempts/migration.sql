@@ -1,0 +1,1 @@
+ALTER TABLE "PendingSchoolRegistration" ADD COLUMN IF NOT EXISTS "otpAttempts" INTEGER NOT NULL DEFAULT 0;

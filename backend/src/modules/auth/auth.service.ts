@@ -52,7 +52,7 @@ export class AuthService {
         where: { email: adminEmail },
       });
       if (existingUser) throw new ConflictException('Email already registered');
-      const planKey = dto.requestedPlan || 'FREE_TRIAL';
+      const planKey = 'PROFESSIONAL'; // Public registration always uses PROFESSIONAL
       const plan = await this.prisma.platformPlan.findUnique({
         where: { planKey },
       });
@@ -560,7 +560,7 @@ return { school, user };
           },
           adminContact: {
             name: adminUser?.name || 'School Administration',
-            email: adminUser?.email || schoolDetails?.email || 'admin@edusphere.pk',
+            email: adminUser?.email || schoolDetails?.email || 'admin@schoolos.app',
             phone: adminUser?.phone || schoolDetails?.phone || '+92 300 0000000',
             address: schoolDetails?.address || (schoolDetails?.city ? `${schoolDetails.city}, Pakistan` : 'Campus Address'),
           },

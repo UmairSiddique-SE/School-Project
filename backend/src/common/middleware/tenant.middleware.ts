@@ -20,7 +20,7 @@ type TenantRequest = Request & {
  */
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
-  private readonly rootDomain = process.env.ROOT_DOMAIN || 'edusphere.com';
+  private readonly rootDomain = process.env.ROOT_DOMAIN || 'schoolos.app';
 
   use(req: TenantRequest, _res: Response, next: NextFunction) {
     const host = req.hostname || req.headers.host || '';

@@ -1,4 +1,4 @@
-/* Final VIP polish layer for EduSphere registration. Visual-only; no registration logic is changed. */
+/* Final VIP polish layer for SchoolOS registration. Visual-only; no registration logic is changed. */
 body:has(input[type="file"]):has(select) .register-card,
 body:has(input[type="file"]):has(select) aside {
   position: relative;
