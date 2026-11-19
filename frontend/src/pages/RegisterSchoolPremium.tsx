@@ -371,10 +371,10 @@ export default function RegisterSchoolPremium() {
 
           {/* ── Right: form card ─────────────────────────────────────────── */}
           <section className="school-reg-form w-full min-w-0">
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 dark:border-white/10 dark:bg-[#0f1824] dark:shadow-cyan-950/30">
+            <div className="school-reg-card mx-auto w-full max-w-[780px] rounded-3xl border shadow-xl">
 
               {/* Card header */}
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-white/[.07] sm:px-8">
+              <div className="school-reg-card-header flex items-center justify-between border-b px-5 py-4 sm:px-6">
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[.2em] text-cyan-500 dark:text-cyan-400">
                     {step === 'details' ? 'Create workspace' : 'Email verification'}
@@ -398,7 +398,7 @@ export default function RegisterSchoolPremium() {
               </div>
 
               {/* Card body */}
-              <div className="px-6 py-6 sm:px-8 sm:py-7">
+              <div className="school-reg-card-body px-5 py-5 sm:px-6 sm:py-6">
                 {step === 'details' ? (
                   <DetailsForm
                     form={form}
@@ -458,7 +458,7 @@ function DetailsForm({
     v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70);
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-5">
 
       {/* Plan badge */}
       <div className="flex items-center justify-between rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3.5 dark:border-cyan-400/15 dark:bg-cyan-400/[.06]">
@@ -487,7 +487,7 @@ function DetailsForm({
           {/* Logo upload */}
           <label className="group cursor-pointer">
             <span className="mb-2 block text-xs font-bold text-slate-500 dark:text-slate-400">Logo</span>
-            <div className="flex h-[86px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 transition group-hover:border-cyan-400 dark:border-white/10 dark:bg-black/20 dark:group-hover:border-cyan-400/60">
+            <div className="flex h-[78px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 transition group-hover:border-cyan-400 dark:border-white/10 dark:bg-black/20 dark:group-hover:border-cyan-400/60">
               {form.logoUrl
                 ? <img src={form.logoUrl} alt="School logo" className="h-full w-full object-cover" />
                 : logoBusy
@@ -595,7 +595,7 @@ function DetailsForm({
                 value={form.adminPassword}
                 onChange={e => update('adminPassword', e.target.value)}
                 placeholder="Create secure password"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-11 text-sm text-slate-900 outline-none placeholder:text-slate-300 transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-cyan-400/50 dark:focus:ring-cyan-400/5"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-11 text-sm text-slate-900 outline-none placeholder:text-slate-300 transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-cyan-400/50 dark:focus:ring-cyan-400/5"
               />
               <button
                 type="button"
@@ -670,7 +670,7 @@ function OtpForm({
           value={otp}
           onChange={e => onOtpChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
           placeholder="000000"
-          className="h-16 w-full rounded-2xl border border-slate-200 bg-white text-center text-3xl font-black tracking-[.45em] text-slate-900 outline-none placeholder:text-slate-200 transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-slate-700 dark:focus:border-cyan-400/50 dark:focus:ring-cyan-400/5"
+          className="h-14 w-full rounded-2xl border border-slate-200 bg-white text-center text-3xl font-black tracking-[.45em] text-slate-900 outline-none placeholder:text-slate-200 transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-slate-700 dark:focus:border-cyan-400/50 dark:focus:ring-cyan-400/5"
         />
       </div>
 
