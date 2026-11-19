@@ -289,19 +289,8 @@ export default function RegisterSchoolPremium() {
      Render
   ══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#060b12] dark:to-[#0d1520]">
-
-      {/* ── Background decoration ───────────────────────────────────────── */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 overflow-hidden"
-      >
-        <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-cyan-400/10 blur-[120px]" />
-        <div className="absolute top-1/2 -right-24 h-[400px] w-[400px] rounded-full bg-indigo-500/8 blur-[100px]" />
-        <div className="absolute -bottom-24 left-1/3 h-[350px] w-[350px] rounded-full bg-teal-400/8 blur-[100px]" />
-      </div>
-
-      {/* ── Wrapper ─────────────────────────────────────────────────────── */}
+    <div className="min-h-screen bg-white dark:bg-[#080d14]">
+{/* ── Wrapper ─────────────────────────────────────────────────────── */}
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
         {/* ── Header ────────────────────────────────────────────────────── */}
@@ -324,10 +313,10 @@ export default function RegisterSchoolPremium() {
         </header>
 
         {/* ── Main grid ─────────────────────────────────────────────────── */}
-        <main className="grid flex-1 items-start gap-10 py-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16 lg:py-14">
+        <main className="grid flex-1 items-start gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:py-10">
 
           {/* ── Left hero panel ─────────────────────────────────────────── */}
-          <aside className="hidden lg:flex lg:flex-col lg:justify-center">
+          <aside className="flex flex-col justify-center">
             {/* Badge */}
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-300">
               <ShieldCheck size={13} />
