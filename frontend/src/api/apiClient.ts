@@ -10,28 +10,25 @@ const getStoredRefreshToken = () => typeof window === "undefined" ? null : windo
 const normalizePublicPlans = (data: unknown) => {
   if (!Array.isArray(data)) return data;
   const fallbackPrices: Record<string, number> = {
-    FREE_TRIAL: 0,
     PROFESSIONAL: 3000,
-    PREMIUM: 5000,
   };
   const fallbackPeriods: Record<string, string> = {
-    FREE_TRIAL: "trial",
     PROFESSIONAL: "per month",
-    PREMIUM: "per month",
   };
-  return data.map((plan: any) => {
-    const planKey = String(plan?.planKey || "").toUpperCase();
-    if (!(planKey in fallbackPrices)) return plan;
-    const rawPrice = Number(plan?.price);
-    return {
-      ...plan,
-      planKey,
-      price: Number.isFinite(rawPrice) && (planKey === "FREE_TRIAL" || rawPrice > 0)
-        ? rawPrice
-        : fallbackPrices[planKey],
-      period: String(plan?.period || "").trim() || fallbackPeriods[planKey],
-    };
-  });
+  return data
+    .map((plan: any) => {
+      const planKey = String(plan?.planKey || "").toUpperCase();
+      if (planKey !== "PROFESSIONAL") return null;
+      const rawPrice = Number(plan?.price);
+      return {
+        ...plan,
+        planKey: "PROFESSIONAL",
+        name: "Professional",
+        price: Number.isFinite(rawPrice) && rawPrice > 0 ? rawPrice : 3000,
+        period: String(plan?.period || "").trim() || "per month",
+      };
+    })
+    .filter(Boolean);
 };
 
 apiClient.interceptors.request.use((config) => {
