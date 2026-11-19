@@ -11,9 +11,11 @@ import { PendingSchoolRegistrationService } from './pending-school-registration.
 import { SchoolRegistrationService } from './school-registration.service';
 import { MailModule } from '../mail/mail.module';
 import { MediaModule } from '../media/media.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
