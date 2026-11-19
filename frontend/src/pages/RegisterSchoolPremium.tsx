@@ -34,7 +34,7 @@ export default function RegisterSchoolPremium() {
   const [verificationUserId, setVerificationUserId] = useState(''); const [otp, setOtp] = useState(''); const [otpBusy, setOtpBusy] = useState(false); const [resendBusy, setResendBusy] = useState(false); const [cooldown, setCooldown] = useState(0); const [saving, setSaving] = useState(false); const [showPassword, setShowPassword] = useState(false); const [logoBusy, setLogoBusy] = useState(false); const [plans, setPlans] = useState<Plan[]>([]);
   const [planKey, setPlanKey] = useState('PROFESSIONAL');
   const update = (key: keyof FormState, value: string) => setForm((p) => ({ ...p, [key]: value }));
-  const selectedPlan = plans.find((p) => p.planKey === planKey); const slugPreview = form.schoolSlug || 'your-school'; const schoolPublicUrl = `${window.location.origin}/school/${slugPreview}`; const schoolLoginUrl = `${window.location.origin}/school-login/${slugPreview}`; const progress = step === 'details' ? 50 : 100;
+  const selectedPlan = plans.find((p) => p.planKey === planKey); const slugPreview = form.schoolSlug || 'your-school'; const schoolPublicUrl = `${window.location.origin}/school/${slugPreview}`;; const progress = step === 'details' ? 50 : 100;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search); const savedPlan = 'PROFESSIONAL';
