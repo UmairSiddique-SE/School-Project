@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, fix/remove-dummy-data, feat/super-admin-market-ready]
   pull_request:
-    branches: [main, feat/super-admin-market-ready]
 
 permissions:
   contents: read
@@ -43,4 +41,5 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npm run test
       - run: npm run build

@@ -18,13 +18,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly prisma: PrismaService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
-    if (!secret && configService.get<string>('NODE_ENV') === 'production') {
-      throw new Error('JWT_SECRET is required in production.');
+    if (!secret) {
+      throw new Error('JWT_SECRET is required.');
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: secret || 'development-only-secret',
+      secretOrKey: secret,
     });
   }
 

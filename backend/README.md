@@ -1,3 +1,5 @@
+> Project-specific setup, migrations, and environment variables are documented in the [root README](../README.md) and `backend/.env.example`.
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>

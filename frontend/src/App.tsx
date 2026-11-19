@@ -42,6 +42,8 @@ const SchoolPlanSelection = lazy(() => import("@/pages/SchoolPlanSelection"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const SchoolPublicLanding = lazy(() => import("@/pages/SchoolPublicLanding"));
+const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
 
 const PageLoader = () => <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Loading...</div>;
 const NotFound = () => <div className="min-h-screen bg-background flex items-center justify-center text-center px-6"><div><div className="text-8xl font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent mb-4">404</div><h2 className="text-2xl font-bold text-foreground mb-3">Page Not Found</h2><p className="text-muted-foreground mb-8">The page you're looking for doesn't exist or has been moved.</p><a href="/" className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white font-semibold">Go Home</a></div></div>;
@@ -80,6 +82,8 @@ export default function App() {
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminLogin />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/onboarding" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}><Onboarding /></ProtectedRoute>} />
                 <Route path="/super-admin" element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]}><SuperAdminDashboard /></ProtectedRoute>} />
                 <Route path="/:schoolSlug/parent-portal" element={<ProtectedRoute allowedRoles={PARENT_ONLY}><ParentPortal /></ProtectedRoute>} />

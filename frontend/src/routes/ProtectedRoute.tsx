@@ -33,6 +33,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
     return <Navigate to="/unauthorized" replace />;
   }
 
+  const pathSlug = location.pathname.split("/").filter(Boolean)[0];
+  const isPlatformPath = pathSlug === "super-admin" || pathSlug === "onboarding";
+  if (user?.schoolSlug && pathSlug && !isPlatformPath && pathSlug !== user.schoolSlug) {
+    return <Navigate to={location.pathname.replace(/^\/[^/]+/, `/${user.schoolSlug}`)} replace />;
+  }
+
   const onboardingLocked =
     user?.role === "SCHOOL_ADMIN" &&
     user.activationStatus &&
