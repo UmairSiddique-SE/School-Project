@@ -33,6 +33,7 @@ type PendingRow = {
   otpLastSentAt: Date | null;
   verifiedAt: Date | null;
   otpAttempts: number;
+  updatedAt: Date;
 };
 
 @Injectable()
