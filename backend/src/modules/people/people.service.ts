@@ -506,6 +506,39 @@ export class PeopleService {
     });
   }
 
+  async deleteParent(id: string, schoolId: string) {
+    const parent = await this.prisma.parent.findFirst({
+      where: { id, schoolId, deletedAt: null },
+      select: { id: true, userId: true },
+    });
+    if (!parent) {
+      throw new NotFoundException('Parent record not found');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Unlink student relations
+      await tx.studentParent.deleteMany({
+        where: { parentId: parent.id },
+      });
+
+      // Soft delete parent record
+      await tx.parent.update({
+        where: { id: parent.id },
+        data: { deletedAt: new Date() },
+      });
+
+      // Soft delete parent user account if exists
+      if (parent.userId) {
+        await tx.user.update({
+          where: { id: parent.userId },
+          data: { isActive: false },
+        });
+      }
+
+      return { success: true, message: 'Parent record removed successfully' };
+    });
+  }
+
   async getStaff(schoolId: string) {
     const [staffMembers, teachers] = await Promise.all([
       this.prisma.staff.findMany({ where: { schoolId, deletedAt: null }, orderBy: { name: 'asc' } }),

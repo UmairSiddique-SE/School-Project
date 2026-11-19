@@ -328,6 +328,12 @@ export class PeopleController {
   @Roles('SCHOOL_ADMIN')
   createParent(@CurrentUser() user: any, @Body() dto: any) { return this.peopleService.createParent(user.schoolId, dto); }
 
+  @Delete('parents/:id')
+  @Roles('SCHOOL_ADMIN')
+  deleteParent(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.peopleService.deleteParent(id, user.schoolId);
+  }
+
   @Get('staff')
   @Roles('SCHOOL_ADMIN')
   getStaff(@CurrentUser() user: any) { return this.peopleService.getStaff(user.schoolId); }

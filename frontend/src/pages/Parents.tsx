@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, Loader2, Mail, Phone, Plus, RefreshCw, Search,
   UserRound, UsersRound, X, User, Heart, Link, Users,
-  Check, ArrowUpRight, AlertCircle, GraduationCap, CheckCircle
+  Check, ArrowUpRight, AlertCircle, GraduationCap, CheckCircle, Trash2
 } from 'lucide-react';
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
@@ -72,6 +72,18 @@ export default function Parents() {
 
   const linkedChildren = parents.reduce((sum, p) => sum + (p.students?.length || 0), 0);
   const withChildren = parents.filter((p) => (p.students?.length || 0) > 0).length;
+
+  const deleteParent = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to remove ${name}'s account? This will unlink associated students and disable login.`)) return;
+    try {
+      await apiClient.delete(`/people/parents/${id}`);
+      toast.success(`Parent account for "${name}" removed successfully`);
+      await load();
+      if (selected?.id === id) setSelected(null);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to remove parent account');
+    }
+  };
 
   const createParent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,7 +288,22 @@ export default function Parents() {
                     {p.relation || 'Parent'}
                   </span>
                 </div>
-                <Eye size={16} className="text-slate-600 group-hover:text-primary transition-colors shrink-0" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span title="View details" className="p-1.5 text-slate-400 hover:text-primary transition-colors">
+                    <Eye size={16} />
+                  </span>
+                  <button
+                    type="button"
+                    title="Delete parent account"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void deleteParent(p.id, p.name);
+                    }}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Contact */}
@@ -345,10 +372,21 @@ export default function Parents() {
                     {selected.relation || 'Parent'} • {selected.email || 'No email'}
                   </p>
                 </div>
-                <button onClick={() => setSelected(null)}
-                  className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
-                  <X size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    title="Delete parent account"
+                    onClick={() => void deleteParent(selected.id, selected.name)}
+                    className="h-10 px-3.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 hover:bg-rose-500 hover:text-white transition-all text-xs font-bold"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                  <button onClick={() => setSelected(null)}
+                    className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-white transition-all">
+                    <X size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Info Grid */}
