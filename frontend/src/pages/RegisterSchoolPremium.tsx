@@ -504,7 +504,7 @@ function DetailsForm({
           />
           <Field
             label="School portal URL (subdomain)" icon={<Globe2 size={15} />}
-            name="school-portal-slug" autoComplete="off"
+            name="school-portal-slug" autoComplete="new-password"
             value={form.schoolSlug}
             onChange={v => update('schoolSlug', slugify(v))}
             placeholder="umair-model-school"
@@ -552,7 +552,7 @@ function DetailsForm({
         <div className="mt-4">
           <Field
             label="School physical address" icon={<MapPin size={15} />}
-            name="school-address" autoComplete="street-address"
+            name="school-address" autoComplete="off"
             value={form.address}
             onChange={v => update('address', v)}
             placeholder="Street, area, landmark"
