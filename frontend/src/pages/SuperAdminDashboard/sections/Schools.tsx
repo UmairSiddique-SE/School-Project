@@ -1393,6 +1393,8 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
+                    name="school-edit-address"
+                    autoComplete="off"
                     value={form.address}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))
