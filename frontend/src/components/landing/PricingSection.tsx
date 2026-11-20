@@ -64,10 +64,10 @@ export const PricingSection: React.FC = () => {
             Subscription Plans
           </span>
           <h2 className="text-3xl sm:text-5xl font-black text-white mt-3 leading-tight">
-            A plan that grows with your institution.
+            One plan. Unlimited students. Room to grow.
           </h2>
           <p className="mt-4 text-sm sm:text-base text-[#94A3B8]">
-            Choose the subscription tier configured for your school. Live rates fetched directly from our platform database.
+            One transparent SchoolOS subscription. Unlimited student enrollment with live pricing from our platform database.
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export const PricingSection: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 max-w-2xl mx-auto gap-6 items-stretch">
             {plans.map((plan, idx) => {
               const style = styles[plan.planKey] || styles.PROFESSIONAL;
               const Icon = style.icon;
