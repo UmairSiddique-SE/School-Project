@@ -344,19 +344,28 @@ export default function Schools() {
       }
     }
     if (type === "edit" && school) {
+      let editSchool = school;
+      try {
+        const response = await apiClient.get(`/schools/${school.id}`);
+        editSchool = response.data || school;
+        setSelected(editSchool);
+      } catch {
+        toast.error("Could not load administrator details. Please retry.");
+        return;
+      }
       setForm({
-        name: school.name || "",
-        slug: school.slug || "",
-        province: school.province || "Punjab",
-        district: school.city || "Lahore",
-        tehsil: school.tehsil || "",
-        address: school.address || "",
-        adminName: school.adminName || "",
-        adminPhone: school.phone || "",
-        adminEmail: school.email || "",
+        name: editSchool.name || "",
+        slug: editSchool.slug || "",
+        province: editSchool.province || "Punjab",
+        district: editSchool.city || "Lahore",
+        tehsil: editSchool.tehsil || "",
+        address: editSchool.address || "",
+        adminName: editSchool.users?.[0]?.name || editSchool.adminName || "",
+        adminPhone: editSchool.users?.[0]?.phone || "",
+        adminEmail: editSchool.users?.[0]?.email || "",
         adminPassword: "",
-        plan: school.subscription?.plan || "PROFESSIONAL",
-        amount: school.subscription?.amount?.toString() || "0",
+        plan: editSchool.subscription?.plan || "PROFESSIONAL",
+        amount: editSchool.subscription?.amount?.toString() || "3000",
       });
     } else if (type === "create") {
       setForm({ ...emptyForm });
@@ -400,8 +409,9 @@ export default function Schools() {
     try {
       await apiClient.put(`/schools/${selected.id}`, {
         name: form.name,
-        email: form.adminEmail,
-        phone: form.adminPhone,
+        adminEmail: form.adminEmail,
+        adminName: form.adminName,
+        adminPhone: form.adminPhone,
         address: form.address,
         city: form.district || form.province,
       });
