@@ -324,31 +324,26 @@ export default function RegisterSchoolPremium() {
   return (
     <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-clip text-slate-900 dark:text-white">
       <div className="school-reg-shell relative mx-auto w-full max-w-[1540px]">
-        <header className="school-reg-header relative z-20 flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
-          <Link to="/" className="flex items-center gap-3.5">
-            <span className="schoolos-brand-mark grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg shadow-blue-500/25"><Sparkles size={21} /></span>
-            <span className="leading-none">
-              <span className="block text-[24px] font-black tracking-[-.04em] text-[#102b73] dark:text-white sm:text-[28px]">School<span className="text-blue-600">OS</span></span>
-              <span className="mt-1 block text-[9px] font-black uppercase tracking-[.34em] text-slate-500 dark:text-slate-400">School ERP</span>
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-8 md:flex">
-            <Link to="/" className="school-reg-nav-active text-sm font-black text-[#12347f] dark:text-cyan-300">Home</Link>
-            <a href="#features" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">Features</a>
-            <a href="#pricing" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">Pricing</a>
-            <a href="#about" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">About</a>
-          </nav>
-          <Link to="/school-login" className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-5 py-2.5 text-sm font-black text-[#12347f] shadow-[0_10px_30px_rgba(30,64,175,.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[.08] dark:text-white">
-            <LockKeyhole size={15} /> School Login
-          </Link>
-        </header>
+        <section className="school-reg-hero relative overflow-hidden px-5 pb-10 sm:px-8 lg:px-12 lg:pb-16">
+          <div className="school-reg-hero-visual absolute inset-x-0 top-0 -z-10 h-[560px]" />
+          <header className="school-reg-header relative z-20 flex items-center justify-between py-4 sm:py-5">
+            <Link to="/" className="flex items-center gap-3.5">
+              <span className="schoolos-brand-mark grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg shadow-blue-500/25"><Sparkles size={21} /></span>
+              <span className="leading-none">
+                <span className="block text-[24px] font-black tracking-[-.04em] text-[#102b73] dark:text-white sm:text-[28px]">School<span className="text-blue-600">OS</span></span>
+                <span className="mt-1 block text-[9px] font-black uppercase tracking-[.34em] text-slate-500 dark:text-slate-400">School ERP</span>
+              </span>
+            </Link>
+            <Link to="/school-login" className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-5 py-2.5 text-sm font-black text-[#12347f] shadow-[0_10px_30px_rgba(30,64,175,.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[.08] dark:text-white">
+              <LockKeyhole size={15} /> School Login
+            </Link>
+          </header>
 
-        <section className="school-reg-hero relative overflow-hidden px-5 pb-10 pt-3 sm:px-8 lg:px-12 lg:pb-16 lg:pt-8">
-          <div className="school-reg-sky absolute inset-0 -z-10" />
+          <div className="school-reg-sky absolute inset-0 -z-20" />
           <div className="school-reg-orb school-reg-orb-one absolute -left-20 top-20 -z-10 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
           <div className="school-reg-orb school-reg-orb-two absolute right-0 top-0 -z-10 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,.95fr)_minmax(0,1.05fr)] xl:gap-12">
+          <div className="grid items-start gap-8 pt-5 lg:grid-cols-[minmax(0,.95fr)_minmax(0,1.05fr)] xl:gap-12 lg:pt-10">
             <div className="relative z-10 max-w-2xl pt-2 lg:pt-8">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-4 py-2 text-xs font-black text-emerald-700 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                 <ShieldCheck size={15} /> Secure Onboarding
@@ -381,17 +376,6 @@ export default function RegisterSchoolPremium() {
               </div>
             </div>
 
-            <div className="school-reg-campus relative mx-auto block w-full max-w-[560px] lg:ml-auto">
-              <div className="school-reg-campus-glow absolute -inset-4 rounded-[38px] bg-cyan-400/20 blur-3xl" />
-              <img
-                src="/schoolos-campus.svg"
-                alt="SchoolOS school campus"
-                className="relative z-10 block h-auto w-full rounded-[32px] border border-white/70 object-cover shadow-[0_24px_70px_rgba(37,99,235,.18)]"
-              />
-              <div className="relative z-20 mx-auto -mt-4 w-fit rounded-full border border-white/80 bg-white/85 px-4 py-2 text-[10px] font-black text-blue-700 shadow-lg backdrop-blur dark:border-white/10 dark:bg-slate-900/80 dark:text-cyan-300">
-                Smart school management
-              </div>
-            </div>
           </div>
 
           <div className="school-reg-workspace relative z-20 mx-auto mt-8 w-full max-w-[1280px] lg:mt-10">
