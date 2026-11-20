@@ -1180,7 +1180,9 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Block C, Model Town, Lahore"
+                    name="school-address"
+                    autoComplete="street-address"
+                    placeholder="Street, area, landmark (not URL or email)"
                     value={form.address}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))
@@ -1214,6 +1216,8 @@ export default function Schools() {
                       </label>
                       <input
                         type="email"
+                        name="school-admin-email"
+                        autoComplete="email"
                         required
                         placeholder="admin@school.com"
                         value={form.adminEmail}
@@ -1361,6 +1365,8 @@ export default function Schools() {
                   </label>
                   <input
                     type="email"
+                    name="school-admin-email"
+                    autoComplete="email"
                     value={form.adminEmail}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, adminEmail: e.target.value }))
