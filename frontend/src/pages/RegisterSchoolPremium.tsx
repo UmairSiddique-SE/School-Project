@@ -213,10 +213,10 @@ export default function RegisterSchoolPremium() {
     if (!form.schoolName.trim()) return 'Enter your school name.';
     if (form.schoolCode.trim() && !/^[A-Za-z0-9]{2,10}$/.test(form.schoolCode.trim())) return 'School code must be 2-10 letters or numbers.';
     if (!form.schoolSlug.trim() || form.schoolSlug.length < 3)
-      return 'Choose a valid school website address.';
-    if (slugStatus !== 'available') return 'Choose an available school website address.';
+      return 'School name must generate a valid school profile link. Please check the school name.';
+    if (slugStatus !== 'available') return 'This school name cannot be assigned a unique profile link yet. Try a more specific school name.';
     if (!/^[a-z0-9-]+$/.test(form.schoolSlug))
-      return 'School website address: lowercase letters, numbers and hyphens only.';
+      return 'Please check the school name and try again.';
     if (!form.logoUrl) return 'School logo is required.';
     if (!form.province || !form.city.trim()) return 'Select province and enter city.';
     if (!form.address.trim()) return 'Enter school address.';
@@ -352,7 +352,7 @@ export default function RegisterSchoolPremium() {
                 Launch your<br />school on <span className="schoolos-gradient-text">SchoolOS.</span>
               </h1>
               <p className="mt-6 max-w-xl text-base font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
-                Create your school workspace, verify your email, then complete payment. Your data stays private until email verification is completed.
+                Enter your school details and administrator information. Verify your email to continue with your Professional plan application.
               </p>
               <div id="features" className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
                 {[
@@ -486,7 +486,7 @@ function DetailsForm({
           </label>
         </div>
 
-        {/* School code + website + type */}
+        {/* Optional school code and institution type */}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field
             label="School short code" icon={<Building2 size={15} />}
@@ -501,7 +501,7 @@ function DetailsForm({
           />
         </div>
         <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-          Short code is optional. Leave it empty and SchoolOS will generate one automatically from the school name.
+          Short code is optional. Leave it blank and SchoolOS will assign one automatically.
         </p>
 
       </Section>
