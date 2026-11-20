@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import {
   ArrowRight, BadgeCheck, Building2, Check, ChevronLeft,
-  CheckCircle2, CircleAlert, Eye, EyeOff, Globe2, ImagePlus,
+  CheckCircle2, Eye, EyeOff, Globe2, ImagePlus,
   Loader2, LockKeyhole, Mail, MapPin, Phone, RefreshCw,
   ShieldCheck, Sparkles, UserRound,
 } from 'lucide-react';
