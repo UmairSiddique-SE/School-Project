@@ -360,7 +360,6 @@ export default function RegisterSchoolPremium() {
                 Create your school workspace, verify your email, then complete payment. Your data stays private until email verification is completed.
               </p>
               <div id="features" className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
-                [].map(() => null)
                 {[
                   'Professional multi-school workspace',
                   'Secure email verification with OTP',
