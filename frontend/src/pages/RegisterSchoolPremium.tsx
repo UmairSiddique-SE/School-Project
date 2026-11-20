@@ -322,148 +322,130 @@ export default function RegisterSchoolPremium() {
      Render
   ══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-clip bg-white text-slate-900 dark:bg-[#080d14] dark:text-white">
-{/* ── Wrapper ─────────────────────────────────────────────────────── */}
-      <div className="relative mx-auto flex min-h-screen max-w-[1600px] flex-col px-4 py-5 sm:px-6 lg:px-10 2xl:px-14">
-
-        {/* ── Header ────────────────────────────────────────────────────── */}
-        <div className="school-reg-header flex items-center justify-between border-b border-slate-200 pb-5 dark:border-white/10">
-          <Link to="/" className="flex items-center gap-3 group">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 text-slate-950 shadow-lg shadow-cyan-500/20 transition group-hover:shadow-cyan-500/40">
-              <Sparkles size={19} />
-            </span>
-            <span>
-              <span className="block text-base font-black tracking-tight text-slate-900 dark:text-white">SchoolOS</span>
-              <span className="block text-[10px] font-bold uppercase tracking-[.22em] text-slate-400">School ERP</span>
+    <div className="school-registration-page relative isolate min-h-screen w-full overflow-x-clip text-slate-900 dark:text-white">
+      <div className="school-reg-shell relative mx-auto w-full max-w-[1540px]">
+        <header className="school-reg-header relative z-20 flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
+          <Link to="/" className="flex items-center gap-3.5">
+            <span className="schoolos-brand-mark grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg shadow-blue-500/25"><Sparkles size={21} /></span>
+            <span className="leading-none">
+              <span className="block text-[24px] font-black tracking-[-.04em] text-[#102b73] dark:text-white sm:text-[28px]">School<span className="text-blue-600">OS</span></span>
+              <span className="mt-1 block text-[9px] font-black uppercase tracking-[.34em] text-slate-500 dark:text-slate-400">School ERP</span>
             </span>
           </Link>
-          <Link
-            to="/school-login"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/[.04] dark:text-slate-300 dark:hover:bg-white/[.08]"
-          >
-            School Login
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link to="/" className="school-reg-nav-active text-sm font-black text-[#12347f] dark:text-cyan-300">Home</Link>
+            <a href="#features" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">Features</a>
+            <a href="#pricing" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">Pricing</a>
+            <a href="#about" className="text-sm font-bold text-slate-600 transition hover:text-blue-600 dark:text-slate-300">About</a>
+          </nav>
+          <Link to="/school-login" className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-5 py-2.5 text-sm font-black text-[#12347f] shadow-[0_10px_30px_rgba(30,64,175,.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[.08] dark:text-white">
+            <LockKeyhole size={15} /> School Login
           </Link>
-        </div>
+        </header>
 
-        {/* ── Main grid ─────────────────────────────────────────────────── */}
-        <div className="school-reg-layout grid flex-1 items-start gap-8 py-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start lg:gap-10 xl:gap-14 lg:py-8">
+        <section className="school-reg-hero relative overflow-hidden px-5 pb-10 pt-3 sm:px-8 lg:px-12 lg:pb-16 lg:pt-8">
+          <div className="school-reg-sky absolute inset-0 -z-10" />
+          <div className="school-reg-orb school-reg-orb-one absolute -left-20 top-20 -z-10 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
+          <div className="school-reg-orb school-reg-orb-two absolute right-0 top-0 -z-10 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
-          {/* ── Left hero panel ─────────────────────────────────────────── */}
-          <section className="school-reg-intro flex flex-col justify-center">
-            {/* Badge */}
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-300">
-              <ShieldCheck size={13} />
-              Secure onboarding
-            </div>
-
-            {/* Headline */}
-            <h1 className="max-w-md text-5xl font-black leading-[1.04] tracking-[-0.04em] text-slate-900 dark:text-white xl:text-6xl">
-              Launch your<br />school on{' '}
-              <span className="bg-gradient-to-r from-cyan-500 via-teal-500 to-indigo-500 bg-clip-text text-transparent dark:from-cyan-300 dark:via-teal-300 dark:to-indigo-300">
-                SchoolOS.
-              </span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="mt-5 max-w-sm text-base leading-7 text-slate-500 dark:text-slate-400">
-              Create your school workspace, verify your email, then complete payment.
-              Your data stays private until email verification is completed.
-            </p>
-
-            {/* Feature list */}
-            <ul className="mt-8 space-y-3.5">
-              {[
-                'Professional multi-school workspace',
-                'Secure email verification with OTP',
-                'Free public school website included',
-                'Super Admin approval after payment',
-              ].map(item => (
-                <li key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
-                    <Check size={14} />
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-
-            {/* Plan badge */}
-            <div className="mt-10 inline-flex w-fit items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-md dark:border-white/10 dark:bg-white/[.04]">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-cyan-400 to-teal-400 text-slate-950 shadow shadow-cyan-400/30">
-                <BadgeCheck size={20} />
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,.95fr)_minmax(0,1.05fr)] xl:gap-12">
+            <div className="relative z-10 max-w-2xl pt-2 lg:pt-8">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-4 py-2 text-xs font-black text-emerald-700 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+                <ShieldCheck size={15} /> Secure Onboarding
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Active Plan</p>
-                <p className="mt-0.5 font-black text-slate-900 dark:text-white">
-                  Professional —{' '}
-                  <span className="text-cyan-600 dark:text-cyan-300">PKR 3,000<span className="font-semibold text-slate-400">/mo</span></span>
-                </p>
+              <h1 className="max-w-3xl text-[clamp(2.65rem,6vw,5.8rem)] font-black leading-[.92] tracking-[-.055em] text-[#102b73] dark:text-white">
+                Launch your<br />school on <span className="schoolos-gradient-text">SchoolOS.</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
+                Create your school workspace, verify your email, then complete payment. Your data stays private until email verification is completed.
+              </p>
+              <div id="features" className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
+                [].map(() => null)
+                {[
+                  'Professional multi-school workspace',
+                  'Secure email verification with OTP',
+                  'Free public school website included',
+                  'Super Admin approval after payment',
+                ].map(item => (
+                  <div key={item} className="flex items-start gap-3">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-cyan-100 text-cyan-600 dark:bg-cyan-400/15 dark:text-cyan-300"><Check size={15} strokeWidth={3} /></span>
+                    <span className="pt-0.5 text-sm font-bold leading-5 text-[#203b79] dark:text-slate-200">{item}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-          </section>
-
-          {/* ── Right: form card ─────────────────────────────────────────── */}
-          <section className="school-reg-form w-full min-w-0">
-            <div className="school-reg-card mx-auto w-full max-w-[780px] rounded-3xl border shadow-xl">
-
-              {/* Card header */}
-              <div className="school-reg-card-header flex items-center justify-between border-b px-5 py-4 sm:px-6">
+              <div id="pricing" className="mt-8 inline-flex items-center gap-4 rounded-[22px] border border-white/80 bg-white/90 px-5 py-4 shadow-[0_18px_45px_rgba(30,64,175,.13)] backdrop-blur dark:border-white/10 dark:bg-slate-900/60">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-amber-300 to-yellow-500 text-white shadow-lg shadow-amber-400/25"><BadgeCheck size={22} /></div>
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[.2em] text-cyan-500 dark:text-cyan-400">
-                    {step === 'details' ? 'Create workspace' : 'Email verification'}
-                  </p>
-                  <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                    {step === 'details' ? 'Register your school' : 'Verify your email'}
-                  </h2>
+                  <p className="text-[10px] font-black uppercase tracking-[.18em] text-slate-500 dark:text-slate-400">Active Plan</p>
+                  <p className="mt-0.5 text-base font-black text-[#12347f] dark:text-white">Professional <span className="mx-2 text-slate-300">|</span><span className="text-blue-600 dark:text-cyan-300">PKR 3,000<span className="text-xs font-bold text-slate-400">/mo</span></span></p>
                 </div>
-                {/* Step progress */}
-                <div className="text-right">
-                  <p className="text-[11px] font-bold text-slate-400">
-                    STEP {step === 'details' ? '01' : '02'} / 02
-                  </p>
-                  <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
+              </div>
+            </div>
+
+            <div className="school-reg-campus relative mx-auto hidden w-full max-w-[690px] lg:block">
+              <div className="school-reg-campus-glow absolute inset-8 rounded-full bg-blue-400/20 blur-3xl" />
+              <div className="relative min-h-[420px] overflow-hidden rounded-[48px] border border-white/70 bg-gradient-to-b from-sky-200 via-white to-blue-100 shadow-[0_30px_90px_rgba(37,99,235,.18)] dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950">
+                <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/50 to-transparent dark:from-cyan-300/10" />
+                <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-blue-600/35 via-cyan-400/15 to-transparent" />
+                <div className="absolute bottom-10 left-1/2 h-6 w-[88%] -translate-x-1/2 rounded-[50%] bg-blue-500/20 blur-md" />
+                <div className="absolute bottom-16 left-1/2 w-[74%] -translate-x-1/2 rounded-t-[28px] bg-white shadow-[0_20px_50px_rgba(30,64,175,.15)] dark:bg-slate-800">
+                  <div className="h-8 rounded-t-[28px] bg-gradient-to-r from-blue-700 to-cyan-500" />
+                  <div className="grid grid-cols-3 gap-3 px-7 pb-7 pt-5">
+                    <div className="h-20 rounded-xl bg-sky-100 dark:bg-slate-700" />
+                    <div className="relative h-24 rounded-t-full bg-gradient-to-b from-blue-600 to-blue-800"><div className="absolute inset-x-3 bottom-0 h-14 rounded-t-xl bg-white/20" /></div>
+                    <div className="h-20 rounded-xl bg-sky-100 dark:bg-slate-700" />
+                  </div>
+                  <div className="mx-auto mb-6 h-16 w-44 rounded-t-2xl bg-gradient-to-b from-slate-200 to-white shadow-inner dark:from-slate-700 dark:to-slate-600" />
+                </div>
+                <div className="absolute bottom-5 left-10 h-28 w-7 rounded-t-full bg-green-500/80"><span className="absolute -left-7 -top-7 h-16 w-20 rounded-full bg-green-400/70" /></div>
+                <div className="absolute bottom-5 right-12 h-32 w-8 rounded-t-full bg-green-500/80"><span className="absolute -left-8 -top-8 h-20 w-24 rounded-full bg-green-400/70" /></div>
+                <div className="absolute bottom-6 left-[16%] h-20 w-10 rounded-t-[18px] bg-gradient-to-b from-blue-700 to-blue-950 shadow-xl"><div className="absolute -left-5 -top-7 h-9 w-20 rounded-full bg-blue-600/80" /></div>
+                <div className="absolute bottom-5 right-[18%] h-24 w-9 rounded-t-[18px] bg-gradient-to-b from-slate-700 to-slate-950 shadow-xl"><div className="absolute -left-6 -top-7 h-10 w-20 rounded-full bg-slate-600/80" /></div>
+                <div className="absolute right-7 top-7 rounded-full border border-white/70 bg-white/75 px-3 py-1.5 text-[10px] font-black text-blue-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70 dark:text-cyan-300">Smart school management</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="school-reg-workspace relative z-20 mx-auto mt-8 w-full max-w-[1280px] lg:mt-10">
+            <div className="school-reg-card overflow-hidden rounded-[28px] border bg-white/95 shadow-[0_30px_80px_rgba(30,64,175,.16)] backdrop-blur-xl dark:bg-slate-950/90">
+              <div className="school-reg-card-header flex items-center justify-between border-b px-5 py-5 sm:px-8">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/25"><Building2 size={22} /></div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-600 dark:text-cyan-400">Create Workspace</p>
+                    <h2 className="mt-0.5 text-xl font-black text-[#102b73] dark:text-white sm:text-2xl">Start your SchoolOS journey in just a few steps.</h2>
+                  </div>
+                </div>
+                <div className="hidden text-right sm:block">
+                  <p className="text-[10px] font-black text-slate-500">STEP {step === 'details' ? '01' : '02'} / 02</p>
+                  <div className="mt-2 h-2 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-all duration-500" style={{ width: step === 'details' ? '50%' : '100%' }} />
                   </div>
                 </div>
               </div>
-
-              {/* Card body */}
-              <div className="school-reg-card-body px-5 py-5 sm:px-6 sm:py-6">
+              <div className="school-reg-card-body px-5 py-5 sm:px-8 sm:py-7">
                 {step === 'details' ? (
-                  <DetailsForm
-                    form={form}
-                    update={update}
-                    slugStatus={slugStatus}
-                    schoolPublicUrl={schoolPublicUrl}
-                    selectedPlan={selectedPlan}
-                    saving={saving}
-                    logoBusy={logoBusy}
-                    showPassword={showPassword}
-                    passwordHint={passwordHint}
-                    onLogoChange={handleLogo}
-                    onTogglePassword={() => setShowPassword(v => !v)}
-                    onSubmit={submitRegistration}
-                  />
+                  <DetailsForm form={form} update={update} slugStatus={slugStatus} schoolPublicUrl={schoolPublicUrl} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
                 ) : (
-                  <OtpForm
-                    email={form.adminEmail}
-                    otp={otp}
-                    otpBusy={otpBusy}
-                    resendBusy={resendBusy}
-                    cooldown={cooldown}
-                    onOtpChange={setOtp}
-                    onSubmit={verifyOtp}
-                    onResend={resendOtp}
-                    onBack={() => { setStep('details'); setOtp(''); }}
-                  />
+                  <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { setStep('details'); setOtp(''); }} />
                 )}
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
+
+        <footer id="about" className="school-reg-footer relative z-10 flex flex-col gap-4 px-5 py-7 text-white sm:flex-row sm:items-center sm:justify-between sm:px-10">
+          <Link to="/" className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-cyan-200"><Sparkles size={20} /></span>
+            <span><span className="block text-lg font-black">School<span className="text-cyan-300">OS</span></span><span className="block text-[9px] font-bold uppercase tracking-[.25em] text-white/60">School ERP</span></span>
+          </Link>
+          <div className="text-sm font-bold text-white/80">Smarter School Management <span className="hidden sm:inline">for a Better Tomorrow.</span></div>
+          <div className="flex items-center gap-2">
+            <a href="#features" aria-label="Features" className="grid h-10 w-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><Globe2 size={17} /></a>
+            <a href="#about" aria-label="About" className="grid h-10 w-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><ShieldCheck size={17} /></a>
+            <Link to="/school-login" aria-label="School login" className="grid h-10 w-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><LockKeyhole size={17} /></Link>
+          </div>
+        </footer>
       </div>
     </div>
   );
