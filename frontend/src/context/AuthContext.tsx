@@ -83,8 +83,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const nextRefreshToken = localStorage.getItem("auth_refresh_token");
           if (active && nextAccessToken) setToken(nextAccessToken);
           if (active) setRefreshToken(nextRefreshToken);
-        } catch {
-          // Preserve the stored session; ProtectedRoute handles access decisions.
+        } catch (error: any) {
+          // Do not keep rendering a stale local session when the server has
+          // rejected the current account/token. This prevents a locked/expired
+          // school from showing the dashboard while every protected API call
+          // fails with 401/403.
+          const status = error?.response?.status;
+          if (status === 401 || status === 403) {
+            clearSession();
+          }
         }
       } catch {
         clearSession();
