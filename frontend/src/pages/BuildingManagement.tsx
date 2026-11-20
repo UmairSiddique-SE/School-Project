@@ -864,6 +864,11 @@ export default function BuildingManagement() {
                       </label>
                       <input
                         type="text"
+                        name="building-street-address"
+                        autoComplete="new-password"
+                        readOnly
+                        onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                        onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                         placeholder="Street Address, Plot No, Block..."
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}

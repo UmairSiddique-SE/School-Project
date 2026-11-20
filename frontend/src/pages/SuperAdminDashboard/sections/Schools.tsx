@@ -1181,7 +1181,10 @@ export default function Schools() {
                   <input
                     type="text"
                     name="school-address"
-                    autoComplete="street-address"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                     placeholder="Street, area, landmark (not URL or email)"
                     value={form.address}
                     onChange={(e) =>
@@ -1393,6 +1396,11 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
+                    name="school-edit-address"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                     value={form.address}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))

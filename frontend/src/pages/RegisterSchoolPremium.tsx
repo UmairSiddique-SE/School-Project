@@ -504,7 +504,7 @@ function DetailsForm({
           />
           <Field
             label="School portal URL (subdomain)" icon={<Globe2 size={15} />}
-            name="school-portal-slug" autoComplete="off"
+            name="school-portal-slug" autoComplete="new-password" suppressAutofill
             value={form.schoolSlug}
             onChange={v => update('schoolSlug', slugify(v))}
             placeholder="umair-model-school"
@@ -552,7 +552,7 @@ function DetailsForm({
         <div className="mt-4">
           <Field
             label="School physical address" icon={<MapPin size={15} />}
-            name="school-address" autoComplete="street-address"
+            name="school-address" autoComplete="new-password" suppressAutofill
             value={form.address}
             onChange={v => update('address', v)}
             placeholder="Street, area, landmark"
@@ -731,10 +731,10 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Field({
-  label, icon, value, onChange, placeholder, type = 'text', name, autoComplete,
+  label, icon, value, onChange, placeholder, type = 'text', name, autoComplete, suppressAutofill = false,
 }: {
   label: string; icon: ReactNode; value: string;
-  onChange: (v: string) => void; placeholder: string; type?: string; name?: string; autoComplete?: string;
+  onChange: (v: string) => void; placeholder: string; type?: string; name?: string; autoComplete?: string; suppressAutofill?: boolean;
 }) {
   return (
     <label className="block">
@@ -745,6 +745,9 @@ function Field({
         type={type}
         name={name}
         autoComplete={autoComplete}
+        readOnly={suppressAutofill}
+        onFocus={suppressAutofill ? e => e.currentTarget.removeAttribute("readonly") : undefined}
+        onBlur={suppressAutofill ? e => e.currentTarget.setAttribute("readonly", "readonly") : undefined}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
