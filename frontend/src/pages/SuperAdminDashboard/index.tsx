@@ -67,7 +67,8 @@ const navGroups: NavGroup[] = [
 const allNavItems = navGroups.flatMap((group) => group.items);
 const sectionComponents: Record<SectionId, React.ComponentType> = {
   overview: () => <div className="space-y-7"><Overview /><PaymentAccountingPanel /></div>,
-  database: DatabaseManagement,\n  "school-requests": SchoolRequests,
+  database: DatabaseManagement,
+  "school-requests": SchoolRequests,
   schools: Schools,
   plans: Plans,
   payments: Payments,
