@@ -193,8 +193,13 @@ export class PeopleService {
     if (user) {
       await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
     } else {
+      const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { name: true, code: true } });
+      const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
+      const firstName = teacher.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+      const seq = teacher.employeeNo.replace(/\D/g, '').slice(-3) || '001';
+      const loginId = roleLoginId(`${firstName}${seq}`, 'teacher', schoolCode);
       await this.prisma.user.create({
-        data: { name: teacher.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
+        data: { name: teacher.name, email, loginId, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
       });
     }
     return { success: true, message: 'Teacher password updated successfully', loginId: email, password: password.trim() };
@@ -508,8 +513,13 @@ export class PeopleService {
     if (user) {
       await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
     } else {
+      const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { name: true, code: true } });
+      const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
+      const firstName = student.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'student';
+      const seq = student.admissionNo.replace(/\D/g, '').slice(-4) || '001';
+      const loginId = roleLoginId(`${firstName}${seq}`, 'student', schoolCode);
       await this.prisma.user.create({
-        data: { name: student.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true },
+        data: { name: student.name, email, loginId, passwordHash, role: 'STUDENT', schoolId, emailVerified: true },
       });
     }
     return { success: true, message: 'Student password updated successfully', loginId: user?.loginId || email, password: password.trim() };
