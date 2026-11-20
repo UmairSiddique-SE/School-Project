@@ -122,6 +122,9 @@ export class AdminController {
   @Get('reports/:id/download')
   async downloadReport(@Param('id') id: string, @Res() res: any) { const csv = await this.adminService.getReportCsv(id); res.setHeader('Content-Type', 'text/csv'); res.setHeader('Content-Disposition', `attachment; filename=${id}-${Date.now()}.csv`); return res.send(csv); }
   @Get('users') getUsers(@Query('search') search?: string, @Query('role') role?: string) { return this.adminService.getPlatformUsers(search, role); }
+  @Get('database/entities') getDatabaseEntities() { return this.adminService.getDatabaseEntities(); }
+  @Get('database/:entity') getDatabaseRecords(@Param('entity') entity: string, @Query('schoolId') schoolId?: string, @Query('search') search?: string, @Query('page') page?: string, @Query('limit') limit?: string) { return this.adminService.getDatabaseRecords(entity, schoolId, search, page ? Number(page) : undefined, limit ? Number(limit) : undefined); }
+  @Delete('database/:entity/:id') deleteDatabaseRecord(@Param('entity') entity: string, @Param('id') id: string, @Query('permanent') permanent?: string, @CurrentUser() user?: any) { return this.adminService.deleteDatabaseRecord(entity, id, permanent === 'true', user?.id); }
   @Patch('users/:id/toggle-status') toggleUserStatus(@Param('id') id: string, @CurrentUser() user: any) { if (!user?.id) throw new BadRequestException('Authenticated Super Admin context is required.'); return this.superAdminSecurityService.toggleUserActive(id, user.id); }
   @Get('support') getSupportTickets() { return this.adminService.getSupportTickets(); }
   @Patch('support/:id') updateSupportTicket(@Param('id') id: string, @Body() dto: { status: string; reply?: string }) { return this.adminService.updateSupportTicket(id, dto.status, dto.reply); }
