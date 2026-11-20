@@ -73,7 +73,7 @@ export default function SchoolPlanSelection() {
             <div className="bg-gradient-to-r from-[#3563EB] to-[#6653D9] px-7 py-7 text-white sm:px-9">
               <span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest">SchoolOS subscription</span>
               <h2 className="mt-5 text-2xl font-black">{plan.name}</h2>
-              <p className="mt-1 text-sm text-blue-100">Everything your school needs to get started.</p>
+              <p className="mt-1 text-sm text-blue-100">Unlimited student enrollment, unlimited staff and the complete SchoolOS workspace.</p>
               <div className="mt-6 flex items-end gap-2">
                 <span className="text-4xl font-black sm:text-5xl">PKR {plan.price.toLocaleString()}</span>
                 <span className="pb-1 text-sm font-semibold text-blue-100">/ month</span>
