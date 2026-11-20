@@ -90,6 +90,7 @@ const emptyForm = {
   district: "Lahore",
   tehsil: "City",
   address: "",
+  schoolEmail: "",
   adminName: "",
   adminPhone: "",
   adminEmail: "",
@@ -351,9 +352,10 @@ export default function Schools() {
         district: school.city || "Lahore",
         tehsil: school.tehsil || "",
         address: school.address || "",
+        schoolEmail: school.email || "",
         adminName: school.adminName || "",
         adminPhone: school.phone || "",
-        adminEmail: school.email || "",
+        adminEmail: school.users?.[0]?.email || "",
         adminPassword: "",
         plan: school.subscription?.plan || "PROFESSIONAL",
         amount: school.subscription?.amount?.toString() || "0",
@@ -380,6 +382,7 @@ export default function Schools() {
     try {
       await apiClient.post("/schools", {
         ...form,
+        email: form.schoolEmail.trim().toLowerCase() || null,
         amount: parseFloat(form.amount) || 0,
         city: form.district || form.province,
       });
@@ -400,7 +403,7 @@ export default function Schools() {
     try {
       await apiClient.put(`/schools/${selected.id}`, {
         name: form.name,
-        email: form.adminEmail,
+        email: form.schoolEmail.trim().toLowerCase() || null,
         phone: form.adminPhone,
         address: form.address,
         city: form.district || form.province,
@@ -1347,13 +1350,13 @@ export default function Schools() {
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground">
-                    Official Email
+                    School Official Email
                   </label>
                   <input
                     type="email"
-                    value={form.adminEmail}
+                    value={form.schoolEmail}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, adminEmail: e.target.value }))
+                      setForm((p) => ({ ...p, schoolEmail: e.target.value }))
                     }
                     className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
