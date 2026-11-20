@@ -74,7 +74,7 @@ export class RegisterSchoolDto {
 
   /** Public SchoolOS registration currently supports one paid plan only. */
   @IsOptional()
-  @IsIn(['PROFESSIONAL'])
+  @IsIn(['FREE_TRIAL', 'PROFESSIONAL', 'PREMIUM'])
   requestedPlan?: string;
 }
 
