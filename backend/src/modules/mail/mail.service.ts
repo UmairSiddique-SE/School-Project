@@ -50,11 +50,13 @@ export class MailService {
   }
 
   private getSender(): string {
-    return (
+    const configured =
       this.configService.get<string>('SMTP_FROM') ||
       this.configService.get<string>('SMTP_USER') ||
-      'noreply@schoolos.app'
-    );
+      'noreply@schoolos.app';
+    // Accept both a plain address and Nodemailer "Display Name <address>" format.
+    const address = configured.match(/<([^>]+)>/);
+    return (address?.[1] || configured).trim();
   }
 
   private getSenderName(): string {
