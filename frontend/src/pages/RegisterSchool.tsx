@@ -105,7 +105,7 @@ export default function RegisterSchool(){
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
-    const planKey=sessionStorage.getItem("edusphere_registration_plan")||params.get("plan")||"FREE_TRIAL";
+    const planKey="PROFESSIONAL";
     setRegistrationPlan(planKey);
     apiClient.get<PublicPlan[]>("/public/plans").then(response=>{
       const plan=(response.data||[]).find(item=>item.planKey===planKey);
