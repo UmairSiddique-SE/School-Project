@@ -381,28 +381,17 @@ export default function RegisterSchoolPremium() {
               </div>
             </div>
 
-            <div className="school-reg-campus relative mx-auto block w-full max-w-[690px]">
-              <div className="school-reg-campus-glow absolute inset-8 rounded-full bg-blue-400/20 blur-3xl" />
-              <img src="/schoolos-campus.svg" alt="SchoolOS school campus" className="relative z-10 block h-auto w-full rounded-[48px] object-cover shadow-[0_30px_90px_rgba(37,99,235,.18)]" />
-              <div className="relative min-h-[420px] overflow-hidden rounded-[48px] border border-white/70 bg-gradient-to-b from-sky-200 via-white to-blue-100 shadow-[0_30px_90px_rgba(37,99,235,.18)] dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950">
-                <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/50 to-transparent dark:from-cyan-300/10" />
-                <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-blue-600/35 via-cyan-400/15 to-transparent" />
-                <div className="absolute bottom-10 left-1/2 h-6 w-[88%] -translate-x-1/2 rounded-[50%] bg-blue-500/20 blur-md" />
-                <div className="absolute bottom-16 left-1/2 w-[74%] -translate-x-1/2 rounded-t-[28px] bg-white shadow-[0_20px_50px_rgba(30,64,175,.15)] dark:bg-slate-800">
-                  <div className="h-8 rounded-t-[28px] bg-gradient-to-r from-blue-700 to-cyan-500" />
-                  <div className="grid grid-cols-3 gap-3 px-7 pb-7 pt-5">
-                    <div className="h-20 rounded-xl bg-sky-100 dark:bg-slate-700" />
-                    <div className="relative h-24 rounded-t-full bg-gradient-to-b from-blue-600 to-blue-800"><div className="absolute inset-x-3 bottom-0 h-14 rounded-t-xl bg-white/20" /></div>
-                    <div className="h-20 rounded-xl bg-sky-100 dark:bg-slate-700" />
-                  </div>
-                  <div className="mx-auto mb-6 h-16 w-44 rounded-t-2xl bg-gradient-to-b from-slate-200 to-white shadow-inner dark:from-slate-700 dark:to-slate-600" />
-                </div>
-                <div className="absolute bottom-5 left-10 h-28 w-7 rounded-t-full bg-green-500/80"><span className="absolute -left-7 -top-7 h-16 w-20 rounded-full bg-green-400/70" /></div>
-                <div className="absolute bottom-5 right-12 h-32 w-8 rounded-t-full bg-green-500/80"><span className="absolute -left-8 -top-8 h-20 w-24 rounded-full bg-green-400/70" /></div>
-                <div className="absolute bottom-6 left-[16%] h-20 w-10 rounded-t-[18px] bg-gradient-to-b from-blue-700 to-blue-950 shadow-xl"><div className="absolute -left-5 -top-7 h-9 w-20 rounded-full bg-blue-600/80" /></div>
-                <div className="absolute bottom-5 right-[18%] h-24 w-9 rounded-t-[18px] bg-gradient-to-b from-slate-700 to-slate-950 shadow-xl"><div className="absolute -left-6 -top-7 h-10 w-20 rounded-full bg-slate-600/80" /></div>
-                <div className="absolute right-7 top-7 rounded-full border border-white/70 bg-white/75 px-3 py-1.5 text-[10px] font-black text-blue-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70 dark:text-cyan-300">Smart school management</div>
+            <div className="school-reg-campus relative mx-auto block w-full max-w-[560px] lg:ml-auto">
+              <div className="school-reg-campus-glow absolute -inset-4 rounded-[38px] bg-cyan-400/20 blur-3xl" />
+              <img
+                src="/schoolos-campus.svg"
+                alt="SchoolOS school campus"
+                className="relative z-10 block h-auto w-full rounded-[32px] border border-white/70 object-cover shadow-[0_24px_70px_rgba(37,99,235,.18)]"
+              />
+              <div className="relative z-20 mx-auto -mt-4 w-fit rounded-full border border-white/80 bg-white/85 px-4 py-2 text-[10px] font-black text-blue-700 shadow-lg backdrop-blur dark:border-white/10 dark:bg-slate-900/80 dark:text-cyan-300">
+                Smart school management
               </div>
+            </div>
             </div>
           </div>
 
