@@ -88,7 +88,7 @@ export class PendingSchoolRegistrationService {
     const adminEmail = dto.adminEmail.trim().toLowerCase();
     // Never trust the client-selected plan for public registration.
     // SchoolOS currently exposes Professional as the single public subscription.
-    const planKey = 'PROFESSIONAL';
+    const planKey = dto.requestedPlan || 'FREE_TRIAL';
 
     const plan = await this.prisma.platformPlan.findUnique({
       where: { planKey },
