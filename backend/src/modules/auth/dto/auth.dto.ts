@@ -39,6 +39,10 @@ export class RegisterSchoolDto {
   @IsIn(['SCHOOL', 'COLLEGE', 'ACADEMY'])
   schoolType: string;
 
+  @IsOptional()
+  @IsString()
+  schoolCode?: string;
+
   @IsString()
   @IsNotEmpty()
   logoUrl: string;
