@@ -25,7 +25,7 @@ export class StudentBulkController {
   async importStudents(@CurrentUser() user: any, @Body() dto: any) {
     const rows = Array.isArray(dto?.students) ? dto.students : [];
     if (!rows.length) throw new BadRequestException('At least one student record is required');
-    if (rows.length > 500) throw new BadRequestException('A maximum of 500 students can be imported at once');
+    if (rows.length > 500) throw new BadRequestException('Each import batch can contain up to 500 students. Import additional students in further batches');
 
     const results: any[] = [];
     for (const row of rows) {
