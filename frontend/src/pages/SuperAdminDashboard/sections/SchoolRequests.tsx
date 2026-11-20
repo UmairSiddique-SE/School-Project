@@ -283,7 +283,8 @@ export default function SchoolRequests() {
                       </InfoCard>
                       <InfoCard icon={<UserRound size={17} />} title="Administrator">
                         <Row label="Name" value={selected.request.ownerName} />
-                        <Row label="Email" value={selected.request.email} />
+                        <Row label="Administrator email" value={selected.admins?.[0]?.email || selected.request.email} />
+                        <Row label="SchoolOS login ID" value={selected.admins?.[0]?.loginId || 'Not generated'} mono />
                         <Row label="Phone" value={selected.request.phone || selected.school?.phone || 'N/A'} />
                         <Row label="Email Verified" value={selected.admins?.[0]?.emailVerified ? 'Yes' : 'No'} good={selected.admins?.[0]?.emailVerified} />
                         <Row label="Account Status" value={selected.admins?.[0]?.isActive ? 'Active' : 'Pending / Inactive'} />
