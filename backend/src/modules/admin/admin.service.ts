@@ -235,6 +235,139 @@ export class AdminService {
     return this.prisma.user.findMany({ where, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, email: true, role: true, phone: true, isActive: true, lastLoginAt: true, createdAt: true, school: { select: { id: true, name: true, slug: true } } } });
   }
 
+  private readonly databaseEntityMap: Record<string, { model: string; label: string; sensitive?: boolean }> = {
+    schools: { model: 'school', label: 'Schools' },
+    users: { model: 'user', label: 'Users', sensitive: true },
+    students: { model: 'student', label: 'Students' },
+    teachers: { model: 'teacher', label: 'Teachers' },
+    parents: { model: 'parent', label: 'Parents' },
+    staff: { model: 'staff', label: 'Staff' },
+    academicYears: { model: 'academicYear', label: 'Academic Years' },
+    classes: { model: 'class', label: 'Classes' },
+    sections: { model: 'section', label: 'Sections' },
+    subjects: { model: 'subject', label: 'Subjects' },
+    classSubjects: { model: 'classSubject', label: 'Class Subjects' },
+    attendance: { model: 'attendance', label: 'Attendance' },
+    timetables: { model: 'timetable', label: 'Timetables' },
+    exams: { model: 'exam', label: 'Exams' },
+    examResults: { model: 'examResult', label: 'Exam Results' },
+    feeStructures: { model: 'feeStructure', label: 'Fee Structures' },
+    feePayments: { model: 'feePayment', label: 'Fee Payments' },
+    accountEntries: { model: 'accountEntry', label: 'Account Entries' },
+    leaveRequests: { model: 'leaveRequest', label: 'Leave Requests' },
+    payroll: { model: 'payroll', label: 'Payroll' },
+    books: { model: 'book', label: 'Books' },
+    bookIssues: { model: 'bookIssue', label: 'Book Issues' },
+    transportRoutes: { model: 'transportRoute', label: 'Transport Routes' },
+    vehicles: { model: 'vehicle', label: 'Vehicles' },
+    transportAssignments: { model: 'transportAssignment', label: 'Transport Assignments' },
+    hostels: { model: 'hostel', label: 'Hostels' },
+    hostelRooms: { model: 'hostelRoom', label: 'Hostel Rooms' },
+    hostelAllocations: { model: 'hostelAllocation', label: 'Hostel Allocations' },
+    announcements: { model: 'announcement', label: 'School Announcements' },
+    notifications: { model: 'notification', label: 'Notifications' },
+    homework: { model: 'homework', label: 'Homework' },
+    homeworkSubmissions: { model: 'homeworkSubmission', label: 'Homework Submissions' },
+    events: { model: 'event', label: 'Events' },
+    documents: { model: 'document', label: 'Documents' },
+    gatePasses: { model: 'gatePass', label: 'Gate Passes' },
+    subscriptions: { model: 'subscription', label: 'Subscriptions' },
+    onboardingPayments: { model: 'onboardingPayment', label: 'Onboarding Payments' },
+    schoolRequests: { model: 'schoolRequest', label: 'School Registration Requests' },
+    buildings: { model: 'building', label: 'Buildings' },
+    rooms: { model: 'room', label: 'Rooms' },
+    supportTickets: { model: 'supportTicket', label: 'Support Tickets' },
+    ticketReplies: { model: 'ticketReply', label: 'Ticket Replies' },
+    auditLogs: { model: 'auditLog', label: 'Audit Logs' },
+  };
+
+  getDatabaseEntities() {
+    return Object.entries(this.databaseEntityMap).map(([key, meta]) => ({ key, label: meta.label, sensitive: Boolean(meta.sensitive) }));
+  }
+
+  async getDatabaseRecords(entity: string, schoolId?: string, search?: string, page = 1, limit = 50) {
+    const meta = this.databaseEntityMap[entity];
+    if (!meta) throw new NotFoundException('Database entity not found');
+    const model: any = (this.prisma as any)[meta.model];
+    if (!model) throw new NotFoundException('Database model not available');
+    const safePage = Math.max(1, Number.isFinite(page) ? page : 1);
+    const safeLimit = Math.min(100, Math.max(1, Number.isFinite(limit) ? limit : 50));
+    const where: any = {};
+    if (schoolId) where.schoolId = schoolId;
+    if (meta.model === 'user' && schoolId) where.schoolId = schoolId;
+    if (search?.trim()) {
+      const q = search.trim();
+      const fields: Record<string, string[]> = {
+        school: ['name', 'slug', 'code', 'email', 'city'],
+        user: ['name', 'email', 'loginId', 'phone'],
+        student: ['name', 'admissionNo', 'email', 'phone', 'rollNo'],
+        teacher: ['name', 'employeeNo', 'email', 'phone'],
+        parent: ['name', 'email', 'phone', 'fatherName', 'motherName'],
+        staff: ['name', 'employeeNo', 'email', 'phone', 'designation'],
+        class: ['name'],
+        section: ['name'],
+        subject: ['name', 'code'],
+        book: ['title', 'author', 'isbn'],
+        transportRoute: ['name', 'startPoint', 'endPoint'],
+        vehicle: ['vehicleNo', 'driverName'],
+        hostel: ['name', 'wardenName'],
+        hostelRoom: ['roomNo'],
+        announcement: ['title', 'content'],
+        event: ['title', 'location'],
+        homework: ['title', 'description'],
+        exam: ['name', 'type'],
+        feeStructure: ['name', 'description'],
+        schoolRequest: ['schoolName', 'ownerName', 'email', 'subdomain', 'city'],
+        supportTicket: ['ticketNo', 'schoolName', 'senderName', 'senderEmail', 'subject'],
+        auditLog: ['action', 'entity', 'entityId'],
+      };
+      const searchFields = fields[meta.model];
+      if (searchFields?.length) where.OR = searchFields.map((field) => ({ [field]: { contains: q, mode: 'insensitive' } }));
+    }
+    const deletedAware = ['school','user','student','teacher','parent','staff','class','section','subject','exam','book'].includes(meta.model);
+    if (deletedAware) where.deletedAt = null;
+
+    const [total, rows] = await Promise.all([
+      model.count({ where }),
+      model.findMany({ where, skip: (safePage - 1) * safeLimit, take: safeLimit, orderBy: { createdAt: 'desc' } }),
+    ]);
+
+    const data = rows.map((row: any) => {
+      const copy = { ...row };
+      delete copy.passwordHash;
+      delete copy.token;
+      delete copy.otp;
+      delete copy.before;
+      delete copy.after;
+      return copy;
+    });
+    return { entity, label: meta.label, data, total, page: safePage, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) };
+  }
+
+  async deleteDatabaseRecord(entity: string, id: string, permanent: boolean, actorId?: string) {
+    const meta = this.databaseEntityMap[entity];
+    if (!meta) throw new NotFoundException('Database entity not found');
+    if (meta.model === 'user' && (await this.prisma.user.findUnique({ where: { id }, select: { role: true } }))?.role === 'SUPER_ADMIN') {
+      throw new ConflictException('Super Admin accounts cannot be deleted from the database console.');
+    }
+    const model: any = (this.prisma as any)[meta.model];
+    const record = await model.findUnique({ where: { id } });
+    if (!record) throw new NotFoundException('Record not found');
+    const softDeleteModels = ['school','user','student','teacher','parent','staff','class','section','subject','exam','book'];
+    let result;
+    if (!permanent && softDeleteModels.includes(meta.model)) {
+      result = await model.update({ where: { id }, data: { deletedAt: new Date() } });
+    } else if (permanent) {
+      result = await model.delete({ where: { id } });
+    } else {
+      result = await model.delete({ where: { id } });
+    }
+    try {
+      await this.prisma.auditLog.create({ data: { action: permanent ? 'PERMANENT_DELETE' : 'SOFT_DELETE', entity: meta.model, entityId: id, userId: actorId || '', schoolId: record.schoolId || null, before: undefined, after: undefined } });
+    } catch (_) {}
+    return { success: true, action: permanent ? 'PERMANENT_DELETE' : 'SOFT_DELETE', id, entity };
+  }
+
   async getSupportTickets() {
     const tickets = await this.prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, include: { replies: { orderBy: { createdAt: 'asc' } } } });
     return tickets.map((ticket) => ({ ...ticket, replies: ticket.replies.map((reply) => ({ id: reply.id, sender: reply.sender, message: reply.message, time: reply.createdAt.toISOString() })) }));
