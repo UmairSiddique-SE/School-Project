@@ -697,10 +697,13 @@ function OtpForm({
 ═══════════════════════════════════════════════════════════════════════════ */
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
-      <p className="mb-3 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">{label}</p>
+    <section className="rounded-2xl border border-slate-200/80 bg-slate-50/75 p-4 shadow-sm shadow-slate-900/[.02] sm:p-5 dark:border-white/10 dark:bg-white/[.035]">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="h-5 w-1 rounded-full bg-gradient-to-b from-cyan-500 to-blue-600" />
+        <h3 className="text-xs font-black uppercase tracking-[.16em] text-slate-700 dark:text-slate-200">{label}</h3>
+      </div>
       {children}
-    </div>
+    </section>
   );
 }
 
