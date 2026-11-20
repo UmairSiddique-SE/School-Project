@@ -19,7 +19,7 @@ export type PublicPlan = {
 
 const styles: Record<string, { icon: typeof Zap; gradient: string; border: string; badge?: string }> = {
   FREE_TRIAL: { icon: Zap, gradient: "from-sky-500 to-cyan-600", border: "border-sky-400/30" },
-  PROFESSIONAL: { icon: Star, gradient: "from-[#5577F5] via-[#49D6E8] to-[#8B7CF6]", border: "border-[#49D6E8]/40", badge: "POPULAR TIER" },
+  PROFESSIONAL: { icon: Star, gradient: "from-[#5577F5] via-[#49D6E8] to-[#8B7CF6]", border: "border-[#49D6E8]/40", badge: "ONLY PLAN" },
   PREMIUM: { icon: Crown, gradient: "from-emerald-500 to-teal-600", border: "border-emerald-400/40", badge: "MAX SCALE" },
 };
 
