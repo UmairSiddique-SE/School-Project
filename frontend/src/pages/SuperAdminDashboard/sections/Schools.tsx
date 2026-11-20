@@ -91,6 +91,7 @@ const emptyForm = {
   tehsil: "City",
   address: "",
   schoolEmail: "",
+  schoolPhone: "",
   adminName: "",
   adminPhone: "",
   adminEmail: "",
@@ -353,8 +354,9 @@ export default function Schools() {
         tehsil: school.tehsil || "",
         address: school.address || "",
         schoolEmail: school.email || "",
-        adminName: school.adminName || "",
-        adminPhone: school.phone || "",
+        schoolPhone: school.phone || "",
+        adminName: school.users?.[0]?.name || school.adminName || "",
+        adminPhone: school.users?.[0]?.phone || "",
         adminEmail: school.users?.[0]?.email || "",
         adminPassword: "",
         plan: school.subscription?.plan || "PROFESSIONAL",
@@ -383,6 +385,7 @@ export default function Schools() {
       await apiClient.post("/schools", {
         ...form,
         email: form.schoolEmail.trim().toLowerCase() || null,
+        phone: form.schoolPhone.trim() || null,
         amount: parseFloat(form.amount) || 0,
         city: form.district || form.province,
       });
@@ -404,7 +407,7 @@ export default function Schools() {
       await apiClient.put(`/schools/${selected.id}`, {
         name: form.name,
         email: form.schoolEmail.trim().toLowerCase() || null,
-        phone: form.adminPhone,
+        phone: form.schoolPhone.trim() || null,
         address: form.address,
         city: form.district || form.province,
       });
@@ -1182,6 +1185,17 @@ export default function Schools() {
                   />
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">School Official Email</label>
+                    <input type="email" placeholder="info@school.edu.pk" value={form.schoolEmail} onChange={(e) => setForm((p) => ({ ...p, schoolEmail: e.target.value }))} className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">School Phone</label>
+                    <input type="text" placeholder="042-1234567" value={form.schoolPhone} onChange={(e) => setForm((p) => ({ ...p, schoolPhone: e.target.value }))} className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50" />
+                  </div>
+                </div>
+
                 <div className="p-3.5 rounded-2xl bg-muted/30 border border-border space-y-3">
                   <p className="text-xs font-bold text-violet-400">
                     Initial Campus Administrator
@@ -1367,9 +1381,9 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
-                    value={form.adminPhone}
+                    value={form.schoolPhone}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, adminPhone: e.target.value }))
+                      setForm((p) => ({ ...p, schoolPhone: e.target.value }))
                     }
                     className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
