@@ -503,7 +503,7 @@ function DetailsForm({
             placeholder="UMS"
           />
           <Field
-            label="School website address" icon={<Globe2 size={15} />}
+            label="School portal URL (subdomain)" icon={<Globe2 size={15} />}
             value={form.schoolSlug}
             onChange={v => update('schoolSlug', slugify(v))}
             placeholder="umair-model-school"
@@ -515,13 +515,13 @@ function DetailsForm({
           />
         </div>
         <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-          Short code is optional. Leave it empty and SchoolOS will generate one automatically from the school name.
+          School short code is optional and generated automatically if left empty. The portal URL is separate from the school's street address and admin email.
         </p>
 
         {/* Compact single-line public website preview */}
         <div className="school-reg-url mt-3 flex min-w-0 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 dark:border-white/[.07] dark:bg-black/10">
           <Globe2 size={14} className="shrink-0 text-cyan-500 dark:text-cyan-400" />
-          <span className="shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">Free school website:</span>
+          <span className="shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">School portal URL:</span>
           <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-600 dark:text-slate-300" title={schoolPublicUrl}>{schoolPublicUrl}</span>
           {slugStatus === 'checking' && <Loader2 size={13} className="shrink-0 animate-spin text-cyan-500" />}
           {slugStatus === 'available' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-300"><CheckCircle2 size={12} /> Available</span>}
@@ -550,7 +550,7 @@ function DetailsForm({
         </div>
         <div className="mt-4">
           <Field
-            label="School address" icon={<MapPin size={15} />}
+            label="School street address" icon={<MapPin size={15} />}
             value={form.address}
             onChange={v => update('address', v)}
             placeholder="Street, area, landmark"
@@ -568,7 +568,7 @@ function DetailsForm({
             placeholder="Principal / owner name"
           />
           <Field
-            label="Email address" icon={<Mail size={15} />}
+            label="Administrator email (OTP & login)" icon={<Mail size={15} />}
             type="email"
             value={form.adminEmail}
             onChange={v => update('adminEmail', v)}
