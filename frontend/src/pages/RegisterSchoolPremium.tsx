@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
 import { useAuth } from '@/context/AuthContext';
+import { clearPendingSchoolRegistrationSession } from '@/utils/schoolRegistrationSession';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 type FormState = {
@@ -125,23 +126,8 @@ export default function RegisterSchoolPremium() {
     sessionStorage.setItem('schoolos_registration_plan', 'PROFESSIONAL');
     sessionStorage.setItem('edusphere_registration_plan', 'PROFESSIONAL');
 
-    /* restore pending OTP session */
-    const saved =
-      sessionStorage.getItem('schoolos_pending_school_registration') ||
-      sessionStorage.getItem('edusphere_pending_school_registration');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.verificationUserId) {
-          setVerificationUserId(data.verificationUserId);
-          setForm(p => ({ ...p, ...(data.form || {}) }));
-          setStep('otp');
-        }
-      } catch {
-        sessionStorage.removeItem('schoolos_pending_school_registration');
-        sessionStorage.removeItem('edusphere_pending_school_registration');
-      }
-    }
+    // A refresh always starts a fresh registration form, never a stale OTP screen.
+    clearPendingSchoolRegistrationSession();
 
     /* fetch plans */
     apiClient.get<Plan[]>('/public/plans')
@@ -255,13 +241,6 @@ export default function RegisterSchoolPremium() {
       const data = response.data;
       setVerificationUserId(data.verificationUserId);
       setForm(p => ({ ...p, schoolSlug: data.schoolSlug || p.schoolSlug }));
-      const session = JSON.stringify({
-        verificationUserId: data.verificationUserId,
-        planKey: 'PROFESSIONAL',
-        form: { ...form, schoolSlug: data.schoolSlug || form.schoolSlug },
-      });
-      sessionStorage.setItem('schoolos_pending_school_registration', session);
-      sessionStorage.setItem('edusphere_pending_school_registration', session); // backward compat
       setOtp('');
       setCooldown(45);
       setStep('otp');
@@ -289,8 +268,7 @@ export default function RegisterSchoolPremium() {
         otp: otp.trim(),
       });
       const { accessToken, refreshToken, user } = response.data;
-      sessionStorage.removeItem('schoolos_pending_school_registration');
-      sessionStorage.removeItem('edusphere_pending_school_registration');
+      clearPendingSchoolRegistrationSession();
       login(accessToken, user, refreshToken);
       toast.success('Email verified! Continue to payment and school approval.');
       navigate('/onboarding', { replace: true });
@@ -307,9 +285,6 @@ export default function RegisterSchoolPremium() {
     setResendBusy(true);
     try {
       const response = await apiClient.post('/auth/resend-otp', { userId: verificationUserId });
-      const session = JSON.stringify({ verificationUserId, planKey: 'PROFESSIONAL', form });
-      sessionStorage.setItem('schoolos_pending_school_registration', session);
-      sessionStorage.setItem('edusphere_pending_school_registration', session);
       setCooldown(45);
       setOtp('');
       toast.success(response.data?.message || 'A new OTP has been sent.');
@@ -401,7 +376,7 @@ export default function RegisterSchoolPremium() {
                 {step === 'details' ? (
                   <DetailsForm form={form} update={update} slugStatus={slugStatus} schoolPublicUrl={schoolPublicUrl} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
                 ) : (
-                  <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { setStep('details'); setOtp(''); }} />
+                  <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { clearPendingSchoolRegistrationSession(); setVerificationUserId(''); setStep('details'); setOtp(''); setCooldown(0); }} />
                 )}
               </div>
             </div>
@@ -651,7 +626,7 @@ function OtpForm({
         <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
           We sent a 6-digit code to{' '}
           <span className="font-bold text-slate-800 dark:text-slate-200">{email}</span>.
-          The code expires in 15 minutes.
+          The code expires in 30 minutes.
         </p>
       </div>
 

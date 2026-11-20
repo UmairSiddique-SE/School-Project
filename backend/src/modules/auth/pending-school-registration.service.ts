@@ -193,6 +193,18 @@ export class PendingSchoolRegistrationService {
     const now = new Date();
     const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
+    // Deliver the new code before replacing the active hash. If SMTP rejects
+    // the message, the previous OTP remains valid and the cooldown is untouched.
+    const emailSent = await this.mailService.sendEmailVerification(
+      pending.adminEmail,
+      otp,
+    );
+    if (!emailSent) {
+      throw new BadRequestException(
+        'We could not resend the verification email. Your previous code is still active; please try again.',
+      );
+    }
+
     await this.prisma.$executeRaw`
       UPDATE "PendingSchoolRegistration"
       SET "otp" = ${await bcrypt.hash(otp, 10)},
@@ -201,18 +213,8 @@ export class PendingSchoolRegistrationService {
           "otpLastSentAt" = ${now},
           "verifiedAt" = NULL,
           "updatedAt" = CURRENT_TIMESTAMP
-      WHERE "id" = ${id}
+      WHERE "id" = ${id} AND "verifiedAt" IS NULL
     `;
-
-    const emailSent = await this.mailService.sendEmailVerification(
-      pending.adminEmail,
-      otp,
-    );
-    if (!emailSent) {
-      throw new BadRequestException(
-        'We could not resend the verification email. Please try again.',
-      );
-    }
 
     return {
       message: 'A new verification code has been sent.',
@@ -236,35 +238,37 @@ export class PendingSchoolRegistrationService {
       throw new BadRequestException('OTP must be a 6-digit code.');
     }
 
-    // Brute-force guard: max 5 attempts per OTP session
-    const attempts = (pending.otpAttempts || 0) + 1;
-    if (attempts > 5) {
-      // Invalidate this OTP session so attacker cannot keep trying
-      await this.prisma.$executeRaw`
-        UPDATE "PendingSchoolRegistration"
-        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP,
-            "verifiedAt" = NULL
-        WHERE "id" = ${id}
-      `;
-      throw new BadRequestException(
-        'Too many incorrect OTP attempts. Please resend a new code.',
-      );
-    }
-    await this.prisma.$executeRaw`
-      UPDATE "PendingSchoolRegistration"
-      SET "otpAttempts" = ${attempts}, "updatedAt" = CURRENT_TIMESTAMP
-      WHERE "id" = ${id}
-    `;
-
-    if (!(await bcrypt.compare(submittedOtp, pending.otp))) {
-      throw new BadRequestException(
-        'Invalid OTP. Please enter the latest 6-digit code sent to your email.',
-      );
-    }
-
-    if (pending.otpExpiresAt.getTime() <= Date.now()) {
+    // Check expiry before comparing or consuming an attempt.
+    if (!pending.otp || pending.otpExpiresAt.getTime() <= Date.now()) {
       throw new BadRequestException(
         'OTP has expired. Please resend a new verification code.',
+      );
+    }
+
+    const matches = await bcrypt.compare(submittedOtp, pending.otp);
+    if (!matches) {
+      // Increment in SQL so simultaneous wrong submissions cannot overwrite
+      // each other's attempt count. A valid OTP never consumes an attempt.
+      const updated = await this.prisma.$queryRaw<{ otpAttempts: number }[]>`
+        UPDATE "PendingSchoolRegistration"
+        SET "otpAttempts" = COALESCE("otpAttempts", 0) + 1,
+            "updatedAt" = CURRENT_TIMESTAMP
+        WHERE "id" = ${id} AND "verifiedAt" IS NULL
+        RETURNING "otpAttempts"
+      `;
+      if ((updated[0]?.otpAttempts ?? 0) >= 5) {
+        await this.prisma.$executeRaw`
+          UPDATE "PendingSchoolRegistration"
+          SET "otp" = '', "otpExpiresAt" = NOW(),
+              "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = ${id} AND "verifiedAt" IS NULL
+        `;
+        throw new BadRequestException(
+          'Too many incorrect OTP attempts. Please resend a new code.',
+        );
+      }
+      throw new BadRequestException(
+        'Invalid OTP. Please enter the latest 6-digit code sent to your email.',
       );
     }
 
