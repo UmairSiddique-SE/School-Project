@@ -864,6 +864,8 @@ export default function BuildingManagement() {
                       </label>
                       <input
                         type="text"
+                        name="building-street-address"
+                        autoComplete="off"
                         placeholder="Street Address, Plot No, Block..."
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
