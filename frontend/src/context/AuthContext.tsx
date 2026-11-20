@@ -8,6 +8,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  loginId?: string;
   role: UserRole;
   schoolId?: string;
   schoolName?: string;
