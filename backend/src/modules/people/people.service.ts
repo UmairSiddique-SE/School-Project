@@ -2,6 +2,7 @@ import { Injectable, ConflictException, NotFoundException, BadRequestException }
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import { generateSchoolCode, roleLoginId } from '../auth/school-code.util';
 
 @Injectable()
 export class PeopleService {
@@ -52,11 +53,15 @@ export class PeopleService {
 
     if (!data.name || !String(data.name).trim()) throw new ConflictException('Teacher Name is required');
 
+    const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { name: true, code: true } });
+    const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
+
     const rawEmail = data.email ? String(data.email).trim().toLowerCase() : '';
     const firstName = String(data.name).trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
     const regDigits = String(employeeNo).match(/(\d+)$/)?.[1] || String(employeeNo).replace(/\D/g, '').slice(-3) || '001';
 
     let email = '';
+    let loginId = '';
     let isCustomEmail = false;
     let customShortId = '';
 
@@ -77,6 +82,15 @@ export class PeopleService {
         userExists = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
         counter++;
       }
+    }
+
+    loginId = roleLoginId(customShortId || `${firstName}${regDigits}`, 'teacher', schoolCode);
+    let loginIdExists = await this.prisma.user.findFirst({ where: { loginId, deletedAt: null } });
+    let loginCounter = 1;
+    while (loginIdExists) {
+      loginId = roleLoginId(`${customShortId || `${firstName}${regDigits}`}${loginCounter}`, 'teacher', schoolCode);
+      loginIdExists = await this.prisma.user.findFirst({ where: { loginId, deletedAt: null } });
+      loginCounter++;
     }
 
     const existingTeacher = await this.prisma.teacher.findFirst({ where: { schoolId, deletedAt: null, OR: [{ employeeNo }, { email }] } });
@@ -101,7 +115,7 @@ export class PeopleService {
         // If there is an old deleted user with this email, delete it permanently first
         await tx.user.deleteMany({ where: { email, deletedAt: { not: null } } });
 
-        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'TEACHER', schoolId, emailVerified: true } });
+        await tx.user.create({ data: { name: data.name, email, loginId, passwordHash, role: 'TEACHER', schoolId, emailVerified: true } });
         const teacher = await tx.teacher.create({
           data: {
             employeeNo,
@@ -123,7 +137,7 @@ export class PeopleService {
       return {
         teacher: result,
         credentials: {
-          loginId: isCustomEmail ? email : customShortId ? customShortId : `${firstName}${regDigits}`,
+          loginId,
           fullEmail: email,
           password: plainPassword,
         },
@@ -388,6 +402,9 @@ export class PeopleService {
     const existing = await this.prisma.student.findUnique({ where: { admissionNo } });
     if (existing) throw new ConflictException('Student with this Admission No already exists');
 
+    const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { name: true, code: true } });
+    const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
+
     const firstName = data.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     const regDigits = admissionNo.replace(/\D/g, '');
     const lastNumSeq = parseInt(admissionNo.split('-').pop() || '', 10);
@@ -401,12 +418,20 @@ export class PeopleService {
     const generatedPassword = suppliedPassword || randomBytes(12).toString('base64url');
     const passwordHash = await bcrypt.hash(generatedPassword, 12);
     const email = data.email || `${admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '')}@school.edu.pk`;
+    let loginId = roleLoginId(`${firstName}${shortSeq}`, 'student', schoolCode);
+    let loginIdExists = await this.prisma.user.findFirst({ where: { loginId, deletedAt: null } });
+    let loginCounter = 1;
+    while (loginIdExists) {
+      loginId = roleLoginId(`${firstName}${shortSeq}${loginCounter}`, 'student', schoolCode);
+      loginIdExists = await this.prisma.user.findFirst({ where: { loginId, deletedAt: null } });
+      loginCounter++;
+    }
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) throw new ConflictException(`A user account with email "${email}" already exists. Please use a different email.`);
     let generatedParentPassword: string | null = null;
     try {
       const student = await this.prisma.$transaction(async (tx) => {
-        await tx.user.create({ data: { name: data.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true } });
+        await tx.user.create({ data: { name: data.name, email, loginId, passwordHash, role: 'STUDENT', schoolId, emailVerified: true } });
         const createdStudent = await tx.student.create({ data: { admissionNo, name: data.name, avatarUrl: data.avatarUrl || null, rollNo, email, phone: data.phone || data.studentMobile || null, address: data.address || data.currentAddress || null, gender: data.gender || 'MALE', dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null, bloodGroup: data.bloodGroup || null, religion: data.religion || null, sectionId: data.sectionId || null, status: data.status || 'ACTIVE', session: data.session || null, bFormNumber: data.bFormNumber || null, currentAddress: data.currentAddress || null, permanentAddress: data.permanentAddress || null, emergencyContact: data.emergencyContact || null, previousSchool: data.previousSchool || null, previousClass: data.previousClass || null, leavingCertificateUrl: data.leavingCertificateUrl || null, admissionType: data.admissionType || 'NEW', previousAcademicRecord: data.previousAcademicRecord || null, medicalNotes: data.medicalNotes || null, specialRequirements: data.specialRequirements || null, transportRequired: data.transportRequired === true || data.transportRequired === 'true', hostelRequired: data.hostelRequired === true || data.hostelRequired === 'true', remarks: data.remarks || null, schoolId } });
         if (data.fatherName || data.motherName || data.guardianName) {
           const parentName = data.fatherName || data.guardianName || data.motherName || 'Parent of ' + data.name;
@@ -429,7 +454,7 @@ export class PeopleService {
       return {
         student,
         credentials: {
-          loginId: friendlyLoginId,
+          loginId,
           admissionNo,
           fullEmail: email,
           password: generatedPassword,
@@ -487,7 +512,7 @@ export class PeopleService {
         data: { name: student.name, email, passwordHash, role: 'STUDENT', schoolId, emailVerified: true },
       });
     }
-    return { success: true, message: 'Student password updated successfully', loginId: email, password: password.trim() };
+    return { success: true, message: 'Student password updated successfully', loginId: user?.loginId || email, password: password.trim() };
   }
 
   async deleteStudent(id: string, schoolId: string) {
