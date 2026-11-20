@@ -504,6 +504,7 @@ function DetailsForm({
           />
           <Field
             label="School portal URL (subdomain)" icon={<Globe2 size={15} />}
+            name="school-portal-slug" autoComplete="off"
             value={form.schoolSlug}
             onChange={v => update('schoolSlug', slugify(v))}
             placeholder="umair-model-school"
@@ -550,7 +551,8 @@ function DetailsForm({
         </div>
         <div className="mt-4">
           <Field
-            label="School street address" icon={<MapPin size={15} />}
+            label="School physical address" icon={<MapPin size={15} />}
+            name="school-address" autoComplete="street-address"
             value={form.address}
             onChange={v => update('address', v)}
             placeholder="Street, area, landmark"
@@ -569,7 +571,7 @@ function DetailsForm({
           />
           <Field
             label="Administrator email (OTP & login)" icon={<Mail size={15} />}
-            type="email"
+            name="admin-email" autoComplete="email" type="email"
             value={form.adminEmail}
             onChange={v => update('adminEmail', v)}
             placeholder="you@example.com"
@@ -729,10 +731,10 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Field({
-  label, icon, value, onChange, placeholder, type = 'text',
+  label, icon, value, onChange, placeholder, type = 'text', name, autoComplete,
 }: {
   label: string; icon: ReactNode; value: string;
-  onChange: (v: string) => void; placeholder: string; type?: string;
+  onChange: (v: string) => void; placeholder: string; type?: string; name?: string; autoComplete?: string;
 }) {
   return (
     <label className="block">
@@ -741,6 +743,8 @@ function Field({
       </span>
       <input
         type={type}
+        name={name}
+        autoComplete={autoComplete}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
