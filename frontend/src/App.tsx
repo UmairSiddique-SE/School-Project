@@ -3,8 +3,6 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Analytics } from "@vercel/analytics/react";
 import DashboardLayout from "@/layouts/DashboardLayoutPremium";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { SyncProvider } from "@/context/SyncContext";
@@ -143,8 +141,6 @@ export default function App() {
             </Suspense>
             <OfflineSyncBanner />
             <Toaster position="top-right" richColors />
-            <SpeedInsights />
-            <Analytics />
           </SyncProvider>
         </AuthProvider>
       </ThemeProvider>
