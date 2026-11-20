@@ -1181,7 +1181,7 @@ export default function Schools() {
                   <input
                     type="text"
                     name="school-address"
-                    autoComplete="street-address"
+                    autoComplete="off"
                     placeholder="Street, area, landmark (not URL or email)"
                     value={form.address}
                     onChange={(e) =>
