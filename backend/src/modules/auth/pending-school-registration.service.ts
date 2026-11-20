@@ -1,3 +1,4 @@
+import { generateSchoolCode } from './school-code.util';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
@@ -17,6 +18,7 @@ type PendingRow = {
   id: string;
   schoolName: string;
   schoolSlug: string;
+  schoolCode: string | null;
   schoolType: string;
   logoUrl: string;
   schoolAddress: string;
@@ -70,7 +72,7 @@ export class PendingSchoolRegistrationService {
 
   private async findPending(id: string) {
     const rows = await this.prisma.$queryRaw<PendingRow[]>`
-      SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+      SELECT "id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
              "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
@@ -125,12 +127,12 @@ export class PendingSchoolRegistrationService {
     `;
     await this.prisma.$executeRaw`
       INSERT INTO "PendingSchoolRegistration"
-        ("id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+        ("id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
          "schoolAddress", "schoolPhone", "country", "city", "adminName",
          "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
          "otp", "otpExpiresAt", "otpLastSentAt")
       VALUES
-        (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolType},
+        (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolCode?.trim().toUpperCase() || generateSchoolCode(dto.schoolName)}, ${dto.schoolType},
          ${dto.logoUrl}, ${dto.schoolAddress}, ${dto.schoolPhone}, ${dto.country},
          ${dto.city}, ${dto.adminName.trim()}, ${adminEmail}, ${dto.adminPhone},
          ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt}, ${now})
@@ -290,10 +292,20 @@ export class PendingSchoolRegistrationService {
         throw new ConflictException('A school with this slug already exists');
       }
 
+      let schoolCode = pending.schoolCode?.trim().toUpperCase() || generateSchoolCode(pending.schoolName);
+      const codeTaken = await tx.school.findUnique({ where: { code: schoolCode }, select: { id: true } });
+      if (codeTaken) {
+        const baseCode = schoolCode;
+        let suffix = 2;
+        while (await tx.school.findUnique({ where: { code: `${baseCode}${suffix}` }, select: { id: true } })) suffix += 1;
+        schoolCode = `${baseCode}${suffix}`;
+      }
+
       const school = await tx.school.create({
         data: {
           name: pending.schoolName,
           slug: pending.schoolSlug,
+          code: schoolCode,
           type: pending.schoolType,
           logoUrl: pending.logoUrl,
           phone: pending.schoolPhone,
@@ -312,6 +324,7 @@ export class PendingSchoolRegistrationService {
           role: 'SCHOOL_ADMIN',
           schoolId: school.id,
           phone: pending.adminPhone,
+          loginId: `admin01@admin.${schoolCode.toLowerCase()}.edu.pk`,
           emailVerified: true,
         },
       });
