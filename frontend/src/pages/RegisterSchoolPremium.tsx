@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import {
   ArrowRight, BadgeCheck, Building2, Check, ChevronLeft,
-  CheckCircle2, CircleAlert, Eye, EyeOff, Globe2, ImagePlus,
+  CheckCircle2, Eye, EyeOff, Globe2, ImagePlus,
   Loader2, LockKeyhole, Mail, MapPin, Phone, RefreshCw,
   ShieldCheck, Sparkles, UserRound,
 } from 'lucide-react';
@@ -116,8 +116,6 @@ export default function RegisterSchoolPremium() {
     setForm(p => ({ ...p, [key]: value }));
 
   const selectedPlan = plans.find(p => p.planKey === 'PROFESSIONAL');
-  const slugPreview = form.schoolSlug || 'your-school';
-  const schoolPublicUrl = `${window.location.origin}/school/${slugPreview}`;
   const progress = step === 'details' ? 50 : 100;
 
   /* ── Init ────────────────────────────────────────────────────────────── */
@@ -215,10 +213,10 @@ export default function RegisterSchoolPremium() {
     if (!form.schoolName.trim()) return 'Enter your school name.';
     if (form.schoolCode.trim() && !/^[A-Za-z0-9]{2,10}$/.test(form.schoolCode.trim())) return 'School code must be 2-10 letters or numbers.';
     if (!form.schoolSlug.trim() || form.schoolSlug.length < 3)
-      return 'Choose a valid school website address.';
-    if (slugStatus !== 'available') return 'Choose an available school website address.';
+      return 'School name must generate a valid school profile link. Please check the school name.';
+    if (slugStatus !== 'available') return 'This school name cannot be assigned a unique profile link yet. Try a more specific school name.';
     if (!/^[a-z0-9-]+$/.test(form.schoolSlug))
-      return 'School website address: lowercase letters, numbers and hyphens only.';
+      return 'Please check the school name and try again.';
     if (!form.logoUrl) return 'School logo is required.';
     if (!form.province || !form.city.trim()) return 'Select province and enter city.';
     if (!form.address.trim()) return 'Enter school address.';
@@ -354,7 +352,7 @@ export default function RegisterSchoolPremium() {
                 Launch your<br />school on <span className="schoolos-gradient-text">SchoolOS.</span>
               </h1>
               <p className="mt-6 max-w-xl text-base font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
-                Create your school workspace, verify your email, then complete payment. Your data stays private until email verification is completed.
+                Enter your school details and administrator information. Verify your email to continue with your Professional plan application.
               </p>
               <div id="features" className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
                 {[
@@ -399,7 +397,7 @@ export default function RegisterSchoolPremium() {
               </div>
               <div className="school-reg-card-body px-5 py-5 sm:px-8 sm:py-7">
                 {step === 'details' ? (
-                  <DetailsForm form={form} update={update} slugStatus={slugStatus} schoolPublicUrl={schoolPublicUrl} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
+                  <DetailsForm form={form} update={update} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
                 ) : (
                   <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { setStep('details'); setOtp(''); }} />
                 )}
@@ -429,23 +427,18 @@ export default function RegisterSchoolPremium() {
    Details Form
 ═══════════════════════════════════════════════════════════════════════════ */
 function DetailsForm({
-  form, update, slugStatus, schoolPublicUrl, selectedPlan,
+  form, update, selectedPlan,
   saving, logoBusy, showPassword, passwordHint,
   onLogoChange, onTogglePassword, onSubmit,
 }: {
   form: FormState;
   update: (k: keyof FormState, v: string) => void;
-  slugStatus: 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
-  schoolPublicUrl: string;
   selectedPlan?: { price: number; currency?: string; period: string };
   saving: boolean; logoBusy: boolean; showPassword: boolean; passwordHint: string;
   onLogoChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onSubmit: (e: FormEvent) => void;
 }) {
-  const slugify = (v: string) =>
-    v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70);
-
   return (
     <form onSubmit={onSubmit} className="space-y-5">
 
@@ -493,19 +486,13 @@ function DetailsForm({
           </label>
         </div>
 
-        {/* School code + website + type */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
+        {/* Optional school code and institution type */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field
             label="School short code" icon={<Building2 size={15} />}
             value={form.schoolCode}
             onChange={v => update('schoolCode', v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
             placeholder="UMS"
-          />
-          <Field
-            label="School website address" icon={<Globe2 size={15} />}
-            value={form.schoolSlug}
-            onChange={v => update('schoolSlug', slugify(v))}
-            placeholder="umair-model-school"
           />
           <SelectField
             label="Institution" value={form.schoolType}
@@ -514,19 +501,9 @@ function DetailsForm({
           />
         </div>
         <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-          Short code is optional. Leave it empty and SchoolOS will generate one automatically from the school name.
+          Short code is optional. Leave it blank and SchoolOS will assign one automatically.
         </p>
 
-        {/* Compact single-line public website preview */}
-        <div className="school-reg-url mt-3 flex min-w-0 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 dark:border-white/[.07] dark:bg-black/10">
-          <Globe2 size={14} className="shrink-0 text-cyan-500 dark:text-cyan-400" />
-          <span className="shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">Free school website:</span>
-          <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-600 dark:text-slate-300" title={schoolPublicUrl}>{schoolPublicUrl}</span>
-          {slugStatus === 'checking' && <Loader2 size={13} className="shrink-0 animate-spin text-cyan-500" />}
-          {slugStatus === 'available' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-300"><CheckCircle2 size={12} /> Available</span>}
-          {slugStatus === 'taken' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-rose-500 dark:text-rose-400"><CircleAlert size={12} /> Taken</span>}
-          {slugStatus === 'invalid' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400"><CircleAlert size={12} /> Invalid</span>}
-        </div>
       </Section>
 
       {/* Location */}
@@ -720,10 +697,13 @@ function OtpForm({
 ═══════════════════════════════════════════════════════════════════════════ */
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
-      <p className="mb-3 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">{label}</p>
+    <section className="rounded-2xl border border-slate-200/80 bg-slate-50/75 p-4 shadow-sm shadow-slate-900/[.02] sm:p-5 dark:border-white/10 dark:bg-white/[.035]">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="h-5 w-1 rounded-full bg-gradient-to-b from-cyan-500 to-blue-600" />
+        <h3 className="text-xs font-black uppercase tracking-[.16em] text-slate-700 dark:text-slate-200">{label}</h3>
+      </div>
       {children}
-    </div>
+    </section>
   );
 }
 
