@@ -150,11 +150,11 @@ export default function RegisterSchoolPremium() {
         const pro = list.find(p => p.planKey === 'PROFESSIONAL');
         setPlans([pro
           ? { ...pro, name: 'Professional', price: 3000, period: 'per month' }
-          : { planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, period: 'per month' },
+          : { planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, period: 'per month', maxStudents: 999999 },
         ]);
       })
       .catch(() => {
-        setPlans([{ planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, period: 'per month' }]);
+        setPlans([{ planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, period: 'per month', maxStudents: 999999 }]);
       });
   }, []);
 
