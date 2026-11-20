@@ -392,7 +392,6 @@ export default function RegisterSchoolPremium() {
                 Smart school management
               </div>
             </div>
-            </div>
           </div>
 
           <div className="school-reg-workspace relative z-20 mx-auto mt-8 w-full max-w-[1280px] lg:mt-10">
