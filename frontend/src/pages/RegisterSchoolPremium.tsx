@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 type FormState = {
-  schoolName: string; schoolSlug: string;
+  schoolName: string; schoolSlug: string; schoolCode: string;
   schoolType: 'SCHOOL' | 'COLLEGE' | 'ACADEMY'; logoUrl: string;
   province: string; city: string; address: string;
   adminName: string; adminEmail: string; adminPhone: string; adminPassword: string;
@@ -22,7 +22,7 @@ type Plan = { planKey: string; name: string; price: number; currency?: string; p
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 const initial: FormState = {
-  schoolName: '', schoolSlug: '', schoolType: 'SCHOOL', logoUrl: '',
+  schoolName: '', schoolSlug: '', schoolCode: '', schoolType: 'SCHOOL', logoUrl: '',
   province: '', city: '', address: '',
   adminName: '', adminEmail: '', adminPhone: '', adminPassword: '',
 };
@@ -213,6 +213,7 @@ export default function RegisterSchoolPremium() {
   /* ── Validation ──────────────────────────────────────────────────────── */
   const validate = () => {
     if (!form.schoolName.trim()) return 'Enter your school name.';
+    if (form.schoolCode.trim() && !/^[A-Za-z0-9]{2,10}$/.test(form.schoolCode.trim())) return 'School code must be 2-10 letters or numbers.';
     if (!form.schoolSlug.trim() || form.schoolSlug.length < 3)
       return 'Choose a valid school website address.';
     if (slugStatus !== 'available') return 'Choose an available school website address.';
@@ -238,6 +239,7 @@ export default function RegisterSchoolPremium() {
       const response = await apiClient.post('/auth/register-school', {
         schoolName: form.schoolName.trim(),
         schoolSlug: form.schoolSlug.trim().toLowerCase(),
+        schoolCode: form.schoolCode.trim().toUpperCase() || undefined,
         schoolType: form.schoolType,
         logoUrl: form.logoUrl,
         schoolAddress: form.address.trim(),
@@ -491,8 +493,14 @@ function DetailsForm({
           </label>
         </div>
 
-        {/* Slug + type */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_180px]">
+        {/* School code + website + type */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
+          <Field
+            label="School short code" icon={<Building2 size={15} />}
+            value={form.schoolCode}
+            onChange={v => update('schoolCode', v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
+            placeholder="UMS"
+          />
           <Field
             label="School website address" icon={<Globe2 size={15} />}
             value={form.schoolSlug}
@@ -505,6 +513,9 @@ function DetailsForm({
             options={[['SCHOOL', 'School'], ['COLLEGE', 'College'], ['ACADEMY', 'Academy']]}
           />
         </div>
+        <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+          Short code is optional. Leave it empty and SchoolOS will generate one automatically from the school name.
+        </p>
 
         {/* Compact single-line public website preview */}
         <div className="school-reg-url mt-3 flex min-w-0 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 dark:border-white/[.07] dark:bg-black/10">
