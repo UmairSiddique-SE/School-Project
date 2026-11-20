@@ -47,6 +47,7 @@ export class AuthService {
           id: true,
           name: true,
           slug: true,
+          code: true,
           isActive: true,
           subscription: {
             select: { plan: true, status: true, endDate: true },
@@ -83,6 +84,7 @@ export class AuthService {
         ...roleFilter,
         OR: [
           { email: { equals: rawIdentifier, mode: 'insensitive' } },
+          { loginId: { equals: rawIdentifier, mode: 'insensitive' } },
           { email: { equals: `${rawIdentifier}@school.edu`, mode: 'insensitive' } },
           { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
           { phone: rawIdentifier },
@@ -117,7 +119,7 @@ export class AuthService {
         where: {
           role: { in: ['SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'] },
           deletedAt: null,
-          OR: [{ email: { equals: rawIdentifier, mode: 'insensitive' } }, { phone: rawIdentifier }],
+          OR: [{ email: { equals: rawIdentifier, mode: 'insensitive' } }, { loginId: { equals: rawIdentifier, mode: 'insensitive' } }, { phone: rawIdentifier }],
           ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
         include: userInclude,
@@ -325,6 +327,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId || undefined,
         role: user.role,
         schoolId: user.schoolId,
         schoolName: user.school?.name,
@@ -575,6 +578,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId || undefined,
         role: user.role,
         phone: user.phone,
         schoolId: user.schoolId,
