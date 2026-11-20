@@ -928,7 +928,10 @@ export default function Teachers() {
                     <Field label="Residential Address (Optional)">
                       <input
                         name="teacher-residential-address"
-                        autoComplete="off"
+                        autoComplete="new-password"
+                        readOnly
+                        onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                        onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                         className={inputStyle}
                         placeholder="House / Street / Area / City"
                         value={form.address}
