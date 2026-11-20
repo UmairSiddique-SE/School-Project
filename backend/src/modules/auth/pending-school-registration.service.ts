@@ -139,7 +139,7 @@ export class PendingSchoolRegistrationService {
     `;
 
     const pending = await this.prisma.$queryRaw<PendingRow[]>`
-      SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+      SELECT "id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
              "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
