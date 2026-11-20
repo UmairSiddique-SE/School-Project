@@ -11,9 +11,7 @@ function startOfDay(d: Date): Date { return new Date(d.getFullYear(), d.getMonth
 function addDays(d: Date, days: number): Date { return new Date(d.getTime() + days * 86400000); }
 
 const DEFAULT_PLANS = [
-  { planKey: 'FREE_TRIAL', name: 'Free Trial', price: 0, currency: 'PKR', period: '3 days', maxStudents: 20, maxTeachers: 15, storageMb: 1024, supportTier: 'Email', features: JSON.stringify(['Up to 20 students', 'Up to 15 staff', '1 campus', 'Core features', 'Email support']) },
-  { planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, currency: 'PKR', period: 'per month', maxStudents: 500, maxTeachers: 999999, storageMb: 10240, supportTier: 'Email + Chat', features: JSON.stringify(['Up to 500 students', 'Unlimited staff', 'Full reports', 'Fee management', 'Email + Chat support']) },
-  { planKey: 'PREMIUM', name: 'Premium', price: 5000, currency: 'PKR', period: 'per month', maxStudents: 999999, maxTeachers: 999999, storageMb: 512000, supportTier: 'Dedicated', features: JSON.stringify(['Unlimited students', 'Unlimited staff', 'Unlimited platform features', '500 GB storage', 'Dedicated support']) },
+  { planKey: 'PROFESSIONAL', name: 'Professional', price: 3000, currency: 'PKR', period: 'per month', maxStudents: 999999, maxTeachers: 999999, storageMb: 10240, supportTier: 'Email + Chat', features: JSON.stringify(['Unlimited students', 'Unlimited staff', 'All SchoolOS modules', 'Full reports', 'Fee management', 'Email + Chat support']) },
 ];
 
 const DEFAULT_TEMPLATES = [
@@ -29,8 +27,7 @@ const DEFAULT_SETTINGS = [
   { key: 'platform.maintenance', value: 'false', type: 'toggle', label: 'Maintenance Mode', description: 'Put the platform in maintenance mode.', category: 'platform' },
   { key: 'platform.name', value: 'SchoolOS ERP', type: 'text', label: 'Platform Name', description: 'Platform display name.', category: 'platform' },
   { key: 'platform.supportEmail', value: 'support@schoolos.app', type: 'text', label: 'Support Email', description: 'Support email address.', category: 'platform' },
-  { key: 'subscription.defaultPlan', value: 'FREE_TRIAL', type: 'select', label: 'Default Plan', description: 'Default registration plan.', category: 'subscription' },
-  { key: 'subscription.trialDays', value: '3', type: 'number', label: 'Free Trial Duration (days)', description: 'Free trial duration.', category: 'subscription' },
+  { key: 'subscription.defaultPlan', value: 'PROFESSIONAL', type: 'select', label: 'Default Plan', description: 'The single SchoolOS subscription for all schools.', category: 'subscription' },
   { key: 'subscription.expiryWarningDays', value: '7', type: 'number', label: 'Expiry Warning (days before)', description: 'Expiry warning window.', category: 'subscription' },
   { key: 'subscription.autoSuspend', value: 'false', type: 'toggle', label: 'Auto-Suspend on Expiry', description: 'Suspend schools after expiry.', category: 'subscription' },
   { key: 'email.smtpHost', value: 'smtp.gmail.com', type: 'text', label: 'SMTP Host', description: 'SMTP host.', category: 'email' },
@@ -106,7 +103,7 @@ export class AdminService {
     };
   }
 
-  async getPlans() { await this.seedDefaults(); const plans = await this.prisma.platformPlan.findMany({ orderBy: { price: 'asc' } }); return plans.map((p) => ({ ...p, features: JSON.parse(p.features || '[]') })); }
+  async getPlans() { await this.seedDefaults(); const plans = await this.prisma.platformPlan.findMany({ where: { planKey: 'PROFESSIONAL', isActive: true }, orderBy: { price: 'asc' } }); return plans.map((p) => ({ ...p, features: JSON.parse(p.features || '[]') })); }
 
   async updatePlan(id: string, data: any) {
     const updateData: any = {};
@@ -140,7 +137,7 @@ export class AdminService {
       city: data.city || null,
       address: data.address || null,
       subdomain: data.subdomain || data.slug,
-      requestedPlan: data.requestedPlan || 'FREE_TRIAL',
+      requestedPlan: 'PROFESSIONAL',
       notes: data.notes || null,
       status: 'PENDING',
     } });
@@ -187,7 +184,7 @@ export class AdminService {
 
   async changePlan(id: string, planKey: string, _actor?: any) {
     const plan = await this.prisma.platformPlan.findUnique({ where: { planKey } });
-    if (!plan) throw new NotFoundException('Plan not found');
+    if (!plan || !plan.isActive || plan.planKey !== 'PROFESSIONAL') throw new NotFoundException('The selected subscription plan is unavailable');
     return this.prisma.subscription.update({ where: { schoolId: id }, data: { plan: plan.planKey, amount: plan.price, currency: plan.currency, status: 'ACTIVE' } });
   }
 
