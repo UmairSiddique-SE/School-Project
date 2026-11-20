@@ -651,7 +651,7 @@ function OtpForm({
         <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
           We sent a 6-digit code to{' '}
           <span className="font-bold text-slate-800 dark:text-slate-200">{email}</span>.
-          The code expires in 15 minutes.
+          The code expires in 30 minutes.
         </p>
       </div>
 
