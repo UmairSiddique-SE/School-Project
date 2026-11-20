@@ -394,6 +394,7 @@ export class PendingSchoolRegistrationService {
         id: result.user.id,
         name: result.user.name,
         email: result.user.email,
+        loginId: result.user.loginId,
         role: result.user.role,
         schoolId: result.school.id,
         schoolName: result.school.name,
