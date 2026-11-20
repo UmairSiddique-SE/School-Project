@@ -90,6 +90,8 @@ const emptyForm = {
   district: "Lahore",
   tehsil: "City",
   address: "",
+  schoolEmail: "",
+  schoolPhone: "",
   adminName: "",
   adminPhone: "",
   adminEmail: "",
@@ -351,9 +353,11 @@ export default function Schools() {
         district: school.city || "Lahore",
         tehsil: school.tehsil || "",
         address: school.address || "",
-        adminName: school.adminName || "",
-        adminPhone: school.phone || "",
-        adminEmail: school.email || "",
+        schoolEmail: school.email || "",
+        schoolPhone: school.phone || "",
+        adminName: school.users?.[0]?.name || school.adminName || "",
+        adminPhone: school.users?.[0]?.phone || "",
+        adminEmail: school.users?.[0]?.email || "",
         adminPassword: "",
         plan: school.subscription?.plan || "PROFESSIONAL",
         amount: school.subscription?.amount?.toString() || "0",
@@ -380,6 +384,8 @@ export default function Schools() {
     try {
       await apiClient.post("/schools", {
         ...form,
+        email: form.schoolEmail.trim().toLowerCase() || null,
+        phone: form.schoolPhone.trim() || null,
         amount: parseFloat(form.amount) || 0,
         city: form.district || form.province,
       });
@@ -400,8 +406,8 @@ export default function Schools() {
     try {
       await apiClient.put(`/schools/${selected.id}`, {
         name: form.name,
-        email: form.adminEmail,
-        phone: form.adminPhone,
+        email: form.schoolEmail.trim().toLowerCase() || null,
+        phone: form.schoolPhone.trim() || null,
         address: form.address,
         city: form.district || form.province,
       });
@@ -1166,7 +1172,7 @@ export default function Schools() {
 
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Address
+                    School Address
                   </label>
                   <input
                     type="text"
@@ -1177,6 +1183,17 @@ export default function Schools() {
                     }
                     className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">School Official Email</label>
+                    <input type="email" placeholder="info@school.edu.pk" value={form.schoolEmail} onChange={(e) => setForm((p) => ({ ...p, schoolEmail: e.target.value }))} className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">School Phone</label>
+                    <input type="text" placeholder="042-1234567" value={form.schoolPhone} onChange={(e) => setForm((p) => ({ ...p, schoolPhone: e.target.value }))} className="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary/50" />
+                  </div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-muted/30 border border-border space-y-3">
@@ -1347,26 +1364,26 @@ export default function Schools() {
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground">
-                    Official Email
+                    School Official Email
                   </label>
                   <input
                     type="email"
-                    value={form.adminEmail}
+                    value={form.schoolEmail}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, adminEmail: e.target.value }))
+                      setForm((p) => ({ ...p, schoolEmail: e.target.value }))
                     }
                     className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground">
-                    Phone
+                    School Phone
                   </label>
                   <input
                     type="text"
-                    value={form.adminPhone}
+                    value={form.schoolPhone}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, adminPhone: e.target.value }))
+                      setForm((p) => ({ ...p, schoolPhone: e.target.value }))
                     }
                     className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-xs focus:outline-none focus:border-primary/50"
                   />
