@@ -927,6 +927,8 @@ export default function Teachers() {
                   <div className="sm:col-span-2 lg:col-span-3">
                     <Field label="Residential Address (Optional)">
                       <input
+                        name="teacher-residential-address"
+                        autoComplete="off"
                         className={inputStyle}
                         placeholder="House / Street / Area / City"
                         value={form.address}
