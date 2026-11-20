@@ -2156,7 +2156,10 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   <input
                     required
                     name="student-current-residential-address"
-                    autoComplete="off"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                     className={inputClass}
                     placeholder="House #, Street #, Mohallah / Sector / Area, City"
                     value={form.currentAddress}
@@ -2179,7 +2182,10 @@ _Please keep these credentials safe for viewing attendance, exam report cards, h
                   </div>
                   <input
                     name="student-permanent-address"
-                    autoComplete="off"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                     className={inputClass}
                     placeholder="Village / Tehsil / District (if different)"
                     value={form.permanentAddress}
