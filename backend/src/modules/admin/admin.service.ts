@@ -293,8 +293,13 @@ export class AdminService {
     const safePage = Math.max(1, Number.isFinite(page) ? page : 1);
     const safeLimit = Math.min(100, Math.max(1, Number.isFinite(limit) ? limit : 50));
     const where: any = {};
-    if (schoolId) where.schoolId = schoolId;
-    if (meta.model === 'user' && schoolId) where.schoolId = schoolId;
+    const schoolScopedModels = [
+      'school','user','student','teacher','parent','staff','academicYear','class','subject',
+      'attendance','exam','feeStructure','feePayment','accountEntry','leaveRequest','payroll',
+      'book','transportRoute','hostel','announcement','notification','homework','event',
+      'gatePass','onboardingPayment','building',
+    ];
+    if (schoolId && schoolScopedModels.includes(meta.model)) where.schoolId = schoolId;
     if (search?.trim()) {
       const q = search.trim();
       const fields: Record<string, string[]> = {
@@ -329,7 +334,12 @@ export class AdminService {
 
     const [total, rows] = await Promise.all([
       model.count({ where }),
-      model.findMany({ where, skip: (safePage - 1) * safeLimit, take: safeLimit, orderBy: { createdAt: 'desc' } }),
+      model.findMany({
+        where,
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+        orderBy: { id: 'desc' },
+      }),
     ]);
 
     const data = rows.map((row: any) => {
