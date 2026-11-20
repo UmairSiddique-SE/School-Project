@@ -1172,7 +1172,7 @@ export default function Schools() {
 
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Address
+                    School Address
                   </label>
                   <input
                     type="text"
@@ -1377,7 +1377,7 @@ export default function Schools() {
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground">
-                    Phone
+                    School Phone
                   </label>
                   <input
                     type="text"
