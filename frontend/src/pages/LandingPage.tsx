@@ -131,7 +131,7 @@ export default function LandingPage() {
       storageMb: 10240,
       supportTier: "Email + Chat",
       features: [
-        "Student admissions, profiles & guardians",
+        "Unlimited student admissions, profiles & guardians",
         "Teacher & staff management with role-based access",
         "Attendance, classes, subjects & timetable",
         "Fees, finance, vouchers & payment records",
