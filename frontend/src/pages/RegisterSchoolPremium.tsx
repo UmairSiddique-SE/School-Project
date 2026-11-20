@@ -381,7 +381,7 @@ export default function RegisterSchoolPremium() {
               </div>
             </div>
 
-            <div className="school-reg-campus relative mx-auto hidden w-full max-w-[690px] lg:block">
+            <div className="school-reg-campus relative mx-auto block w-full max-w-[690px]">
               <div className="school-reg-campus-glow absolute inset-8 rounded-full bg-blue-400/20 blur-3xl" />
               <img src="/schoolos-campus.svg" alt="SchoolOS school campus" className="relative z-10 block h-auto w-full rounded-[48px] object-cover shadow-[0_30px_90px_rgba(37,99,235,.18)]" />
               <div className="relative min-h-[420px] overflow-hidden rounded-[48px] border border-white/70 bg-gradient-to-b from-sky-200 via-white to-blue-100 shadow-[0_30px_90px_rgba(37,99,235,.18)] dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950">
