@@ -546,6 +546,7 @@ export class AuthService {
         id: true,
         name: true,
         email: true,
+        loginId: true,
         role: true,
         phone: true,
         schoolId: true,
