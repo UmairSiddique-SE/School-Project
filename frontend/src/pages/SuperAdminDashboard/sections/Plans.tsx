@@ -10,7 +10,7 @@ type FormState = { name: string; price: string; period: string; maxStudents: str
 const EMPTY: FormState = { name: '', price: '', period: 'per month', maxStudents: '', maxTeachers: '', storageMb: '', supportTier: '', features: '' };
 const META: Record<string, { icon: React.ComponentType<any>; gradient: string; accent: string; badge?: string }> = {
   FREE_TRIAL: { icon: Zap, gradient: 'from-cyan-500 to-blue-600', accent: 'text-cyan-600 dark:text-cyan-300' },
-  PROFESSIONAL: { icon: Award, gradient: 'from-blue-600 to-indigo-700', accent: 'text-blue-600 dark:text-blue-300', badge: 'MOST POPULAR' },
+  PROFESSIONAL: { icon: Award, gradient: 'from-blue-600 to-indigo-700', accent: 'text-blue-600 dark:text-blue-300', badge: 'ONLY PLAN' },
   PREMIUM: { icon: Crown, gradient: 'from-emerald-500 to-teal-700', accent: 'text-emerald-600 dark:text-emerald-300', badge: 'BEST VALUE' },
 };
 function storageLabel(mb: number) { return mb >= 512000 ? '500 GB' : mb >= 1024 ? `${Math.round(mb / 1024)} GB` : `${mb} MB`; }
