@@ -116,8 +116,6 @@ export default function RegisterSchoolPremium() {
     setForm(p => ({ ...p, [key]: value }));
 
   const selectedPlan = plans.find(p => p.planKey === 'PROFESSIONAL');
-  const slugPreview = form.schoolSlug || 'your-school';
-  const schoolPublicUrl = `${window.location.origin}/school/${slugPreview}`;
   const progress = step === 'details' ? 50 : 100;
 
   /* ── Init ────────────────────────────────────────────────────────────── */
@@ -399,7 +397,7 @@ export default function RegisterSchoolPremium() {
               </div>
               <div className="school-reg-card-body px-5 py-5 sm:px-8 sm:py-7">
                 {step === 'details' ? (
-                  <DetailsForm form={form} update={update} slugStatus={slugStatus} schoolPublicUrl={schoolPublicUrl} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
+                  <DetailsForm form={form} update={update} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
                 ) : (
                   <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { setStep('details'); setOtp(''); }} />
                 )}
@@ -429,23 +427,18 @@ export default function RegisterSchoolPremium() {
    Details Form
 ═══════════════════════════════════════════════════════════════════════════ */
 function DetailsForm({
-  form, update, slugStatus, schoolPublicUrl, selectedPlan,
+  form, update, selectedPlan,
   saving, logoBusy, showPassword, passwordHint,
   onLogoChange, onTogglePassword, onSubmit,
 }: {
   form: FormState;
   update: (k: keyof FormState, v: string) => void;
-  slugStatus: 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
-  schoolPublicUrl: string;
   selectedPlan?: { price: number; currency?: string; period: string };
   saving: boolean; logoBusy: boolean; showPassword: boolean; passwordHint: string;
   onLogoChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onSubmit: (e: FormEvent) => void;
 }) {
-  const slugify = (v: string) =>
-    v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70);
-
   return (
     <form onSubmit={onSubmit} className="space-y-5">
 
