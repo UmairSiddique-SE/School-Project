@@ -344,19 +344,28 @@ export default function Schools() {
       }
     }
     if (type === "edit" && school) {
+      let editSchool = school;
+      try {
+        const response = await apiClient.get(`/schools/${school.id}`);
+        editSchool = response.data || school;
+        setSelected(editSchool);
+      } catch {
+        toast.error("Could not load administrator details. Please retry.");
+        return;
+      }
       setForm({
-        name: school.name || "",
-        slug: school.slug || "",
-        province: school.province || "Punjab",
-        district: school.city || "Lahore",
-        tehsil: school.tehsil || "",
-        address: school.address || "",
-        adminName: school.adminName || "",
-        adminPhone: school.phone || "",
-        adminEmail: school.email || "",
+        name: editSchool.name || "",
+        slug: editSchool.slug || "",
+        province: editSchool.province || "Punjab",
+        district: editSchool.city || "Lahore",
+        tehsil: editSchool.tehsil || "",
+        address: editSchool.address || "",
+        adminName: editSchool.users?.[0]?.name || editSchool.adminName || "",
+        adminPhone: editSchool.users?.[0]?.phone || "",
+        adminEmail: editSchool.users?.[0]?.email || "",
         adminPassword: "",
-        plan: school.subscription?.plan || "PROFESSIONAL",
-        amount: school.subscription?.amount?.toString() || "0",
+        plan: editSchool.subscription?.plan || "PROFESSIONAL",
+        amount: editSchool.subscription?.amount?.toString() || "3000",
       });
     } else if (type === "create") {
       setForm({ ...emptyForm });
@@ -400,8 +409,9 @@ export default function Schools() {
     try {
       await apiClient.put(`/schools/${selected.id}`, {
         name: form.name,
-        email: form.adminEmail,
-        phone: form.adminPhone,
+        adminEmail: form.adminEmail,
+        adminName: form.adminName,
+        adminPhone: form.adminPhone,
         address: form.address,
         city: form.district || form.province,
       });
@@ -1170,7 +1180,12 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Block C, Model Town, Lahore"
+                    name="school-address"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
+                    placeholder="Street, area, landmark (not URL or email)"
                     value={form.address}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))
@@ -1204,6 +1219,8 @@ export default function Schools() {
                       </label>
                       <input
                         type="email"
+                        name="school-admin-email"
+                        autoComplete="email"
                         required
                         placeholder="admin@school.com"
                         value={form.adminEmail}
@@ -1351,6 +1368,8 @@ export default function Schools() {
                   </label>
                   <input
                     type="email"
+                    name="school-admin-email"
+                    autoComplete="email"
                     value={form.adminEmail}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, adminEmail: e.target.value }))
@@ -1377,6 +1396,11 @@ export default function Schools() {
                   </label>
                   <input
                     type="text"
+                    name="school-edit-address"
+                    autoComplete="new-password"
+                    readOnly
+                    onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                    onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                     value={form.address}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, address: e.target.value }))

@@ -208,6 +208,11 @@ export default function Settings() {
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-foreground mb-1.5">Campus Full Address</label>
                 <input
+                  name="campus-address"
+                  autoComplete="new-password"
+                  readOnly
+                  onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                  onBlur={(e) => e.currentTarget.setAttribute("readonly", "readonly")}
                   value={schoolData.address}
                   onChange={(e) => setSchoolData({ ...schoolData, address: e.target.value })}
                   placeholder="e.g. Main Campus, University Road, Sargodha"

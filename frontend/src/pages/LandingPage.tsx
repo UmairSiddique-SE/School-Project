@@ -126,12 +126,12 @@ export default function LandingPage() {
       name: "Professional",
       price: 3000,
       period: "per month",
-      maxStudents: 500,
+      maxStudents: 999999,
       maxTeachers: 0,
       storageMb: 10240,
       supportTier: "Email + Chat",
       features: [
-        "Student admissions, profiles & guardians",
+        "Unlimited student admissions, profiles & guardians",
         "Teacher & staff management with role-based access",
         "Attendance, classes, subjects & timetable",
         "Fees, finance, vouchers & payment records",
@@ -417,9 +417,9 @@ export default function LandingPage() {
                     <div>
                       <p className={`text-sm font-extrabold uppercase tracking-[.14em] ${c.muted}`}>One complete subscription</p>
                       <h3 className={`mt-3 text-4xl font-black tracking-tight sm:text-5xl ${c.heading}`}>PKR 3,000<span className={`text-sm font-bold ${c.muted}`}> / month</span></h3>
-                      <p className={`mt-4 text-sm leading-7 ${c.muted}`}>Everything currently included in SchoolOS for a school with up to 500 students. No Free/Premium tier confusion.</p>
+                      <p className={`mt-4 text-sm leading-7 ${c.muted}`}>Everything currently included in SchoolOS with unlimited student enrollment. One clear subscription, with no Free or Premium tier confusion.</p>
                       <div className="mt-5 space-y-2.5">
-                        {["500 students", "Unlimited staff", "2 campuses", "Full reports", "Email + Chat support"].map((item) => (
+                        {["Unlimited students", "Unlimited staff", "2 campuses", "10 GB storage", "Full reports", "Email + Chat support"].map((item) => (
                           <div key={item} className={`flex items-center gap-2 text-xs font-bold ${c.body}`}><Check size={14} className="text-emerald-500" />{item}</div>
                         ))}
                       </div>

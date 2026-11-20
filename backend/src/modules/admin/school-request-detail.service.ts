@@ -23,7 +23,7 @@ export class SchoolRequestDetailService {
       school
         ? this.prisma.user.findMany({
             where: { schoolId: school.id, role: 'SCHOOL_ADMIN' },
-            select: { id: true, name: true, email: true, phone: true, isActive: true, emailVerified: true, lastLoginAt: true, createdAt: true },
+            select: { id: true, name: true, email: true, loginId: true, phone: true, isActive: true, emailVerified: true, lastLoginAt: true, createdAt: true },
           })
         : Promise.resolve([]),
       school

@@ -159,12 +159,26 @@ export class SchoolService {
       data.slug = cleanSlug;
     }
     try {
-      const updated = await this.prisma.school.update({ where: { id }, data: {
-        name: data.name ?? undefined, slug: data.slug ?? undefined, email: data.email ?? undefined,
-        phone: data.phone ?? undefined, address: data.address ?? undefined, city: data.city ?? undefined,
-        state: data.state ?? undefined, country: data.country ?? undefined, website: data.website ?? undefined,
-        logoUrl: data.logoUrl ?? undefined,
-      } });
+      const updated = await this.prisma.$transaction(async (tx) => {
+        const school = await tx.school.update({ where: { id }, data: {
+          name: data.name ?? undefined, slug: data.slug ?? undefined,
+          email: data.schoolEmail ?? undefined,
+          phone: data.schoolPhone ?? undefined,
+          address: data.address ?? undefined, city: data.city ?? undefined,
+          state: data.state ?? undefined, country: data.country ?? undefined,
+          website: data.website ?? undefined, logoUrl: data.logoUrl ?? undefined,
+        } });
+        if (data.adminEmail || data.adminName || data.adminPhone) {
+          const admin = await tx.user.findFirst({ where: { schoolId: id, role: 'SCHOOL_ADMIN', deletedAt: null }, orderBy: { createdAt: 'asc' } });
+          if (!admin) throw new NotFoundException('School administrator account not found');
+          await tx.user.update({ where: { id: admin.id }, data: {
+            email: data.adminEmail ? data.adminEmail.trim().toLowerCase() : undefined,
+            name: data.adminName ?? undefined,
+            phone: data.adminPhone ?? undefined,
+          } });
+        }
+        return school;
+      });
       await this.log(this.prisma, actor, 'SCHOOL_UPDATED', id, id, `Updated school profile for ${updated.name}`);
       return updated;
     } catch (error: any) {

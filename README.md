@@ -177,7 +177,7 @@ npm run build
 
 | Plan | Price | Features |
 |------|-------|----------|
-| **Professional** | PKR 3,000/month | Up to 500 students, unlimited staff, full reports, fee management, email+chat support |
+| **Professional** | PKR 3,000/month | Unlimited students and staff, all core SchoolOS modules, full reports, fee management, 10 GB storage, email+chat support |
 
 Super Admin manually reviews and approves each school registration after payment verification.
 
