@@ -404,3 +404,151 @@ html.dark .school-registration-page .school-reg-card textarea:focus {
     padding: 1rem;
   }
 }
+
+
+/* =========================================================
+   SchoolOS registration — premium landing-style layout
+   ========================================================= */
+.school-registration-page {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(34,211,238,.20), transparent 28%),
+    radial-gradient(circle at 82% 10%, rgba(59,130,246,.18), transparent 34%),
+    linear-gradient(135deg, #f4f9ff 0%, #ffffff 42%, #eef5ff 100%) !important;
+}
+html.dark .school-registration-page {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(8,145,178,.20), transparent 30%),
+    radial-gradient(circle at 82% 10%, rgba(79,70,229,.18), transparent 34%),
+    linear-gradient(135deg, #081424 0%, #0c1526 48%, #101b35 100%) !important;
+}
+.school-registration-page .school-reg-shell { min-height: 100svh; }
+.school-registration-page .school-reg-header {
+  min-height: 78px;
+  border-bottom: 0 !important;
+}
+.school-registration-page .schoolos-brand-mark {
+  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 58%, #4f46e5 100%) !important;
+}
+.school-registration-page .school-reg-nav-active {
+  position: relative;
+}
+.school-registration-page .school-reg-nav-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 42px;
+  height: 3px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #06b6d4, #2563eb);
+}
+.school-registration-page .school-reg-hero {
+  min-height: calc(100svh - 78px);
+}
+.school-registration-page .school-reg-sky {
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.86) 0%, rgba(240,249,255,.58) 45%, rgba(219,234,254,.28) 100%),
+    radial-gradient(circle at 80% 28%, rgba(56,189,248,.20), transparent 30%),
+    radial-gradient(circle at 40% 70%, rgba(129,140,248,.12), transparent 28%);
+}
+html.dark .school-registration-page .school-reg-sky {
+  background:
+    linear-gradient(115deg, rgba(8,20,36,.88) 0%, rgba(12,28,49,.62) 45%, rgba(30,41,91,.34) 100%),
+    radial-gradient(circle at 80% 28%, rgba(34,211,238,.12), transparent 30%);
+}
+.school-registration-page .schoolos-gradient-text {
+  background: linear-gradient(90deg, #06b6d4 0%, #2563eb 52%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.school-registration-page .school-reg-campus {
+  filter: saturate(1.04);
+}
+.school-registration-page .school-reg-campus::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -8px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(6,182,212,.38), rgba(37,99,235,.42), rgba(124,58,237,.30));
+  filter: blur(12px);
+}
+.school-registration-page .school-reg-workspace {
+  transform: translateY(0);
+}
+.school-registration-page .school-reg-card {
+  max-width: 1280px !important;
+  background: rgba(255,255,255,.94) !important;
+  border-color: rgba(191,219,254,.85) !important;
+  box-shadow:
+    0 34px 90px rgba(30,64,175,.16),
+    0 8px 28px rgba(14,165,233,.08) !important;
+}
+.school-registration-page .school-reg-card-header {
+  background: linear-gradient(90deg, rgba(239,246,255,.96), rgba(248,252,255,.92)) !important;
+  border-color: #dbeafe !important;
+}
+.school-registration-page .school-reg-card-body {
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,251,255,.92)) !important;
+}
+.school-registration-page .school-reg-card .school-reg-url {
+  background: #eef4ff !important;
+  border-color: #dbeafe !important;
+}
+.school-registration-page .school-reg-card input:not([type="checkbox"]):not([type="radio"]),
+.school-registration-page .school-reg-card select {
+  min-height: 42px;
+  background: #f8fbff !important;
+  border-color: #d7e4f4 !important;
+}
+.school-registration-page .school-reg-card input:focus,
+.school-registration-page .school-reg-card select:focus {
+  background: #fff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.10) !important;
+}
+.school-registration-page .school-reg-card button[type="submit"] {
+  background: linear-gradient(90deg, #06b6d4 0%, #2563eb 48%, #7c3aed 100%) !important;
+  box-shadow: 0 14px 32px rgba(37,99,235,.20) !important;
+}
+.school-registration-page .school-reg-footer {
+  margin-top: 0;
+  min-height: 110px;
+  background: linear-gradient(105deg, #071b49 0%, #0b2866 45%, #24105f 100%);
+}
+html.dark .school-registration-page .school-reg-card {
+  background: rgba(10,20,35,.94) !important;
+  border-color: rgba(96,165,250,.20) !important;
+}
+html.dark .school-registration-page .school-reg-card-header {
+  background: rgba(15,31,53,.92) !important;
+  border-color: rgba(148,163,184,.14) !important;
+}
+html.dark .school-registration-page .school-reg-card-body {
+  background: linear-gradient(180deg, rgba(10,20,35,.96), rgba(9,18,32,.94)) !important;
+}
+html.dark .school-registration-page .school-reg-card input:not([type="checkbox"]):not([type="radio"]),
+html.dark .school-registration-page .school-reg-card select {
+  background: #0f1d30 !important;
+  border-color: rgba(148,163,184,.20) !important;
+}
+html.dark .school-registration-page .school-reg-card input:focus,
+html.dark .school-registration-page .school-reg-card select:focus {
+  background: #12243a !important;
+  border-color: #22d3ee !important;
+}
+@media (max-width: 767px) {
+  .school-registration-page .school-reg-header { min-height: 68px; padding-top: 14px; padding-bottom: 14px; }
+  .school-registration-page .school-reg-header .schoolos-brand-mark { width: 42px; height: 42px; border-radius: 14px; }
+  .school-registration-page .school-reg-header .text-\[24px\] { font-size: 20px !important; }
+  .school-registration-page .school-reg-hero { min-height: auto; padding-top: 10px; }
+  .school-registration-page .school-reg-workspace { margin-top: 28px; }
+  .school-registration-page .school-reg-card { border-radius: 22px !important; }
+  .school-registration-page .school-reg-card-header { padding: 16px !important; }
+  .school-registration-page .school-reg-card-body { padding: 18px 16px !important; }
+  .school-registration-page .school-reg-footer { margin-top: 0; padding: 24px 18px; }
+}
