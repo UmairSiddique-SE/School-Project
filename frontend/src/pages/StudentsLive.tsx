@@ -381,7 +381,7 @@ export default function StudentsLive() {
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-[11px] font-bold text-muted-foreground mb-1">Residential Address *</label>
-                  <input required name="student-residential-address" autoComplete="off" className={input} placeholder="House / Street, Area, City" value={form.address} onChange={e => setForm({...form,address:e.target.value})}/>
+                  <input required name="student-residential-address" autoComplete="new-password" readOnly onFocus={e => e.currentTarget.removeAttribute("readonly")} onBlur={e => e.currentTarget.setAttribute("readonly", "readonly")} className={input} placeholder="House / Street, Area, City" value={form.address} onChange={e => setForm({...form,address:e.target.value})}/>
                 </div>
               </div>
             </div>
