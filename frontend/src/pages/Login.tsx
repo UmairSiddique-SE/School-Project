@@ -134,8 +134,8 @@ export default function LoginPage() {
       icon: School,
       title: "School Admin Portal",
       subtitle: "Institutional administration, staff and academic governance",
-      placeholder: "Admin email (e.g. admin@school.edu)",
-      helpText: "School Admins: Use your registered administrator email address and secure password.",
+      placeholder: "Admin Login ID or Email (e.g. admin01@admin.ums.edu.pk)",
+      helpText: "School Admins: Use your assigned Admin Login ID or registered email address.",
       btnText: "Sign In as School Admin",
     },
     TEACHER: {
@@ -147,8 +147,8 @@ export default function LoginPage() {
       icon: Users,
       title: "Teacher Faculty Portal",
       subtitle: "Classes, student records, marks entry, homework & attendance",
-      placeholder: "Teacher Login ID (e.g. ali001), Employee No (e.g. EMP-2026-001) or Gmail",
-      helpText: "Teachers: Use your assigned Login ID (e.g. ali001), Employee Code, or personal Gmail.",
+      placeholder: "Teacher Login ID (e.g. ali001@teacher.ums.edu.pk), Employee No or Email",
+      helpText: "Teachers: Use your assigned Teacher Login ID, Employee Code, or registered email.",
       btnText: "Sign In to Teacher Portal",
     },
     STUDENT: {
@@ -160,8 +160,8 @@ export default function LoginPage() {
       icon: GraduationCap,
       title: "Student LMS Portal",
       subtitle: "View exam results, daily homework, attendance, fees & timetable",
-      placeholder: "Admission ID (e.g. ADM-2026-0001), B-Form No, or Login ID",
-      helpText: "Students: Use your Admission No (e.g. ADM-2026-0001), B-Form or student login ID.",
+      placeholder: "Student Login ID (e.g. umair1@student.ums.edu.pk), Admission No or Email",
+      helpText: "Students: Use your Student Login ID, Admission No, or registered email.",
       btnText: "Sign In to Student LMS",
     },
   };
