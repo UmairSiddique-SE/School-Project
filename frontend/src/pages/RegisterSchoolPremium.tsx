@@ -36,26 +36,59 @@ const sanitizePhone = (v: string) => v.replace(/\D/g, '').slice(0, 11);
 
 /* ─── Logo compressor ────────────────────────────────────────────────────── */
 async function compressImage(file: File): Promise<string> {
-  if (!['image/png', 'image/jpeg'].includes(file.type)) throw new Error('Logo must be PNG or JPG.');
-  if (file.size > 2 * 1024 * 1024) throw new Error('Logo must be 2 MB or smaller.');
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    throw new Error('Logo must be PNG or JPG.');
+  }
+
+  // Large originals are accepted and compressed before they are sent to the API.
   const src = await new Promise<string>((res, rej) => {
     const r = new FileReader();
     r.onload = () => res(String(r.result));
     r.onerror = () => rej(new Error('Unable to read logo.'));
     r.readAsDataURL(file);
   });
+
   const image = await new Promise<HTMLImageElement>((res, rej) => {
     const img = new Image();
     img.onload = () => res(img);
     img.onerror = () => rej(new Error('Unable to process logo.'));
     img.src = src;
   });
-  const scale = Math.min(1, 900 / Math.max(image.width, image.height));
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-  canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.78);
+
+  let maxDimension = 900;
+  let quality = 0.78;
+  const targetBytes = 20 * 1024;
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(image.width, image.height),
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Logo compression is not supported by this browser.');
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+    const base64 = dataUrl.split(',')[1] || '';
+    const byteLength = Math.floor(base64.length * 0.75);
+
+    if (byteLength <= targetBytes) return dataUrl;
+
+    if (quality > 0.32) {
+      quality = Math.max(0.32, quality - 0.06);
+    } else {
+      maxDimension = Math.max(128, Math.round(maxDimension * 0.8));
+      quality = 0.62;
+    }
+  }
+
+  throw new Error('Logo could not be compressed to a safe size.');
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -495,7 +528,7 @@ function DetailsForm({
                   : (
                     <div className="text-center text-slate-400 dark:text-slate-500">
                       <ImagePlus className="mx-auto mb-1" size={20} />
-                      <span className="text-[10px] font-bold">PNG/JPG · 2MB</span>
+                      <span className="text-[10px] font-bold">PNG/JPG · Auto-compressed</span>
                     </div>
                   )
               }
