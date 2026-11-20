@@ -57,6 +57,10 @@ export class MailService {
     );
   }
 
+  private getSenderName(): string {
+    return this.configService.get<string>('SMTP_FROM_NAME') || 'SchoolOS';
+  }
+
   async sendMail(
     to: string,
     subject: string,
@@ -64,7 +68,7 @@ export class MailService {
     text?: string,
   ): Promise<void> {
     await this.transporter.sendMail({
-      from: this.getSender(),
+      from: { name: this.getSenderName(), address: this.getSender() },
       to,
       subject,
       html,
@@ -83,14 +87,44 @@ export class MailService {
         to,
         'SchoolOS — Verify Your Email',
         `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
-            <h2>SchoolOS</h2>
-            <p>Your verification code is:</p>
-            <h1>${otp}</h1>
-            <p>This code expires in 30 minutes.</p>
-          </div>
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width,initial-scale=1">
+              <meta name="color-scheme" content="light">
+              <title>Verify your SchoolOS email</title>
+            </head>
+            <body style="margin:0;padding:0;background:#f3f6fb;font-family:Arial,Helvetica,sans-serif;color:#172033">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f6fb;padding:32px 12px">
+                <tr><td align="center">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid #e6eaf0;border-radius:18px;overflow:hidden">
+                    <tr><td style="padding:28px 32px;background:#142b52;text-align:left">
+                      <div style="font-size:25px;line-height:32px;font-weight:700;letter-spacing:-.5px;color:#ffffff">School<span style="color:#72d6c2">OS</span></div>
+                      <div style="margin-top:6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#c5d2e5">School management platform</div>
+                    </td></tr>
+                    <tr><td style="padding:36px 32px 24px">
+                      <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#168675">Email verification</div>
+                      <h1 style="margin:12px 0 10px;font-size:25px;line-height:32px;color:#172033">Verify your email address</h1>
+                      <p style="margin:0;font-size:15px;line-height:24px;color:#596579">Use the verification code below to continue setting up your school account.</p>
+                      <div style="margin:28px 0 20px;padding:22px 12px;text-align:center;background:#f3f7fb;border:1px solid #e3eaf2;border-radius:14px">
+                        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#738197">Your verification code</div>
+                        <div style="margin-top:10px;font-size:36px;line-height:44px;font-weight:700;letter-spacing:9px;color:#142b52">${this.escapeHtml(otp)}</div>
+                      </div>
+                      <p style="margin:0;font-size:14px;line-height:22px;color:#596579">This code expires in <strong style="color:#172033">30 minutes</strong>. For your security, do not share it with anyone.</p>
+                      <p style="margin:24px 0 0;font-size:13px;line-height:21px;color:#8490a2">If you did not request this code, you can safely ignore this email.</p>
+                    </td></tr>
+                    <tr><td style="padding:20px 32px;border-top:1px solid #edf0f4;background:#fbfcfe">
+                      <p style="margin:0;font-size:12px;line-height:19px;color:#8a94a5">© ${new Date().getFullYear()} SchoolOS. All rights reserved.</p>
+                      <p style="margin:4px 0 0;font-size:12px;line-height:19px;color:#a0a9b7">This is an automated security message. Please do not reply.</p>
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body>
+          </html>
         `,
-        `Your SchoolOS verification code is ${otp}. It expires in 30 minutes.`,
+        `Your SchoolOS verification code is ${otp}. It expires in 30 minutes. Do not share this code with anyone.`,
       );
 
       return true;
