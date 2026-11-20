@@ -187,22 +187,38 @@ export class PeopleService {
     }
     const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId, deletedAt: null } });
     if (!teacher) throw new NotFoundException('Teacher not found');
+
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+      select: { name: true, code: true },
+    });
+    const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
+    const firstName = teacher.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
+    const seq = teacher.employeeNo.match(/(\d+)$/)?.[1] || '001';
+    const user = await this.prisma.user.findFirst({ where: { email: teacher.email, schoolId } });
+
+    let loginId = user?.loginId || roleLoginId(`${firstName}${seq}`, 'teacher', schoolCode);
+    let suffix = 1;
+    while (await this.prisma.user.findFirst({
+      where: { loginId, deletedAt: null, ...(user ? { id: { not: user.id } } : {}) },
+      select: { id: true },
+    })) {
+      loginId = roleLoginId(`${firstName}${seq}${suffix++}`, 'teacher', schoolCode);
+    }
+
     const passwordHash = await bcrypt.hash(password.trim(), 10);
-    const email = teacher.email;
-    const user = await this.prisma.user.findFirst({ where: { email, schoolId } });
     if (user) {
-      await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash, emailVerified: true } });
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash, emailVerified: true, loginId },
+      });
     } else {
-      const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { name: true, code: true } });
-      const schoolCode = school?.code || generateSchoolCode(school?.name || 'School');
-      const firstName = teacher.name.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'teacher';
-      const seq = teacher.employeeNo.replace(/\D/g, '').slice(-3) || '001';
-      const loginId = roleLoginId(`${firstName}${seq}`, 'teacher', schoolCode);
       await this.prisma.user.create({
-        data: { name: teacher.name, email, loginId, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
+        data: { name: teacher.name, email: teacher.email, loginId, passwordHash, role: 'TEACHER', schoolId, emailVerified: true },
       });
     }
-    return { success: true, message: 'Teacher password updated successfully', loginId: email, password: password.trim() };
+
+    return { success: true, message: 'Teacher password updated successfully', loginId, password: password.trim() };
   }
 
   async deleteTeacher(id: string, schoolId: string) {
