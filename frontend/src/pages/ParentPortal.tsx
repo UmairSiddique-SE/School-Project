@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Award, BookOpen, CalendarCheck, CheckCircle2, Clock3, GraduationCap, Loader2, ReceiptText, UsersRound } from "lucide-react";
 import apiClient from "@/api/apiClient";
 import { toast } from "sonner";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Attendance = { status?: string; date?: string };
 type Student = {
@@ -57,7 +58,10 @@ export default function ParentPortal() {
           <h1 className="mt-3 text-3xl font-black tracking-tight">Welcome, {data?.name || "Parent"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">Read-only access to your linked children's school records.</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">{children.length} linked {children.length === 1 ? "child" : "children"}</div>
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">{children.length} linked {children.length === 1 ? "child" : "children"}</div>
+          <ThemeToggle />
+        </div>
       </div>
 
       {children.length === 0 ? (

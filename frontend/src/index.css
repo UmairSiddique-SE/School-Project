@@ -3,6 +3,7 @@
 
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-border: hsl(var(--border));
@@ -82,8 +83,6 @@
   --glow-amber: 37 91% 55%;
 }
 
-  /* Standardized Clean Light Theme across entire SchoolOS */
-  .dark,
   .light {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
@@ -108,6 +107,32 @@
     --surface-1: 0 0% 100%;
     --surface-2: 210 40% 96%;
     --surface-3: 214 32% 91%;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 10%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 40% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 187 86% 48%;
+    --primary-foreground: 222 47% 8%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 15%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 18%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 210 40% 96%;
+    --border: 217 25% 19%;
+    --input: 217 25% 19%;
+    --ring: 187 86% 48%;
+
+    --surface-1: 222 47% 7%;
+    --surface-2: 222 40% 10%;
+    --surface-3: 217 33% 15%;
   }
 }
 

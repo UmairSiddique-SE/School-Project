@@ -32,6 +32,7 @@ import { LayoutDashboard, Database, School, FileText, CreditCard, BarChart2, Bel
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import ThemeToggle from "@/components/ThemeToggle";
 import apiClient from "@/api/apiClient";
 import Overview from "./sections/Overview";
 import PaymentAccountingPanel from "./sections/PaymentAccountingPanel";
@@ -95,7 +96,6 @@ export default function SuperAdminDashboard() {
   const [manualPaymentOpen, setManualPaymentOpen] = useState(false);
   const [badgeCounts, setBadgeCounts] = useState({ pendingSchoolRequests: 0, pendingPayments: 0 });
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,7 +138,7 @@ export default function SuperAdminDashboard() {
       <header className="flex shrink-0 items-center gap-3 border-b border-border bg-card/80 px-4 py-3 backdrop-blur-xl sm:px-5">
         <button onClick={() => setMobileOpen(true)} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground lg:hidden" aria-label="Open menu"><Menu size={18} /></button>
         <div className="flex min-w-0 flex-1 items-center gap-2"><Shield size={14} className="shrink-0 text-primary" /><span className="hidden text-xs font-semibold text-muted-foreground sm:inline">Super Admin Console</span><ChevronRight size={12} className="hidden text-muted-foreground/50 sm:inline" />{activeItem && <><activeItem.icon size={15} className="shrink-0 text-primary" /><h1 className="truncate text-sm font-black text-foreground">{activeItem.label}</h1></>}</div>
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">{activeSection === "payments" && <button onClick={() => setManualPaymentOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-black text-primary-foreground shadow-sm"><Plus size={14} /> <span className="hidden sm:inline">Add Payment</span></button>}<div className="hidden items-center gap-1.5 rounded-lg bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground md:flex"><Clock size={12} className="text-primary" /><LiveClock /></div><button onClick={() => handleNav("notifications")} className="relative rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Notifications"><Bell size={16} />{(badgeCounts.pendingSchoolRequests + badgeCounts.pendingPayments) > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />}</button><button onClick={() => handleNav("profile")} className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-black text-white shadow-md shadow-violet-500/20" title="My Profile" aria-label="My Profile">{initials}</button></div>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">{activeSection === "payments" && <button onClick={() => setManualPaymentOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-black text-primary-foreground shadow-sm"><Plus size={14} /> <span className="hidden sm:inline">Add Payment</span></button>}<div className="hidden items-center gap-1.5 rounded-lg bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground md:flex"><Clock size={12} className="text-primary" /><LiveClock /></div><ThemeToggle /><button onClick={() => handleNav("notifications")} className="relative rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Notifications"><Bell size={16} />{(badgeCounts.pendingSchoolRequests + badgeCounts.pendingPayments) > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />}</button><button onClick={() => handleNav("profile")} className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-black text-white shadow-md shadow-violet-500/20" title="My Profile" aria-label="My Profile">{initials}</button></div>
       </header>
       <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"><div className="mx-auto max-w-[1800px] p-4 sm:p-6"><AnimatePresence mode="wait"><motion.div key={activeSection} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}><SectionErrorBoundary name={activeSection}><ActiveComponent /></SectionErrorBoundary></motion.div></AnimatePresence></div></main>
     </div>

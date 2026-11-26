@@ -271,9 +271,11 @@ export default function RegisterSchoolPremium() {
                 <span className="mt-1 block text-[9px] font-black uppercase tracking-[.34em] text-slate-500 dark:text-slate-400">School ERP</span>
               </span>
             </Link>
-            <Link to="/school-login" className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-5 py-2.5 text-sm font-black text-[#12347f] shadow-[0_10px_30px_rgba(30,64,175,.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[.08] dark:text-white">
-              <LockKeyhole size={15} /> School Login
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/school-login" className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-5 py-2.5 text-sm font-black text-[#12347f] shadow-[0_10px_30px_rgba(30,64,175,.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[.08] dark:text-white">
+                <LockKeyhole size={15} /> School Login
+              </Link>
+            </div>
           </header>
 
           <div className="school-reg-sky absolute inset-0 -z-20" />

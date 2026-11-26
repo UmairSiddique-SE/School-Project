@@ -88,16 +88,6 @@ export default function LandingPage() {
   const [schools, setSchools] = useState<PublicSchool[]>([]);
   const [schoolsLoading, setSchoolsLoading] = useState(true);
 
-  // Enforce consistent light mode across the platform
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("dark");
-    root.classList.add("light");
-    root.style.colorScheme = "light";
-  }, []);
-
-  const toggleTheme = () => {};
-
   useEffect(() => {
     let active = true;
     apiClient.get<PublicPlan[]>("/public/plans")

@@ -149,3 +149,63 @@ header.glass { box-shadow:0 10px 30px rgba(15,23,42,.08); }
   main > div { padding-left:.9rem !important; padding-right:.9rem !important; }
   main .stat-card { min-height:138px; }
 }
+
+html.dark {
+  --erp-bg: #080d17;
+  --erp-surface: #111b2d;
+  --erp-surface-2: #172338;
+  --erp-line: #26364d;
+  --erp-text: #e2e8f0;
+  --erp-muted: #94a3b8;
+}
+
+html.dark body {
+  background: #080d17 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark aside {
+  background: #0d1524 !important;
+  border-color: rgba(148, 163, 184, .14) !important;
+  box-shadow: 2px 0 24px rgba(0, 0, 0, .2) !important;
+}
+
+html.dark aside > div:first-child {
+  background: #0d1524 !important;
+  border-color: rgba(148, 163, 184, .14) !important;
+}
+
+html.dark header {
+  background: rgba(11, 17, 32, .96) !important;
+  border-color: rgba(148, 163, 184, .14) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2) !important;
+}
+
+html.dark main {
+  background-color: #0b1120 !important;
+  color: #e2e8f0;
+}
+
+html.dark main .glass-card,
+html.dark main .stat-card,
+html.dark main [class*="rounded-2xl"][class*="border"],
+html.dark main [class*="rounded-3xl"][class*="border"] {
+  background-color: #111b2d !important;
+  border-color: rgba(148, 163, 184, .16) !important;
+  color: #e2e8f0;
+}
+
+html.dark main .text-slate-900,
+html.dark main .text-slate-800,
+html.dark main .text-slate-700,
+html.dark main .text-gray-900,
+html.dark main .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark main .text-slate-600,
+html.dark main .text-slate-500,
+html.dark main .text-gray-600,
+html.dark main .text-gray-500 {
+  color: #94a3b8 !important;
+}

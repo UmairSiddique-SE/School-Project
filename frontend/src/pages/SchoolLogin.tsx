@@ -112,7 +112,7 @@ export default function SchoolLogin() {
   const RoleIcon = roleMeta.icon;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 selection:bg-cyan-500/20">
+    <div className="school-login-page relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 selection:bg-cyan-500/20">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-cyan-400/10 blur-[130px]" />
         <div className="absolute -right-40 top-1/3 h-[520px] w-[520px] rounded-full bg-blue-500/10 blur-[130px]" />
@@ -124,8 +124,8 @@ export default function SchoolLogin() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-black text-white shadow-md shadow-cyan-500/25">S</span>
           <span className="text-sm font-black text-slate-900">SchoolOS <span className="text-cyan-600">Cloud</span></span>
         </Link>
-        <Link to="/" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900">
-          <ArrowLeft size={15} /> Back to Home
+        <Link to="/" aria-label="Back to Home" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900">
+          <ArrowLeft size={15} /> <span className="hidden sm:inline">Back to Home</span>
         </Link>
       </header>
 

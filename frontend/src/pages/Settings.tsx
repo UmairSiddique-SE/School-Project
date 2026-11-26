@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  LockKeyhole, Mail, Phone, Save, ShieldCheck, Sun,
+  LockKeyhole, Mail, Phone, Save, ShieldCheck,
   UserRound, Building2, KeyRound, Sparkles, Check, CheckCircle2,
   Globe, MapPin, Upload, ExternalLink, School
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 import apiClient from '@/api/apiClient';
 
 export default function Settings() {
@@ -372,12 +373,13 @@ export default function Settings() {
               <div>
                 <h3 className="font-bold text-sm text-slate-900">Display Theme</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Standard SchoolOS Light Theme (Clean &amp; High Contrast)
+                  Your theme preference applies across the SchoolOS pages.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 border border-emerald-200">
-                <Sun size={15} /> Light Theme Active
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-muted-foreground">{theme === 'dark' ? 'Dark' : 'Light'} theme active</span>
+                <ThemeToggle />
               </div>
             </div>
           </section>
