@@ -5,10 +5,12 @@ describe('ClassService subject tenant scoping', () => {
   const prisma = {
     subject: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
     },
     class: {
       count: jest.fn(),
+      findMany: jest.fn(),
     },
     teacher: {
       findFirst: jest.fn(),
@@ -23,7 +25,9 @@ describe('ClassService subject tenant scoping', () => {
     jest.clearAllMocks();
     prisma.subject.findFirst.mockResolvedValue(null);
     prisma.subject.create.mockResolvedValue({ id: 'subject-1' });
+    prisma.subject.findMany.mockResolvedValue([]);
     prisma.class.count.mockResolvedValue(1);
+    prisma.class.findMany.mockResolvedValue([]);
     prisma.teacher.findFirst.mockResolvedValue(null);
     prisma.classSubject.upsert.mockResolvedValue({ id: 'link-1' });
     service = new ClassService(prisma as any);
@@ -110,5 +114,39 @@ describe('ClassService subject tenant scoping', () => {
       where: { id: { in: ['class-1'] }, schoolId: 'school-1', deletedAt: null },
     });
     expect(prisma.classSubject.upsert).toHaveBeenCalled();
+  });
+
+  it('includes subject-assigned sections in a teacher class view', async () => {
+    await service.findAll('school-1', 'TEACHER', 'teacher@example.com');
+
+    expect(prisma.class.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      include: expect.objectContaining({
+        sections: expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { teacher: { email: 'teacher@example.com', deletedAt: null, isActive: true } },
+              { class: { subjects: { some: { teacher: { email: 'teacher@example.com', deletedAt: null, isActive: true } } } } },
+            ]),
+          }),
+        }),
+      }),
+    }));
+  });
+
+  it('limits teacher subject data to their own assignments', async () => {
+    await service.getSubjects('school-1', 'TEACHER', 'teacher@example.com');
+
+    expect(prisma.subject.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        classSubjects: {
+          some: { teacher: { email: 'teacher@example.com', deletedAt: null, isActive: true } },
+        },
+      }),
+      include: expect.objectContaining({
+        classSubjects: expect.objectContaining({
+          where: { teacher: { email: 'teacher@example.com', deletedAt: null, isActive: true } },
+        }),
+      }),
+    }));
   });
 });

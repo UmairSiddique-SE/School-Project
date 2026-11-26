@@ -52,7 +52,7 @@ export class ClassController {
   @Get('subjects')
   @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getSubjects(@CurrentUser() user: any) {
-    return this.classService.getSubjects(user.schoolId);
+    return this.classService.getSubjects(user.schoolId, user.role, user.email);
   }
 
   @Post('subjects')

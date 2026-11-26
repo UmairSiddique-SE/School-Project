@@ -17,15 +17,15 @@ export class AcademicsController {
   @Post('homework') @Roles('SCHOOL_ADMIN', 'TEACHER')
   createHomework(@CurrentUser() user: any, @Body() dto: any) { return this.academicsService.createHomework(user.schoolId, user.role === 'TEACHER' ? user.email : null, dto); }
   @Delete('homework/:id') @Roles('SCHOOL_ADMIN', 'TEACHER')
-  deleteHomework(@CurrentUser() user: any, @Param('id') id: string) { return this.academicsService.deleteHomework(id, user.schoolId); }
+  deleteHomework(@CurrentUser() user: any, @Param('id') id: string) { return this.academicsService.deleteHomework(id, user.schoolId, user.role === 'TEACHER' ? user.email : undefined); }
 
   @Get('timetables') @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getTimetables(@CurrentUser() user: any) { return this.academicsService.getTimetables(user.schoolId, user); }
-  @Post('timetables') @Roles('SCHOOL_ADMIN', 'TEACHER')
+  @Post('timetables') @Roles('SCHOOL_ADMIN')
   createTimetable(@CurrentUser() user: any, @Body() dto: any) { return this.academicsService.createTimetable(user.schoolId, dto); }
-  @Patch('timetables/:id') @Roles('SCHOOL_ADMIN', 'TEACHER')
+  @Patch('timetables/:id') @Roles('SCHOOL_ADMIN')
   updateTimetable(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: any) { return this.academicsService.updateTimetable(id, user.schoolId, dto); }
-  @Delete('timetables/:id') @Roles('SCHOOL_ADMIN', 'TEACHER')
+  @Delete('timetables/:id') @Roles('SCHOOL_ADMIN')
   deleteTimetable(@CurrentUser() user: any, @Param('id') id: string) { return this.academicsService.deleteTimetable(id, user.schoolId); }
 
   @Get('announcements') @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')

@@ -15,8 +15,8 @@ export class ClassService {
         ...(isTeacher
           ? {
               OR: [
-                { sections: { some: { deletedAt: null, teacher: { email: teacherEmail, deletedAt: null } } } },
-                { subjects: { some: { teacher: { email: teacherEmail, deletedAt: null } } } },
+                { sections: { some: { deletedAt: null, teacher: { email: teacherEmail, deletedAt: null, isActive: true } } } },
+                { subjects: { some: { teacher: { email: teacherEmail, deletedAt: null, isActive: true } } } },
               ],
             }
           : {}),
@@ -25,7 +25,14 @@ export class ClassService {
         sections: {
           where: {
             deletedAt: null,
-            ...(isTeacher ? { teacher: { email: teacherEmail, deletedAt: null } } : {}),
+            ...(isTeacher
+              ? {
+                  OR: [
+                    { teacher: { email: teacherEmail, deletedAt: null, isActive: true } },
+                    { class: { subjects: { some: { teacher: { email: teacherEmail, deletedAt: null, isActive: true } } } } },
+                  ],
+                }
+              : {}),
           },
           include: {
             teacher: { select: { id: true, name: true, email: true } },
@@ -33,7 +40,7 @@ export class ClassService {
           },
         },
         subjects: {
-          ...(isTeacher ? { where: { teacher: { email: teacherEmail, deletedAt: null } } } : {}),
+          ...(isTeacher ? { where: { teacher: { email: teacherEmail, deletedAt: null, isActive: true } } } : {}),
           include: {
             subject: { select: { id: true, name: true, code: true, description: true } },
             teacher: { select: { id: true, name: true, email: true } },
@@ -125,11 +132,29 @@ export class ClassService {
   }
 
   // ─── Subjects Management ───
-  async getSubjects(schoolId: string) {
+  async getSubjects(schoolId: string, role?: string, teacherEmail?: string) {
+    const isTeacher = role === 'TEACHER' && Boolean(teacherEmail);
     const subjects = await this.prisma.subject.findMany({
-      where: { schoolId, deletedAt: null },
+      where: {
+        schoolId,
+        deletedAt: null,
+        ...(isTeacher
+          ? {
+              classSubjects: {
+                some: { teacher: { email: teacherEmail, deletedAt: null, isActive: true } },
+              },
+            }
+          : {}),
+      },
       include: {
         classSubjects: {
+          ...(isTeacher
+            ? {
+                where: {
+                  teacher: { email: teacherEmail, deletedAt: null, isActive: true },
+                },
+              }
+            : {}),
           include: {
             class: { select: { id: true, name: true } },
             teacher: { select: { id: true, name: true, employeeNo: true } },

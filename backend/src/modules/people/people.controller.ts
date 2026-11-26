@@ -43,7 +43,12 @@ export class PeopleController {
                 include: {
                   section: { include: { class: true } },
                   attendances: { orderBy: { date: 'desc' }, take: 100 },
-                  examResults: { include: { exam: true, subject: true }, orderBy: { id: 'desc' }, take: 100 },
+                  examResults: {
+                    where: { exam: { isPublished: true, deletedAt: null } },
+                    include: { exam: true, subject: true },
+                    orderBy: { id: 'desc' },
+                    take: 100,
+                  },
                   feePayments: { take: 50 },
                   homeworkSubmissions: { include: { homework: true }, orderBy: { id: 'desc' }, take: 50 },
                 },
@@ -94,7 +99,10 @@ export class PeopleController {
   @Get('teachers')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getTeachers(@CurrentUser() user: any) {
-    return this.peopleService.getTeachers(user.schoolId);
+    return this.peopleService.getTeachers(
+      user.schoolId,
+      user.role === 'TEACHER' ? user.email : undefined,
+    );
   }
 
   @Post('teachers')
@@ -166,13 +174,20 @@ export class PeopleController {
     if (user?.role === 'SCHOOL_ADMIN') return this.peopleService.getStudents(user.schoolId);
 
     const teacher = await this.prisma.teacher.findFirst({
-      where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
+      where: { schoolId: user.schoolId, email: user.email, deletedAt: null, isActive: true },
       select: { id: true },
     });
     if (!teacher) return [];
 
     const sections = await this.prisma.section.findMany({
-      where: { class: { schoolId: user.schoolId }, teacherId: teacher.id, deletedAt: null },
+      where: {
+        class: { schoolId: user.schoolId, deletedAt: null },
+        deletedAt: null,
+        OR: [
+          { teacherId: teacher.id },
+          { class: { subjects: { some: { teacherId: teacher.id, teacher: { isActive: true, deletedAt: null } } } } },
+        ],
+      },
       select: { id: true },
     });
     const sectionIds = sections.map(section => section.id);

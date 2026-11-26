@@ -8,7 +8,19 @@ import { generateSchoolCode, roleLoginId } from '../auth/school-code.util';
 export class PeopleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getTeachers(schoolId: string) {
+  async getTeachers(schoolId: string, teacherEmail?: string) {
+    if (teacherEmail) {
+      return this.prisma.teacher.findMany({
+        where: { schoolId, email: teacherEmail, deletedAt: null, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          employeeNo: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+    }
     return this.prisma.teacher.findMany({
       where: { schoolId, deletedAt: null },
       include: {

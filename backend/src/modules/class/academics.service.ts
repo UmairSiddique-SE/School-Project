@@ -11,6 +11,13 @@ export class AcademicsService {
       const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null }, select: { sectionId: true } });
       if (!student?.sectionId) return [];
       where.sectionId = student.sectionId;
+    } else if (user?.role === 'TEACHER') {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { schoolId, email: user.email, deletedAt: null, isActive: true },
+        select: { id: true },
+      });
+      if (!teacher) throw new NotFoundException('Teacher profile not found');
+      where.teacherId = teacher.id;
     }
     return this.prisma.homework.findMany({ where, include: { section: { include: { class: true } }, subject: true, teacher: true }, orderBy: { createdAt: 'desc' } });
   }
@@ -46,9 +53,19 @@ export class AcademicsService {
     } });
   }
 
-  async deleteHomework(id: string, schoolId: string) {
+  async deleteHomework(id: string, schoolId: string, teacherEmail?: string) {
     const homework = await this.prisma.homework.findFirst({ where: { id, schoolId } });
     if (!homework) throw new NotFoundException('Homework not found');
+    if (teacherEmail) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { schoolId, email: teacherEmail, deletedAt: null, isActive: true },
+        select: { id: true },
+      });
+      if (!teacher) throw new NotFoundException('Teacher profile not found');
+      if (homework.teacherId !== teacher.id) {
+        throw new ForbiddenException('You can only delete homework assigned by you');
+      }
+    }
     return this.prisma.homework.delete({ where: { id } });
   }
 
@@ -58,9 +75,13 @@ export class AcademicsService {
       const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null }, select: { sectionId: true } });
       if (!student?.sectionId) return [];
       where.sectionId = student.sectionId;
-    } else if (user?.role === 'TEACHER' && user.email) {
-      // Teachers can see their own timetable or full school timetable
-      // by default return full school timetable for viewing class/teacher schedules
+    } else if (user?.role === 'TEACHER') {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { schoolId, email: user.email, deletedAt: null, isActive: true },
+        select: { id: true },
+      });
+      if (!teacher) throw new NotFoundException('Teacher profile not found');
+      where.teacherId = teacher.id;
     }
     return this.prisma.timetable.findMany({
       where,

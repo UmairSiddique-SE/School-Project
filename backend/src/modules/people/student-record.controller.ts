@@ -58,7 +58,7 @@ export class StudentRecordController {
 
     if (user.role === 'TEACHER') {
       const teacher = await this.prisma.teacher.findFirst({
-        where: { schoolId: user.schoolId, email: user.email, deletedAt: null },
+        where: { schoolId: user.schoolId, email: user.email, deletedAt: null, isActive: true },
         select: { id: true },
       });
       if (!teacher || !student.sectionId) throw new BadRequestException('Student is not assigned to your section');

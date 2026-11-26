@@ -40,7 +40,7 @@ const primaryBtn = 'inline-flex items-center justify-center gap-2 rounded-xl bg-
 
 export default function Timetable() {
   const { user } = useAuth();
-  const canEdit = user?.role === 'SCHOOL_ADMIN' || user?.role === 'TEACHER';
+  const canEdit = user?.role === 'SCHOOL_ADMIN';
 
   const [slots, setSlots] = useState<Slot[]>([]);
   const [classes, setClasses] = useState<any[]>([]);

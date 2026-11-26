@@ -14,9 +14,47 @@ export function computeGrade(percentage: number): { grade: string; remarks: stri
 export class ExamService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async getTeacherAccess(schoolId: string, email?: string) {
+    if (!email) throw new NotFoundException('Teacher profile not found');
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { schoolId, email, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
+    if (!teacher) throw new NotFoundException('Teacher profile not found');
+
+    const sections = await this.prisma.section.findMany({
+      where: {
+        deletedAt: null,
+        class: { schoolId, deletedAt: null },
+        OR: [
+          { teacherId: teacher.id },
+          { class: { subjects: { some: { teacherId: teacher.id } } } },
+        ],
+      },
+      select: { id: true, classId: true },
+    });
+    return {
+      teacherId: teacher.id,
+      sections,
+      sectionIds: sections.map((section) => section.id),
+      classIds: Array.from(new Set(sections.map((section) => section.classId))),
+    };
+  }
+
   async getExams(schoolId: string, user?: any) {
     const baseWhere: any = { schoolId, deletedAt: null };
-    if (user?.role === 'STUDENT') baseWhere.isPublished = true;
+    if (user?.role === 'STUDENT') {
+      const student = await this.prisma.student.findFirst({
+        where: { schoolId, email: user.email, deletedAt: null, isActive: true },
+        select: { sectionId: true },
+      });
+      if (!student) return [];
+      baseWhere.isPublished = true;
+      baseWhere.OR = [{ sectionId: null }, { sectionId: student.sectionId }];
+    } else if (user?.role === 'TEACHER') {
+      const { sectionIds } = await this.getTeacherAccess(schoolId, user.email);
+      baseWhere.OR = [{ sectionId: null }, { sectionId: { in: sectionIds } }];
+    }
     return this.prisma.exam.findMany({
       where: baseWhere,
       include: {
@@ -131,6 +169,32 @@ export class ExamService {
       const student = await this.prisma.student.findFirst({ where: { schoolId, email: user.email, deletedAt: null, isActive: true }, select: { id: true } });
       if (!student) throw new NotFoundException('Student profile not found');
       where.studentId = student.id;
+    } else if (user?.role === 'TEACHER') {
+      const teacher = await this.getTeacherAccess(schoolId, user.email);
+      if (exam.sectionId && !teacher.sectionIds.includes(exam.sectionId)) {
+        throw new ForbiddenException('You are not assigned to this exam section');
+      }
+      if (!teacher.sectionIds.length) return [];
+      if (subjectId) {
+        const subjectAssignments = await this.prisma.classSubject.findMany({
+          where: {
+            teacherId: teacher.teacherId,
+            classId: { in: teacher.classIds },
+            subjectId,
+          },
+          select: { classId: true },
+        });
+        const assignedClassIds = new Set(subjectAssignments.map((assignment) => assignment.classId));
+        const assignedSectionIds = teacher.sections
+          .filter((section) => assignedClassIds.has(section.classId))
+          .map((section) => section.id);
+        if (!assignedSectionIds.length) {
+          throw new ForbiddenException('You are not assigned to this subject');
+        }
+        where.student = { sectionId: { in: assignedSectionIds } };
+      } else {
+        where.student = { sectionId: { in: teacher.sectionIds } };
+      }
     }
 
     return this.prisma.examResult.findMany({
@@ -183,12 +247,22 @@ export class ExamService {
     });
   }
 
-  async recordResults(schoolId: string, data: any, _teacherEmail?: string) {
+  async recordResults(schoolId: string, data: any, teacherEmail?: string) {
     if (!data.examId || !Array.isArray(data.results) || data.results.length === 0) {
       throw new BadRequestException('Exam and at least one result are required');
     }
     const exam = await this.prisma.exam.findFirst({ where: { id: data.examId, schoolId, deletedAt: null } });
     if (!exam) throw new NotFoundException('Exam not found');
+    const teacher = teacherEmail
+      ? await this.getTeacherAccess(schoolId, teacherEmail)
+      : undefined;
+    if (
+      teacher &&
+      exam.sectionId &&
+      !teacher.sectionIds.includes(exam.sectionId)
+    ) {
+      throw new ForbiddenException('You are not assigned to this exam section');
+    }
 
     const normalized = data.results.map((r: any) => {
       const isAbsent = Boolean(r.isAbsent);
@@ -219,11 +293,40 @@ export class ExamService {
     const subjectIds = Array.from(new Set(normalized.map((r: any) => r.subjectId))) as string[];
 
     const [students, subjects] = await Promise.all([
-      this.prisma.student.findMany({ where: { id: { in: studentIds }, schoolId, deletedAt: null }, select: { id: true, sectionId: true } }),
+      this.prisma.student.findMany({
+        where: { id: { in: studentIds }, schoolId, deletedAt: null },
+        select: { id: true, sectionId: true, section: { select: { classId: true } } },
+      }),
       this.prisma.subject.findMany({ where: { id: { in: subjectIds }, schoolId, deletedAt: null }, select: { id: true } }),
     ]);
     if (students.length !== studentIds.length || subjects.length !== subjectIds.length) {
       throw new NotFoundException('One or more students or subjects not found');
+    }
+    if (exam.sectionId && students.some((student) => student.sectionId !== exam.sectionId)) {
+      throw new BadRequestException('All students must belong to the exam section');
+    }
+    if (teacher) {
+      const teacherAssignments = await this.prisma.classSubject.findMany({
+        where: {
+          teacherId: teacher.teacherId,
+          classId: { in: teacher.classIds },
+          subjectId: { in: subjectIds },
+        },
+        select: { classId: true, subjectId: true },
+      });
+      const assignmentKeys = new Set(
+        teacherAssignments.map((assignment) => `${assignment.classId}:${assignment.subjectId}`),
+      );
+      const studentsById = new Map(students.map((student) => [student.id, student]));
+      for (const result of normalized) {
+        const student = studentsById.get(result.studentId);
+        const classId = student?.section?.classId;
+        if (!classId || !assignmentKeys.has(`${classId}:${result.subjectId}`)) {
+          throw new ForbiddenException(
+            'You can only record marks for students and subjects assigned to you',
+          );
+        }
+      }
     }
 
     return this.prisma.$transaction(
@@ -251,7 +354,7 @@ export class ExamService {
   }
 
   // ─── Academic Reports & Analytics ───
-  async getExamAnalytics(schoolId: string, examId: string, sectionId?: string) {
+  async getExamAnalytics(schoolId: string, examId: string, sectionId?: string, user?: any) {
     const exam = await this.prisma.exam.findFirst({
       where: { id: examId, schoolId, deletedAt: null },
       include: {
@@ -261,12 +364,30 @@ export class ExamService {
     });
     if (!exam) throw new NotFoundException('Exam not found');
 
+    const resultWhere: any = { examId, exam: { schoolId } };
+    if (user?.role === 'TEACHER') {
+      const teacher = await this.getTeacherAccess(schoolId, user.email);
+      if (exam.sectionId && !teacher.sectionIds.includes(exam.sectionId)) {
+        throw new ForbiddenException('You are not assigned to this exam section');
+      }
+      if (sectionId && !teacher.sectionIds.includes(sectionId)) {
+        throw new ForbiddenException('You are not assigned to this section');
+      }
+      if (exam.sectionId && sectionId && exam.sectionId !== sectionId) {
+        throw new ForbiddenException('This exam is limited to a different section');
+      }
+      const allowedSectionIds = exam.sectionId ? [exam.sectionId] : teacher.sectionIds;
+      if (sectionId) {
+        resultWhere.student = { sectionId };
+      } else {
+        resultWhere.student = { sectionId: { in: allowedSectionIds } };
+      }
+    } else if (sectionId) {
+      resultWhere.student = { sectionId };
+    }
+
     const results = await this.prisma.examResult.findMany({
-      where: {
-        examId,
-        exam: { schoolId },
-        ...(sectionId ? { student: { sectionId } } : {}),
-      },
+      where: resultWhere,
       include: {
         student: {
           select: {
@@ -409,10 +530,15 @@ export class ExamService {
     };
   }
 
-  async getStudentReportCard(schoolId: string, studentId: string, academicYearId?: string) {
+  async getStudentReportCard(schoolId: string, studentId: string, academicYearId?: string, user?: any) {
+    const studentWhere: any = { id: studentId, schoolId, deletedAt: null };
+    if (user?.role === 'STUDENT') {
+      studentWhere.email = user.email;
+      studentWhere.isActive = true;
+    }
     const [student, school] = await Promise.all([
       this.prisma.student.findFirst({
-        where: { id: studentId, schoolId, deletedAt: null },
+        where: studentWhere,
         include: {
           section: { include: { class: true } },
           parents: { include: { parent: true } },
@@ -424,6 +550,12 @@ export class ExamService {
       }),
     ]);
     if (!student) throw new NotFoundException('Student not found');
+    if (user?.role === 'TEACHER') {
+      const teacher = await this.getTeacherAccess(schoolId, user.email);
+      if (!student.sectionId || !teacher.sectionIds.includes(student.sectionId)) {
+        throw new ForbiddenException('You are not assigned to this student');
+      }
+    }
 
     const results = await this.prisma.examResult.findMany({
       where: {

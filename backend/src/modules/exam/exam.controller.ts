@@ -13,6 +13,7 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Get()
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getExams(@CurrentUser() user: any) {
     return this.examService.getExams(user.schoolId, user);
   }
@@ -50,6 +51,7 @@ export class ExamController {
   }
 
   @Get('results')
+  @Roles('SCHOOL_ADMIN', 'TEACHER', 'STUDENT')
   getResults(
     @CurrentUser() user: any,
     @Query('examId') examId: string,
@@ -75,7 +77,7 @@ export class ExamController {
     @Param('id') examId: string,
     @Query('sectionId') sectionId?: string,
   ) {
-    return this.examService.getExamAnalytics(user.schoolId, examId, sectionId);
+    return this.examService.getExamAnalytics(user.schoolId, examId, sectionId, user);
   }
 
   @Get('report-card/:studentId')
@@ -85,6 +87,6 @@ export class ExamController {
     @Param('studentId') studentId: string,
     @Query('academicYearId') academicYearId?: string,
   ) {
-    return this.examService.getStudentReportCard(user.schoolId, studentId, academicYearId);
+    return this.examService.getStudentReportCard(user.schoolId, studentId, academicYearId, user);
   }
 }
