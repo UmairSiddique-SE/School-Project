@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import {
   ArrowRight, BadgeCheck, Building2, Check, ChevronLeft,
-  CheckCircle2, CircleAlert, Eye, EyeOff, Globe2, ImagePlus,
+  Eye, EyeOff, Globe2, ImagePlus,
   Loader2, LockKeyhole, Mail, MapPin, Phone, RefreshCw,
   ShieldCheck, Sparkles, UserRound,
 } from 'lucide-react';
@@ -110,15 +110,10 @@ export default function RegisterSchoolPremium() {
   const [showPassword, setShowPassword] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
-
   const update = (key: keyof FormState, value: string) =>
     setForm(p => ({ ...p, [key]: value }));
 
   const selectedPlan = plans.find(p => p.planKey === 'PROFESSIONAL');
-  const slugPreview = form.schoolSlug || 'your-school';
-  const schoolPublicUrl = `${window.location.origin}/school/${slugPreview}`;
-  const progress = step === 'details' ? 50 : 100;
 
   /* ── Init ────────────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -171,22 +166,6 @@ export default function RegisterSchoolPremium() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.schoolName]);
 
-  /* ── Slug availability check ─────────────────────────────────────────── */
-  useEffect(() => {
-    const slug = form.schoolSlug.trim().toLowerCase();
-    if (slug.length < 3 || !/^[a-z0-9-]+$/.test(slug)) {
-      setSlugStatus(slug ? 'invalid' : 'idle');
-      return;
-    }
-    setSlugStatus('checking');
-    const timer = window.setTimeout(() => {
-      apiClient.get('/public/slug-availability?slug=' + encodeURIComponent(slug))
-        .then(r => setSlugStatus(r.data?.available ? 'available' : 'taken'))
-        .catch(() => setSlugStatus('idle'));
-    }, 450);
-    return () => window.clearTimeout(timer);
-  }, [form.schoolSlug]);
-
   /* ── Password hint ───────────────────────────────────────────────────── */
   const passwordHint = useMemo(() => {
     if (!form.adminPassword) return 'Minimum 8 characters';
@@ -214,11 +193,6 @@ export default function RegisterSchoolPremium() {
   const validate = () => {
     if (!form.schoolName.trim()) return 'Enter your school name.';
     if (form.schoolCode.trim() && !/^[A-Za-z0-9]{2,10}$/.test(form.schoolCode.trim())) return 'School code must be 2-10 letters or numbers.';
-    if (!form.schoolSlug.trim() || form.schoolSlug.length < 3)
-      return 'Choose a valid school website address.';
-    if (slugStatus !== 'available') return 'Choose an available school website address.';
-    if (!/^[a-z0-9-]+$/.test(form.schoolSlug))
-      return 'School website address: lowercase letters, numbers and hyphens only.';
     if (!form.logoUrl) return 'School logo is required.';
     if (!form.province || !form.city.trim()) return 'Select province and enter city.';
     if (!form.address.trim()) return 'Enter school address.';
@@ -345,7 +319,7 @@ export default function RegisterSchoolPremium() {
           <div className="school-reg-orb school-reg-orb-one absolute -left-20 top-20 -z-10 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
           <div className="school-reg-orb school-reg-orb-two absolute right-0 top-0 -z-10 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
-          <div className="grid items-start gap-8 pt-5 lg:grid-cols-[minmax(0,.95fr)_minmax(0,1.05fr)] xl:gap-12 lg:pt-10">
+          <div className="grid items-start gap-8 pt-5 lg:grid-cols-[minmax(0,.82fr)_minmax(520px,1.18fr)] xl:gap-12 lg:pt-10">
             <div className="relative z-10 max-w-2xl pt-2 lg:pt-8">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-4 py-2 text-xs font-black text-emerald-700 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                 <ShieldCheck size={15} /> Secure Onboarding
@@ -378,9 +352,7 @@ export default function RegisterSchoolPremium() {
               </div>
             </div>
 
-          </div>
-
-          <div className="school-reg-workspace relative z-20 mx-auto mt-8 w-full max-w-[1280px] lg:mt-10">
+            <div className="school-reg-workspace relative z-20 w-full lg:sticky lg:top-6">
             <div className="school-reg-card overflow-hidden rounded-[28px] border bg-white/95 shadow-[0_30px_80px_rgba(30,64,175,.16)] backdrop-blur-xl dark:bg-slate-950/90">
               <div className="school-reg-card-header flex items-center justify-between border-b px-5 py-5 sm:px-8">
                 <div className="flex items-center gap-3">
@@ -399,11 +371,12 @@ export default function RegisterSchoolPremium() {
               </div>
               <div className="school-reg-card-body px-5 py-5 sm:px-8 sm:py-7">
                 {step === 'details' ? (
-                  <DetailsForm form={form} update={update} slugStatus={slugStatus} schoolPublicUrl={schoolPublicUrl} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
+                  <DetailsForm form={form} update={update} selectedPlan={selectedPlan} saving={saving} logoBusy={logoBusy} showPassword={showPassword} passwordHint={passwordHint} onLogoChange={handleLogo} onTogglePassword={() => setShowPassword(v => !v)} onSubmit={submitRegistration} />
                 ) : (
                   <OtpForm email={form.adminEmail} otp={otp} otpBusy={otpBusy} resendBusy={resendBusy} cooldown={cooldown} onOtpChange={setOtp} onSubmit={verifyOtp} onResend={resendOtp} onBack={() => { setStep('details'); setOtp(''); }} />
                 )}
               </div>
+            </div>
             </div>
           </div>
         </section>
@@ -429,23 +402,18 @@ export default function RegisterSchoolPremium() {
    Details Form
 ═══════════════════════════════════════════════════════════════════════════ */
 function DetailsForm({
-  form, update, slugStatus, schoolPublicUrl, selectedPlan,
+  form, update, selectedPlan,
   saving, logoBusy, showPassword, passwordHint,
   onLogoChange, onTogglePassword, onSubmit,
 }: {
   form: FormState;
   update: (k: keyof FormState, v: string) => void;
-  slugStatus: 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
-  schoolPublicUrl: string;
   selectedPlan?: { price: number; currency?: string; period: string };
   saving: boolean; logoBusy: boolean; showPassword: boolean; passwordHint: string;
   onLogoChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onSubmit: (e: FormEvent) => void;
 }) {
-  const slugify = (v: string) =>
-    v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70);
-
   return (
     <form onSubmit={onSubmit} className="space-y-5">
 
@@ -493,19 +461,13 @@ function DetailsForm({
           </label>
         </div>
 
-        {/* School code + website + type */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
+        {/* School code + institution type */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field
             label="School short code" icon={<Building2 size={15} />}
             value={form.schoolCode}
             onChange={v => update('schoolCode', v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
             placeholder="UMS"
-          />
-          <Field
-            label="School website address" icon={<Globe2 size={15} />}
-            value={form.schoolSlug}
-            onChange={v => update('schoolSlug', slugify(v))}
-            placeholder="umair-model-school"
           />
           <SelectField
             label="Institution" value={form.schoolType}
@@ -516,17 +478,6 @@ function DetailsForm({
         <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
           Short code is optional. Leave it empty and SchoolOS will generate one automatically from the school name.
         </p>
-
-        {/* Compact single-line public website preview */}
-        <div className="school-reg-url mt-3 flex min-w-0 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 dark:border-white/[.07] dark:bg-black/10">
-          <Globe2 size={14} className="shrink-0 text-cyan-500 dark:text-cyan-400" />
-          <span className="shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">Free school website:</span>
-          <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-600 dark:text-slate-300" title={schoolPublicUrl}>{schoolPublicUrl}</span>
-          {slugStatus === 'checking' && <Loader2 size={13} className="shrink-0 animate-spin text-cyan-500" />}
-          {slugStatus === 'available' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-300"><CheckCircle2 size={12} /> Available</span>}
-          {slugStatus === 'taken' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-rose-500 dark:text-rose-400"><CircleAlert size={12} /> Taken</span>}
-          {slugStatus === 'invalid' && <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400"><CircleAlert size={12} /> Invalid</span>}
-        </div>
       </Section>
 
       {/* Location */}
