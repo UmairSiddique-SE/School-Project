@@ -250,8 +250,15 @@ export default function Dashboard() {
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div>
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-current" /> Live DB Connected
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider ${
+                loading
+                  ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                  : error
+                    ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-400'
+                    : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+              }`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {loading ? 'Connecting to live data' : error ? 'Live data unavailable' : 'Live DB Connected'}
               </span>
               <span className="text-xs text-muted-foreground">{new Date().toLocaleDateString('en-PK', { dateStyle: 'full' })}</span>
             </div>

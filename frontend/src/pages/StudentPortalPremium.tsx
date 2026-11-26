@@ -194,6 +194,7 @@ export default function StudentPortalPremium() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<'profile_not_found' | 'load_failed' | null>(null);
 
   // Modals state
   const [showIdModal, setShowIdModal] = useState(false);
@@ -213,6 +214,7 @@ export default function StudentPortalPremium() {
     try {
       if (silent) setRefreshing(true);
       else setLoading(true);
+      setLoadError(null);
       const me = await apiClient.get('/people/me');
       const studentData = me.data as Student;
       setStudent(studentData);
@@ -247,6 +249,7 @@ export default function StudentPortalPremium() {
           );
       }
     } catch (error: any) {
+      setLoadError(error?.response?.status === 404 ? 'profile_not_found' : 'load_failed');
       toast.error(error?.response?.data?.message || 'Unable to load student portal');
     } finally {
       setLoading(false);
@@ -352,6 +355,19 @@ export default function StudentPortalPremium() {
   }
 
   if (!student) {
+    if (loadError !== 'profile_not_found') {
+      return (
+        <div className="mx-auto max-w-lg rounded-3xl border border-rose-500/20 bg-card p-10 text-center shadow-lg">
+          <AlertTriangle className="mx-auto mb-4 text-rose-500" size={42} />
+          <h2 className="text-2xl font-black">Unable to Load Student Profile</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Check your connection and try again. Your student record has not been confirmed as missing.</p>
+          <button onClick={() => void load()} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+            <RefreshCw size={15} /> Try again
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="mx-auto max-w-lg rounded-3xl border border-dashed border-border/80 bg-card p-10 text-center shadow-lg">
         <GraduationCap className="mx-auto mb-4 text-primary" size={48} />
