@@ -205,6 +205,8 @@ export class ClassService {
     });
 
     if (Array.isArray(data.classIds) && data.classIds.length > 0) {
+      await this.assertClassIdsBelongToSchool(schoolId, data.classIds);
+      if (data.teacherId) await this.assertTeacherBelongsToSchool(schoolId, data.teacherId);
       for (const classId of data.classIds) {
         await this.prisma.classSubject.upsert({
           where: { classId_subjectId: { classId, subjectId: subject.id } },
@@ -253,6 +255,8 @@ export class ClassService {
     });
 
     if (Array.isArray(data.classIds)) {
+      await this.assertClassIdsBelongToSchool(schoolId, data.classIds);
+      if (data.teacherId) await this.assertTeacherBelongsToSchool(schoolId, data.teacherId);
       await this.prisma.classSubject.deleteMany({ where: { subjectId: id } });
       for (const classId of data.classIds) {
         await this.prisma.classSubject.create({
@@ -480,5 +484,23 @@ export class ClassService {
     }
 
     return this.prisma.academicYear.delete({ where: { id } });
+  }
+
+  private async assertClassIdsBelongToSchool(schoolId: string, classIds: unknown[]) {
+    const ids = [...new Set(classIds.map((value) => String(value)))];
+    const count = await this.prisma.class.count({
+      where: { id: { in: ids }, schoolId, deletedAt: null },
+    });
+    if (count !== ids.length) {
+      throw new BadRequestException('One or more selected classes do not belong to this school');
+    }
+  }
+
+  private async assertTeacherBelongsToSchool(schoolId: string, teacherId: string) {
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: String(teacherId), schoolId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!teacher) throw new BadRequestException('Selected teacher does not belong to this school');
   }
 }

@@ -12,6 +12,7 @@ model School {
   name               String
   slug               String              @unique
   domain             String?             @unique
+  code               String?             @unique
   email              String?
   phone              String?
   address            String?
@@ -165,6 +166,7 @@ model PlatformAnnouncement {
 model User {
   id                  String               @id @default(uuid())
   email               String               @unique
+  loginId             String?              @unique
   passwordHash        String
   name                String
   role                String
@@ -1034,6 +1036,34 @@ model Building {
   rooms            Room[]
 
   @@index([schoolId])
+}
+
+model PendingSchoolRegistration {
+  id              String    @id @default(uuid())
+  schoolName      String
+  schoolSlug      String    @unique
+  schoolCode      String?
+  schoolType      String
+  logoUrl         String
+  schoolAddress   String
+  schoolPhone     String
+  country         String
+  city            String
+  adminName       String
+  adminEmail      String    @unique
+  adminPhone      String
+  passwordHash    String
+  requestedPlan   String    @default("FREE_TRIAL")
+  otp             String
+  otpExpiresAt    DateTime
+  otpAttempts     Int       @default(0)
+  otpLastSentAt   DateTime?
+  verifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([otpExpiresAt])
+  @@index([createdAt])
 }
 
 model Room {

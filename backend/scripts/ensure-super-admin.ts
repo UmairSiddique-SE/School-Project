@@ -10,6 +10,9 @@ async function main() {
   if (!email || !password) {
     throw new Error('Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD before running this script.');
   }
+  if (password.length < 12) {
+    throw new Error('SUPER_ADMIN_PASSWORD must be at least 12 characters.');
+  }
 
   const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({ where: { email } });

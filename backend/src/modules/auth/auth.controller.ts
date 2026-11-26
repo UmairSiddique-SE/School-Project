@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Patch, UseGuards, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, UseGuards, HttpCode, HttpStatus, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterSchoolDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, RefreshTokenDto, OnboardingPaymentDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
@@ -39,9 +39,10 @@ export class AuthController {
 
   @Post('verify-email') @Throttle({ default: { limit: 8, ttl: 60_000 } }) @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() dto: VerifyEmailDto) {
-    const pendingResult = await this.pendingSchoolRegistrationService.verify(dto.userId, dto.otp);
-    if (pendingResult) return pendingResult;
-    const result = await this.authService.verifyEmail(dto);
+    const result = await this.pendingSchoolRegistrationService.verify(dto.userId, dto.otp);
+    if (!result) {
+      throw new BadRequestException('Registration session not found. Please register again.');
+    }
     if (result.user?.role === 'SCHOOL_ADMIN' && result.user.activationStatus !== 'ACTIVE') {
       return { ...result, message: 'Email verified successfully. Continue onboarding; school portal access remains locked until Super Admin approval.', verificationRequired: false, approvalRequired: true };
     }

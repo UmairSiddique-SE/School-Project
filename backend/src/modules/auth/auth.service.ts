@@ -11,21 +11,18 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../database/prisma.service';
+import { MailService } from '../mail/mail.service';
 import {
   LoginDto,
-  RegisterSchoolDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-  VerifyEmailDto,
   OnboardingPaymentDto,
   UpdateProfileDto,
   ChangePasswordDto,
 } from './dto/auth.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { randomInt } from 'crypto';
-import { MailService } from '../mail/mail.service';
-import { MediaService } from '../media/media.service';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { parseDurationMs } from '../../config/env.config';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FOREVER_DATE = new Date('9999-12-31T23:59:59.999Z');
@@ -37,151 +34,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-    private readonly mediaService: MediaService,
   ) {}
-
-  async registerSchool(dto: RegisterSchoolDto) {
-    try {
-      const schoolSlug = dto.schoolSlug.trim().toLowerCase();
-      const adminEmail = dto.adminEmail.trim().toLowerCase();
-      const existingSchool = await this.prisma.school.findUnique({
-        where: { slug: schoolSlug },
-      });
-      if (existingSchool)
-        throw new ConflictException('A school with this slug already exists');
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: adminEmail },
-      });
-      if (existingUser) throw new ConflictException('Email already registered');
-      const planKey = 'PROFESSIONAL'; // Public registration always uses PROFESSIONAL
-      const plan = await this.prisma.platformPlan.findUnique({
-        where: { planKey },
-      });
-      if (!plan || !plan.isActive)
-        throw new BadRequestException(
-          'Selected subscription plan is unavailable',
-        );
-      const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
-      const otp = String(randomInt(100000, 1000000));
-      const result = await this.prisma.$transaction(
-      async (tx) => {
-            const school = await tx.school.create({
-          data: {
-            name: dto.schoolName.trim(),
-            slug: schoolSlug,
-            type: dto.schoolType,
-            logoUrl: dto.logoUrl,
-            phone: dto.schoolPhone || dto.adminPhone,
-            address: dto.schoolAddress,
-            country: dto.country,
-            city: dto.city,
-            isActive: true,
-          },
-        });
-        const user = await tx.user.create({
-          data: {
-            name: dto.adminName.trim(),
-            email: adminEmail,
-            passwordHash,
-            role: 'SCHOOL_ADMIN',
-            schoolId: school.id,
-            phone: dto.adminPhone,
-          },
-        });
-        const endDate = this.calculateEndDate(new Date(), plan.period);
-        await tx.subscription.create({
-          data: {
-            schoolId: school.id,
-            plan: plan.planKey,
-            status: 'PENDING',
-            endDate,
-            amount: plan.price,
-            currency: plan.currency,
-          },
-        });
-        await tx.schoolRequest.create({
-          data: {
-            schoolName: school.name,
-            ownerName: user.name,
-            email: adminEmail,
-            phone: dto.adminPhone || dto.schoolPhone || null,
-            whatsapp: dto.adminPhone || null,
-            city: dto.city || null,
-            address: dto.schoolAddress || null,
-            subdomain: schoolSlug,
-            requestedPlan: plan.planKey,
-            status: 'PENDING',
-          },
-        });
-        await tx.emailVerification.create({
-          data: {
-            userId: user.id,
-            otp,
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-          },
-        });
-return { school, user };
-    },
-    {
-      maxWait: 10000,
-      timeout: 15000,
-    },
-  );     
-      if (typeof dto.logoUrl === 'string' && dto.logoUrl.startsWith('data:image/')) {
-        const match = dto.logoUrl.match(/^data:(image\/(?:png|jpeg|jpg|webp));base64,(.+)$/);
-        if (!match) throw new BadRequestException('School logo must be a valid PNG, JPG, or WEBP image');
-        const buffer = Buffer.from(match[2], 'base64');
-        if (buffer.length > 2 * 1024 * 1024) throw new BadRequestException('School logo must be 2 MB or smaller');
-        const uploaded = await this.mediaService.uploadImage(
-          {
-            buffer,
-            mimetype: match[1],
-            size: buffer.length,
-            originalname: 'school-logo',
-            fieldname: 'file',
-            encoding: '7bit',
-            destination: '',
-            filename: 'school-logo',
-            path: '',
-            stream: undefined as any,
-          } as any,
-          result.school.id,
-          'school-logo',
-        );
-        await this.prisma.school.update({
-          where: { id: result.school.id },
-          data: { logoUrl: uploaded.url },
-        });
-        result.school.logoUrl = uploaded.url;
-      }
-
-      this.mailService
-        .sendEmailVerification(result.user.email, otp)
-        .catch((error) =>
-          console.error('Failed to send verification email:', error),
-        );
-      return {
-        message: 'School registered. Verify your email to continue.',
-        verificationRequired: true,
-        verificationUserId: result.user.id,
-        user: {
-          id: result.user.id,
-          name: result.user.name,
-          email: result.user.email,
-          role: result.user.role,
-          schoolId: result.user.schoolId,
-          schoolName: result.school.name,
-          schoolSlug: result.school.slug,
-        },
-      };
-    } catch (error: any) {
-      if (error instanceof ConflictException) throw error;
-      console.error('Error in registerSchool:', error);
-      throw new BadRequestException(
-        error?.message || 'Failed to register school',
-      );
-    }
-  }
 
   async login(dto: LoginDto) {
     const rawIdentifier = dto.email ? String(dto.email).trim() : '';
@@ -194,6 +47,7 @@ return { school, user };
           id: true,
           name: true,
           slug: true,
+          code: true,
           isActive: true,
           subscription: {
             select: { plan: true, status: true, endDate: true },
@@ -230,6 +84,7 @@ return { school, user };
         ...roleFilter,
         OR: [
           { email: { equals: rawIdentifier, mode: 'insensitive' } },
+          { loginId: { equals: rawIdentifier, mode: 'insensitive' } },
           { email: { equals: `${rawIdentifier}@school.edu`, mode: 'insensitive' } },
           { email: { equals: `${cleanId}@school.edu`, mode: 'insensitive' } },
           { phone: rawIdentifier },
@@ -264,7 +119,7 @@ return { school, user };
         where: {
           role: { in: ['SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'] },
           deletedAt: null,
-          OR: [{ email: { equals: rawIdentifier, mode: 'insensitive' } }, { phone: rawIdentifier }],
+          OR: [{ email: { equals: rawIdentifier, mode: 'insensitive' } }, { loginId: { equals: rawIdentifier, mode: 'insensitive' } }, { phone: rawIdentifier }],
           ...(targetSchoolId ? { schoolId: targetSchoolId } : {}),
         },
         include: userInclude,
@@ -472,6 +327,7 @@ return { school, user };
         id: user.id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId || undefined,
         role: user.role,
         schoolId: user.schoolId,
         schoolName: user.school?.name,
@@ -587,71 +443,6 @@ return { school, user };
     return { message: 'Password reset successfully' };
   }
 
-  async verifyEmail(dto: VerifyEmailDto) {
-    const record = await this.prisma.emailVerification.findFirst({
-      where: { userId: dto.userId, otp: dto.otp, usedAt: null },
-    });
-    if (!record || record.expiresAt < new Date())
-      throw new BadRequestException('Invalid or expired OTP');
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: dto.userId },
-        data: { emailVerified: true },
-      }),
-      this.prisma.emailVerification.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
-      }),
-    ]);
-    const user = await this.prisma.user.findUnique({
-      where: { id: dto.userId },
-      include: {
-        school: {
-          select: {
-            name: true,
-            slug: true,
-            isActive: true,
-            subscription: {
-              select: { plan: true, status: true, endDate: true },
-            },
-          },
-        },
-      },
-    });
-    if (!user) throw new BadRequestException('User account not found');
-    if (user.role === 'PARENT')
-      throw new UnauthorizedException(
-        'Parent accounts do not have portal login access',
-      );
-    const tokens = await this.generateTokens(
-      user.id,
-      user.email,
-      user.role,
-      user.schoolId ?? undefined,
-    );
-    const activationStatus = user.school
-      ? user.school.subscription?.status === 'ACTIVE' &&
-        user.school.subscription.endDate > new Date()
-        ? 'ACTIVE'
-        : 'PAYMENT_PENDING'
-      : 'ACTIVE';
-    return {
-      message: 'Email verified successfully',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        schoolId: user.schoolId,
-        schoolName: user.school?.name,
-        schoolSlug: user.school?.slug,
-        activationStatus,
-        plan: user.school?.subscription?.plan,
-      },
-      ...tokens,
-    };
-  }
-
   async submitOnboardingPayment(
     dto: OnboardingPaymentDto,
     user: Pick<JwtPayload, 'schoolId' | 'role'>,
@@ -755,6 +546,7 @@ return { school, user };
         id: true,
         name: true,
         email: true,
+        loginId: true,
         role: true,
         phone: true,
         schoolId: true,
@@ -787,6 +579,7 @@ return { school, user };
         id: user.id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId || undefined,
         role: user.role,
         phone: user.phone,
         schoolId: user.schoolId,
@@ -894,7 +687,9 @@ return { school, user };
       expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
     });
     const refreshToken = uuidv4();
-    const expiresAt = new Date(Date.now() + 7 * DAY_MS);
+    const expiresAt = new Date(
+      Date.now() + parseDurationMs(this.configService.get('JWT_REFRESH_EXPIRATION'), '7d'),
+    );
     await this.prisma.refreshToken.create({
       data: { token: refreshToken, userId, expiresAt },
     });

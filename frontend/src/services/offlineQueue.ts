@@ -47,6 +47,39 @@ function openDatabase(): Promise<IDBDatabase> {
 }
 
 /**
+ * Record a sync attempt. After maxRetries, the operation is kept but marked as
+ * permanently failed so the UI can surface it instead of retrying forever.
+ */
+export async function markOperationAttempt(id: string, failed: boolean): Promise<void> {
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(id);
+    request.onsuccess = () => {
+      const op = request.result as QueuedOperation | undefined;
+      if (!op) {
+        resolve();
+        return;
+      }
+      const retryCount = op.retryCount + (failed ? 1 : 0);
+      const updated: QueuedOperation = {
+        ...op,
+        retryCount,
+        permanentlyFailed: failed && retryCount >= op.maxRetries,
+      };
+      const put = store.put(updated);
+      put.onsuccess = () => {
+        window.dispatchEvent(new CustomEvent('schoolos:offline-queue-updated'));
+        resolve();
+      };
+      put.onerror = () => reject(put.error);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
  * Add a mutation operation to the offline sync queue
  */
 export async function queueOfflineOperation(

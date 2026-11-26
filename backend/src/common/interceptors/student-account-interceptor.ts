@@ -33,18 +33,6 @@ export class StudentAccountInterceptor implements NestInterceptor {
       }
     }
 
-    return next.handle().pipe(
-      map((response: any) => {
-        if (request.method === 'POST' && /\/people\/students$/.test(path) && response?.student?.admissionNo) {
-          return {
-            ...response,
-            credentials: response.credentials
-              ? { ...response.credentials, loginId: `${response.student.admissionNo}@student.edu.pk` }
-              : response.credentials,
-          };
-        }
-        return response;
-      }),
-    );
+    return next.handle().pipe(map((response: any) => response));
   }
 }

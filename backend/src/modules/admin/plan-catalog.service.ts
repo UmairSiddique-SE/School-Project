@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 const UNLIMITED = 999999;
@@ -14,6 +14,18 @@ export class PlanCatalogService {
     const features = Array.isArray(data.features)
       ? data.features.map((item: unknown) => String(item).trim()).filter(Boolean)
       : undefined;
+
+    const numericFields = ['price', 'maxStudents', 'maxTeachers', 'storageMb'] as const;
+    for (const field of numericFields) {
+      if (data[field] === undefined) continue;
+      const value = Number(data[field]);
+      if (!Number.isFinite(value) || value < 0) {
+        throw new BadRequestException(`${field} must be a non-negative number`);
+      }
+    }
+    if (data.period !== undefined && !String(data.period).trim()) {
+      throw new BadRequestException('period cannot be empty');
+    }
 
     const updateData: any = {
       ...(data.name !== undefined ? { name: String(data.name).trim() } : {}),

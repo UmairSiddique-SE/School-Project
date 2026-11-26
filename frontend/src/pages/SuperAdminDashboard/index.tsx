@@ -28,7 +28,7 @@ class SectionErrorBoundary extends Component<{ children: ReactNode; name: string
   }
 }
 import { AnimatePresence, motion } from "framer-motion";
-import { LayoutDashboard, School, FileText, CreditCard, BarChart2, Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight, LogOut, Clock, Zap, LifeBuoy, Megaphone, Plus } from "lucide-react";
+import { LayoutDashboard, Database, School, FileText, CreditCard, BarChart2, Bell, Mail, Settings, Shield, User, Menu, X, ChevronRight, LogOut, Clock, Zap, LifeBuoy, Megaphone, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -49,8 +49,9 @@ import Profile from "./sections/Profile";
 import Users from "./sections/Users";
 import Support from "./sections/Support";
 import Announcements from "./sections/Announcements";
+import DatabaseManagement from "./sections/DatabaseManagement";
 
-type SectionId = "overview" | "school-requests" | "schools" | "plans" | "payments" | "users" | "support" | "announcements" | "reports" | "notifications" | "email-templates" | "system-settings" | "audit-logs" | "profile";
+type SectionId = "overview" | "database" | "school-requests" | "schools" | "plans" | "payments" | "users" | "support" | "announcements" | "reports" | "notifications" | "email-templates" | "system-settings" | "audit-logs" | "profile";
 type NavItem = { id: SectionId; label: string; icon: React.ComponentType<any>; badgeKey?: "pendingSchoolRequests" | "pendingPayments" };
 type NavGroup = { label: string; items: NavItem[] };
 
@@ -58,7 +59,7 @@ const navGroups: NavGroup[] = [
   { label: "Platform Core", items: [{ id: "overview", label: "Dashboard", icon: LayoutDashboard }] },
   { label: "Institutional Governance", items: [{ id: "school-requests", label: "School Requests", icon: FileText, badgeKey: "pendingSchoolRequests" }, { id: "schools", label: "Schools", icon: School }] },
   { label: "Payments & Billing", items: [{ id: "plans", label: "Plans & Pricing", icon: Zap }, { id: "payments", label: "Payments", icon: CreditCard, badgeKey: "pendingPayments" }] },
-  { label: "Operations & Users", items: [{ id: "users", label: "User Management", icon: User }, { id: "support", label: "Support / Tickets", icon: LifeBuoy }] },
+  { label: "Operations & Users", items: [{ id: "users", label: "User Management", icon: User }, { id: "database", label: "Database Management", icon: Database }, { id: "support", label: "Support / Tickets", icon: LifeBuoy }] },
   { label: "Communication", items: [{ id: "announcements", label: "Announcements", icon: Megaphone }, { id: "notifications", label: "System Alerts", icon: Bell }, { id: "email-templates", label: "Email Templates", icon: Mail }] },
   { label: "Insights & Settings", items: [{ id: "reports", label: "Reports", icon: BarChart2 }, { id: "audit-logs", label: "Activity Logs", icon: Shield }, { id: "system-settings", label: "System Settings", icon: Settings }, { id: "profile", label: "My Profile", icon: User }] },
 ];
@@ -66,6 +67,7 @@ const navGroups: NavGroup[] = [
 const allNavItems = navGroups.flatMap((group) => group.items);
 const sectionComponents: Record<SectionId, React.ComponentType> = {
   overview: () => <div className="space-y-7"><Overview /><PaymentAccountingPanel /></div>,
+  database: DatabaseManagement,
   "school-requests": SchoolRequests,
   schools: Schools,
   plans: Plans,

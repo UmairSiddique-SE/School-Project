@@ -1,3 +1,4 @@
+import { generateSchoolCode } from './school-code.util';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
@@ -7,6 +8,7 @@ import { MailService } from '../mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterSchoolDto } from './dto/auth.dto';
+import { parseDurationMs } from '../../config/env.config';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const OTP_TTL_MS = 30 * 60 * 1000;
@@ -16,6 +18,7 @@ type PendingRow = {
   id: string;
   schoolName: string;
   schoolSlug: string;
+  schoolCode: string | null;
   schoolType: string;
   logoUrl: string;
   schoolAddress: string;
@@ -29,8 +32,10 @@ type PendingRow = {
   requestedPlan: string;
   otp: string;
   otpExpiresAt: Date;
+  otpLastSentAt: Date | null;
   verifiedAt: Date | null;
   otpAttempts: number;
+  updatedAt: Date;
 };
 
 @Injectable()
@@ -67,10 +72,10 @@ export class PendingSchoolRegistrationService {
 
   private async findPending(id: string) {
     const rows = await this.prisma.$queryRaw<PendingRow[]>`
-      SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+      SELECT "id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
+             "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "id" = ${id}
       LIMIT 1
@@ -83,7 +88,7 @@ export class PendingSchoolRegistrationService {
     const adminEmail = dto.adminEmail.trim().toLowerCase();
     // Never trust the client-selected plan for public registration.
     // SchoolOS currently exposes Professional as the single public subscription.
-    const planKey = 'PROFESSIONAL';
+    const planKey = dto.requestedPlan || 'FREE_TRIAL';
 
     const plan = await this.prisma.platformPlan.findUnique({
       where: { planKey },
@@ -112,7 +117,8 @@ export class PendingSchoolRegistrationService {
     const otp = String(randomInt(100000, 1000000));
     const otpHash = await bcrypt.hash(otp, 10);
     const id = uuidv4();
-    const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    const now = new Date();
+    const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
     // Replace an unfinished registration session for the same slug without relying
     // on a database ON CONFLICT constraint that may not exist on older deployments.
@@ -121,22 +127,22 @@ export class PendingSchoolRegistrationService {
     `;
     await this.prisma.$executeRaw`
       INSERT INTO "PendingSchoolRegistration"
-        ("id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+        ("id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
          "schoolAddress", "schoolPhone", "country", "city", "adminName",
          "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-         "otp", "otpExpiresAt")
+         "otp", "otpExpiresAt", "otpLastSentAt")
       VALUES
-        (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolType},
+        (${id}, ${dto.schoolName.trim()}, ${schoolSlug}, ${dto.schoolCode?.trim().toUpperCase() || generateSchoolCode(dto.schoolName)}, ${dto.schoolType},
          ${dto.logoUrl}, ${dto.schoolAddress}, ${dto.schoolPhone}, ${dto.country},
          ${dto.city}, ${dto.adminName.trim()}, ${adminEmail}, ${dto.adminPhone},
-         ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt})
+         ${passwordHash}, ${planKey}, ${otpHash}, ${otpExpiresAt}, ${now})
     `;
 
     const pending = await this.prisma.$queryRaw<PendingRow[]>`
-      SELECT "id", "schoolName", "schoolSlug", "schoolType", "logoUrl",
+      SELECT "id", "schoolName", "schoolSlug", "schoolCode", "schoolType", "logoUrl",
              "schoolAddress", "schoolPhone", "country", "city", "adminName",
              "adminEmail", "adminPhone", "passwordHash", "requestedPlan",
-             "otp", "otpExpiresAt", "verifiedAt", "otpAttempts", "updatedAt"
+             "otp", "otpExpiresAt", "otpLastSentAt", "verifiedAt", "otpAttempts", "updatedAt"
       FROM "PendingSchoolRegistration"
       WHERE "schoolSlug" = ${schoolSlug}
       LIMIT 1
@@ -176,21 +182,23 @@ export class PendingSchoolRegistrationService {
       );
     }
 
-    // Enforce 30-second resend cooldown (server-side)
-    const lastUpdated = new Date((pending as any).updatedAt || 0);
+    // Cooldown is measured from the last OTP email, not from failed attempts.
+    const lastSentAt = new Date(pending.otpLastSentAt || pending.updatedAt || 0);
     const cooldownMs = 30 * 1000;
-    if (Date.now() - lastUpdated.getTime() < cooldownMs) {
+    if (Date.now() - lastSentAt.getTime() < cooldownMs) {
       throw new BadRequestException('Please wait before requesting another OTP.');
     }
 
     const otp = String(randomInt(100000, 1000000));
-    const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    const now = new Date();
+    const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
     await this.prisma.$executeRaw`
       UPDATE "PendingSchoolRegistration"
       SET "otp" = ${await bcrypt.hash(otp, 10)},
           "otpExpiresAt" = ${otpExpiresAt},
           "otpAttempts" = 0,
+          "otpLastSentAt" = ${now},
           "verifiedAt" = NULL,
           "updatedAt" = CURRENT_TIMESTAMP
       WHERE "id" = ${id}
@@ -234,7 +242,8 @@ export class PendingSchoolRegistrationService {
       // Invalidate this OTP session so attacker cannot keep trying
       await this.prisma.$executeRaw`
         UPDATE "PendingSchoolRegistration"
-        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP
+        SET "otp" = '', "otpExpiresAt" = NOW(), "updatedAt" = CURRENT_TIMESTAMP,
+            "verifiedAt" = NULL
         WHERE "id" = ${id}
       `;
       throw new BadRequestException(
@@ -283,10 +292,20 @@ export class PendingSchoolRegistrationService {
         throw new ConflictException('A school with this slug already exists');
       }
 
+      let schoolCode = pending.schoolCode?.trim().toUpperCase() || generateSchoolCode(pending.schoolName);
+      const codeTaken = await tx.school.findUnique({ where: { code: schoolCode }, select: { id: true } });
+      if (codeTaken) {
+        const baseCode = schoolCode;
+        let suffix = 2;
+        while (await tx.school.findUnique({ where: { code: `${baseCode}${suffix}` }, select: { id: true } })) suffix += 1;
+        schoolCode = `${baseCode}${suffix}`;
+      }
+
       const school = await tx.school.create({
         data: {
           name: pending.schoolName,
           slug: pending.schoolSlug,
+          code: schoolCode,
           type: pending.schoolType,
           logoUrl: pending.logoUrl,
           phone: pending.schoolPhone,
@@ -305,6 +324,7 @@ export class PendingSchoolRegistrationService {
           role: 'SCHOOL_ADMIN',
           schoolId: school.id,
           phone: pending.adminPhone,
+          loginId: `admin01@admin.${schoolCode.toLowerCase()}.edu.pk`,
           emailVerified: true,
         },
       });
@@ -361,7 +381,10 @@ export class PendingSchoolRegistrationService {
       data: {
         token: refreshToken,
         userId: result.user.id,
-        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+        expiresAt: new Date(
+          Date.now() +
+            parseDurationMs(this.configService.get('JWT_REFRESH_EXPIRATION'), '7d'),
+        ),
       },
     });
 
@@ -371,6 +394,7 @@ export class PendingSchoolRegistrationService {
         id: result.user.id,
         name: result.user.name,
         email: result.user.email,
+        loginId: result.user.loginId,
         role: result.user.role,
         schoolId: result.school.id,
         schoolName: result.school.name,

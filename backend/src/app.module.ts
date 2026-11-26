@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './modules/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SchoolModule } from './modules/school/school.module';
@@ -20,10 +21,12 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { MediaModule } from './modules/media/media.module';
 import { GatePassModule } from './modules/gate-pass/gate-pass.module';
 import { StudentAccountInterceptor } from './common/interceptors/student-account-interceptor';
+import { validateConfig } from './config/env.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateConfig }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     DatabaseModule,
     AuthModule,
     SchoolModule,
@@ -44,6 +47,7 @@ import { StudentAccountInterceptor } from './common/interceptors/student-account
   controllers: [AppController],
   providers: [
     AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: StudentAccountInterceptor },
   ],
 })

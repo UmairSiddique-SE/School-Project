@@ -11,21 +11,19 @@ import { PendingSchoolRegistrationService } from './pending-school-registration.
 import { SchoolRegistrationService } from './school-registration.service';
 import { MailModule } from '../mail/mail.module';
 import { MediaModule } from '../media/media.module';
-import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const secret = config.get<string>('JWT_SECRET');
-        if (!secret && config.get<string>('NODE_ENV') === 'production') {
-          throw new Error('JWT_SECRET is required in production.');
+        if (!secret) {
+          throw new Error('JWT_SECRET is required.');
         }
-        return { secret: secret || 'development-only-secret', signOptions: { expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any } };
+        return { secret, signOptions: { expiresIn: (config.get<string>('JWT_EXPIRATION') || '15m') as any } };
       },
     }),
     MailModule,

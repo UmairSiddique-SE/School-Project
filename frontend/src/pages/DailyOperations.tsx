@@ -194,7 +194,7 @@ export default function DailyOperations() {
 
       // 4. Notices
       try {
-        const notRes = await apiClient.get('/notices');
+        const notRes = await apiClient.get('/academics/announcements');
         if (Array.isArray(notRes.data)) {
           setNotices(notRes.data.slice(0, 6));
         }
@@ -204,7 +204,7 @@ export default function DailyOperations() {
 
       // 5. Transport
       try {
-        const trRes = await apiClient.get('/transport/routes');
+        const trRes = await apiClient.get('/academics/routes');
         if (Array.isArray(trRes.data)) {
           setRoutes(trRes.data);
         }
@@ -541,7 +541,7 @@ export default function DailyOperations() {
                   <Bell size={16} className="text-amber-500" /> Today's Notices
                 </h3>
                 <button
-                  onClick={() => navigate(`/${schoolSlug}/notices`)}
+                  onClick={() => navigate(`/${schoolSlug}/academics/announcements`)}
                   className="text-xs font-bold text-amber-500 hover:underline"
                 >
                   Notice Board

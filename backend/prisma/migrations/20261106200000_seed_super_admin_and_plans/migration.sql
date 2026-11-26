@@ -34,25 +34,6 @@ ON CONFLICT ("planKey") DO UPDATE SET
   "isActive"   = EXCLUDED."isActive",
   "updatedAt"  = NOW();
 
--- 2. Super Admin User (idempotent)
--- Password: SuperAdmin@123 (bcrypt hash)
-INSERT INTO "User" (
-  "id","name","email","passwordHash","role",
-  "isActive","emailVerified","createdAt","updatedAt"
-)
-VALUES (
-  gen_random_uuid(),
-  'Super Administrator',
-  'superadmin@edusphere.com',
-  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TsCIafs9Y9JuMd3e8IvMhL4EEGDK',
-  'SUPER_ADMIN',
-  true, true, NOW(), NOW()
-)
-ON CONFLICT ("email") DO UPDATE SET
-  "name"          = EXCLUDED."name",
-  "passwordHash"  = EXCLUDED."passwordHash",
-  "role"          = EXCLUDED."role",
-  "isActive"      = true,
-  "emailVerified" = true,
-  "updatedAt"     = NOW();
+-- Super Admin accounts are intentionally not seeded here. Bootstrap the first
+-- platform administrator with `npm run admin:ensure` and deployment secrets.
 

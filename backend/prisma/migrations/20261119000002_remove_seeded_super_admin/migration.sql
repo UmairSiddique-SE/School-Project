@@ -1,0 +1,3 @@
+-- Preserve existing Super Admin accounts in production.
+-- This migration is intentionally a no-op: account retirement must be an
+-- explicit administrative action, never an automatic database migration.

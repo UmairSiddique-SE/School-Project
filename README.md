@@ -49,7 +49,7 @@ SchoolOS/
 │   │   └── main.ts
 │   └── prisma/       # PostgreSQL schema + migrations
 │
-└── frontend/         # React 18 + Vite + TailwindCSS (TypeScript)
+└── frontend/         # React 19 + Vite + TailwindCSS (TypeScript)
     └── src/
         ├── pages/    # Route-level page components
         ├── components/
@@ -63,7 +63,7 @@ SchoolOS/
 - **RBAC**: Roles: `SUPER_ADMIN`, `SCHOOL_ADMIN`, `TEACHER`, `STUDENT`, `PARENT`. All enforced by guards.
 - **OTP Email Verification**: Cryptographically secure 6-digit OTP using Node.js `crypto.randomInt`. Expires in 30 minutes. Max 5 attempts before invalidation.
 - **JWT Auth**: Short-lived access tokens (15m) + rotating refresh tokens (7 days). Logout revokes immediately.
-- **Offline Sync**: IndexedDB-based offline queue with automatic background sync when internet is restored.
+- **Offline Sync**: IndexedDB queue for network-failed mutations; on reconnect, queued requests replay with an `X-Idempotency-Key` header.
 
 ---
 
@@ -85,8 +85,8 @@ Landing Page → Professional Plan (PKR 3,000/month)
 
 - Passwords hashed with bcryptjs (12 rounds)
 - JWT access tokens (15 min expiry)
-- Refresh tokens stored in DB, revoked on logout/password change
-- OTP: 6-digit, cryptographic, 30-min TTL, max 5 attempts, 30-sec resend cooldown
+- Refresh tokens stored in DB; TTL is configured with `JWT_REFRESH_EXPIRATION` (default `7d`) and revoked on logout/password change
+- OTP: 6-digit, cryptographic, 30-min TTL, max 5 attempts, 30-sec resend cooldown measured from the last sent code
 - School approval status checked at login and token refresh
 - Rejected/inactive schools cannot log in
 - Super Admin endpoints protected by role guard
@@ -100,7 +100,6 @@ Landing Page → Professional Plan (PKR 3,000/month)
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/schoolos?schema=public"
 JWT_SECRET="your-jwt-secret"
 JWT_EXPIRATION="15m"
-JWT_REFRESH_SECRET="your-refresh-secret"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_SECURE="false"
@@ -112,6 +111,7 @@ CLOUDINARY_API_KEY="your-key"
 CLOUDINARY_API_SECRET="your-secret"
 FRONTEND_URL="https://your-frontend-domain.com"
 ROOT_DOMAIN="schoolos.app"
+JWT_REFRESH_EXPIRATION="7d"
 ```
 
 ### Frontend (`frontend/.env`)
@@ -153,6 +153,8 @@ npm run dev
 ## Production Deployment
 
 ### Backend
+Set `DATABASE_URL`, `JWT_SECRET` (16+ chars), `FRONTEND_URL`, `CORS_ORIGINS`, and SMTP/Cloudinary credentials on the host. Do not use the credentials from `docker-compose.yml` in production.
+
 Deployed on Railway / Render / VPS with:
 ```bash
 npm run build
@@ -161,6 +163,8 @@ npm run start:prod
 ```
 
 ### Frontend
+Leave `VITE_API_URL` unset for same-origin deployments (the Docker/nginx proxy forwards `/api`). Set it only when the API lives on a separate domain.
+
 Deployed on Vercel with:
 ```bash
 npm run build

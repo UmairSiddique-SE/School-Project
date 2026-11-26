@@ -9,7 +9,6 @@ import {
 import apiClient from '@/api/apiClient';
 import { toast } from 'sonner';
 
-const MOCK_TEACHER_CLASSES: any[] = [];
 
 /* =========================================================================
    1. MY CLASSES & SUBJECT MAPPING COMPONENT
