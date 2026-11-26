@@ -33,7 +33,7 @@ const NAV: NavGroup[] = [
     { label: 'Attendance', path: '/attendance', icon: NotebookTabs, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
     { label: 'Fees & Finance', path: '/finance', icon: WalletCards, roles: ['SCHOOL_ADMIN'] },
     { label: 'Notice Board', path: '/notices', icon: Bell, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
-    { label: 'Transport', path: '/transport', icon: Bus, roles: ['SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] },
+    { label: 'Transport', path: '/transport', icon: Bus, roles: ['SCHOOL_ADMIN', 'TEACHER'] },
   ] },
   { label: 'Insights', items: [
     { label: 'Reports', path: '/reports', icon: BarChart3, roles: ['SCHOOL_ADMIN', 'TEACHER'] },

@@ -360,22 +360,34 @@ export class AdminService {
     if (meta.model === 'user' && (await this.prisma.user.findUnique({ where: { id }, select: { role: true } }))?.role === 'SUPER_ADMIN') {
       throw new ConflictException('Super Admin accounts cannot be deleted from the database console.');
     }
-    const model: any = (this.prisma as any)[meta.model];
-    const record = await model.findUnique({ where: { id } });
-    if (!record) throw new NotFoundException('Record not found');
-    const softDeleteModels = ['school','user','student','teacher','parent','staff','class','section','subject','exam','book'];
-    let result;
-    if (!permanent && softDeleteModels.includes(meta.model)) {
-      result = await model.update({ where: { id }, data: { deletedAt: new Date() } });
-    } else if (permanent) {
-      result = await model.delete({ where: { id } });
-    } else {
-      result = await model.delete({ where: { id } });
-    }
-    try {
-      await this.prisma.auditLog.create({ data: { action: permanent ? 'PERMANENT_DELETE' : 'SOFT_DELETE', entity: meta.model, entityId: id, userId: actorId || '', schoolId: record.schoolId || null, before: undefined, after: undefined } });
-    } catch (_) {}
-    return { success: true, action: permanent ? 'PERMANENT_DELETE' : 'SOFT_DELETE', id, entity };
+    return this.prisma.$transaction(async (tx) => {
+      const model: any = (tx as any)[meta.model];
+      const record = await model.findUnique({ where: { id } });
+      if (!record) throw new NotFoundException('Record not found');
+
+      const softDeleteModels = ['school','user','student','teacher','parent','staff','class','section','subject','exam','book'];
+      const action = !permanent && softDeleteModels.includes(meta.model)
+        ? 'SOFT_DELETE'
+        : 'PERMANENT_DELETE';
+
+      if (action === 'SOFT_DELETE') {
+        await model.update({ where: { id }, data: { deletedAt: new Date() } });
+      } else {
+        await model.delete({ where: { id } });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          action,
+          entity: meta.model,
+          entityId: id,
+          userId: actorId || '',
+          schoolId: record.schoolId || null,
+        },
+      });
+
+      return { success: true, action, id, entity };
+    });
   }
 
   async getSupportTickets() {

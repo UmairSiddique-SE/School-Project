@@ -162,6 +162,8 @@ npx prisma migrate deploy
 npm run start:prod
 ```
 
+For Docker deployments, the backend container applies pending Prisma migrations before starting the API. For serverless deployments, run `npm run db:deploy` as a release step before routing traffic to the new backend version.
+
 ### Frontend
 Leave `VITE_API_URL` unset for same-origin deployments (the Docker/nginx proxy forwards `/api`). Set it only when the API lives on a separate domain.
 

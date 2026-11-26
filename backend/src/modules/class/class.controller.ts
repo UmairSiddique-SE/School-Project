@@ -89,7 +89,7 @@ export class ClassController {
   @Get('teacher-mapping')
   @Roles('SCHOOL_ADMIN', 'TEACHER')
   getTeacherSubjectMapping(@CurrentUser() user: any) {
-    return this.classService.getTeacherSubjectMapping(user.schoolId);
+    return this.classService.getTeacherSubjectMapping(user.schoolId, user);
   }
 
   // ─── Academic Years / Sessions ───

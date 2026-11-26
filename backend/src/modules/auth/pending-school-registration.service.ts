@@ -120,10 +120,11 @@ export class PendingSchoolRegistrationService {
     const now = new Date();
     const otpExpiresAt = new Date(now.getTime() + OTP_TTL_MS);
 
-    // Replace an unfinished registration session for the same slug without relying
-    // on a database ON CONFLICT constraint that may not exist on older deployments.
+    // Replace an unfinished session for this school or email so retries cannot
+    // fail against the unique pending-registration email constraint.
     await this.prisma.$executeRaw`
-      DELETE FROM "PendingSchoolRegistration" WHERE "schoolSlug" = ${schoolSlug}
+      DELETE FROM "PendingSchoolRegistration"
+      WHERE "schoolSlug" = ${schoolSlug} OR "adminEmail" = ${adminEmail}
     `;
     await this.prisma.$executeRaw`
       INSERT INTO "PendingSchoolRegistration"

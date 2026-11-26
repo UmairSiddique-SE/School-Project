@@ -302,10 +302,34 @@ export class ClassService {
   }
 
   // ─── Teacher ↔ Section ↔ Subject Mapping Matrix ───
-  async getTeacherSubjectMapping(schoolId: string) {
+  async getTeacherSubjectMapping(
+    schoolId: string,
+    user?: { role?: string; email?: string },
+  ) {
+    const teacherId = user?.role === 'TEACHER'
+      ? (await this.prisma.teacher.findFirst({
+          where: {
+            schoolId,
+            email: user.email,
+            deletedAt: null,
+            isActive: true,
+          },
+          select: { id: true },
+        }))?.id
+      : undefined;
+
+    if (user?.role === 'TEACHER' && !teacherId) {
+      throw new NotFoundException('Teacher profile not found');
+    }
+
     const [teachers, classes, subjects, timetables] = await Promise.all([
       this.prisma.teacher.findMany({
-        where: { schoolId, deletedAt: null, isActive: true },
+        where: {
+          schoolId,
+          deletedAt: null,
+          isActive: true,
+          ...(teacherId ? { id: teacherId } : {}),
+        },
         select: {
           id: true,
           name: true,
@@ -328,13 +352,28 @@ export class ClassService {
         orderBy: { name: 'asc' },
       }),
       this.prisma.class.findMany({
-        where: { schoolId, deletedAt: null },
+        where: {
+          schoolId,
+          deletedAt: null,
+          ...(teacherId
+            ? {
+                OR: [
+                  { sections: { some: { teacherId, deletedAt: null } } },
+                  { subjects: { some: { teacherId } } },
+                ],
+              }
+            : {}),
+        },
         include: {
           sections: {
-            where: { deletedAt: null },
+            where: {
+              deletedAt: null,
+              ...(teacherId ? { teacherId } : {}),
+            },
             include: { teacher: { select: { id: true, name: true } } },
           },
           subjects: {
+            ...(teacherId ? { where: { teacherId } } : {}),
             include: {
               subject: { select: { id: true, name: true, code: true, description: true } },
               teacher: { select: { id: true, name: true, employeeNo: true } },
@@ -344,11 +383,33 @@ export class ClassService {
         orderBy: { numeric: 'asc' },
       }),
       this.prisma.subject.findMany({
-        where: { schoolId, deletedAt: null },
+        where: {
+          schoolId,
+          deletedAt: null,
+          ...(teacherId
+            ? { classSubjects: { some: { teacherId } } }
+            : {}),
+        },
+        ...(teacherId
+          ? {
+              include: {
+                classSubjects: {
+                  where: { teacherId },
+                  include: {
+                    class: { select: { id: true, name: true } },
+                    teacher: { select: { id: true, name: true, employeeNo: true } },
+                  },
+                },
+              },
+            }
+          : {}),
         orderBy: { name: 'asc' },
       }),
       this.prisma.timetable.findMany({
-        where: { section: { class: { schoolId, deletedAt: null } } },
+        where: {
+          section: { class: { schoolId, deletedAt: null } },
+          ...(teacherId ? { teacherId } : {}),
+        },
         select: { id: true, teacherId: true, sectionId: true, subjectId: true, dayOfWeek: true },
       }),
     ]);

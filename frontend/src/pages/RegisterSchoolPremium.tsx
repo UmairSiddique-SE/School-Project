@@ -9,6 +9,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import apiClient from '@/api/apiClient';
+import { compressImageToDataUrl } from '@/api/media';
 import { useAuth } from '@/context/AuthContext';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -36,59 +37,7 @@ const sanitizePhone = (v: string) => v.replace(/\D/g, '').slice(0, 11);
 
 /* ─── Logo compressor ────────────────────────────────────────────────────── */
 async function compressImage(file: File): Promise<string> {
-  if (!['image/png', 'image/jpeg'].includes(file.type)) {
-    throw new Error('Logo must be PNG or JPG.');
-  }
-
-  // Large originals are accepted and compressed before they are sent to the API.
-  const src = await new Promise<string>((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(String(r.result));
-    r.onerror = () => rej(new Error('Unable to read logo.'));
-    r.readAsDataURL(file);
-  });
-
-  const image = await new Promise<HTMLImageElement>((res, rej) => {
-    const img = new Image();
-    img.onload = () => res(img);
-    img.onerror = () => rej(new Error('Unable to process logo.'));
-    img.src = src;
-  });
-
-  let maxDimension = 900;
-  let quality = 0.78;
-  const targetBytes = 20 * 1024;
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const scale = Math.min(
-      1,
-      maxDimension / Math.max(image.width, image.height),
-    );
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
-
-    const context = canvas.getContext('2d');
-    if (!context) {
-      throw new Error('Logo compression is not supported by this browser.');
-    }
-
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-    const base64 = dataUrl.split(',')[1] || '';
-    const byteLength = Math.floor(base64.length * 0.75);
-
-    if (byteLength <= targetBytes) return dataUrl;
-
-    if (quality > 0.32) {
-      quality = Math.max(0.32, quality - 0.06);
-    } else {
-      maxDimension = Math.max(128, Math.round(maxDimension * 0.8));
-      quality = 0.62;
-    }
-  }
-
-  throw new Error('Logo could not be compressed to a safe size.');
+  return compressImageToDataUrl(file);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -99,7 +48,20 @@ export default function RegisterSchoolPremium() {
   const { login } = useAuth();
 
   /* state */
-  const [form, setForm] = useState<FormState>(initial);
+  const [form, setForm] = useState<FormState>(() => {
+    try {
+      const savedDraft = sessionStorage.getItem('schoolos_registration_draft');
+      if (!savedDraft) return initial;
+      const draft = JSON.parse(savedDraft);
+      return {
+        ...initial,
+        ...(draft && typeof draft === 'object' ? draft : {}),
+        adminPassword: '',
+      };
+    } catch {
+      return initial;
+    }
+  });
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [verificationUserId, setVerificationUserId] = useState('');
   const [otp, setOtp] = useState('');
@@ -119,24 +81,6 @@ export default function RegisterSchoolPremium() {
   useEffect(() => {
     sessionStorage.setItem('schoolos_registration_plan', 'PROFESSIONAL');
     sessionStorage.setItem('edusphere_registration_plan', 'PROFESSIONAL');
-
-    /* restore pending OTP session */
-    const saved =
-      sessionStorage.getItem('schoolos_pending_school_registration') ||
-      sessionStorage.getItem('edusphere_pending_school_registration');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.verificationUserId) {
-          setVerificationUserId(data.verificationUserId);
-          setForm(p => ({ ...p, ...(data.form || {}) }));
-          setStep('otp');
-        }
-      } catch {
-        sessionStorage.removeItem('schoolos_pending_school_registration');
-        sessionStorage.removeItem('edusphere_pending_school_registration');
-      }
-    }
 
     /* fetch plans */
     apiClient.get<Plan[]>('/public/plans')
@@ -159,6 +103,13 @@ export default function RegisterSchoolPremium() {
     const t = window.setInterval(() => setCooldown(v => Math.max(0, v - 1)), 1000);
     return () => window.clearInterval(t);
   }, [cooldown]);
+
+  /* Save editable details locally so a refresh never skips to OTP. */
+  useEffect(() => {
+    if (step !== 'details') return;
+    const draft = { ...form, adminPassword: '' };
+    sessionStorage.setItem('schoolos_registration_draft', JSON.stringify(draft));
+  }, [form, step]);
 
   /* ── Auto-slug from school name ──────────────────────────────────────── */
   useEffect(() => {
@@ -241,7 +192,15 @@ export default function RegisterSchoolPremium() {
       setStep('otp');
       toast.success('Verification code sent! Check your email inbox.');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Unable to start school registration.');
+      const response = err?.response?.data;
+      const message = Array.isArray(response?.message)
+        ? response.message.join(', ')
+        : response?.message || 'Unable to start school registration.';
+      toast.error(
+        response?.requestId
+          ? `${message} (Reference: ${response.requestId})`
+          : message,
+      );
     } finally {
       setSaving(false);
     }
@@ -265,6 +224,8 @@ export default function RegisterSchoolPremium() {
       const { accessToken, refreshToken, user } = response.data;
       sessionStorage.removeItem('schoolos_pending_school_registration');
       sessionStorage.removeItem('edusphere_pending_school_registration');
+      sessionStorage.removeItem('schoolos_registration_draft');
+      sessionStorage.removeItem('edusphere_registration_draft');
       login(accessToken, user, refreshToken);
       toast.success('Email verified! Continue to payment and school approval.');
       navigate('/onboarding', { replace: true });
@@ -452,11 +413,11 @@ function DetailsForm({
                   : (
                     <div className="text-center text-slate-400 dark:text-slate-500">
                       <ImagePlus className="mx-auto mb-1" size={20} />
-                      <span className="text-[10px] font-bold">PNG/JPG · Auto-compressed</span>
+                      <span className="text-[10px] font-bold">Any image · Auto-compressed below 20 KB</span>
                     </div>
                   )
               }
-              <input type="file" accept="image/png,image/jpeg" onChange={onLogoChange} className="hidden" />
+              <input type="file" accept="image/*" onChange={onLogoChange} className="hidden" />
             </div>
           </label>
         </div>

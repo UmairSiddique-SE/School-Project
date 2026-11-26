@@ -123,7 +123,7 @@ export default function App() {
                   <Route path="exams" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Exams /></TenantRoute>} />
                   <Route path="timetable" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Timetable /></TenantRoute>} />
                   <Route path="notices" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><NoticeBoard /></TenantRoute>} />
-                  <Route path="transport" element={<TenantRoute allowedRoles={SCHOOL_ROLES}><Transport /></TenantRoute>} />
+                  <Route path="transport" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Transport /></TenantRoute>} />
                   <Route path="reports" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><Reports /></TenantRoute>} />
                   <Route path="subscription" element={<TenantRoute allowedRoles={ADMIN_ONLY}><Subscription /></TenantRoute>} />
                   <Route path="attendance" element={<TenantRoute allowedRoles={ADMIN_TEACHER}><AttendanceLive /></TenantRoute>} />
